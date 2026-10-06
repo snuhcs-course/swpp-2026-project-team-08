@@ -78,6 +78,10 @@ Two sizes are present; select by feature family. The 40 px onboarding input is a
 - Onboarding password validation error uses a 1 px `#D92D20` outline and an 8 px `#D92D20` helper line below the field. Keep the error line in layout; do not overlay it on the input.
 - The Figma file shows a blue focus/active outline on the child age/name form and typing frames for catalog search. Use the current family accent for focus. Typing frames show suggestions below the field, attached to the input width.
 - Do not constrain text vertically below the selected variant height. For native Material `OutlinedTextField`, the Figma compact height may be too small for default internal padding; use a custom decoration or a larger minimum height so the value, cursor, and placeholder stay fully visible. Height is a target, clipping is never acceptable.
+- 두 기능의 입력값은 밝은 입력 배경 위에 진한 글자색으로 표시한다. 비밀번호 8글자 미만의 오류 테두리와 안내 문구는 Figma의 붉은색 상태를 따른다.
+- Meal Details의 월·일·연도 필드는 날짜 카드 안에 펼쳐진다. 각 선택 목록은 카드의 자식 레이아웃이 아닌 별도 오버레이로 표시해 목록을 열고 닫아도 카드 높이가 바뀌지 않게 한다. 목록은 앱의 밝은 화면 팔레트를 사용해 숫자와 선택 상태를 구분한다.
+- 키보드가 열리면 입력 필드와 하단 동작 버튼이 IME 위로 이동하고, 긴 양식은 스크롤해서 현재 입력을 볼 수 있어야 한다.
+- 화면 아이콘과 Meal Check-in의 예시 식사 사진은 각 Figma 프레임에서 내려받은 자산을 사용한다.
 - Disabled, read-only, and counter states are not defined in these frames. Do not invent colors; add their tokens to this document when product behavior requires them.
 
 ### 4. Choice row and checkbox
@@ -192,6 +196,7 @@ The After-meal Review category/value editor shows a two-dropdown row and an Add 
 ### 12. Photo frame and photo actions
 
 Meal Check-in photo preview uses a full-width image slot inside the 24 px content gutter, with a 1 px `#DCE6F3` border and 14 px radius. Crop with `ContentScale.Crop` for the meal-photo card; the full-view photo screen preserves the photo's aspect ratio inside a bordered frame. Place the preview-specific actions directly below the image: Replace and Remove are equal-width 44 px controls, 8 px apart; the “Use this photo” primary action is 50 px high with 14 px radius. The photo consent note is `#EFF6FF`, 1 px family border, 12 px padding and 12 px radius.
+The full-view photo is a dedicated screen with its own Go back action; it uses the available viewport instead of a small centered dialog.
 
 These frames specify presentation only. Ask for camera/photo permission only after the caregiver selects the corresponding photo action, as required by the onboarding product spec.
 

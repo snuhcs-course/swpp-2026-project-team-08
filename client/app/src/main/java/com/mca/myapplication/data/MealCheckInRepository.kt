@@ -28,11 +28,40 @@ class MealCheckInRepository(context: Context) {
         runCatching { check(preferences.edit().putString(DRAFT_KEY, encodeDraft(draft)).commit()) }
     }
 
-    suspend fun saveMeal(draft: MealCheckInDraft): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun saveMeal(draft: MealCheckInDraft): Result<String> = withContext(Dispatchers.IO) {
         runCatching {
             val records = JSONArray(preferences.getString(RECORDS_KEY, "[]"))
-            records.put(JSONObject(encodeDraft(draft)).put("savedAt", System.currentTimeMillis()))
+            val childName = OnboardingRepository(appContext).loadDraft().getOrNull()?.fields?.get("nickname").orEmpty()
+            val mealId = java.util.UUID.randomUUID().toString()
+            records.put(JSONObject(encodeDraft(draft)).put("childName", childName).put("id", mealId).put("savedAt", System.currentTimeMillis()))
             check(preferences.edit().putString(RECORDS_KEY, records.toString()).remove(DRAFT_KEY).commit())
+            mealId
+        }
+    }
+
+    suspend fun savedMeals(): Result<List<SavedMeal>> = withContext(Dispatchers.IO) {
+        runCatching {
+            val records = JSONArray(preferences.getString(RECORDS_KEY, "[]"))
+            val currentChildName = OnboardingRepository(appContext).loadDraft().getOrNull()?.fields?.get("nickname").orEmpty()
+            List(records.length()) { index ->
+                val record = records.getJSONObject(index)
+                SavedMeal(record.optString("id").ifBlank { "legacy-$index" }, decodeDraft(record.toString()), record.optLong("savedAt"), record.optString("childName").ifBlank { currentChildName })
+            }.asReversed()
+        }
+    }
+
+    suspend fun savedMeal(id: String): Result<SavedMeal?> = savedMeals().map { meals -> meals.firstOrNull { it.id == id } }
+
+    suspend fun updateSavedFoods(id: String, foods: List<MealFood>): Result<Unit> = withContext(Dispatchers.IO) {
+        runCatching {
+            val records = JSONArray(preferences.getString(RECORDS_KEY, "[]"))
+            val index = (0 until records.length()).firstOrNull { recordIndex ->
+                records.getJSONObject(recordIndex).optString("id").ifBlank { "legacy-$recordIndex" } == id
+            } ?: error("Meal not found")
+            val record = records.getJSONObject(index)
+            record.put("foods", JSONArray().apply { foods.forEach { put(encodeFood(it)) } })
+            records.put(index, record)
+            check(preferences.edit().putString(RECORDS_KEY, records.toString()).commit())
         }
     }
 
@@ -40,7 +69,7 @@ class MealCheckInRepository(context: Context) {
         runCatching {
             val mime = appContext.contentResolver.getType(uri)
             require(mime?.startsWith("image/") == true) { "Unsupported image type" }
-            val destination = File(appContext.filesDir, "meal_${System.currentTimeMillis()}.jpg")
+            val destination = File(appContext.filesDir, "meal_${java.util.UUID.randomUUID()}.jpg")
             appContext.contentResolver.openInputStream(uri).use { input ->
                 requireNotNull(input) { "Could not read selected image" }
                 destination.outputStream().use(input::copyTo)
@@ -54,7 +83,7 @@ class MealCheckInRepository(context: Context) {
 
     suspend fun saveCameraPhoto(bitmap: Bitmap): Result<String> = withContext(Dispatchers.IO) {
         runCatching {
-            val destination = File(appContext.filesDir, "meal_${System.currentTimeMillis()}.jpg")
+            val destination = File(appContext.filesDir, "meal_${java.util.UUID.randomUUID()}.jpg")
             FileOutputStream(destination).use { output ->
                 check(bitmap.compress(Bitmap.CompressFormat.JPEG, 92, output))
             }
@@ -151,6 +180,8 @@ class MealCheckInRepository(context: Context) {
 }
 
 enum class FoodSource { AI, PARENT }
+
+data class SavedMeal(val id: String, val details: MealCheckInDraft, val savedAt: Long, val childName: String = "")
 
 data class MealFood(
     val id: String = java.util.UUID.randomUUID().toString(),

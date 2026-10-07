@@ -39,3 +39,19 @@ The School option uses the Figma graduation cap (`56:2545`). The Figma Others no
 - `ic_figma_utensils.xml` ← Figma `52:783`
 
 `app/src/main/res/drawable-nodpi/meal_example_photo.jpg` is the original JPEG used in the before-meal photo example (`94:457`, preview image `94:487`).
+
+`app/src/main/res/drawable-nodpi/review_goal_icon.png` is the original 23 × 23 lightbulb export from After-meal Review `72:689`, displayed at 23 dp inside the 48 dp goal icon surface.
+
+Home `37:3607` uses these node exports, converted without redrawing their paths to Android vectors:
+
+- The Home camera slot `37:3632` reuses `ic_figma_camera.xml`, whose vector includes the lens visible in the Figma frame.
+- `ic_home_carrot.xml` ← `37:3644`
+- `ic_home_circle_x.xml` ← `37:3654`
+- `ic_home_home.xml` ← `37:3816`
+- `ic_home_utensils.xml` ← `37:3820`
+- `ic_home_alert.xml` ← `37:3825`
+- `ic_home_sparkles.xml` ← `37:3830`
+- `ic_home_chart.xml` ← `37:3834`
+- `ic_home_user.xml` ← `37:3838`
+
+The Home typography uses Poppins Regular, SemiBold, and Bold from Google Fonts. Its license is in `docs/licenses/Poppins-OFL.txt`.

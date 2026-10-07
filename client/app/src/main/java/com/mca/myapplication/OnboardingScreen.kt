@@ -1,5 +1,6 @@
 package com.mca.myapplication
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -70,7 +71,7 @@ private val pages = onboardingPages
 private fun T(key: String, child: String = ""): String = OnboardingStrings.display(key, child)
 
 @Composable
-fun OnboardingApp(viewModel: OnboardingViewModel, hasMealDraft: Boolean, onOpenMealCheckIn: (resume: Boolean) -> Unit) {
+fun OnboardingApp(viewModel: OnboardingViewModel, home: HomeViewModel, hasMealDraft: Boolean, onOpenReview: (String?) -> Unit, onOpenRecommendation: (String?) -> Unit, onProfileEdit: () -> Unit = {}, onReviewDraft: () -> Unit = {}, editingProfile: Boolean = false, onExitProfileEdit: () -> Unit = {}, onOpenMealCheckIn: (resume: Boolean) -> Unit) {
     val savedState by viewModel.state.collectAsStateWithLifecycle()
     var pageIndex by rememberSaveable { mutableStateOf(0) }
     var fields by rememberSaveable { mutableStateOf(mapOf<String, String>()) }
@@ -85,10 +86,12 @@ fun OnboardingApp(viewModel: OnboardingViewModel, hasMealDraft: Boolean, onOpenM
     var completed by rememberSaveable { mutableStateOf(false) }
     var paused by rememberSaveable { mutableStateOf(false) }
     var restored by rememberSaveable { mutableStateOf(false) }
+    var editSavePending by rememberSaveable { mutableStateOf(false) }
+    BackHandler(editingProfile, onBack = onExitProfileEdit)
     LaunchedEffect(savedState.isLoaded) {
         if (savedState.isLoaded) {
             val draft = savedState.draft
-            pageIndex = draft.step.coerceIn(0, pages.lastIndex)
+            pageIndex = if (editingProfile) pages.lastIndex else draft.step.coerceIn(0, pages.lastIndex)
             fields = draft.fields.filterKeys { it !in setOf("safeFoodDraft", "safePreparation", "safePresentation") }
             safeFoodDraft = draft.fields["safeFoodDraft"].orEmpty()
             safePreparation = draft.fields["safePreparation"].orEmpty()
@@ -96,7 +99,7 @@ fun OnboardingApp(viewModel: OnboardingViewModel, hasMealDraft: Boolean, onOpenM
             selected = draft.choices.filterKeys { it != 16 }
             noSafeFoods = "No safe foods yet" in draft.choices[16].orEmpty()
             safeFoods = if (noSafeFoods) emptyList() else draft.safeFoods
-            completed = draft.completed
+            completed = draft.completed && !editingProfile
             restored = true
         }
     }
@@ -105,12 +108,18 @@ fun OnboardingApp(viewModel: OnboardingViewModel, hasMealDraft: Boolean, onOpenM
         val savedChoices = if (noSafeFoods) selected + (16 to setOf("No safe foods yet")) else selected - 16
         if (restored && savedState.isLoaded && !savedState.completed && !completed) viewModel.save(com.mca.myapplication.data.OnboardingDraft(pageIndex, savedFields, savedChoices, safeFoods))
     }
-    LaunchedEffect(savedState.completed) { if (savedState.completed) completed = true }
+    LaunchedEffect(savedState.completed, editingProfile) { if (savedState.completed && !editingProfile) completed = true }
+    LaunchedEffect(savedState.isSaving, savedState.saveFailed, editSavePending) {
+        if (editingProfile && editSavePending && !savedState.isSaving) {
+            editSavePending = false
+            if (!savedState.saveFailed) onExitProfileEdit()
+        }
+    }
     val page = pages[pageIndex.coerceIn(0, pages.lastIndex)]
     val childName = fields["nickname"].orEmpty()
 
     if (completed) {
-        MealCheckInHome(onStart = { onOpenMealCheckIn(false) }, onResume = { onOpenMealCheckIn(true) }, hasDraft = hasMealDraft)
+        HomeRoute(home, hasMealDraft, onOpenMealCheckIn, onReviewDraft, onOpenReview, onOpenRecommendation, onProfileEdit)
         return
     }
     if (paused) {
@@ -154,7 +163,7 @@ fun OnboardingApp(viewModel: OnboardingViewModel, hasMealDraft: Boolean, onOpenM
         modifier = Modifier.fillMaxSize().background(Canvas).windowInsetsPadding(WindowInsets.statusBars).imePadding()
     ) {
         Column(modifier = Modifier.weight(1f).verticalScroll(scrollState).padding(horizontal = 20.dp)) {
-            OnboardingProgress(pageIndex + 1, pages.size, saved = !savedState.isSaving && !savedState.saveFailed)
+            OnboardingProgress(pageIndex + 1, pages.size, saved = !editingProfile && !savedState.isSaving && !savedState.saveFailed)
             Spacer(Modifier.height(10.dp))
             Text(T(page.title, childName), color = Ink, fontSize = 20.sp, lineHeight = 23.sp, fontWeight = FontWeight.Bold)
             if (page.subtitle.isNotBlank()) Text(T(page.subtitle, childName), color = Muted, fontSize = 10.sp, lineHeight = 14.sp, modifier = Modifier.padding(top = 3.dp))
@@ -207,7 +216,7 @@ fun OnboardingApp(viewModel: OnboardingViewModel, hasMealDraft: Boolean, onOpenM
                 val draftFields = fields + mapOf("safeFoodDraft" to safeFoodDraft, "safePreparation" to safePreparation, "safePresentation" to safePresentation)
                 val draftChoices = if (noSafeFoods) selected + (16 to setOf("No safe foods yet")) else selected - 16
                 val currentDraft = com.mca.myapplication.data.OnboardingDraft(pageIndex, draftFields, draftChoices, safeFoods)
-                if (page.number == 17) { viewModel.complete(currentDraft); return@OnboardingNavigationBar }
+                if (page.number == 17) { if (editingProfile) editSavePending = true; viewModel.complete(currentDraft); return@OnboardingNavigationBar }
                 else pageIndex = (pageIndex + 1).coerceAtMost(pages.lastIndex)
             }, enabled = canContinue
         )

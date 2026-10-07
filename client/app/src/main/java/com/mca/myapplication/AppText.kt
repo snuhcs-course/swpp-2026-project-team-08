@@ -303,3 +303,228 @@ object OnboardingStrings {
         "Lupin" to "루핀", "Lupin flour" to "루핀 가루", "Lupin seed" to "루핀 씨앗", "Mustard" to "겨자", "Celery" to "셀러리", "Low-histamine" to "저히스타민", "Low-salicylate" to "저살리실산", "Low-FODMAP" to "저포드맵", "Corn-free" to "옥수수 제외", "Plant-based milk" to "식물성 우유", "Plant-based yogurt" to "식물성 요거트", "Plant-based cheese" to "식물성 치즈", "Tofu" to "두부", "Quinoa" to "퀴노아", "Mediterranean" to "지중해식",
     )
 }
+
+
+class AfterMealReviewText(private val korean: Boolean) {
+    fun goalLabel(value: String): String = if (value in listOf("Step 1 · Look", "1단계 · 바라보기")) { if (korean) "1단계 · 바라보기" else "Step 1 · Look" } else value
+    val continueLabel get() = if (korean) "계속" else "Continue"
+    val title get() = if (korean) "식후 검토" else "After-meal Review"
+    val selectMeal get() = if (korean) "저장된 식사를 선택하세요" else "Choose a saved meal"
+    val emptyMeals get() = if (korean) "식사를 저장한 뒤 식후 반응을 기록할 수 있어요." else "Save a meal first to review what happened."
+    val loadError get() = if (korean) "식사를 불러오지 못했어요. 다시 시도해 주세요." else "Could not load this meal. Please retry."
+    val retry get() = if (korean) "다시 시도" else "Retry"
+    val afterPhoto get() = if (korean) "식후 사진" else "After-meal photo"
+    val addPhoto get() = if (korean) "식후 사진 추가" else "Add an after-meal photo"
+    val compare get() = if (korean) "식전·식후 비교" else "Compare before and after"
+    val before get() = if (korean) "식전" else "BEFORE"
+    val after get() = if (korean) "식후" else "AFTER"
+    val compareAI get() = if (korean) "AI로 비교" else "Compare with AI"
+    val manual get() = if (korean) "결과 직접 입력" else "Enter outcomes manually"
+    val photoConsent get() = if (korean) "비교를 시작하면 이 식사의 두 사진을 분석 제공자에게 전송하는 데 동의하게 됩니다. 별도 동의 없이 AI 학습에 사용하지 않습니다." else "By comparing, you consent to sending both meal photos to the analysis provider for this meal. They will not be used to train AI without separate consent."
+    val photoUse get() = if (korean) "사진 데이터 사용 안내" else "How photo data is used"
+    val photoDetails get() = if (korean) "분석 또는 저장을 선택하기 전까지 사진은 기기에 보관됩니다. 현재 프로토타입은 mock API로 기기 안에서 비교합니다." else "Photos stay on your device until you choose analysis or save. This prototype compares locally using a mock API."
+    val comparing get() = if (korean) "사진 비교 중…" else "Comparing photos…"
+    val comparingDetail get() = if (korean) "식전·식후 사진을 확인하고 있어요. 초안은 자동 저장됩니다." else "Checking the before and after photos. Your draft is being saved."
+    val cancelSafely get() = if (korean) "안전하게 취소" else "Cancel safely"
+    val compareFailed get() = if (korean) "사진을 비교하지 못했어요" else "We couldn’t compare the photos"
+    val analysisFailed get() = if (korean) "분석 실패" else "Analysis Failed"
+    val photosSafe get() = if (korean) "사진과 입력은 그대로 보관됩니다. 다시 시도하거나 직접 기록해 주세요." else "Your photos and answers are safe. Retry or enter outcomes manually."
+    val retryComparison get() = if (korean) "비교 다시 시도" else "Retry comparison"
+    val photoUnavailable get() = if (korean) "사진을 불러올 수 없어요. 다른 사진을 선택하거나 결과를 직접 입력하세요." else "Photo unavailable. Select another image or enter outcomes manually."
+    val outcomes get() = if (korean) "각 음식에 어떤 반응을 보였나요?" else "What happened with each food item?"
+    val outcomeHint get() = if (korean) "AI 제안은 보호자가 선택하거나 수정하기 전까지 확정되지 않습니다." else "AI suggestions are not confirmed until you edit or select a value."
+    val manualHint get() = if (korean) "각 음식과 재료에 대해 관찰한 결과를 선택해 주세요." else "Select the outcome you observed for every food and ingredient."
+    val suggested get() = if (korean) "제안" else "SUGGESTED"
+    val confirmed get() = if (korean) "확정됨" else "Confirmed"
+    val editInfo get() = if (korean) "정보 수정" else "edit info"
+    val definitions get() = if (korean) "결과의 의미" else "Outcome definitions"
+    val gotIt get() = if (korean) "알겠어요" else "Got it"
+    val unanswered get() = if (korean) "미응답" else "Unanswered"
+    val missing get() = if (korean) "표시된 항목에 모두 답해 주세요. 알 수 없다면 확인 어려움을 선택하세요." else "Please answer every highlighted item. Choose Unclear if you cannot tell."
+    val noFoods get() = if (korean) "결과를 기록할 음식을 먼저 추가해 주세요." else "Add at least one served food to record outcomes."
+    val definitionNote get() = if (korean) "정확한 양을 추정할 필요는 없어요. 미응답 항목은 확정 저장할 수 없습니다." else "You do not need to estimate an exact amount. Unanswered items cannot be saved."
+    val difficulty get() = if (korean) "이 음식을 어려워한 이유가 있나요?" else "What made this food difficult?"
+    val difficultyHint get() = if (korean) "일부 카테고리는 여러 값을 추가할 수 있어요" else "Some categories allow multiple value selections"
+    val category get() = if (korean) "카테고리 선택" else "Select category"
+    val value get() = if (korean) "값 선택" else "Value"
+    val add get() = if (korean) "+ 추가" else "+ Add"
+    val note get() = if (korean) "선택 메모" else "Optional note"
+    val custom get() = if (korean) "내용을 입력하세요" else "Describe it"
+    val skip get() = if (korean) "건너뛰기" else "Skip"
+    val goal get() = if (korean) "이번 식사의 음식 경험 목표" else "This meal’s exposure goal is:"
+    val record get() = if (korean) "어떤 일이 있었는지 기록" else "Record what happened"
+    val recordHint get() = if (korean) "이 음식에 대해 실제로 관찰한 경험만 선택하세요." else "Select only the step you observed for this food."
+    val noStep get() = if (korean) "이 음식의 목표 단계는 아직 설정되지 않았어요." else "No step was selected for this food."
+    val savedSuggestions get() = if (korean) "저장한 제안을 시도했나요?" else "Did you try a saved suggestion?"
+    val swipe get() = if (korean) "오른쪽은 시도함, 왼쪽은 시도하지 않음" else "Swipe right for yes, left for no."
+    val saved get() = if (korean) "저장됨" else "SAVED"
+    val what get() = if (korean) "시도할 일" else "WHAT TO TRY"
+    val why get() = if (korean) "더 쉬울 수 있는 이유" else "WHY THIS MAY BE EASIER"
+    val servingTip get() = if (korean) "제공 팁" else "SERVING TIP"
+    val yes get() = if (korean) "시도했어요" else "Tried it"
+    val no get() = if (korean) "시도하지 않았어요" else "Did not try"
+    val nextStep get() = if (korean) "추천하는 다음 단계" else "Recommended next step"
+    val done get() = if (korean) "식후 기록을 저장했어요" else "After-meal review saved"
+    val noRecommendation get() = if (korean) "확인한 결과가 저장되었습니다. 아직 제공할 수 있는 다음 제안이 없어요." else "Your confirmed outcomes are saved. There is no next suggestion available yet."
+    val finish get() = if (korean) "식후 기록 저장" else "Save review"
+    val home get() = if (korean) "홈으로" else "Go to Home"
+    val exit get() = if (korean) "저장하고 나가기" else "Save & exit"
+    val editAgain get() = if (korean) "기록 다시 보기" else "Review answers"
+    val seconds get() = if (korean) "초" else "sec"
+    val foodItems get() = if (korean) "개 음식" else "food items"
+    val cards get() = if (korean) "개 카드" else "cards"
+    val close get() = if (korean) "닫기" else "Close"
+    fun outcome(value: com.mca.myapplication.data.FoodOutcome): String = (if (korean) listOf("먹음", "맛봄", "먹거나 맛보지 않음", "확인 어려움") else listOf("Eaten", "Tasted", "Untouched", "Unclear"))[value.ordinal]
+    fun definition(value: com.mca.myapplication.data.FoodOutcome): String = (if (korean) listOf("삼킨 양이 확인됨.", "핥거나 맛봤지만 삼킨 것은 확인되지 않음.", "먹거나 맛보지 않음. 보기·냄새 맡기·만지기·옮기기는 별도 경험으로 기록할 수 있어요.", "실제로 어떤 일이 있었는지 판단할 수 없음.") else listOf("Some amount was confirmed swallowed.", "Licked or tasted; swallowing was not confirmed.", "Neither eaten nor tasted. Looking, smelling, touching, or moving can be recorded separately.", "You cannot tell what actually happened."))[value.ordinal]
+    fun option(key: String): String = if (korean) optionTranslations[key] ?: key else key
+    private val optionTranslations = mapOf(
+        "Texture" to "식감",
+        "Taste type" to "맛 종류",
+        "Taste intensity" to "맛 강도",
+        "Smell" to "냄새",
+        "Color" to "색",
+        "Shape and size" to "모양과 크기",
+        "Ingredient visibility" to "재료 가시성",
+        "Temperature" to "온도",
+        "Not sure" to "잘 모르겠어요",
+        "Smooth / creamy" to "부드럽고 크리미함",
+        "Soft / mushy" to "무르고 질척함",
+        "Lumpy / chunky" to "덩어리가 있음",
+        "Crunchy / crisp" to "바삭함",
+        "Chewy / tough" to "질김",
+        "Wet / slippery" to "축축하거나 미끄러움",
+        "Mixed textures" to "여러 식감이 섞임",
+        "Other" to "기타",
+        "Sweet" to "단맛",
+        "Salty" to "짠맛",
+        "Sour" to "신맛",
+        "Bitter" to "쓴맛",
+        "Spicy / hot" to "매운맛",
+        "Mild" to "약함",
+        "Strong" to "강함",
+        "No noticeable smell" to "뚜렷한 냄새 없음",
+        "Red" to "빨강",
+        "Orange" to "주황",
+        "Yellow" to "노랑",
+        "Green" to "초록",
+        "Blue" to "파랑",
+        "Purple" to "보라",
+        "Brown" to "갈색",
+        "Black" to "검정",
+        "White" to "하양",
+        "Gray" to "회색",
+        "Others" to "기타",
+        "Consistent" to "일정함",
+        "Varied" to "다양함",
+        "Optional note" to "선택 메모",
+        "Clearly visible" to "잘 보임",
+        "Partly visible" to "일부 보임",
+        "Blended / not separately visible" to "섞여서 구분하기 어려움",
+        "Hot" to "뜨거움",
+        "Warm" to "따뜻함",
+        "Room temperature" to "상온",
+        "Cool / chilled" to "차가움",
+    )
+}
+
+object AfterMealReviewTexts {
+    val current: AfterMealReviewText
+        @Composable get() = AfterMealReviewText(LocalConfiguration.current.locales[0].language == "ko")
+}
+
+class RecommendationText(private val korean: Boolean) {
+    val title get() = if (korean) "추천하는 다음 단계" else "Recommended next step"
+    val subtitle get() = if (korean) "기록을 바탕으로 작은 변화를 골라보세요." else "Choose a small change based on your records."
+    val recommended get() = if (korean) "추천" else "RECOMMENDED"
+    val what get() = if (korean) "시도할 일" else "WHAT TO TRY"
+    val why get() = if (korean) "더 쉬울 수 있는 이유" else "WHY THIS MAY BE EASIER"
+    val tip get() = if (korean) "제공 팁" else "SERVING TIP"
+    val save get() = if (korean) "제안 저장" else "Save suggestion"
+    val skip get() = if (korean) "넘기기" else "Skip suggestion"
+    val back get() = if (korean) "뒤로" else "Go back"
+    val retry get() = if (korean) "다시 시도" else "Retry"
+    val saved get() = if (korean) "저장된 제안" else "Saved suggestions"
+    val tryAction get() = if (korean) "보기" else "Try"
+    val empty get() = if (korean) "완료된 식후 기록이 없어요. 식후 기록을 저장한 뒤 확인해 주세요." else "There is no completed review yet. Save an after-meal review first."
+    val incomplete get() = if (korean) "먼저 이 식사의 식후 결과를 모두 확인하고 저장해 주세요." else "Confirm and save all outcomes for this meal first."
+    val safety get() = if (korean) "알레르기·식이 제한 또는 재료의 안전성을 확인할 수 없어 제안을 보류했어요. 프로필과 음식 정보를 확인해 주세요." else "Suggestions are paused because allergies, dietary restrictions, or ingredients cannot be verified. Check the profile and food details."
+    val evidence get() = if (korean) "현재 기록으로는 개인화된 다음 단계를 설명할 근거가 부족해요." else "There is not enough confirmed information to explain a personalized next step."
+    val exhausted get() = if (korean) "이 식사의 제안을 모두 살펴봤어요." else "You have reviewed all suggestions for this meal."
+    val error get() = if (korean) "제안을 불러오거나 저장하지 못했어요. 다시 시도해 주세요." else "Could not load or save suggestions. Please retry."
+    val safetyNote get() = if (korean) "식품 표시와 교차 접촉 가능성을 직접 확인해 주세요. 이 제안은 의료 조언이 아닙니다." else "Check labels and cross-contact yourself. This suggestion is not medical advice."
+    val checkProfile get() = if (korean) "프로필 확인" else "Review profile"
+    val checkMeal get() = if (korean) "식사 정보 확인" else "Review meal details"
+    fun title(card: com.mca.myapplication.data.SavedSuggestion): String = when (card.kind) {
+        "SEPARATE" -> if (korean) "${card.foodName}을(를) 다른 음식과 따로 제공해 보세요" else "Serve ${card.foodName} separately"
+        "VISIBLE", "VISIBLE_RECORDED" -> if (korean) "${card.foodName}의 재료가 보이게 제공해 보세요" else "Keep the ingredients of ${card.foodName} visible"
+        else -> card.title
+    }
+    fun reason(card: com.mca.myapplication.data.SavedSuggestion): String = when (card.kind) {
+        "SEPARATE" -> if (korean) "프로필에 음식끼리 닿지 않는 제공 방식을 선호한다고 기록되어 있어요. 이 음식의 식후 결과도 확인했어요." else "The profile notes a preference for keeping foods separate, and this food has a confirmed outcome."
+        "VISIBLE" -> if (korean) "프로필에 재료가 보이는 제공 방식을 선호한다고 기록되어 있어요. 이 음식의 식후 결과도 확인했어요." else "The profile notes a preference for visible ingredients, and this food has a confirmed outcome."
+        "VISIBLE_RECORDED" -> if (korean) "식후 기록에 재료가 섞여 구분하기 어려웠다고 남겼어요. 이 음식의 식후 결과도 확인했어요." else "The after-meal record notes that blended ingredients were difficult to distinguish, and this food has a confirmed outcome."
+        else -> card.reason
+    }
+    fun tip(card: com.mca.myapplication.data.SavedSuggestion): String = when (card.kind) {
+        "SEPARATE" -> if (korean) "같은 음식을 접시의 별도 칸에 담아 보세요." else "Put the same food in a separate section of the plate."
+        "VISIBLE", "VISIBLE_RECORDED" -> if (korean) "같은 재료를 덮거나 섞지 않고 보여 주세요." else "Show the same ingredients without covering or mixing them."
+        else -> card.servingTip
+    }
+}
+
+object RecommendationTexts {
+    val current: RecommendationText
+        @Composable get() = RecommendationText(LocalConfiguration.current.locales[0].language == "ko")
+}
+
+class HomeText(private val korean: Boolean) {
+    private val locale get() = if (korean) java.util.Locale.KOREAN else java.util.Locale.ENGLISH
+    val tabs get() = if (korean) listOf("오늘", "식사 기록", "SOS", "아이디어", "인사이트", "프로필")
+        else listOf("Today", "Meal Log", "SOS", "Ideas", "Insight", "Profile")
+    val nextUp get() = if (korean) "다음 식사" else "NEXT UP"
+    val ready get() = if (korean) "준비되면 기록해 주세요" else "Ready when you are"
+    val photoHint get() = if (korean) "사진 한 장으로 제공한 음식을 기록할 수 있어요." else "A quick photo helps record what was served."
+    val logMeal get() = if (korean) "식사 기록하기" else "Log this meal"
+    val sosTitle get() = if (korean) "SOS 진행 상황" else "SOS Progress"
+    val sosSubtitle get() = if (korean) "기록한 음식 경험" else "Recorded food progress"
+    val sosEmpty get() = if (korean) "아직 기록된 음식 경험 단계가 없어요." else "No food exposure steps recorded yet."
+    val recommendedTitle get() = if (korean) "추천 행동 목표" else "Recommended action goals"
+    val recommendedSubtitle get() = if (korean) "다음 식사를 위한 작은 변화" else "Small steps to make meals easier"
+    val noRecommendation get() = if (korean) "저장된 제안이 없어요." else "No saved suggestions yet."
+    val seeIdeas get() = if (korean) "제안 보기" else "See ideas"
+    val tryAction get() = if (korean) "보기" else "Try"
+    val calendarTitle get() = if (korean) "식사 기록 달력" else "Meal Log Calendar"
+    val calendarSubtitle get() = if (korean) "진한 파랑은 기록한 날, 연한 파랑은 기록하지 않은 날" else "Logged days in dark blue, unlogged days in light blue"
+    val logged get() = if (korean) "기록함" else "Logged"
+    val unlogged get() = if (korean) "기록 없음" else "Unlogged"
+    val weekdays get() = if (korean) listOf("월", "화", "수", "목", "금", "토", "일") else listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    val loadError get() = if (korean) "홈 정보를 불러오지 못했어요." else "Could not load your home information."
+    val retry get() = if (korean) "다시 시도" else "Retry"
+    val noMeals get() = if (korean) "저장된 식사가 없어요." else "No saved meals yet."
+    val noInsights get() = if (korean) "표시할 인사이트가 아직 없어요." else "No insights available yet."
+    val draftTitle get() = if (korean) "작성 중인 식사가 있어요" else "You have a meal draft"
+    val draftMessage get() = if (korean) "이어서 작성하거나 새 식사를 시작할 수 있어요." else "Continue the draft or start a new meal."
+    val resumeDraft get() = if (korean) "초안 이어쓰기" else "Resume draft"
+    val newMeal get() = if (korean) "새 식사 시작" else "Start new meal"
+    val reviewDraft get() = if (korean) "이 식사 식후 기록하기" else "Review this meal after eating"
+    val reviewDraftHint get() = if (korean) "초안을 확인하고 저장하면 식후 기록으로 이어집니다." else "Confirm and save this draft to continue to after-meal review."
+    val cancel get() = if (korean) "취소" else "Cancel"
+    val mealReview get() = if (korean) "식후 기록" else "After-meal Review"
+    val profileNameMissing get() = if (korean) "안녕하세요" else "Hello"
+    fun items(count: Int) = if (korean) "${count}개" else "$count ${if (count == 1) "item" else "items"}"
+    fun stage(number: Int) = if (korean) "${number}단계" else "Stage $number"
+    fun stageDescription(number: Int) = (if (korean) listOf("보기", "상호작용", "냄새 맡기", "만지기", "맛보기 / 핥기", "삼키기")
+        else listOf("Look", "Interact", "Smell", "Touch", "Taste / Lick", "Swallow")).getOrNull(number - 1).orEmpty()
+    fun date(now: Long): String = java.text.SimpleDateFormat(if (korean) "M월 d일 EEEE" else "EEEE · d MMMM", locale).format(java.util.Date(now)).uppercase(locale)
+    fun month(now: Long): String = java.text.SimpleDateFormat(if (korean) "M월" else "MMM", locale).format(java.util.Date(now))
+    fun greeting(now: Long, name: String): String {
+        val hour = java.util.Calendar.getInstance().apply { timeInMillis = now }.get(java.util.Calendar.HOUR_OF_DAY)
+        val part = if (korean) "안녕하세요" else when (hour) { in 5..11 -> "Good morning"; in 12..17 -> "Good afternoon"; else -> "Good evening" }
+        return if (name.isBlank()) part else if (korean) "${name}님, $part" else "$part, $name"
+    }
+}
+
+object HomeTexts {
+    val current: HomeText
+        @Composable get() = HomeText(LocalConfiguration.current.locales[0].language == "ko")
+}

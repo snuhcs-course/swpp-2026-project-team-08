@@ -84,7 +84,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mca.myapplication.data.FoodSource
 import com.mca.myapplication.data.MealCheckInDraft
 import com.mca.myapplication.data.MealFood
-import com.mca.myapplication.ui.components.FigmaIcon
+import com.mca.myapplication.ui.components.*
 import com.mca.myapplication.ui.theme.MealBlue
 import com.mca.myapplication.ui.theme.MealBorder
 import com.mca.myapplication.ui.theme.MealCanvas
@@ -117,33 +117,9 @@ private val MealSettings: List<Pair<String, String>>
         return listOf("Home" to s.homeSetting, "Restaurant" to s.restaurant, "School" to s.school, "Others" to s.others)
     }
 
-@Composable
-fun MealCheckInHome(onStart: () -> Unit, onResume: () -> Unit, hasDraft: Boolean) {
-    val s = MealCheckInTexts.current
-    Column(
-        Modifier.fillMaxSize().background(MealCanvas).windowInsetsPadding(WindowInsets.statusBars).padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text(s.home, color = MealNavy, fontSize = 25.sp, fontWeight = FontWeight.Bold)
-        Text("NurtureBites", color = MealMuted, fontSize = 13.sp, modifier = Modifier.padding(top = 5.dp, bottom = 28.dp))
-        Surface(color = MealNavy, shape = RoundedCornerShape(22.dp), modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(20.dp)) {
-                Text(s.mealDetails, color = androidx.compose.ui.graphics.Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text(s.addFoodItems, color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.78f), fontSize = 13.sp, modifier = Modifier.padding(top = 7.dp, bottom = 17.dp))
-                MealPrimaryButton(s.start, onStart, leadingIcon = R.drawable.ic_figma_camera)
-            }
-        }
-        if (hasDraft) {
-            TextButton(onClick = onResume, modifier = Modifier.fillMaxWidth().padding(top = 10.dp)) {
-                Text(s.resume, color = MealBlue, fontWeight = FontWeight.SemiBold)
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MealCheckInScreen(viewModel: MealCheckInViewModel, onExit: () -> Unit) {
+fun MealCheckInScreen(viewModel: MealCheckInViewModel, onExit: () -> Unit, onOpenReview: (String) -> Unit, autoOpenReview: Boolean = false) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val s = MealCheckInTexts.current
     val language = LocalConfiguration.current.locales[0].language
@@ -164,6 +140,9 @@ fun MealCheckInScreen(viewModel: MealCheckInViewModel, onExit: () -> Unit) {
     LaunchedEffect(state.isLoaded) {
         if (state.isLoaded && state.draft.stage in 0..4) viewModel.resumeDraft()
     }
+    LaunchedEffect(state.saveCompleted, state.savedMealId, autoOpenReview) {
+        if (autoOpenReview && state.saveCompleted) state.savedMealId?.let(onOpenReview)
+    }
 
     if (!state.isLoaded) {
         Box(Modifier.fillMaxSize().background(MealCanvas), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = MealBlue) }
@@ -171,7 +150,8 @@ fun MealCheckInScreen(viewModel: MealCheckInViewModel, onExit: () -> Unit) {
     }
 
     if (state.saveCompleted) {
-        MealDoneScreen(onStartAnother = { viewModel.startNewMeal() }, onExit = onExit)
+        MealDoneScreen(onStartAnother = { viewModel.startNewMeal() }, onExit = onExit,
+            onOpenReview = state.savedMealId?.let { id -> { onOpenReview(id) } })
         return
     }
 
@@ -447,22 +427,7 @@ private fun PhotoPreviewContent(photoPath: String?, onFullPhoto: () -> Unit, onR
     }
 }
 
-@Composable
-private fun FullPhotoScreen(photoPath: String, onBack: () -> Unit) {
-    val s = MealCheckInTexts.current
-    Column(Modifier.fillMaxSize().background(MealCanvas).windowInsetsPadding(WindowInsets.statusBars).windowInsetsPadding(WindowInsets.navigationBars)) {
-        Surface(color = androidx.compose.ui.graphics.Color.White, shape = RoundedCornerShape(999.dp), border = BorderStroke(1.dp, MealBlue), modifier = Modifier.padding(start = 24.dp, top = 13.dp).clickable(onClick = onBack)) {
-            Row(Modifier.padding(horizontal = 12.dp, vertical = 9.dp), verticalAlignment = Alignment.CenterVertically) {
-                FigmaIcon(R.drawable.ic_figma_back, size = 18.dp, tint = MealNavy)
-                Text(s.goBack, color = MealNavy, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 7.dp))
-            }
-        }
-        Box(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
-            PhotoImage(photoPath, Modifier.fillMaxSize().clip(RoundedCornerShape(24.dp)), ContentScale.Fit)
-        }
-        Spacer(Modifier.height(76.dp))
-    }
-}
+
 
 @Composable
 private fun AnalyzeOrManualContent(photoPath: String?, onAnalyze: () -> Unit, onLearnMore: () -> Unit, onManual: () -> Unit) {
@@ -645,7 +610,7 @@ private fun FoodSummaryCard(food: MealFood, onEdit: () -> Unit, onRemove: () -> 
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-private fun FoodEditorSheet(food: MealFood, onDismiss: () -> Unit, onSave: (MealFood) -> Unit) {
+internal fun FoodEditorSheet(food: MealFood, onDismiss: () -> Unit, onSave: (MealFood) -> Unit, saveFailed: Boolean = false, isSaving: Boolean = false) {
     val s = MealCheckInTexts.current
     var name by remember(food.id) { mutableStateOf(food.name) }
     var ingredients by remember(food.id) { mutableStateOf(food.ingredients) }
@@ -732,9 +697,11 @@ private fun FoodEditorSheet(food: MealFood, onDismiss: () -> Unit, onSave: (Meal
                     FigmaIcon(if (hasExposureGoal) R.drawable.ic_figma_check else R.drawable.ic_figma_plus, size = 16.dp, tint = MealBlue)
                 }
             }
+            if (saveFailed) Text(s.saveError, color = MealDestructiveInk, fontSize = 11.sp)
+            if (isSaving) Text(s.saving, color = MealMuted, fontSize = 11.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
                 MealSecondaryButton(s.cancel, onDismiss, Modifier.weight(1f))
-                MealPrimaryButton(s.saveFood, { onSave(food.copy(name = name.trim(), ingredients = ingredients, presentation = presentation, servingNote = servingNote, traits = traits, traitSelections = traitGroups, history = history, exposureGoal = if (hasExposureGoal) s.exposureGoalStep else "")) }, Modifier.weight(1f), enabled = name.isNotBlank(), leadingIcon = R.drawable.ic_figma_check)
+                MealPrimaryButton(s.saveFood, { onSave(food.copy(name = name.trim(), ingredients = ingredients, presentation = presentation, servingNote = servingNote, traits = traits, traitSelections = traitGroups, history = history, exposureGoal = if (hasExposureGoal) food.exposureGoal.ifBlank { s.exposureGoalStep } else "")) }, Modifier.weight(1f), enabled = name.isNotBlank() && !isSaving, leadingIcon = R.drawable.ic_figma_check)
             }
         }
         }
@@ -877,13 +844,14 @@ private fun FoodHistoryDropdown(selected: String, options: List<Pair<String, Str
 }
 
 @Composable
-private fun MealDoneScreen(onStartAnother: () -> Unit, onExit: () -> Unit) {
+private fun MealDoneScreen(onStartAnother: () -> Unit, onExit: () -> Unit, onOpenReview: (() -> Unit)?) {
     val s = MealCheckInTexts.current
     Column(Modifier.fillMaxSize().background(MealCanvas).windowInsetsPadding(WindowInsets.statusBars).padding(horizontal = 24.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         FigmaIcon(R.drawable.ic_figma_check, size = 42.dp, tint = MealBlue)
         Text(s.mealSaved, color = MealNavy, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 12.dp))
         Text(s.savedMessage, color = MealMuted, fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 8.dp, bottom = 22.dp))
-        MealPrimaryButton(s.startAnother, onStartAnother)
+        if (onOpenReview != null) MealPrimaryButton(AfterMealReviewTexts.current.title, onOpenReview)
+        MealSecondaryButton(s.startAnother, onStartAnother, Modifier.padding(top = 8.dp))
         TextButton(onClick = onExit, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) { Text(s.home, color = MealBlue) }
     }
 }
@@ -924,19 +892,7 @@ private fun SelectionMark(selected: Boolean) {
     }
 }
 
-@Composable
-private fun ChoiceAction(title: String, icon: Int, onClick: () -> Unit, modifier: Modifier = Modifier, detail: String? = null) {
-    Surface(color = androidx.compose.ui.graphics.Color.White, shape = RoundedCornerShape(14.dp), border = BorderStroke(1.dp, MealBorder), modifier = modifier.fillMaxWidth().clickable(onClick = onClick)) {
-        Row(Modifier.padding(horizontal = 14.dp, vertical = if (detail == null) 12.dp else 9.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(36.dp).background(MealSoftBlue, RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) { FigmaIcon(icon, size = 18.dp, tint = MealBlue) }
-            Column(Modifier.weight(1f).padding(start = 12.dp)) {
-                Text(title, color = MealNavy, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                if (detail != null) Text(detail, color = MealMuted, fontSize = 9.sp, modifier = Modifier.padding(top = 2.dp))
-            }
-            FigmaIcon(R.drawable.ic_figma_chevron_right, size = 16.dp)
-        }
-    }
-}
+
 
 @Composable
 private fun MealFooter(state: MealCheckInUiState, label: String, enabled: Boolean, onContinue: () -> Unit) {
@@ -953,16 +909,7 @@ private fun MealDraftStatus(state: MealCheckInUiState) {
     Text(if (state.isSaving) s.saving else if (state.saveFailed) s.saveError else s.savedDraft, color = if (state.saveFailed) MaterialTheme.colorScheme.error else MealMuted, fontSize = 9.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).padding(vertical = 9.dp))
 }
 
-@Composable
-private fun MealPrimaryButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, height: androidx.compose.ui.unit.Dp = 52.dp, leadingIcon: Int? = null) {
-    Button(onClick = onClick, enabled = enabled, modifier = modifier.fillMaxWidth().height(height), shape = RoundedCornerShape(14.dp), colors = ButtonDefaults.buttonColors(containerColor = MealBlue)) {
-        if (leadingIcon != null) {
-            FigmaIcon(leadingIcon, size = 17.dp, tint = androidx.compose.ui.graphics.Color.White)
-            Spacer(Modifier.width(8.dp))
-        }
-        Text(label, color = androidx.compose.ui.graphics.Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-    }
-}
+
 
 @Composable
 private fun MealCompactAddButton(label: String, onClick: () -> Unit, enabled: Boolean) {
@@ -971,41 +918,16 @@ private fun MealCompactAddButton(label: String, onClick: () -> Unit, enabled: Bo
     }
 }
 
-@Composable
-private fun MealSecondaryButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier, compact: Boolean = false, destructive: Boolean = false, leadingIcon: Int? = null) {
-    val color = if (destructive) MealDestructiveInk else MealBlue
-    Button(onClick = onClick, modifier = modifier.height(if (compact) 34.dp else 52.dp), shape = RoundedCornerShape(if (compact) 10.dp else 14.dp), border = BorderStroke(1.dp, if (destructive) MealDestructiveBorder else MealBorder), colors = ButtonDefaults.buttonColors(containerColor = if (destructive) MealDestructiveSoft else androidx.compose.ui.graphics.Color.White, contentColor = color)) {
-        if (leadingIcon != null) {
-            FigmaIcon(leadingIcon, size = if (compact) 14.dp else 17.dp, tint = color)
-            Spacer(Modifier.width(6.dp))
-        }
-        Text(label, color = color, fontSize = if (compact) 10.sp else 13.sp, fontWeight = FontWeight.SemiBold)
-    }
-}
 
-@Composable
-private fun StatusPill(label: String, background: androidx.compose.ui.graphics.Color, foreground: androidx.compose.ui.graphics.Color) {
-    Surface(color = background, shape = RoundedCornerShape(999.dp)) { Text(label, color = foreground, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)) }
-}
+
+
 
 @Composable
 private fun FieldLabel(text: String, modifier: Modifier = Modifier) {
     Text(text, color = MealNavy, fontSize = 10.sp, fontWeight = FontWeight.SemiBold, modifier = modifier.padding(top = 10.dp, bottom = 5.dp))
 }
 
-@Composable
-private fun MealTextInput(value: String, onValueChange: (String) -> Unit, placeholder: String, modifier: Modifier = Modifier) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier.fillMaxWidth(),
-        singleLine = true,
-        shape = RoundedCornerShape(10.dp),
-        placeholder = { Text(placeholder, fontSize = 11.sp, color = MealMuted) },
-        textStyle = TextStyle(color = androidx.compose.ui.graphics.Color.Black, fontSize = 12.sp),
-        colors = OutlinedTextFieldDefaults.colors(focusedTextColor = androidx.compose.ui.graphics.Color.Black, unfocusedTextColor = androidx.compose.ui.graphics.Color.Black, focusedBorderColor = MealBlue, unfocusedBorderColor = MealBorder),
-    )
-}
+
 
 @Composable
 private fun SummaryLabel(title: String, value: String, modifier: Modifier = Modifier) {
@@ -1015,20 +937,7 @@ private fun SummaryLabel(title: String, value: String, modifier: Modifier = Modi
     }
 }
 
-@Composable
-private fun PhotoImage(path: String, modifier: Modifier = Modifier, scale: ContentScale = ContentScale.Crop) {
-    val bitmap by produceState<Bitmap?>(initialValue = null, path) {
-        value = withContext(Dispatchers.IO) {
-            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            BitmapFactory.decodeFile(path, bounds)
-            var sampleSize = 1
-            while (bounds.outWidth / sampleSize > 1600 || bounds.outHeight / sampleSize > 1600) sampleSize *= 2
-            BitmapFactory.decodeFile(path, BitmapFactory.Options().apply { inSampleSize = sampleSize })
-        }
-    }
-    if (bitmap != null) Image(bitmap!!.asImageBitmap(), contentDescription = null, contentScale = scale, modifier = modifier)
-    else Box(modifier.background(MealSoftBlue), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = MealBlue, modifier = Modifier.size(28.dp)) }
-}
+
 
 private fun formatMealDate(raw: String, locale: Locale, todayLabel: String): String {
     val parsed = runCatching { SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(raw) }.getOrNull() ?: Date()

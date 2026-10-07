@@ -32,6 +32,7 @@ data class MealCheckInUiState(
     val isAnalyzing: Boolean = false,
     val analysisFailed: Boolean = false,
     val saveCompleted: Boolean = false,
+    val savedMealId: String? = null,
     val exposureSheet: ExposureSheet = ExposureSheet.NONE,
     val selectedExposureFoodId: String? = null,
 )
@@ -55,7 +56,7 @@ class MealCheckInViewModel(private val repository: MealCheckInRepository) : View
     }
 
     fun update(details: MealCheckInDraft) {
-        mutableState.value = mutableState.value.copy(draft = details, photoError = null, saveCompleted = false)
+        mutableState.value = mutableState.value.copy(draft = details, photoError = null, saveCompleted = false, savedMealId = null)
         scheduleSave(details)
     }
 
@@ -172,7 +173,7 @@ class MealCheckInViewModel(private val repository: MealCheckInRepository) : View
             autoSaveJob?.cancelAndJoin()
             val result = persistenceMutex.withLock { repository.saveMeal(confirmedDraft) }
             result.fold(
-                onSuccess = { mutableState.value = mutableState.value.copy(draft = MealCheckInDraft(), isSaving = false, saveCompleted = true, exposureSheet = ExposureSheet.NONE, selectedExposureFoodId = null) },
+                onSuccess = { mealId -> mutableState.value = mutableState.value.copy(draft = MealCheckInDraft(), isSaving = false, saveCompleted = true, savedMealId = mealId, exposureSheet = ExposureSheet.NONE, selectedExposureFoodId = null) },
                 onFailure = { mutableState.value = mutableState.value.copy(isSaving = false, saveFailed = true) },
             )
         }
@@ -180,18 +181,18 @@ class MealCheckInViewModel(private val repository: MealCheckInRepository) : View
 
     fun startNewMeal() {
         loadJob?.cancel()
-        mutableState.value = mutableState.value.copy(draft = MealCheckInDraft(), isLoaded = true, analysisFailed = false, saveCompleted = false, saveFailed = false, exposureSheet = ExposureSheet.NONE, selectedExposureFoodId = null)
+        mutableState.value = mutableState.value.copy(draft = MealCheckInDraft(), isLoaded = true, analysisFailed = false, saveCompleted = false, savedMealId = null, saveFailed = false, exposureSheet = ExposureSheet.NONE, selectedExposureFoodId = null)
         scheduleSave(MealCheckInDraft())
     }
 
     fun resumeDraft() {
         loadJob?.cancel()
-        mutableState.value = mutableState.value.copy(isLoaded = true, analysisFailed = false, isAnalyzing = false, saveCompleted = false, exposureSheet = ExposureSheet.NONE)
+        mutableState.value = mutableState.value.copy(isLoaded = true, analysisFailed = false, isAnalyzing = false, saveCompleted = false, savedMealId = null, exposureSheet = ExposureSheet.NONE)
     }
 
     private fun changeDraft(transform: (MealCheckInDraft) -> MealCheckInDraft) {
         val updated = transform(mutableState.value.draft)
-        mutableState.value = mutableState.value.copy(draft = updated, saveCompleted = false)
+        mutableState.value = mutableState.value.copy(draft = updated, saveCompleted = false, savedMealId = null)
         scheduleSave(updated)
     }
 

@@ -23,6 +23,10 @@ val MealParentInk = Color(0xFF19875F)
 val MealDestructiveInk = Color(0xFFC94050)
 val MealDestructiveBorder = Color(0xFFF0D8DC)
 val MealDestructiveSoft = Color(0xFFFFF2F4)
+val HomeCell = Color(0xFFF0F4FF)
+val HomeDivider = Color(0xFFEDF3FB)
+val HomeInactive = Color(0xFF95A2B3)
+val HomeCardCopy = Color(0xFFE9E1EF)
 
 object OnboardingColors {
     val Canvas = Color(0xFFEEF7FF)
@@ -35,4 +39,14 @@ object OnboardingColors {
     val GreenSoft = Color(0xFFE8F7EE)
     val Red = Color(0xFFFF0000)
     val Banner = Color(0xFFE6F1FF)
+}
+
+object ReviewColors {
+    val GoalSoft = Color(0xFFFFF5D8)
+    val Canvas = Color(0xFFF7FBFF)
+    val Ink = Color(0xFF173B64)
+    val Border = Color(0xFFCADDF0)
+    val Muted = Color(0xFF71809A)
+    val Selected = Color(0xFF1D4F96)
+    val colors = mapOf("Red" to Color(0xFFE35252), "Orange" to Color(0xFFF39A43), "Yellow" to Color(0xFFF2CF45), "Green" to Color(0xFF4C9C69), "Blue" to Color(0xFF458ADB), "Purple" to Color(0xFF9264BE), "Brown" to Color(0xFF956B48), "Black" to Color.Black, "White" to Color.White, "Gray" to Color.Gray)
 }

@@ -1,35 +1,40 @@
 import { View } from 'react-native';
 import { FormField } from '../../../components/FormField';
 import { copyFor } from '../../../util/strings';
-import type { OnboardingContextValue } from '../hooks/useOnboarding';
 
-export function AccountStepView({ model, emailError, passwordError }: {
-  model: OnboardingContextValue;
+export function AccountStepView({ language, caregiverName, email, password, editing, emailError, passwordError, onNameChange, onEmailChange, onPasswordChange }: {
+  language: 'ko' | 'en';
+  caregiverName: string;
+  email: string;
+  password: string;
+  editing: boolean;
   emailError?: string;
   passwordError?: string;
+  onNameChange: (value: string) => void;
+  onEmailChange: (value: string) => void;
+  onPasswordChange: (value: string) => void;
 }) {
-  const { draft, password } = model;
-  const s = copyFor(model.language);
+  const s = copyFor(language);
   return (
     <View>
       <FormField
         label={s.onboarding.caregiverName}
-        value={draft.caregiverName}
-        onChangeText={(value) => model.setField('caregiverName', value)}
+        value={caregiverName}
+        onChangeText={onNameChange}
       />
       <FormField
         label={s.onboarding.email}
-        value={draft.caregiverEmail}
-        onChangeText={(value) => model.setField('caregiverEmail', value)}
+        value={email}
+        onChangeText={onEmailChange}
         keyboardType="email-address"
         autoCapitalize="none"
         error={emailError}
       />
-      {!model.editing && (
+      {!editing && (
         <FormField
           label={s.onboarding.password}
           value={password}
-          onChangeText={model.setPassword}
+          onChangeText={onPasswordChange}
           secureTextEntry
           autoCapitalize="none"
           error={passwordError}

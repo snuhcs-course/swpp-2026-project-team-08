@@ -6,7 +6,11 @@ import { formStyles as ui } from '../../../components/formStyles';
 import { copyFor } from '../../../util/strings';
 import type { MealCheckinViewProps } from './mealCheckinViewTypes';
 
-export function MealGoalSheetsView({ p }: { p: MealCheckinViewProps }) {
+type Props = Pick<MealCheckinViewProps,
+  'draft' | 'language' | 'sheet' | 'saving' | 'error' |
+  'onSheet' | 'onGo' | 'onUpdate' | 'onSave'>;
+
+export function MealGoalSheetsView({ p }: { p: Props }) {
   const d = p.draft;
   const s = copyFor(p.language);
   const m = s.mealCheckin;

@@ -6,31 +6,47 @@ import { MultiChoice } from '../../../components/MultiChoice';
 import { SingleChoice } from '../../../components/SingleChoice';
 import { colors } from '../../../util/colors';
 import { copyFor, optionsFor } from '../../../util/strings';
-import type { OnboardingContextValue } from '../hooks/useOnboarding';
+import type { Language } from '../../../types/profile';
+import type { OnboardingDraft } from '../types';
 import { styles } from './onboardingStyles';
 
 export type ChoiceStep =
   | 'child' | 'allergies' | 'restrictions' | 'family' | 'approaches'
   | 'texture' | 'smell' | 'taste' | 'presentation' | 'temperature' | 'familiarity';
 
-export function ChoiceStepView({ step, model }: { step: ChoiceStep; model: OnboardingContextValue }) {
-  const { draft, language } = model;
+type ChoiceValues = Pick<OnboardingDraft,
+  'childName' | 'ageRange' | 'allergies' | 'restrictions' | 'familyFoods' |
+  'approaches' | 'texture' | 'smell' | 'taste' | 'presentation' |
+  'temperature' | 'familiarity'>;
+type ListField = 'allergies' | 'restrictions' | 'familyFoods' | 'approaches' | 'texture' | 'taste' | 'presentation';
+type TextField = 'childName' | 'ageRange' | 'smell' | 'temperature' | 'familiarity';
+
+export function ChoiceStepView({ step, values, language, onSetField, onToggleList, onAddListItem, onRemoveListItem, onSetList }: {
+  step: ChoiceStep;
+  values: ChoiceValues;
+  language: Language;
+  onSetField: (field: TextField, value: string) => void;
+  onToggleList: (field: ListField, value: string) => void;
+  onAddListItem: (field: ListField, value: string) => void;
+  onRemoveListItem: (field: ListField, value: string) => void;
+  onSetList: (field: ListField, values: string[]) => void;
+}) {
   const [search, setSearch] = useState('');
   const [showOther, setShowOther] = useState(() => {
     const groups = {
-      allergies: [draft.allergies, 'allergies'],
-      restrictions: [draft.restrictions, 'restrictions'],
-      family: [draft.familyFoods, 'family'],
-      approaches: [draft.approaches, 'approaches'],
-      texture: [draft.texture, 'texture'],
-      taste: [draft.taste, 'taste'],
-      presentation: [draft.presentation, 'presentation'],
+      allergies: [values.allergies, 'allergies'],
+      restrictions: [values.restrictions, 'restrictions'],
+      family: [values.familyFoods, 'family'],
+      approaches: [values.approaches, 'approaches'],
+      texture: [values.texture, 'texture'],
+      taste: [values.taste, 'taste'],
+      presentation: [values.presentation, 'presentation'],
     } as const;
     const config = groups[step as keyof typeof groups];
     if (!config) return false;
-    const [values, group] = config;
+    const [selectedValues, group] = config;
     const baseIds = optionsFor(group, language).map((option) => option.id);
-    return values.some((value) => value !== 'none' && !baseIds.includes(value));
+    return selectedValues.some((value) => value !== 'none' && !baseIds.includes(value));
   });
   const s = copyFor(language);
   const labels = {
@@ -47,14 +63,14 @@ export function ChoiceStepView({ step, model }: { step: ChoiceStep; model: Onboa
     <View>
       <FormField
         label={s.onboarding.childName}
-        value={draft.childName}
-        onChangeText={(value) => model.setField('childName', value)}
+        value={values.childName}
+        onChangeText={(value) => onSetField('childName', value)}
       />
       <Text style={styles.sectionLabel}>{s.onboarding.ageRange}</Text>
       <SingleChoice
         options={optionsFor('age', language)}
-        value={draft.ageRange}
-        onChange={(value) => model.setField('ageRange', value)}
+        value={values.ageRange}
+        onChange={(value) => onSetField('ageRange', value)}
       />
     </View>
   );
@@ -95,13 +111,13 @@ export function ChoiceStepView({ step, model }: { step: ChoiceStep; model: Onboa
           showOther={showOther}
           onShowOtherChange={setShowOther}
           optionSubtitles={step === 'allergies' ? { 'tree-nut': s.onboarding.treeNutsHint } : undefined}
-          selected={draft[current.field]}
+          selected={values[current.field]}
           noneLabel={current.none}
           otherLabel={otherLabel}
-          onToggle={(value) => model.toggleList(current.field, value)}
-          onAdd={(value) => { model.addListItem(current.field, value); setSearch(''); }}
-          onRemove={(value) => model.removeListItem(current.field, value)}
-          onSetAll={step === 'family' ? () => model.setList(current.field, options.map((option) => option.id)) : undefined}
+          onToggle={(value) => onToggleList(current.field, value)}
+          onAdd={(value) => { onAddListItem(current.field, value); setSearch(''); }}
+          onRemove={(value) => onRemoveListItem(current.field, value)}
+          onSetAll={step === 'family' ? () => onSetList(current.field, options.map((option) => option.id)) : undefined}
         />
       </View>
     );
@@ -121,12 +137,12 @@ export function ChoiceStepView({ step, model }: { step: ChoiceStep; model: Onboa
         onSearchChange={setSearch}
         showOther={showOther}
         onShowOtherChange={setShowOther}
-        selected={draft[step]}
+        selected={values[step]}
         noneLabel={noneLabel}
         freeText
-        onToggle={(value) => model.toggleList(step, value)}
-        onAdd={(value) => { model.addListItem(step, value); setSearch(''); }}
-        onRemove={(value) => model.removeListItem(step, value)}
+        onToggle={(value) => onToggleList(step, value)}
+        onAdd={(value) => { onAddListItem(step, value); setSearch(''); }}
+        onRemove={(value) => onRemoveListItem(step, value)}
       />
     );
   }
@@ -134,8 +150,8 @@ export function ChoiceStepView({ step, model }: { step: ChoiceStep; model: Onboa
   return (
     <SingleChoice
       options={optionsFor(step, language)}
-      value={draft[step]}
-      onChange={(value) => model.setField(step, value)}
+      value={values[step]}
+      onChange={(value) => onSetField(step, value)}
     />
   );
 }

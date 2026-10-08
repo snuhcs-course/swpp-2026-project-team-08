@@ -4,25 +4,34 @@ import { AppButton } from '../../../components/AppButton';
 import { ChoiceRow } from '../../../components/ChoiceRow';
 import { FormField } from '../../../components/FormField';
 import { copyFor } from '../../../util/strings';
-import type { OnboardingContextValue } from '../hooks/useOnboarding';
+import type { Language, SafeFood } from '../../../types/profile';
+import type { OnboardingDraft } from '../types';
 import { styles } from './onboardingStyles';
 
-export function SafeFoodsStepView({ model, canAdd }: { model: OnboardingContextValue; canAdd: boolean }) {
-  const { draft } = model;
-  const [open, setOpen] = useState(() => !!draft.safeFoodInput.name || !!draft.safeFoodInput.preparation);
-  const s = copyFor(model.language);
-  const input = draft.safeFoodInput;
+export function SafeFoodsStepView({ language, safeFoods, noSafeFoods, input, canAdd, onToggleNone, onRemove, onInputChange, onAdd }: {
+  language: Language;
+  safeFoods: SafeFood[];
+  noSafeFoods: boolean;
+  input: OnboardingDraft['safeFoodInput'];
+  canAdd: boolean;
+  onToggleNone: () => void;
+  onRemove: (id: string) => void;
+  onInputChange: (field: keyof OnboardingDraft['safeFoodInput'], value: string) => void;
+  onAdd: () => void;
+}) {
+  const [open, setOpen] = useState(() => !!input.name || !!input.preparation);
+  const s = copyFor(language);
   return (
     <View>
       <ChoiceRow
         label={s.onboarding.noSafeFoods}
-        selected={draft.noSafeFoods}
-        onPress={() => model.setNoSafeFoods(!draft.noSafeFoods)}
+        selected={noSafeFoods}
+        onPress={onToggleNone}
       />
-      {draft.safeFoods.map((food) => (
+      {safeFoods.map((food) => (
         <Pressable
           key={food.id}
-          onPress={() => model.removeSafeFood(food.id)}
+          onPress={() => onRemove(food.id)}
           accessibilityRole="button"
           accessibilityLabel={`${s.common.remove} ${food.name}`}
           style={styles.safeFoodChip}
@@ -44,24 +53,24 @@ export function SafeFoodsStepView({ model, canAdd }: { model: OnboardingContextV
           <FormField
             label={s.onboarding.foodName}
             value={input.name}
-            onChangeText={(value) => model.setSafeFoodInput('name', value)}
+            onChangeText={(value) => onInputChange('name', value)}
           />
           <FormField
             label={s.onboarding.preparation}
             value={input.preparation}
-            onChangeText={(value) => model.setSafeFoodInput('preparation', value)}
+            onChangeText={(value) => onInputChange('preparation', value)}
           />
           <FormField
             label={s.onboarding.presentationNote}
             value={input.presentationNote}
-            onChangeText={(value) => model.setSafeFoodInput('presentationNote', value)}
+            onChangeText={(value) => onInputChange('presentationNote', value)}
           />
           <AppButton
             label={s.common.add}
             compact
             disabled={!canAdd}
             onPress={() => {
-              model.addSafeFood(input);
+              onAdd();
               setOpen(false);
             }}
           />

@@ -2,27 +2,31 @@ import Feather from '@expo/vector-icons/Feather';
 import { Pressable, Text, View } from 'react-native';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
-import type { OnboardingContextValue } from '../hooks/useOnboarding';
+import type { Language } from '../../../types/profile';
+import type { OnboardingDraft } from '../types';
 import { styles } from './onboardingStyles';
 
-export function ConsentStepView({ model }: { model: OnboardingContextValue }) {
-  const { draft } = model;
-  const s = copyFor(model.language);
+export function ConsentStepView({ consent, language, onToggle }: {
+  consent: OnboardingDraft['consent'];
+  language: Language;
+  onToggle: (key: keyof OnboardingDraft['consent']) => void;
+}) {
+  const s = copyFor(language);
   return (
     <View>
-      <View style={[styles.consentPanel, Object.values(draft.consent).some(Boolean) && styles.consentPanelSelected]}>
+      <View style={[styles.consentPanel, Object.values(consent).some(Boolean) && styles.consentPanelSelected]}>
         <Text style={styles.consentPanelTitle}>{s.onboarding.consentPanelTitle}</Text>
         <Text style={styles.consentPanelSubtitle}>{s.onboarding.consentPanelSubtitle}</Text>
         {(['accountPrivacy', 'photoAnalysis', 'aiTraining'] as const).map((key) => (
-          <View key={key} style={[styles.consentCard, draft.consent[key] && styles.selectedConsentCard]}>
+          <View key={key} style={[styles.consentCard, consent[key] && styles.selectedConsentCard]}>
             <Pressable
-              onPress={() => model.setConsent(key, !draft.consent[key])}
+              onPress={() => onToggle(key)}
               accessibilityRole="checkbox"
-              accessibilityState={{ checked: draft.consent[key] }}
+              accessibilityState={{ checked: consent[key] }}
               style={styles.consentRow}
             >
-              <View style={[styles.consentCheck, draft.consent[key] && styles.consentChecked]}>
-                {draft.consent[key] && <Feather name="check" size={13} color={colors.surface} />}
+              <View style={[styles.consentCheck, consent[key] && styles.consentChecked]}>
+                {consent[key] && <Feather name="check" size={13} color={colors.surface} />}
               </View>
               <View style={styles.consentCopy}>
                 <Text style={styles.consentTitle}>

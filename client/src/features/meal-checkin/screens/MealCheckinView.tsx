@@ -61,10 +61,18 @@ export function MealCheckinView(p: MealCheckinViewProps) {
         </View>
         <View style={{ flex: 1 }} pointerEvents={p.saving ? 'none' : 'auto'}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            {d.step === 'details' && <MealDetailsStepView p={p} />}
+            {d.step === 'details' && (
+              <MealDetailsStepView p={{
+                draft: d, language: p.language, dateInput: p.dateInput, onUpdate: p.onUpdate,
+              }} />
+            )}
             {photoStep && (
               <MealPhotoStepsView
-                p={p}
+                p={{
+                  draft: d, language: p.language, picking: p.picking,
+                  onFullPhoto: p.onFullPhoto, onGo: p.onGo, onSheet: p.onSheet,
+                  onAnalyze: p.onAnalyze, onCancelAnalysis: p.onCancelAnalysis,
+                }}
                 replace={replace}
                 imageError={imageError}
                 onReplace={() => setReplace((value) => !value)}
@@ -80,8 +88,12 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                 }}
               />
             )}
-            {review && <MealFoodsStepView p={p} />}
-            {d.step === 'complete' && <MealCompleteStepView p={p} />}
+            {review && (
+              <MealFoodsStepView p={{ draft: d, language: p.language, onEdit: p.onEdit, onRemove: p.onRemove }} />
+            )}
+            {d.step === 'complete' && (
+              <MealCompleteStepView p={{ draft: d, language: p.language, onAfterMeal: p.onAfterMeal, onHome: p.onHome }} />
+            )}
             {(p.error || imageError || p.languageError) && (
               <Text accessibilityRole="alert" style={ui.error}>
                 {p.error === 'save' ? m.saveFailed
@@ -124,7 +136,10 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             onCancelTraits={() => p.onTraits(null)}
           />
         )}
-        <MealGoalSheetsView p={p} />
+        <MealGoalSheetsView p={{
+          draft: d, language: p.language, sheet: p.sheet, saving: p.saving, error: p.error,
+          onSheet: p.onSheet, onGo: p.onGo, onUpdate: p.onUpdate, onSave: p.onSave,
+        }} />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

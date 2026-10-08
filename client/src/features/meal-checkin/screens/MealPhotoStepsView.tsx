@@ -9,6 +9,10 @@ import { copyFor } from '../../../util/strings';
 import type { MealCheckinViewProps } from './mealCheckinViewTypes';
 import { styles } from './mealCheckinStyles';
 
+type PhotoStepProps = Pick<MealCheckinViewProps,
+  'draft' | 'language' | 'picking' | 'onFullPhoto' | 'onGo' |
+  'onSheet' | 'onAnalyze' | 'onCancelAnalysis'>;
+
 export function MealPhotoStepsView({
   p,
   replace,
@@ -18,7 +22,7 @@ export function MealPhotoStepsView({
   onPick,
   onRemovePhoto,
 }: {
-  p: MealCheckinViewProps;
+  p: PhotoStepProps;
   replace: boolean;
   imageError: boolean;
   onReplace: () => void;

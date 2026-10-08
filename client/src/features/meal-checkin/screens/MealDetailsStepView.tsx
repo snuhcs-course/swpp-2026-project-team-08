@@ -8,7 +8,9 @@ import { localDate } from '../../../util/date';
 import { copyFor } from '../../../util/strings';
 import type { MealCheckinViewProps } from './mealCheckinViewTypes';
 
-export function MealDetailsStepView({ p }: { p: MealCheckinViewProps }) {
+type Props = Pick<MealCheckinViewProps, 'draft' | 'language' | 'dateInput' | 'onUpdate'>;
+
+export function MealDetailsStepView({ p }: { p: Props }) {
   const d = p.draft;
   const s = copyFor(p.language);
   const m = s.mealCheckin;

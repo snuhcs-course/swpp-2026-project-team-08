@@ -4,7 +4,9 @@ import { formStyles as ui } from '../../../components/formStyles';
 import { copyFor } from '../../../util/strings';
 import type { MealCheckinViewProps } from './mealCheckinViewTypes';
 
-export function MealCompleteStepView({ p }: { p: MealCheckinViewProps }) {
+type Props = Pick<MealCheckinViewProps, 'draft' | 'language' | 'onAfterMeal' | 'onHome'>;
+
+export function MealCompleteStepView({ p }: { p: Props }) {
   const d = p.draft;
   const s = copyFor(p.language);
   const m = s.mealCheckin;

@@ -20,7 +20,7 @@ import type { ExposureSummary, SavedSuggestion } from '../../../types/home';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
 import { copyFor } from '../../../util/strings';
-import { calendarCells, dateKey } from '../rules';
+import { calendarCells, dateKey } from './homeCalendar';
 
 type Props = {
   draft: MealDraft | null;

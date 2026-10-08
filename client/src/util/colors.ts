@@ -21,9 +21,19 @@ export const colors = {
   homeSubtitle: '#95A2B3',
   error: '#D92D20',
   success: '#19875F',
+  successSurface: '#E8F7EE',
   mealReviewBackground: '#F5F8FE',
   mealReviewBorder: '#D8E3F2',
   mealReviewMuted: '#65758B',
+  suggestionBorder: '#D68295',
+  suggestionSurface: '#FCE8EC',
+  suggestionText: '#A14B63',
   overlay: 'rgba(19,35,58,0.45)',
   transparent: 'transparent',
+} as const;
+
+export const difficultyColorDots = {
+  red: '#E25454', orange: '#F2944F', yellow: '#E8C955', green: '#69B977',
+  blue: '#5B91D6', purple: '#9A78C9', brown: '#9B7156', black: '#303746',
+  white: '#FFFFFF', gray: '#99A4B2',
 } as const;

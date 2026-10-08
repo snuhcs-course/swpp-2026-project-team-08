@@ -41,6 +41,7 @@ type Props = {
   onRefresh: () => void;
   onLogMeal: () => void;
   onTrySuggestion: (id: string) => void;
+  suggestionText: Record<string, { title: string; description: string }>;
 };
 
 export function HomeView({
@@ -58,6 +59,7 @@ export function HomeView({
   onRefresh,
   onLogMeal,
   onTrySuggestion,
+  suggestionText,
 }: Props) {
   const s = copyFor(language);
   const locale = language === 'ko' ? 'ko-KR' : 'en-US';
@@ -245,10 +247,10 @@ export function HomeView({
                     </View>
                     <View style={styles.goalCopy}>
                       <Text numberOfLines={1} style={styles.rowTitle}>
-                        {item.title}
+                        {suggestionText[item.id]?.title ?? item.title}
                       </Text>
                       <Text numberOfLines={2} style={styles.rowDescription}>
-                        {item.description}
+                        {suggestionText[item.id]?.description ?? item.description}
                       </Text>
                     </View>
                     <Pressable

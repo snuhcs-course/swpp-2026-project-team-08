@@ -51,6 +51,8 @@ src/
 
   types/
 
+  rules/
+
   util/
     strings.ts
     colors.ts
@@ -75,6 +77,10 @@ API와 Storage 함수는 일반 비동기 함수로 작성한다. HTTP API는 �
 ### types — 공통 데이터 타입
 
 여러 기능에서 사용하는 `Meal`, `FoodItem`, `Child` 등의 공통 모델을 정의한다. 기능 전용 입력 상태와 화면 전용 타입은 해당 Feature 내부에 둔다. UI 컴포넌트의 props 타입은 해당 컴포넌트에 인접하게 둔다.
+
+### rules — 여러 기능이 공유하는 순수 업무 규칙
+
+같은 업무 판단을 둘 이상의 Feature가 사용하고 어느 한 Feature에도 소유권을 둘 수 없을 때만 `src/rules/`에 둔다. React, Provider, Navigation, API, Storage에는 의존하지 않으며 공통 타입과 순수 util만 참조한다. 한 기능 전용 규칙은 계속 해당 Feature의 `rules.ts`에 둔다.
 
 ### providers — 앱 전역 상태
 
@@ -282,6 +288,7 @@ export function FoodReviewView({
 | Feature 전용 UI 조각 | 같은 Feature의 전용 UI 조각, 공통 components, 타입·util |
 | Feature Hook | 같은 Feature의 규칙·타입, data, 앱 전역 Provider의 공개 API, 공통 타입·util |
 | Feature 규칙 함수 | 같은 Feature의 타입, 공통 타입, 순수 util |
+| 공유 규칙 함수 | 공통 types, 순수 util |
 | data | types, util |
 | 공통 components | types, util, 다른 공통 컴포넌트 |
 | types | 다른 타입 파일 |

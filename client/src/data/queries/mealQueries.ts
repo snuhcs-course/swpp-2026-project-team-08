@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { recognizeMealPhoto } from '../api/recognitionApi';
-import { readMeal, readMealDraft, saveMeal } from '../storage/mealStorage';
+import { readMeal, readMealDraft, readMeals, saveMeal, updateMealFoods } from '../storage/mealStorage';
+import type { FoodItem } from '../../types/meal';
 import { homeKeys } from './homeQueries';
 export const mealKeys = {
   draft: (childId: string) => ['meal-draft', childId] as const,
@@ -18,8 +19,26 @@ export const useMeal = (childId: string, id: string) =>
     queryFn: () => readMeal(childId, id),
     enabled: !!childId && !!id,
   });
+export const useMeals = (childId: string) =>
+  useQuery({
+    queryKey: ['meals', childId],
+    queryFn: () => readMeals(childId),
+    enabled: !!childId,
+  });
 export const useRecognition = () =>
   useMutation({ mutationFn: recognizeMealPhoto, retry: false });
+export function useUpdateMealFoods() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ childId, mealId, foods }: { childId: string; mealId: string; foods: FoodItem[] }) =>
+      updateMealFoods(childId, mealId, foods),
+    onSuccess: (meal) => {
+      client.setQueryData(mealKeys.detail(meal.childId, meal.id), meal);
+      void client.invalidateQueries({ queryKey: ['meals', meal.childId] });
+      void client.invalidateQueries({ queryKey: mealKeys.draft(meal.childId) });
+    },
+  });
+}
 export function useSaveMeal() {
   const client = useQueryClient();
   return useMutation({
@@ -27,6 +46,7 @@ export function useSaveMeal() {
     retry: false,
     onSuccess: (meal) => {
       client.setQueryData(mealKeys.detail(meal.childId, meal.id), meal);
+      void client.invalidateQueries({ queryKey: ['meals', meal.childId] });
       void client.invalidateQueries({
         queryKey: homeKeys.byChild(meal.childId),
       });

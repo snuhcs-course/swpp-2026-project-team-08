@@ -12,7 +12,7 @@ require.extensions['.ts'] = (module, filename) => module._compile(
 
 const { visibleHomeData } = require('../src/features/home/rules.ts');
 
-test('profile edits hide stale or newly unsafe saved suggestions', () => {
+test('legacy suggestions without verifiable food-form evidence stay out of actionable Home cards', () => {
   const profile = { id: 'child-1', updatedAt: 'v1', allergies: [], restrictions: [] };
   const records = {
     meals: [{ id: 'meal-1', childId: 'child-1', mealDate: '2026-10-08' }],
@@ -22,7 +22,7 @@ test('profile edits hide stale or newly unsafe saved suggestions', () => {
       { id: 'other-child', childId: 'child-2', ingredients: ['rice'], isSaved: true, safetyVerifiedForProfileAt: 'v1' },
     ],
   };
-  assert.deepEqual(visibleHomeData(records, profile).suggestions.map((item) => item.id), ['egg']);
+  assert.deepEqual(visibleHomeData(records, profile).suggestions, []);
   assert.deepEqual(visibleHomeData(records, { ...profile, updatedAt: 'v2' }).suggestions, []);
   assert.deepEqual(visibleHomeData(records, { ...profile, allergies: ['egg'] }).suggestions, []);
   assert.deepEqual([...visibleHomeData(records, profile).loggedDates], ['2026-10-08']);

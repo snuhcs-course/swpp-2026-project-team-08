@@ -3,6 +3,20 @@ import * as DocumentPicker from 'expo-document-picker';
 import { File, Directory, Paths } from 'expo-file-system';
 import { Image, Platform } from 'react-native';
 import type { MealPhoto, PhotoSource } from '../../types/meal';
+
+async function canOpenImage(uri: string): Promise<boolean> {
+  try {
+    await new Promise<void>((resolve, reject) => {
+      Image.getSize(uri, () => resolve(), reject);
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+export function isMealPhotoReadable(photo: MealPhoto): Promise<boolean> {
+  return canOpenImage(photo.uri);
+}
 export class PhotoError extends Error {
   constructor(public code: 'permission' | 'image') {
     super(code);
@@ -61,13 +75,7 @@ export async function pickMealPhoto(
         : asset.uri;
   }
   if (!supported.includes(mimeType)) throw new PhotoError('image');
-  try {
-    await new Promise<void>((resolve, reject) => {
-      Image.getSize(uri, () => resolve(), reject);
-    });
-  } catch {
-    throw new PhotoError('image');
-  }
+  if (!(await canOpenImage(uri))) throw new PhotoError('image');
   const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   if (Platform.OS !== 'web') {
     const directory = new Directory(Paths.document, 'meal-photos');

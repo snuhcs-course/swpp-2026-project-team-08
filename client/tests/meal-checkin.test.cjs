@@ -13,7 +13,9 @@ const storage = {
 };
 const originalLoad = Module._load;
 Module._load = function (name, ...args) { return name === '@react-native-async-storage/async-storage' ? storage : originalLoad.call(this, name, ...args); };
-const { newDraft, newFood, confirmFoods, mealFromDraft, toggleTrait, emptyTraits } = require('../src/features/meal-checkin/rules.ts');
+const { newDraft, confirmFoods, mealFromDraft } = require('../src/features/meal-checkin/rules.ts');
+const { newFood, emptyTraits } = require('../src/rules/foodDraft.ts');
+const { toggleFoodTrait } = require('../src/rules/foodTraits.ts');
 const { validDate } = require('../src/util/date.ts');
 const { isDraft } = require('../src/data/storage/mealValidation.ts');
 const { readMealDraft, saveMealDraft, readMeals, readMeal, saveMeal } = require('../src/data/storage/mealStorage.ts');
@@ -22,9 +24,9 @@ function completeDraft(childId) { return { ...newDraft(childId), mealType: 'lunc
 
 test('valid calendar dates and trait selection cardinality', () => {
   assert.equal(validDate('2024-02-29'), true); assert.equal(validDate('2026-02-29'), false); assert.equal(validDate('2026-04-31'), false);
-  let traits = toggleTrait(emptyTraits(), 'texture', 'soft'); traits = toggleTrait(traits, 'texture', 'crunchy');
-  assert.deepEqual(traits.texture, ['soft', 'crunchy']); traits = toggleTrait(traits, 'temperature', 'warm'); traits = toggleTrait(traits, 'temperature', 'cool');
-  assert.deepEqual(traits.temperature, ['cool']); assert.deepEqual(toggleTrait(traits, 'texture', 'soft').texture, ['crunchy']);
+  let traits = toggleFoodTrait(emptyTraits(), 'texture', 'soft'); traits = toggleFoodTrait(traits, 'texture', 'crunchy');
+  assert.deepEqual(traits.texture, ['soft', 'crunchy']); traits = toggleFoodTrait(traits, 'temperature', 'warm'); traits = toggleFoodTrait(traits, 'temperature', 'cool');
+  assert.deepEqual(traits.temperature, ['cool']); assert.deepEqual(toggleFoodTrait(traits, 'texture', 'soft').texture, ['crunchy']);
 });
 test('unconfirmed AI and incomplete/empty meals cannot be saved', () => {
   const draft = completeDraft('rules'); draft.foods[0].source = 'ai'; assert.throws(() => mealFromDraft(draft));

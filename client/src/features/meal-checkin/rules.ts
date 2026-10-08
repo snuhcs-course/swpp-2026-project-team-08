@@ -1,33 +1,11 @@
 import { localDate, validDate } from '../../util/date';
 import {
   type FoodItem,
-  type FoodTraits,
   type Meal,
   type MealDraft,
-  type TraitGroup,
 } from '../../types/meal';
 export const newId = () =>
   `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-export const emptyTraits = (): FoodTraits => ({
-  texture: [],
-  tasteType: [],
-  tasteIntensity: [],
-  smell: [],
-  shape: [],
-  visibility: [],
-  temperature: [],
-  color: [],
-});
-export const newFood = (): FoodItem => ({
-  id: newId(),
-  name: '',
-  ingredients: [],
-  preparation: '',
-  servingNote: '',
-  traits: emptyTraits(),
-  history: null,
-  source: 'parent',
-});
 export const newDraft = (childId: string): MealDraft => ({
   id: newId(),
   childId,
@@ -41,24 +19,6 @@ export const newDraft = (childId: string): MealDraft => ({
   editingFood: null,
   savedMealId: null,
 });
-export function toggleTrait(
-  traits: FoodTraits,
-  group: TraitGroup,
-  value: string,
-): FoodTraits {
-  const multi =
-    group === 'texture' || group === 'tasteType' || group === 'color';
-  return {
-    ...traits,
-    [group]: traits[group].includes(value)
-      ? multi
-        ? traits[group].filter((v) => v !== value)
-        : []
-      : multi
-        ? [...traits[group], value]
-        : [value],
-  };
-}
 export const confirmFoods = (foods: FoodItem[]): FoodItem[] =>
   foods.map((food) => ({ ...food, name: food.name.trim(), source: 'parent' }));
 export function mealFromDraft(draft: MealDraft): Meal {

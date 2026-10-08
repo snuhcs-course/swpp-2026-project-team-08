@@ -18,12 +18,12 @@ import type {
   PhotoSource,
   TraitGroup,
 } from '../../../types/meal';
+import { toggleFoodTrait } from '../../../rules/foodTraits';
+import { newFood } from '../../../rules/foodDraft';
 import {
   confirmFoods,
   mealFromDraft,
   newDraft,
-  newFood,
-  toggleTrait,
 } from '../rules';
 
 export function useMealCheckin(childId: string, startAfterMealId?: string) {
@@ -340,7 +340,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string) {
     },
     toggleTrait: (group: TraitGroup, value: string) => {
       setTraits((current) =>
-        current ? toggleTrait(current, group, value) : null,
+        current ? toggleFoodTrait(current, group, value) : null,
       );
     },
     saveTraits: () => {

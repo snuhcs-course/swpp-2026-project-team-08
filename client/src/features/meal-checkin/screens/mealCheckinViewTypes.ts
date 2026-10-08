@@ -1,5 +1,4 @@
-import type { PhotoSource } from '../../../data/api/mealPhotoApi';
-import type { FoodItem, FoodTraits, MealDraft, MealStep, TraitGroup } from '../../../types/meal';
+import type { FoodItem, FoodTraits, MealDraft, MealStep, PhotoSource, TraitGroup } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
 
 type DateInput = {

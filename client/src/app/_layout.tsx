@@ -6,7 +6,7 @@ import { Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700
 import { StyleSheet, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { OnboardingProvider } from '../features/onboarding/hooks/useOnboarding';
+import { OnboardingProvider } from '../features/onboarding/OnboardingProvider';
 import { ProfileProvider } from '../providers/ProfileProvider';
 import { FontReadyContext } from '../components/FontReadyContext';
 import { colors } from '../util/colors';

@@ -13,7 +13,8 @@ const storage = {
 };
 const originalLoad = Module._load;
 Module._load = function (name, ...args) { return name === '@react-native-async-storage/async-storage' ? storage : originalLoad.call(this, name, ...args); };
-const { newDraft, newFood, confirmFoods, mealFromDraft, toggleTrait, emptyTraits, validDate } = require('../src/features/meal-checkin/rules.ts');
+const { newDraft, newFood, confirmFoods, mealFromDraft, toggleTrait, emptyTraits } = require('../src/features/meal-checkin/rules.ts');
+const { validDate } = require('../src/util/date.ts');
 const { isDraft } = require('../src/data/storage/mealValidation.ts');
 const { readMealDraft, saveMealDraft, readMeals, readMeal, saveMeal } = require('../src/data/storage/mealStorage.ts');
 const { recognizeMealPhoto } = require('../src/data/api/recognitionApi.ts');

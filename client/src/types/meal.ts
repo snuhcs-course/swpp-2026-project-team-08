@@ -24,6 +24,7 @@ export type FoodItem = {
   source: 'ai' | 'parent';
 };
 export type MealPhoto = { id: string; uri: string; mimeType: string };
+export type PhotoSource = 'camera' | 'gallery' | 'files';
 export type Meal = {
   id: string;
   childId: string;

@@ -3,10 +3,9 @@ import {
   type FoodItem,
   type FoodTraits,
   type Meal,
+  type MealDraft,
   type TraitGroup,
 } from '../../types/meal';
-import { type MealDraft } from './types';
-export { localDate, validDate } from '../../util/date';
 export const newId = () =>
   `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export const emptyTraits = (): FoodTraits => ({

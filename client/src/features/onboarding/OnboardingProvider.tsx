@@ -1,49 +1,13 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { clearDraft, readDraft, saveDraft } from '../../../data/storage/onboardingDraftStorage';
-import { useProfile } from '../../../providers/ProfileProvider';
-import type { ChildProfile, Language, SafeFood } from '../../../types/profile';
-import { addUnique, canAddSafeFood, canContinue, canFinish, isDraft, toggleExclusive, validEmail } from '../rules';
-import { emptyDraft, steps, type OnboardingDraft, type OnboardingStep } from '../types';
-
-type SaveStatus = 'saving' | 'saved' | 'error';
-type DraftField = keyof Pick<OnboardingDraft, 'caregiverName' | 'caregiverEmail' | 'childName' | 'ageRange' | 'smell' | 'temperature' | 'familiarity'>;
-type ListField = keyof Pick<OnboardingDraft, 'allergies' | 'restrictions' | 'familyFoods' | 'approaches' | 'texture' | 'taste' | 'presentation'>;
-type ConsentField = keyof OnboardingDraft['consent'];
-
-export type OnboardingContextValue = {
-  ready: boolean;
-  loadError: boolean;
-  profile: ChildProfile | null;
-  draft: OnboardingDraft;
-  password: string;
-  language: Language;
-  saveStatus: SaveStatus;
-  editing: boolean;
-  hasDraft: boolean;
-  setPassword: (value: string) => void;
-  setLanguage: (value: Language) => void;
-  setField: (field: DraftField, value: string) => void;
-  setConsent: (field: ConsentField, value: boolean) => void;
-  toggleList: (field: ListField, value: string) => void;
-  setList: (field: ListField, values: string[]) => void;
-  addListItem: (field: ListField, value: string) => void;
-  removeListItem: (field: ListField, value: string) => void;
-  addSafeFood: (food: Omit<SafeFood, 'id'>) => void;
-  setSafeFoodInput: (field: keyof OnboardingDraft['safeFoodInput'], value: string) => void;
-  removeSafeFood: (id: string) => void;
-  setNoSafeFoods: (value: boolean) => void;
-  setStep: (step: OnboardingStep) => void;
-  startEdit: () => void;
-  retrySave: () => Promise<void>;
-  retryLoad: () => void;
-  finish: () => Promise<boolean>;
-  canContinue: (step: OnboardingStep) => boolean;
-};
-
-const OnboardingContext = createContext<OnboardingContextValue | null>(null);
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
+import { useProfile } from '../../providers/ProfileProvider';
+import type { ChildProfile, SafeFood } from '../../types/profile';
+import { addUnique, canAddSafeFood, canContinue, canFinish, isDraft, toggleExclusive, validEmail } from './rules';
+import { emptyDraft, type OnboardingDraft, type OnboardingStep } from './types';
+import { OnboardingContext, type ConsentField, type DraftField, type ListField, type SaveStatus } from './onboardingContext';
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
-  const { status, profile, language, commitProfile, changeLanguage } = useProfile();
+  const { status, profile, commitProfile } = useProfile();
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [draft, setDraft] = useState<OnboardingDraft>(emptyDraft);
@@ -143,9 +107,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setDraft({ ...values, step: 'review', safeFoodInput: { name: '', preparation: '', presentationNote: '' } });
     setEditing(true);
   }, [profile, editing]);
-  const setLanguage = useCallback((value: Language) => {
-    void changeLanguage(value).catch(() => setSaveStatus('error'));
-  }, [changeLanguage]);
   const retrySave = useCallback(() => persist(draft), [draft, persist]);
   const retryLoad = useCallback(() => {
     skipFirstSave.current = true;
@@ -179,25 +140,11 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   return <OnboardingContext.Provider value={{
     ready: ready && status !== 'loading', loadError: loadError || status === 'error',
-    profile, draft, password, language, saveStatus, editing, hasDraft,
-    setPassword, setLanguage, setField, setConsent, toggleList, setList, addListItem,
+    draft, password, saveStatus, editing, hasDraft,
+    setPassword, setField, setConsent, toggleList, setList, addListItem,
     removeListItem, addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setStep,
     startEdit, retrySave, retryLoad, finish, canContinue: (step) => step === 'review' ? canFinish(draft)
       : step === 'account' && editing ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)
         : canContinue(step, draft, password),
   }}>{children}</OnboardingContext.Provider>;
-}
-
-export function useOnboarding() {
-  const context = useContext(OnboardingContext);
-  if (!context) throw new Error('OnboardingProvider is missing');
-  return context;
-}
-
-export function nextStep(step: OnboardingStep): OnboardingStep {
-  return steps[Math.min(steps.indexOf(step) + 1, steps.length - 1)];
-}
-
-export function previousStep(step: OnboardingStep): OnboardingStep {
-  return steps[Math.max(steps.indexOf(step) - 1, 0)];
 }

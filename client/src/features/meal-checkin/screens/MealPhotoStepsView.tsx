@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
 import { AppIcon } from '../../../components/AppIcon';
 import { formStyles as ui } from '../../../components/formStyles';
-import type { PhotoSource } from '../../../data/api/mealPhotoApi';
+import type { PhotoSource } from '../../../types/meal';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import type { MealCheckinViewProps } from './mealCheckinViewTypes';

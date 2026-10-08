@@ -9,16 +9,13 @@ import {
   readMealDraft,
   saveMealDraft,
 } from '../../../data/storage/mealStorage';
-import {
-  pickMealPhoto,
-  PhotoError,
-  type PhotoSource,
-} from '../../../data/api/mealPhotoApi';
+import { pickMealPhoto, PhotoError } from '../../../data/device/mealPhotoPicker';
 import type {
   FoodItem,
   FoodTraits,
   MealDraft,
   MealStep,
+  PhotoSource,
   TraitGroup,
 } from '../../../types/meal';
 import {

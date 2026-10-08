@@ -2,11 +2,12 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { useFontReady } from '../../../components/FontReadyContext';
+import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
-import { nextStep, previousStep, useOnboarding } from '../hooks/useOnboarding';
+import { useOnboarding } from '../hooks/useOnboarding';
 import { canAddSafeFood, matchingSafeFoods, validEmail, validPassword } from '../rules';
-import { isStep, steps, type OnboardingStep } from '../types';
+import { isStep, nextStep, previousStep, steps, type OnboardingStep } from '../types';
 import { AccountStepView } from './AccountStepView';
 import { ChoiceStepView, type ChoiceStep } from './ChoiceStepView';
 import { ConsentStepView } from './ConsentStepView';
@@ -22,10 +23,11 @@ const choiceSteps: ChoiceStep[] = [
 
 export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?: string }) {
   const model = useOnboarding();
+  const { language } = useProfile();
   const fontReady = useFontReady();
   const [submitting, setSubmitting] = useState(false);
   const step = typeof routeStep === 'string' && isStep(routeStep) ? routeStep : model.draft.step;
-  const s = copyFor(model.language);
+  const s = copyFor(language);
   const index = steps.indexOf(step);
 
   const navigate = (target: OnboardingStep, returnToReview = false) => {
@@ -53,7 +55,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
   const renderStep = () => {
     if (step === 'account') return (
       <AccountStepView
-        language={model.language}
+        language={language}
         caregiverName={model.draft.caregiverName}
         email={model.draft.caregiverEmail}
         password={model.password}
@@ -68,13 +70,13 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
     if (step === 'consent') return (
       <ConsentStepView
         consent={model.draft.consent}
-        language={model.language}
+        language={language}
         onToggle={(key) => model.setConsent(key, !model.draft.consent[key])}
       />
     );
     if (step === 'safe-foods') return (
       <SafeFoodsStepView
-        language={model.language}
+        language={language}
         safeFoods={model.draft.safeFoods}
         noSafeFoods={model.draft.noSafeFoods}
         input={model.draft.safeFoodInput}
@@ -87,8 +89,8 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
     );
     if (step === 'review') return (
       <ReviewStepView
-        rows={reviewRows(model.draft, model.language)}
-        conflicts={matchingSafeFoods(model.draft, model.language)}
+        rows={reviewRows(model.draft, language)}
+        conflicts={matchingSafeFoods(model.draft, language)}
         editLabel={s.common.edit}
         conflictLabel={s.onboarding.conflict}
         onEditStep={(target) => navigate(target, true)}
@@ -99,7 +101,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         key={step}
         step={step as ChoiceStep}
         values={model.draft}
-        language={model.language}
+        language={language}
         onSetField={model.setField}
         onToggleList={model.toggleList}
         onAddListItem={model.addListItem}
@@ -114,7 +116,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
 
   return (
     <OnboardingFlowView
-      language={model.language}
+      language={language}
       step={step}
       stepIndex={index}
       stepCount={steps.length}

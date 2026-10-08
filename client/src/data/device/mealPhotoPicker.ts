@@ -2,8 +2,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Directory, Paths } from 'expo-file-system';
 import { Image, Platform } from 'react-native';
-import type { MealPhoto } from '../../types/meal';
-export type PhotoSource = 'camera' | 'gallery' | 'files';
+import type { MealPhoto, PhotoSource } from '../../types/meal';
 export class PhotoError extends Error {
   constructor(public code: 'permission' | 'image') {
     super(code);

@@ -1,23 +1,22 @@
 import { Redirect, router } from 'expo-router';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useHomeRecords } from '../../../data/queries/homeQueries';
 import { useProfile } from '../../../providers/ProfileProvider';
 import type { ChildProfile } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
-import { visibleHomeData } from '../rules';
+import { useSuggestion } from '../hooks/useSuggestion';
 
 function SuggestionContent({ profile, id }: { profile: ChildProfile; id: string }) {
   const model = useProfile();
-  const query = useHomeRecords(profile.id);
+  const suggestion = useSuggestion(profile, id);
   const s = copyFor(model.language);
-  const item = query.data && visibleHomeData(query.data, profile).suggestions.find((suggestion) => suggestion.id === id);
+  const item = suggestion.item;
   return <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
     <Pressable accessibilityRole="button" onPress={() => router.back()}><Text style={styles.back}>← {s.common.back}</Text></Pressable>
-    {query.isPending && <ActivityIndicator color={colors.homePrimary} />}
-    {query.isError && <Text style={styles.description}>{s.home.refreshFailed}</Text>}
-    {query.isSuccess && !item && <Text style={styles.description}>{s.common.empty}</Text>}
+    {suggestion.loading && <ActivityIndicator color={colors.homePrimary} />}
+    {suggestion.error && <Text style={styles.description}>{s.home.refreshFailed}</Text>}
+    {suggestion.ready && !item && <Text style={styles.description}>{s.common.empty}</Text>}
     {!!item && <View style={styles.card}><Text style={styles.title}>{item.title}</Text><Text style={styles.description}>{item.description}</Text></View>}
   </SafeAreaView>;
 }

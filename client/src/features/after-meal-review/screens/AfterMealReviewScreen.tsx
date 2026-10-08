@@ -2,13 +2,13 @@ import { Redirect, router } from 'expo-router';
 import { ActivityIndicator, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../../../components/AppButton';
-import { useMeal } from '../../../data/queries/mealQueries';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
+import { useAfterMealReview } from '../hooks/useAfterMealReview';
 export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
   const model = useProfile();
-  const query = useMeal(model.profile?.id ?? '', mealId ?? '');
+  const review = useAfterMealReview(model.profile?.id ?? '', mealId ?? '');
   const s = copyFor(model.language);
   if (model.status === 'error' || (model.status === 'ready' && !model.profile)) return <Redirect href="/" />;
   return (
@@ -23,23 +23,23 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
       <Text style={{ fontSize: 20, color: colors.homeText }}>
         {s.mealCheckin.afterMeal}
       </Text>
-      {model.status === 'loading' || (!!mealId && query.isPending) ? (
+      {model.status === 'loading' || (!!mealId && review.loading) ? (
         <ActivityIndicator color={colors.homePrimary} />
-      ) : query.isError ? (
+      ) : review.error ? (
         <>
           <Text style={{ color: colors.error }}>{s.home.refreshFailed}</Text>
           <AppButton
             label={s.common.retry}
             onPress={() => {
-              void query.refetch();
+              void review.retry();
             }}
           />
         </>
-      ) : query.data ? (
+      ) : review.meal ? (
         <>
-          <Text style={{ color: colors.homeText }}>{query.data.mealDate}</Text>
+          <Text style={{ color: colors.homeText }}>{review.meal.mealDate}</Text>
           <Text style={{ color: colors.homeText }}>
-            {query.data.foods.map((food) => food.name).join(', ')}
+            {review.meal.foods.map((food) => food.name).join(', ')}
           </Text>
         </>
       ) : (

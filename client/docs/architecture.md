@@ -21,6 +21,8 @@ src/
   data/
     network/
       httpClient.ts
+    device/
+      mealPhotoPicker.ts
     api/
       mealApi.ts
       recognitionApi.ts
@@ -71,13 +73,14 @@ src/
     meal-checkin.tsx
 ```
 
-구조 예시에 있는 파일을 일괄 생성하지 않고 필요한 것만 작성한다. `providers/`도 여러 기능이 실제로 공유할 상태가 생겼을 때 사용한다. 앱 초기화와 Provider 조합은 `app/_layout.tsx`에서, Navigation은 기존 Expo Router 구성에서 관리한다.
+구조 예시에 있는 파일을 일괄 생성하지 않고 필요한 것만 작성한다. `providers/`도 여러 기능이 실제로 공유할 상태가 생겼을 때 사용한다. 앱 초기화와 Provider 조합은 `app/_layout.tsx`에서, Navigation은 기존 Expo Router 구성에서 관리한다. 여러 라우트가 한 기능의 초안을 공유해야 하면 루트 레이아웃에서 그 Feature의 Provider를 마운트할 수 있지만, 초안의 소유권과 공개 API는 해당 Feature에 남긴다.
 
 ## 3. 각 영역의 책임
 
 ### data — 데이터 접근과 서버 상태 관리
 
 - `network`: 여러 HTTP API가 공유하는 전송 설정과 요청·응답 처리. 실제로 필요할 때만 만든다.
+- `device`: 카메라·파일 선택 등 기기 API를 감싼 함수. 서버 요청을 담당하는 `api`와 구분한다.
 - `api`: 서버 요청 함수, 요청·응답 처리와 변환.
 - `storage`: 기능별 로컬 저장 키, 직렬화, 읽기·쓰기.
 - `queries`: query key, 조회·mutation Hook, 캐시 갱신 규칙.
@@ -198,7 +201,7 @@ flowchart LR
   Screen --> Provider
   View --> Piece["공통·Feature UI 조각"]
   Hook --> Rules["같은 Feature의 규칙 함수"]
-  Hook --> Data["data: API·Storage·Query"]
+  Hook --> Data["data: API·Device·Storage·Query"]
   Hook --> Provider
   Provider --> Data
   Rules --> Types["공통·Feature 타입, 순수 util"]
@@ -310,19 +313,22 @@ export function FoodReviewView({
 - `rules.ts`는 필요한 타입과 순수 유틸리티만 참조한다.
 - 공통 코드가 Feature에 의존하지 않도록 한다.
 - 앱 전역 Provider가 특정 Feature의 초안이나 규칙을 import하지 않도록 한다. Feature는 Provider가 제공하는 명령을 호출할 수 있지만 Provider는 Feature를 호출하지 않는다.
+- `eslint.config.js`가 라우트의 직접 데이터 접근, View의 Hook·Provider·규칙 import, 공유 영역의 Feature 내부 import를 제한한다. 새 경계가 필요하면 규칙을 무력화하지 말고 소유권과 의존 방향을 먼저 문서화한다.
 
 ## 6. 상태 관리 규칙
 
 | 상태 | 소유자 |
 | --- | --- |
 | 앱 시작 시 확정해야 하는 프로필·언어, 향후 인증 세션과 초기화 상태 | 앱 전역 Provider |
-| 서버에서 조회한 프로필·식사·추천 등과 요청 상태 | TanStack Query |
+| 서버 또는 로컬 저장소에서 비동기로 조회한 공유 데이터와 요청 상태 | TanStack Query |
 | 기능의 작성 초안·단계·저장 흐름 | 해당 Feature Hook 또는 Feature 범위 Provider |
 | 화면의 단순한 표시 상태 | 해당 View 또는 UI 조각 |
 
 전역 Provider의 초기화 상태는 `미확인`과 `확인 완료 후 값 없음`을 구분한다. Feature가 전역 값을 변경할 때는 Provider의 명시적 비동기 명령을 호출한다. Provider가 영속화에 성공한 뒤 확정 상태를 갱신하고, 실패하면 기존 상태를 유지한다. Feature는 성공 후 자신의 초안을 정리하고 Screen이 화면을 이동시킨다. 인증을 추가할 때도 같은 소유권을 적용하며, 서버 응답 전체를 Provider에 중복 저장하지 않는다.
 
 ### 서버 상태와 요청 상태 — TanStack Query
+
+현재 프로토타입의 일부 Query는 AsyncStorage 함수를 감싸며, 이 경우 Storage가 영속 데이터의 기준이고 Query는 조회 결과와 갱신 상태를 공유한다. 나중에 서버 API로 바뀌어도 Feature의 View가 데이터 소스를 직접 알지 않게 한다.
 
 - 조회는 `useQuery`, 변경·인식·업로드 등의 작업 요청은 `useMutation`을 사용한다.
 - query key 정의는 `data/queries`에 모은다.

@@ -3,15 +3,15 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../../../components/AppButton';
-import { useMealDraft } from '../../../data/queries/mealQueries';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
+import { useMealPhoto } from '../hooks/useMealPhoto';
 export function MealPhotoScreen({ photoId }: { photoId: string }) {
   const model = useProfile();
-  const query = useMealDraft(model.profile?.id ?? '');
+  const mealPhoto = useMealPhoto(model.profile?.id ?? '', photoId);
   const s = copyFor(model.language);
-  const photo = query.data?.photo?.id === photoId ? query.data.photo : null;
+  const photo = mealPhoto.photo;
   if (model.status === 'error' || (model.status === 'ready' && !model.profile)) return <Redirect href="/" />;
   return (
     <SafeAreaView style={styles.root}>
@@ -22,7 +22,7 @@ export function MealPhotoScreen({ photoId }: { photoId: string }) {
         onPress={() => router.back()}
       />
       <View style={styles.frame}>
-        {model.status === 'loading' || query.isPending ? (
+        {model.status === 'loading' || mealPhoto.loading ? (
           <ActivityIndicator color={colors.homePrimary} />
         ) : photo ? (
           <Image

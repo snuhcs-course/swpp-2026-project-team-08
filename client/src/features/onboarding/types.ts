@@ -27,3 +27,11 @@ export function emptyDraft(): OnboardingDraft {
 export function isStep(value: string): value is OnboardingStep {
   return (steps as readonly string[]).includes(value);
 }
+
+export function nextStep(step: OnboardingStep): OnboardingStep {
+  return steps[Math.min(steps.indexOf(step) + 1, steps.length - 1)];
+}
+
+export function previousStep(step: OnboardingStep): OnboardingStep {
+  return steps[Math.max(steps.indexOf(step) - 1, 0)];
+}

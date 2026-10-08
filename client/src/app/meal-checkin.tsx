@@ -6,7 +6,10 @@ import { MealCheckinScreen } from '../features/meal-checkin/screens/MealCheckinS
 import { colors } from '../util/colors';
 export default function MealCheckinEntry() {
   const model = useOnboarding();
-  const { intent } = useLocalSearchParams<{ intent?: string }>();
+  const { intent, startAfterMealId } = useLocalSearchParams<{
+    intent?: string;
+    startAfterMealId?: string;
+  }>();
   if (!model.ready)
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.homeBackground }}>
@@ -18,6 +21,7 @@ export default function MealCheckinEntry() {
     <MealCheckinScreen
       key={model.profile.id}
       childId={model.profile.id}
+      startAfterMealId={startAfterMealId}
       language={model.language}
       onLanguage={() =>
         model.setLanguage(model.language === 'ko' ? 'en' : 'ko')

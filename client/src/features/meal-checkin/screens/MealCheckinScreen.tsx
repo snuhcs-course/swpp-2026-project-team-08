@@ -14,13 +14,15 @@ export function MealCheckinScreen({
   language,
   onLanguage,
   afterMealIntent,
+  startAfterMealId,
 }: {
   childId: string;
   language: Language;
   onLanguage: () => void;
   afterMealIntent: boolean;
+  startAfterMealId?: string;
 }) {
-  const model = useMealCheckin(childId);
+  const model = useMealCheckin(childId, startAfterMealId);
   const s = copyFor(language);
   const exit = async () => {
     if (model.saving) return;

@@ -1,6 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
-import { mealKeys, useRecognition, useSaveMeal } from '../../../data/queries/mealQueries';
+import {
+  mealKeys,
+  useRecognition,
+  useSaveMeal,
+} from '../../../data/queries/mealQueries';
 import {
   readMealDraft,
   saveMealDraft,
@@ -18,7 +22,7 @@ import type {
 } from '../../../types/meal';
 import { confirmFoods, mealFromDraft, newDraft, newFood } from '../rules';
 
-export function useMealCheckin(childId: string) {
+export function useMealCheckin(childId: string, startAfterMealId?: string) {
   const [draft, setDraft] = useState<MealDraft | null>(null);
   const current = useRef<MealDraft | null>(null);
   const [loadError, setLoadError] = useState(false);
@@ -36,6 +40,8 @@ export function useMealCheckin(childId: string) {
   const saving = useSaveMeal();
   const controller = useRef<AbortController | null>(null);
   const busy = useRef(false);
+  const pickBusy = useRef(false);
+  const photoRequest = useRef(0);
   const version = useRef(0);
   const mounted = useRef(true);
   const load = async () => {
@@ -43,7 +49,7 @@ export function useMealCheckin(childId: string) {
     try {
       const stored = await readMealDraft(childId);
       const value =
-        stored?.step === 'complete'
+        stored?.step === 'complete' && stored.savedMealId === startAfterMealId
           ? newDraft(childId)
           : (stored ?? newDraft(childId));
       if (mounted.current) {
@@ -61,7 +67,7 @@ export function useMealCheckin(childId: string) {
       .then((value) => {
         if (active) {
           const restored =
-            value?.step === 'complete'
+            value?.step === 'complete' && value.savedMealId === startAfterMealId
               ? newDraft(childId)
               : (value ?? newDraft(childId));
           current.current = restored;
@@ -76,7 +82,7 @@ export function useMealCheckin(childId: string) {
       mounted.current = false;
       controller.current?.abort();
     };
-  }, [childId]);
+  }, [childId, startAfterMealId]);
   const persist = async (value: MealDraft) => {
     const revision = ++version.current;
     setSaveStatus('saving');
@@ -100,9 +106,15 @@ export function useMealCheckin(childId: string) {
     setDraft(value);
     void persist(value);
   };
-  const go = (step: MealStep) => update({ step });
+  const go = (step: MealStep) => {
+    photoRequest.current += 1;
+    pickBusy.current = false;
+    setPicking(false);
+    update({ step });
+  };
   const back = () => {
-    if (!current.current || busy.current) return false;
+    if (busy.current) return true;
+    if (!current.current) return false;
     if (sheet) {
       setSheet(null);
       return true;
@@ -134,12 +146,14 @@ export function useMealCheckin(childId: string) {
     return true;
   };
   const pick = async (source: PhotoSource) => {
-    if (busy.current || picking) return;
+    if (busy.current || pickBusy.current) return;
+    pickBusy.current = true;
+    const request = ++photoRequest.current;
     setPicking(true);
     setError(null);
     try {
       const photo = await pickMealPhoto(source);
-      if (photo && mounted.current) {
+      if (photo && mounted.current && request === photoRequest.current) {
         controller.current?.abort();
         update({
           photo,
@@ -150,10 +164,13 @@ export function useMealCheckin(childId: string) {
         });
       }
     } catch (err) {
-      if (mounted.current)
+      if (mounted.current && request === photoRequest.current)
         setError(err instanceof PhotoError ? err.code : 'image');
     } finally {
-      if (mounted.current) setPicking(false);
+      if (request === photoRequest.current) {
+        pickBusy.current = false;
+        if (mounted.current) setPicking(false);
+      }
     }
   };
   const analyze = async () => {
@@ -262,11 +279,11 @@ export function useMealCheckin(childId: string) {
       name: food.name.trim(),
       source: 'parent',
     };
+    const foods = current.current?.foods ?? [];
     update({
-      foods: [
-        ...(current.current?.foods ?? []).filter((f) => f.id !== item.id),
-        item,
-      ],
+      foods: foods.some((f) => f.id === item.id)
+        ? foods.map((f) => (f.id === item.id ? item : f))
+        : [...foods, item],
       editingFood: null,
     });
   };
@@ -314,6 +331,8 @@ export function useMealCheckin(childId: string) {
       }
     },
     flush: () =>
-      current.current ? persist(current.current) : Promise.resolve(false),
+      !busy.current && current.current
+        ? persist(current.current)
+        : Promise.resolve(false),
   };
 }

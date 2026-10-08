@@ -84,7 +84,7 @@ const en = {
     permission: 'Photo access was denied. Allow access in device settings or choose another source.', imageError: 'Could not open this image. Choose another supported image.',
     loadFailed: 'Could not restore your meal draft. Retry before continuing.', saveFailed: 'Could not save the meal. Your food items and goal selection are preserved.',
     reviewRequired: 'Parent review required before confirmation', ai: 'AI suggestion', parent: 'Parent input',
-    aiCount: (count: number) => `${count} suggested food items`, foodCount: (count: number) => `${count} food items`,
+    aiCount: (count: number) => `${count} suggested food item${count === 1 ? '' : 's'}`, foodCount: (count: number) => `${count} food item${count === 1 ? '' : 's'}`,
     aiNote: 'AI suggestions are never confirmed until you review them.', empty: 'Add a food item to continue.', addFood: 'Add food item', saveFood: 'Save food',
     name: 'Food name', ingredients: 'Ingredients', addIngredient: 'Add ingredient', preparation: 'Presentation / preparation', servingNote: 'Serving note',
     traits: 'Food traits', editTraits: 'Edit all traits →', saveTraits: 'Save traits', history: 'Food history',

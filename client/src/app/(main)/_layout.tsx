@@ -1,5 +1,4 @@
-import { router, usePathname } from 'expo-router';
-import { Stack as JsStack } from 'expo-router/js-stack';
+import { router, Stack, usePathname } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomNavigation, tabOrder, type HomeTab } from '../../features/home/components/BottomNavigation';
@@ -32,17 +31,15 @@ export default function MainLayout() {
 
   return <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
     <View style={styles.content}>
-      <JsStack screenOptions={({ route }) => ({
+      {/* JS stack animations call InteractionManager APIs removed in RN 0.86. */}
+      <Stack screenOptions={({ route }) => ({
         headerShown: false,
         gestureEnabled: false,
         animation: (route.params as { tabDirection?: string } | undefined)?.tabDirection === 'left'
           ? 'slide_from_left' : 'slide_from_right',
         animationTypeForReplace: 'push',
-        transitionSpec: {
-          open: { animation: 'timing', config: { duration: 260 } },
-          close: { animation: 'timing', config: { duration: 260 } },
-        },
-        cardStyle: { backgroundColor: colors.homeBackground },
+        animationDuration: 260,
+        contentStyle: { backgroundColor: colors.homeBackground },
       })} />
     </View>
     <BottomNavigation language={language} selected={selected} onSelect={onSelect} />

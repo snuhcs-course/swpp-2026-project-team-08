@@ -1,0 +1,136 @@
+import { router } from 'expo-router';
+import { useEffect } from 'react';
+import { ActivityIndicator, BackHandler, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppButton } from '../../../components/AppButton';
+import type { Language } from '../../../types/profile';
+import { colors } from '../../../util/colors';
+import { copyFor } from '../../../util/strings';
+import { MealCheckinView } from '../components/MealCheckinView';
+import { useMealCheckin } from '../hooks/useMealCheckin';
+
+export function MealCheckinScreen({
+  childId,
+  language,
+  onLanguage,
+  afterMealIntent,
+}: {
+  childId: string;
+  language: Language;
+  onLanguage: () => void;
+  afterMealIntent: boolean;
+}) {
+  const model = useMealCheckin(childId);
+  const s = copyFor(language);
+  const exit = async () => {
+    if (model.saving) return;
+    if (model.draft?.step === 'complete' || (await model.flush()))
+      router.replace('/(main)/home');
+  };
+  const back = () => {
+    if (model.saving) return;
+    if (!model.back()) void exit();
+  };
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        back();
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  });
+  const afterMeal = (mealId: string) =>
+    router.replace({ pathname: '/after-meal-review', params: { mealId } });
+  if (!model.draft)
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          padding: 24,
+          gap: 12,
+          backgroundColor: colors.homeBackground,
+        }}
+      >
+        {model.loadError ? (
+          <>
+            <Text style={{ color: colors.error }}>
+              {s.mealCheckin.loadFailed}
+            </Text>
+            <AppButton
+              label={s.common.retry}
+              onPress={() => {
+                void model.reload();
+              }}
+            />
+            <AppButton
+              secondary
+              label={s.common.home}
+              onPress={() => router.replace('/(main)/home')}
+            />
+          </>
+        ) : (
+          <>
+            <ActivityIndicator color={colors.homePrimary} />
+            <Text style={{ color: colors.homeText }}>{s.common.loading}</Text>
+          </>
+        )}
+      </SafeAreaView>
+    );
+  return (
+    <MealCheckinView
+      draft={model.draft}
+      language={language}
+      saveStatus={model.saveStatus}
+      error={model.error}
+      picking={model.picking}
+      saving={model.saving}
+      traits={model.traits}
+      sheet={model.sheet}
+      onUpdate={model.update}
+      onGo={model.go}
+      onBack={back}
+      onPick={(source) => {
+        void model.pick(source);
+      }}
+      onFullPhoto={() => {
+        void model.flush().then((saved) => {
+          if (saved)
+            router.push({
+              pathname: '/meal-photo',
+              params: { photoId: model.draft?.photo?.id },
+            });
+        });
+      }}
+      onAnalyze={() => {
+        void model.analyze();
+      }}
+      onCancelAnalysis={model.cancelAnalysis}
+      onEdit={model.edit}
+      onRemove={model.removeFood}
+      onChangeFood={model.changeFood}
+      onSaveFood={model.saveFood}
+      onConfirm={model.confirm}
+      onSave={(skip) => {
+        void model.save(skip).then((id) => {
+          if (id && afterMealIntent) afterMeal(id);
+        });
+      }}
+      onAfterMeal={() => {
+        if (model.draft?.savedMealId) afterMeal(model.draft.savedMealId);
+      }}
+      onHome={() => {
+        void exit();
+      }}
+      onSheet={model.setSheet}
+      onTraits={model.setTraits}
+      onSaveTraits={model.saveTraits}
+      onRetryDraft={() => {
+        void model.flush();
+      }}
+      onLanguage={onLanguage}
+    />
+  );
+}

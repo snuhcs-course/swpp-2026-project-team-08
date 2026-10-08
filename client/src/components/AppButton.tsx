@@ -3,6 +3,7 @@ import { colors } from '../util/colors';
 import { fonts } from '../util/fonts';
 
 type Props = {
+  variant?: 'onboarding' | 'meal';
   label: string;
   onPress: () => void;
   disabled?: boolean;
@@ -11,7 +12,7 @@ type Props = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function AppButton({ label, onPress, disabled, secondary, compact, style }: Props) {
+export function AppButton({ label, onPress, disabled, secondary, compact, style, variant = 'onboarding' }: Props) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -20,15 +21,19 @@ export function AppButton({ label, onPress, disabled, secondary, compact, style 
       onPress={onPress}
       style={({ pressed }) => [
         styles.base, compact && styles.compact, secondary ? styles.secondary : styles.primary,
+        variant === 'meal' && styles.meal, variant === 'meal' && !secondary && styles.mealPrimary,
         disabled && styles.disabled, pressed && !disabled && styles.pressed, style,
       ]}
     >
-      <Text style={[styles.label, secondary && styles.secondaryLabel, disabled && styles.disabledLabel]}>{label}</Text>
+      <Text style={[styles.label, variant === 'meal' && styles.mealLabel, secondary && styles.secondaryLabel, disabled && styles.disabledLabel]}>{label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  meal: { minHeight: 52, paddingHorizontal: 16, borderRadius: 14, borderColor: colors.homeBorder },
+  mealPrimary: { backgroundColor: colors.homePrimary },
+  mealLabel: { fontSize: 14, fontFamily: fonts.poppinsSemiBold },
   base: { minHeight: 46, borderRadius: 11, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 12 },
   compact: { minHeight: 34 },
   primary: { backgroundColor: colors.onboardingPrimary },

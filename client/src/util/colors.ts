@@ -21,5 +21,9 @@ export const colors = {
   homeSubtitle: '#95A2B3',
   error: '#D92D20',
   success: '#19875F',
+  mealReviewBackground: '#F5F8FE',
+  mealReviewBorder: '#D8E3F2',
+  mealReviewMuted: '#65758B',
+  overlay: 'rgba(19,35,58,0.45)',
   transparent: 'transparent',
 } as const;

@@ -14,19 +14,44 @@ export const traitOptions = {
 export type TraitGroup = keyof typeof traitOptions;
 export type FoodTraits = Record<TraitGroup, string[]>;
 export type FoodItem = {
-  id: string; name: string; ingredients: string[]; preparation: string; servingNote: string;
-  traits: FoodTraits; history: typeof histories[number] | null; source: 'ai' | 'parent';
+  id: string;
+  name: string;
+  ingredients: string[];
+  preparation: string;
+  servingNote: string;
+  traits: FoodTraits;
+  history: (typeof histories)[number] | null;
+  source: 'ai' | 'parent';
 };
 export type MealPhoto = { id: string; uri: string; mimeType: string };
 export type Meal = {
-  id: string; childId: string; mealDate: string;
-  mealType: typeof mealTypes[number]; setting: typeof mealSettings[number];
-  photo: MealPhoto | null; foods: FoodItem[]; exposureFoodId: string | null; savedAt: string;
+  id: string;
+  childId: string;
+  mealDate: string;
+  mealType: (typeof mealTypes)[number];
+  setting: (typeof mealSettings)[number];
+  photo: MealPhoto | null;
+  foods: FoodItem[];
+  exposureFoodId: string | null;
+  savedAt: string;
 };
 
-export const mealSteps = ['details', 'photo', 'preview', 'method', 'analyzing', 'analysis-error', 'foods', 'goal', 'complete'] as const;
-export type MealStep = typeof mealSteps[number];
+export const mealSteps = [
+  'details',
+  'photo',
+  'preview',
+  'method',
+  'analyzing',
+  'analysis-error',
+  'foods',
+  'goal',
+  'complete',
+] as const;
+export type MealStep = (typeof mealSteps)[number];
 export type MealDraft = Omit<Meal, 'mealType' | 'setting' | 'savedAt'> & {
-  mealType: Meal['mealType'] | null; setting: Meal['setting'] | null; step: MealStep;
-  editingFood: FoodItem | null; savedMealId: string | null;
+  mealType: Meal['mealType'] | null;
+  setting: Meal['setting'] | null;
+  step: MealStep;
+  editingFood: FoodItem | null;
+  savedMealId: string | null;
 };

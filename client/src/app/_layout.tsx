@@ -6,6 +6,7 @@ import { Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700
 import { StyleSheet, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { OnboardingProvider } from '../features/onboarding/hooks/useOnboarding';
 import { FontReadyContext } from '../components/FontReadyContext';
 import { colors } from '../util/colors';
 
@@ -20,11 +21,13 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <FontReadyContext.Provider value={fontsLoaded || !!fontError}>
-          <View style={styles.root}>
-            <StatusBar style="dark" />
-            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.onboardingBackground } }} />
-            {!fontsLoaded && !fontError && <View style={styles.fontGate} />}
-          </View>
+          <OnboardingProvider>
+            <View style={styles.root}>
+              <StatusBar style="dark" />
+              <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.onboardingBackground } }} />
+              {!fontsLoaded && !fontError && <View style={styles.fontGate} />}
+            </View>
+          </OnboardingProvider>
         </FontReadyContext.Provider>
       </QueryClientProvider>
     </SafeAreaProvider>

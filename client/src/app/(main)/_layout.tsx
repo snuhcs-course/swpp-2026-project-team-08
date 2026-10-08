@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomNavigation, tabOrder, type HomeTab } from '../../components/BottomNavigation';
 import { useFontReady } from '../../components/FontReadyContext';
-import { useOnboarding } from '../../features/onboarding/hooks/useOnboarding';
+import { useProfile } from '../../providers/ProfileProvider';
 import { colors } from '../../util/colors';
 
 function tabFromPath(pathname: string): HomeTab {
@@ -15,7 +15,7 @@ function tabFromPath(pathname: string): HomeTab {
 
 export default function MainLayout() {
   const pathname = usePathname();
-  const { language } = useOnboarding();
+  const { language } = useProfile();
   const fontReady = useFontReady();
   const selected = tabFromPath(pathname);
 

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, BackHandler, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../../../components/AppButton';
@@ -19,11 +19,12 @@ export function MealCheckinScreen({
 }: {
   childId: string;
   language: Language;
-  onLanguage: () => void;
+  onLanguage: () => Promise<void>;
   afterMealIntent: boolean;
   startAfterMealId?: string;
 }) {
   const model = useMealCheckin(childId, startAfterMealId);
+  const [languageError, setLanguageError] = useState(false);
   const inputs = useMealCheckinInputs({
     draft: model.draft,
     traits: model.traits,
@@ -100,6 +101,7 @@ export function MealCheckinScreen({
       saving={model.saving}
       traits={model.traits}
       sheet={model.sheet}
+      languageError={languageError}
       dateInput={inputs.date}
       foodInput={inputs.food}
       onUpdate={model.update}
@@ -145,7 +147,12 @@ export function MealCheckinScreen({
       onRetryDraft={() => {
         void model.flush();
       }}
-      onLanguage={onLanguage}
+      onLanguage={() => {
+        void onLanguage().then(
+          () => setLanguageError(false),
+          () => setLanguageError(true),
+        );
+      }}
     />
   );
 }

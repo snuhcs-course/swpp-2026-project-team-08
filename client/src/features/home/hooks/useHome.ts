@@ -1,4 +1,3 @@
-import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useMealDraft } from '../../../data/queries/mealQueries';
 import { useHomeRecords } from '../../../data/queries/homeQueries';
@@ -11,12 +10,7 @@ export function useHome(profile: ChildProfile) {
   const refetchDraft = draft.refetch;
   const { refetch } = query;
   const [now, setNow] = useState(() => new Date());
-  useFocusEffect(
-    useCallback(() => {
-      void refetch();
-      void refetchDraft();
-    }, [refetch, refetchDraft]),
-  );
+  const refresh = useCallback(() => Promise.all([refetch(), refetchDraft()]), [refetch, refetchDraft]);
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(timer);
@@ -31,6 +25,6 @@ export function useHome(profile: ChildProfile) {
     loading: query.isPending,
     error: query.isError,
     refreshing: query.isFetching && !query.isPending,
-    refresh: () => Promise.all([query.refetch(), refetchDraft()]),
+    refresh,
   };
 }

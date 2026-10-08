@@ -82,9 +82,11 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             )}
             {review && <MealFoodsStepView p={p} />}
             {d.step === 'complete' && <MealCompleteStepView p={p} />}
-            {(p.error || imageError) && (
+            {(p.error || imageError || p.languageError) && (
               <Text accessibilityRole="alert" style={ui.error}>
-                {p.error === 'save' ? m.saveFailed : p.error === 'permission' ? m.permission : m.imageError}
+                {p.error === 'save' ? m.saveFailed
+                  : p.error === 'permission' ? m.permission
+                    : p.error === 'image' || imageError ? m.imageError : s.common.saveFailed}
               </Text>
             )}
           </ScrollView>

@@ -31,6 +31,7 @@ export type MealCheckinViewProps = {
   saving: boolean;
   traits: FoodTraits | null;
   sheet: 'help' | 'privacy' | null;
+  languageError: boolean;
   dateInput: DateInput;
   foodInput: FoodInput;
   onUpdate: (value: Partial<MealDraft>) => void;

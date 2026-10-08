@@ -8,6 +8,7 @@ type ProfileContextValue = {
   status: 'loading' | 'ready' | 'error';
   profile: ChildProfile | null;
   language: Language;
+  retryLoad: () => Promise<void>;
   commitProfile: (value: ChildProfile) => Promise<void>;
   changeLanguage: (value: Language) => Promise<void>;
 };
@@ -23,20 +24,26 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<ChildProfile | null>(null);
   const [language, setLanguage] = useState<Language>(deviceLanguage);
   const languageQueue = useRef<Promise<void>>(Promise.resolve());
+  const mounted = useRef(false);
 
+  const load = useCallback(() => Promise.all([readProfile(), readLanguage()]).then(
+    ([storedProfile, storedLanguage]) => {
+      if (!mounted.current) return;
+      setProfile(storedProfile);
+      if (storedLanguage) setLanguage(storedLanguage);
+      setStatus('ready');
+    },
+    () => { if (mounted.current) setStatus('error'); },
+  ), []);
+  const retryLoad = useCallback(() => {
+    setStatus('loading');
+    return load();
+  }, [load]);
   useEffect(() => {
-    let active = true;
-    Promise.all([readProfile(), readLanguage()]).then(
-      ([storedProfile, storedLanguage]) => {
-        if (!active) return;
-        setProfile(storedProfile);
-        if (storedLanguage) setLanguage(storedLanguage);
-        setStatus('ready');
-      },
-      () => { if (active) setStatus('error'); },
-    );
-    return () => { active = false; };
-  }, []);
+    mounted.current = true;
+    void load();
+    return () => { mounted.current = false; };
+  }, [load]);
 
   const commitProfile = useCallback(async (value: ChildProfile) => {
     await saveProfile(value);
@@ -49,7 +56,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <ProfileContext.Provider value={{ status, profile, language, commitProfile, changeLanguage }}>
+    <ProfileContext.Provider value={{ status, profile, language, retryLoad, commitProfile, changeLanguage }}>
       {children}
     </ProfileContext.Provider>
   );

@@ -35,6 +35,7 @@ export type OnboardingContextValue = {
   setStep: (step: OnboardingStep) => void;
   startEdit: () => void;
   retrySave: () => Promise<void>;
+  retryLoad: () => void;
   finish: () => Promise<boolean>;
   canContinue: (step: OnboardingStep) => boolean;
 };
@@ -146,6 +147,11 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     void changeLanguage(value).catch(() => setSaveStatus('error'));
   }, [changeLanguage]);
   const retrySave = useCallback(() => persist(draft), [draft, persist]);
+  const retryLoad = useCallback(() => {
+    skipFirstSave.current = true;
+    setLoadError(false);
+    setReady(false);
+  }, []);
   const finish = useCallback(async () => {
     if (finishing.current || !canFinish(draft)) return false;
     finishing.current = true;
@@ -176,7 +182,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     profile, draft, password, language, saveStatus, editing, hasDraft,
     setPassword, setLanguage, setField, setConsent, toggleList, setList, addListItem,
     removeListItem, addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setStep,
-    startEdit, retrySave, finish, canContinue: (step) => step === 'review' ? canFinish(draft)
+    startEdit, retrySave, retryLoad, finish, canContinue: (step) => step === 'review' ? canFinish(draft)
       : step === 'account' && editing ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)
         : canContinue(step, draft, password),
   }}>{children}</OnboardingContext.Provider>;

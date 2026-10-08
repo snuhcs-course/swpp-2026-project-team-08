@@ -16,7 +16,7 @@ export default function SectionScreen() {
   const selected = name as HomeTab;
   const s = copyFor(model.language);
   return <View style={styles.root}>
-    <View style={styles.content}><Text style={styles.title}>{s.home[selected]}</Text><Text style={styles.description}>{s.home.sectionUnavailable}</Text></View>
+    <View style={styles.content}><Text style={styles.title}>{s.home[selected]}</Text></View>
   </View>;
 }
 
@@ -24,5 +24,4 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.homeBackground },
   content: { flex: 1, padding: 24, gap: 12 },
   title: { color: colors.homeText, fontSize: 24, fontWeight: '800' },
-  description: { color: colors.homeMuted, fontSize: 14, lineHeight: 21 },
 });

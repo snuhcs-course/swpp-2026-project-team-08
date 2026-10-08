@@ -19,7 +19,6 @@ export default function EntryScreen() {
       <View style={styles.body}>
         <Text style={styles.brand}>{s.common.brand}</Text>
         <Text style={styles.title}>{s.onboarding.titles.account}</Text>
-        <Text style={styles.subtitle}>{s.onboarding.localOnly}</Text>
         {model.loadError && <Text style={styles.error}>{s.common.saveFailed}</Text>}
       </View>
       <AppButton label={model.hasDraft ? s.onboarding.resume : s.onboarding.start} onPress={() => router.push({ pathname: '/onboarding/[step]', params: { step: model.draft.step } })} />
@@ -32,7 +31,6 @@ const styles = StyleSheet.create({
   body: { flex: 1, justifyContent: 'center', gap: 14 },
   brand: { color: colors.onboardingPrimary, fontSize: 16, fontWeight: '800' },
   title: { color: colors.onboardingText, fontSize: 28, fontWeight: '800' },
-  subtitle: { color: colors.onboardingMuted, fontSize: 15, lineHeight: 22 },
   loading: { color: colors.onboardingMuted, marginTop: 12 },
   error: { color: colors.error, fontSize: 13 },
 });

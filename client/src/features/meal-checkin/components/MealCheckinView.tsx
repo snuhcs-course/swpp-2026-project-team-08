@@ -287,9 +287,6 @@ export function MealCheckinView(p: Props) {
                     <Text style={ui.link}>{m.privacy}</Text>
                   </Pressable>
                 </View>
-                <View style={ui.info}>
-                  <Text style={ui.text}>{m.mock}</Text>
-                </View>
                 <AppButton
                   variant="meal"
                   label={m.analyze}
@@ -311,7 +308,6 @@ export function MealCheckinView(p: Props) {
                 <Text accessibilityLiveRegion="polite" style={ui.text}>
                   {m.analyzing}
                 </Text>
-                <Text style={ui.muted}>{m.mock}</Text>
                 <AppButton
                   variant="meal"
                   secondary
@@ -578,7 +574,6 @@ export function MealCheckinView(p: Props) {
             onClose={() => p.onSheet(null)}
           >
             <Text style={ui.text}>{m.privacyBody}</Text>
-            <Text style={ui.muted}>{m.mock}</Text>
           </MealSheet>
         )}
       </KeyboardAvoidingView>

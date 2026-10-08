@@ -42,9 +42,6 @@ export default function AfterMealReviewEntry() {
           <Text style={{ color: colors.homeText }}>
             {query.data.foods.map((food) => food.name).join(', ')}
           </Text>
-          <Text style={{ color: colors.homeMuted }}>
-            {s.mealCheckin.afterUnavailable}
-          </Text>
         </>
       ) : (
         <Text style={{ color: colors.error }}>{s.mealCheckin.missingMeal}</Text>

@@ -1,7 +1,7 @@
 import { router, Stack, usePathname } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BottomNavigation, tabOrder, type HomeTab } from '../../features/home/components/BottomNavigation';
+import { BottomNavigation, tabOrder, type HomeTab } from '../../components/BottomNavigation';
 import { useFontReady } from '../../components/FontReadyContext';
 import { useOnboarding } from '../../features/onboarding/hooks/useOnboarding';
 import { colors } from '../../util/colors';

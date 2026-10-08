@@ -1,6 +1,6 @@
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
-import type { HomeTab } from '../../../features/home/components/BottomNavigation';
+import type { HomeTab } from '../../../components/BottomNavigation';
 import { useOnboarding } from '../../../features/onboarding/hooks/useOnboarding';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';

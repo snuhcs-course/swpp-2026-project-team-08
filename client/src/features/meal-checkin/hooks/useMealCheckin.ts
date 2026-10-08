@@ -19,8 +19,15 @@ import type {
   FoodTraits,
   MealDraft,
   MealStep,
+  TraitGroup,
 } from '../../../types/meal';
-import { confirmFoods, mealFromDraft, newDraft, newFood } from '../rules';
+import {
+  confirmFoods,
+  mealFromDraft,
+  newDraft,
+  newFood,
+  toggleTrait,
+} from '../rules';
 
 export function useMealCheckin(childId: string, startAfterMealId?: string) {
   const [draft, setDraft] = useState<MealDraft | null>(null);
@@ -323,6 +330,11 @@ export function useMealCheckin(childId: string, startAfterMealId?: string) {
     confirm: () => {
       if (current.current?.foods.length)
         update({ foods: confirmFoods(current.current.foods), step: 'goal' });
+    },
+    toggleTrait: (group: TraitGroup, value: string) => {
+      setTraits((current) =>
+        current ? toggleTrait(current, group, value) : null,
+      );
     },
     saveTraits: () => {
       if (traits) {

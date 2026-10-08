@@ -19,14 +19,20 @@ import {
   type FoodTraits,
   type MealDraft,
   type MealStep,
+  type TraitGroup,
 } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
 import type { PhotoSource } from '../../../data/api/mealPhotoApi';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
-import { FoodEditor, FoodTraitsTags } from './FoodEditor';
-import { MealDateField } from './MealDateField';
-import { MealChoice, MealIcon, MealSheet, styles as ui } from './MealControls';
+import { localDate } from '../../../util/date';
+import { FoodEditor } from '../../../components/FoodEditor';
+import { FoodTraitsTags } from '../../../components/FoodTraitsTags';
+import { DateField } from '../../../components/DateField';
+import { SelectionChoice } from '../../../components/SelectionChoice';
+import { AppIcon } from '../../../components/AppIcon';
+import { BottomSheet } from '../../../components/BottomSheet';
+import { formStyles as ui } from '../../../components/formStyles';
 type Props = {
   draft: MealDraft;
   language: Language;
@@ -54,6 +60,7 @@ type Props = {
   onSheet: (sheet: 'help' | 'privacy' | null) => void;
   onTraits: (value: FoodTraits | null) => void;
   onSaveTraits: () => void;
+  onToggleTrait: (group: TraitGroup, value: string) => void;
   onRetryDraft: () => void;
   onLanguage: () => void;
 };
@@ -63,6 +70,24 @@ export function MealCheckinView(p: Props) {
   const d = p.draft;
   const [replace, setReplace] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [dateOpen, setDateOpen] = useState(false);
+  const [dateField, setDateField] = useState<0 | 1 | 2 | null>(null);
+  const [dateParts, setDateParts] = useState<[number, number, number]>(() => d.mealDate.split('-').map(Number) as [number, number, number]);
+  const [ingredient, setIngredient] = useState('');
+  const [customTrait, setCustomTrait] = useState({ color: '', shape: '' });
+  const resetFoodInputs = () => {
+    setIngredient('');
+    setCustomTrait({ color: '', shape: '' });
+  };
+  const [selectedYear, selectedMonth, selectedDay] = d.mealDate.split('-').map(Number);
+  const dateLabel = m.dateLabel(
+    new Date(selectedYear, selectedMonth - 1, selectedDay).toLocaleDateString(p.language === 'ko' ? 'ko-KR' : 'en-GB', {
+      month: 'long',
+      day: 'numeric',
+      ...(localDate() !== d.mealDate ? { year: 'numeric' } : {}),
+    }),
+    localDate() === d.mealDate,
+  );
   const review = d.step === 'foods' || d.step === 'goal';
   const segment =
     d.step === 'details'
@@ -89,13 +114,13 @@ export function MealCheckinView(p: Props) {
           style={ui.choice}
         >
           <View style={ui.icon}>
-            <MealIcon name={source} size={18} />
+            <AppIcon name={source} size={18} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={ui.label}>{m[source]}</Text>
             {source === 'files' && <Text style={ui.muted}>{m.fileHint}</Text>}
           </View>
-          <MealIcon name="next" size={16} />
+          <AppIcon name="next" size={16} />
         </Pressable>
       ))}
       {p.picking && <ActivityIndicator color={colors.homePrimary} />}
@@ -154,7 +179,7 @@ export function MealCheckinView(p: Props) {
             onPress={p.onBack}
             style={styles.back}
           >
-            <MealIcon name="back" size={18} />
+            <AppIcon name="back" size={18} />
           </Pressable>
           <Text style={[ui.heading, { flex: 1 }]}>{m.titles[d.step]}</Text>
           <Pressable accessibilityRole="button" onPress={p.onLanguage}>
@@ -181,19 +206,40 @@ export function MealCheckinView(p: Props) {
             {d.step === 'details' && (
               <>
                 <Text style={ui.title}>{m.settingTitle}</Text>
-                <MealDateField
-                  value={d.mealDate}
-                  language={p.language}
-                  onChange={(mealDate) => p.onUpdate({ mealDate })}
+                <DateField
+                  label={dateLabel}
+                  labels={{ date: m.date, year: m.year, month: m.month, day: m.day, confirm: m.confirmDate, close: s.common.close }}
+                  parts={dateParts}
+                  open={dateOpen}
+                  field={dateField}
+                  onToggle={() => {
+                    setDateParts(d.mealDate.split('-').map(Number) as [number, number, number]);
+                    setDateOpen(!dateOpen);
+                  }}
+                  onFieldChange={setDateField}
+                  onNumberSelect={(number) => {
+                    if (dateField === null) return;
+                    const next: [number, number, number] = [...dateParts];
+                    next[dateField] = number;
+                    next[2] = Math.min(next[2], new Date(next[0], next[1], 0).getDate());
+                    setDateParts(next);
+                    setDateField(null);
+                  }}
+                  onConfirm={() => {
+                    const [year, month, day] = dateParts;
+                    const dayCount = new Date(year, month, 0).getDate();
+                    p.onUpdate({ mealDate: localDate(new Date(year, month - 1, Math.min(day, dayCount))) });
+                    setDateOpen(false);
+                  }}
                 />
                 <Text style={ui.label}>{m.mealType}</Text>
                 <View style={ui.grid}>
                   {mealTypes.map((value) => (
-                    <MealChoice
+                    <SelectionChoice
                       key={value}
                       label={m.types[value]}
                       tile
-                      icon={value}
+                      icon={<AppIcon name={value} size={21} />}
                       selected={d.mealType === value}
                       onPress={() => p.onUpdate({ mealType: value })}
                     />
@@ -202,11 +248,11 @@ export function MealCheckinView(p: Props) {
                 <Text style={[ui.label, { fontSize: 14 }]}>{m.setting}</Text>
                 <View style={ui.grid}>
                   {mealSettings.map((value) => (
-                    <MealChoice
+                    <SelectionChoice
                       key={value}
                       label={m.settings[value]}
                       tile
-                      icon={value}
+                      icon={<AppIcon name={value} size={21} />}
                       selected={d.setting === value}
                       onPress={() => p.onUpdate({ setting: value })}
                     />
@@ -385,7 +431,10 @@ export function MealCheckinView(p: Props) {
                     <Text style={ui.muted}>{m.traits}</Text>
                     <FoodTraitsTags
                       traits={food.traits}
-                      language={p.language}
+                      labels={{
+                        trait: (value) => m.traitLabels[value as keyof typeof m.traitLabels] ?? value,
+                        empty: s.common.notEntered,
+                      }}
                     />
                     <Text style={ui.muted}>{m.history}</Text>
                     <Text style={ui.text}>
@@ -398,7 +447,7 @@ export function MealCheckinView(p: Props) {
                         style={{ flex: 1 }}
                         secondary
                         label={s.common.edit}
-                        onPress={() => p.onEdit(food)}
+                        onPress={() => { resetFoodInputs(); p.onEdit(food); }}
                       />
                       <AppButton
                         style={{ flex: 1 }}
@@ -413,7 +462,7 @@ export function MealCheckinView(p: Props) {
                   variant="meal"
                   secondary
                   label={m.addFood}
-                  onPress={() => p.onEdit()}
+                  onPress={() => { resetFoodInputs(); p.onEdit(); }}
                 />
                 <View style={ui.info}>
                   <Text style={ui.text}>{m.aiNote}</Text>
@@ -500,19 +549,35 @@ export function MealCheckinView(p: Props) {
           <FoodEditor
             key={d.editingFood.id}
             food={d.editingFood}
-            language={p.language}
+            labels={{ meal: m, common: s.common }}
             traits={p.traits}
+            ingredient={ingredient}
+            onIngredientChange={setIngredient}
+            onAddIngredient={() => {
+              const value = ingredient.trim();
+              if (value && !d.editingFood?.ingredients.includes(value))
+                p.onChangeFood({ ingredients: [...d.editingFood!.ingredients, value] });
+              setIngredient('');
+            }}
+            onRemoveIngredient={(value) => p.onChangeFood({ ingredients: d.editingFood!.ingredients.filter((item) => item !== value) })}
+            custom={customTrait}
+            onCustomChange={(group, value) => setCustomTrait((current) => ({ ...current, [group]: value }))}
+            onAddCustomTrait={(group) => {
+              const value = customTrait[group].trim();
+              if (value && !p.traits?.[group].includes(value)) p.onToggleTrait(group, value);
+              setCustomTrait((current) => ({ ...current, [group]: '' }));
+            }}
             onChange={p.onChangeFood}
             onSave={p.onSaveFood}
             onCancel={() => p.onUpdate({ editingFood: null })}
             onEditTraits={() => p.onTraits(d.editingFood!.traits)}
-            onTraits={p.onTraits}
+            onToggleTrait={p.onToggleTrait}
             onSaveTraits={p.onSaveTraits}
             onCancelTraits={() => p.onTraits(null)}
           />
         )}
         {d.step === 'goal' && (
-          <MealSheet
+          <BottomSheet
             title={p.sheet === 'help' ? m.tracker : m.titles.goal}
             closeLabel={s.common.back}
             onClose={() => {
@@ -538,7 +603,7 @@ export function MealCheckinView(p: Props) {
                   </Pressable>
                 </View>
                 {d.foods.map((food) => (
-                  <MealChoice
+                  <SelectionChoice
                     key={food.id}
                     label={food.name}
                     selected={d.exposureFoodId === food.id}
@@ -565,16 +630,16 @@ export function MealCheckinView(p: Props) {
                 />
               </View>
             )}
-          </MealSheet>
+          </BottomSheet>
         )}
         {p.sheet === 'privacy' && (
-          <MealSheet
+          <BottomSheet
             title={m.privacy}
             closeLabel={s.common.close}
             onClose={() => p.onSheet(null)}
           >
             <Text style={ui.text}>{m.privacyBody}</Text>
-          </MealSheet>
+          </BottomSheet>
         )}
       </KeyboardAvoidingView>
     </SafeAreaView>

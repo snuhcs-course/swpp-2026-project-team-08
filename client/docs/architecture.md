@@ -38,10 +38,10 @@ src/
       screens/
         BeforeMealScreen.tsx
         FoodReviewScreen.tsx
+        FoodReviewView.tsx
         AfterMealScreen.tsx
         OutcomeReviewScreen.tsx
       components/
-        FoodReviewView.tsx
         RecognitionResultList.tsx
         OutcomeSelector.tsx
       hooks/
@@ -84,8 +84,8 @@ API와 Storage 함수는 일반 비동기 함수로 작성한다. TanStack Query
 
 ### features — 기능별 화면과 작업 흐름
 
-- `screens`: Feature Hook과 UI 연결, Navigation 처리.
-- `components`: props 기반 UI 표현과 입력 전달.
+- `screens`: 화면 단위 파일. Screen은 Feature Hook과 UI 연결 및 Navigation을 처리하고, 분리된 View는 화면 전체의 UI를 그린다.
+- `components`: 해당 Feature에서만 쓰는 화면 내부의 작은 UI 조각. 화면 전체의 UI는 아래 화면 기준에 따라 둔다.
 - `hooks`: 작성 상태, 사용자 행동, 데이터 작업 흐름 관리.
 - `types.ts`: 기능 전용 데이터·작성 상태 타입.
 - `rules.ts`: 검증·변환·계산 등의 일반 함수.
@@ -94,7 +94,19 @@ API와 Storage 함수는 일반 비동기 함수로 작성한다. TanStack Query
 
 ### components — 공통 UI
 
-여러 기능에서 같은 의미와 동작으로 사용하는 UI를 둔다. 값과 콜백을 props로 받고 특정 Feature의 내부 코드를 참조하지 않는다. 기능 전용 컴포넌트는 해당 Feature에 두며, 재사용 요구가 확인될 때 공통으로 이동한다.
+컴포넌트의 위치는 현재 사용 횟수가 아니라 여러 기능·페이지에서 재사용할 가능성으로 결정한다.
+
+- 이 절의 `components`는 화면 전체가 아닌 UI 조각을 뜻한다. 값과 동작은 props로 받고, 업무 데이터나 편집 초안을 내부 상태로 소유하지 않는다. 접힘·펼침 같은 단순한 표시 상태만 내부에 둘 수 있다.
+- 여러 기능·페이지에서 사용할 가능성이 있는 컴포넌트는 `src/components/`에 둔다. 현재 한 곳에서만 사용하더라도 이 기준을 적용한다.
+- 기능이 더 추가되어도 해당 기능 외에서는 사용할 일이 없을 것으로 판단되는 화면 내부 UI 조각만 `src/features/<feature>/components/`에 둔다.
+- Feature 하위 디렉토리 이름도 복수형 `components/`로 통일한다. `component/`는 사용하지 않는다.
+- 파일 이름이나 최초 구현 위치, 컴포넌트의 크기만으로 공통 여부를 판단하지 않는다. 다른 기능에서도 같은 의미와 동작으로 사용할 수 있는지를 확인한다.
+- 공통 컴포넌트는 값과 콜백을 props로 받으며 Feature의 내부 코드·Hook·규칙 함수를 참조하지 않는다. 기능별 동작은 상위에서 콜백으로 전달한다.
+- 하나의 파일에 범용 UI와 기능 전용 UI가 섞여 있으면 범용 UI를 추출해 공통으로 이동한다. 공통 컴포넌트를 Feature에서 다시 export하는 중간 파일은 만들지 않는다.
+
+예를 들어 하단 내비게이션, 바텀시트, 선택 행, 카드, 특성 태그, 날짜 선택기, 복수 선택, 음식 편집기는 공통 UI 조각의 후보가 된다. 날짜 선택기·복수 선택·음식 편집기는 입력 초안과 사용자 동작의 결과를 상위에서 관리하고, 선택지와 표시 문구를 props로 받는다. 공통 UI가 온보딩·식사 폼 등 시각적 variant를 제공하는 것은 허용한다.
+
+`HomeView`, `MealCheckinView`처럼 화면 전체를 그리는 View는 해당 Feature의 `screens/`에 둔다. 한 Feature의 화면 수와 화면 간 공유 구조를 살펴 Screen에 UI를 함께 둘지, 화면별 View를 분리할지 결정한다. 단계별 화면 본문이 모인 `OnboardingForm`도 작은 UI 조각과 별도로 검토한다. 라우트 연결, Navigation, 데이터 로딩, 기능 Hook을 소유하는 파일은 UI 조각으로 분류하지 않는다.
 
 ### util — 공통 기반 도구
 
@@ -147,18 +159,19 @@ export const colors = {
 
 ## 4. UI와 비즈니스 로직 분리
 
-Container / Presentational 패턴의 책임 구분을 `Screen + Custom Hook + UI Component` 조합으로 적용한다. 별도 Container 파일은 필수가 아니며 Screen이 연결 지점 역할을 한다.
+Container / Presentational 패턴의 책임 구분을 `Screen + Custom Hook + View + UI 조각` 조합으로 적용한다. 별도 Container 파일은 필수가 아니며 Screen이 연결 지점 역할을 한다.
 
 | 구분 | 책임 | meal-checkin 예시 |
 | --- | --- | --- |
 | Screen | Hook 호출, props 연결, Navigation | FoodReviewScreen.tsx |
 | Custom Hook | 편집 상태, 요청 실행, 저장 흐름 | useFoodReview.ts |
-| UI Component | props 표시, 입력을 콜백으로 전달 | FoodReviewView.tsx |
+| 화면 View | 화면 전체를 props로 표시하고 입력을 콜백으로 전달 | FoodReviewView.tsx |
+| UI 조각 | 화면 내부의 재사용 가능한 부분을 표시 | RecognitionResultList.tsx |
 | 규칙 함수 | 검증·정규화·결과 병합 | rules.ts |
 
-### UI 컴포넌트 규칙
+### UI 표현 계층 규칙
 
-- 공통 `components`와 Feature의 `components`는 모두 UI 표현 영역이다.
+- `screens`의 View와 공통·Feature의 `components`는 모두 UI 표현 영역이다.
 - 데이터와 동작은 props로 받는다.
 - API, Storage, 업무용 Query Hook, Feature 비즈니스 Hook을 직접 사용하지 않는다.
 - 업무 데이터를 읽기 위해 전역 상태나 기능 Context에 직접 접근하지 않는다.
@@ -201,7 +214,7 @@ export function FoodReviewScreen() {
 ```
 
 ```tsx
-// components/FoodReviewView.tsx
+// screens/FoodReviewView.tsx
 export function FoodReviewView({
   foods,
   isSaving,
@@ -360,7 +373,7 @@ Navigation과 상태 변경 시 의도하지 않은 빈 화면, 다른 단계의
 - React와 무관한 규칙이 일반 함수로 분리되어 있는가?
 - 서버 상태와 편집 초안의 소유권이 명확한가?
 - query key와 저장 후 캐시 갱신이 올바른가?
-- 공통 코드와 기능 전용 코드의 위치가 적절한가?
+- 여러 기능·페이지에서 재사용할 가능성이 있는 UI 조각은 `src/components/`에, 기능 전용의 화면 내부 UI 조각은 `src/features/<feature>/components/`에 있는가? 화면 전체의 UI는 별도로 검토했는가?
 - 기존 항목 ID와 사용자 수정 내용이 보존되는가?
 - 불필요한 계층·라이브러리·파일을 추가하지 않았는가?
 - 표시 문구와 색상이 각각 `util/strings.ts`, `util/colors.ts`에서 관리되는가?

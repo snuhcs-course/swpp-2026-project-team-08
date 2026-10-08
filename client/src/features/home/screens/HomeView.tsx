@@ -11,7 +11,10 @@ import {
 } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
 import type { MealDraft } from '../../../types/meal';
-import type { ReactNode } from 'react';
+import {
+  SectionCard,
+  sectionCardStyles,
+} from '../../../components/SectionCard';
 import type { ChildProfile, Language } from '../../../types/profile';
 import type { ExposureSummary, SavedSuggestion } from '../../../types/home';
 import { colors } from '../../../util/colors';
@@ -39,33 +42,6 @@ type Props = {
   onLogMeal: () => void;
   onTrySuggestion: (id: string) => void;
 };
-
-function HomeCard({
-  title,
-  subtitle,
-  accessory,
-  children,
-  style,
-}: {
-  title: string;
-  subtitle: string;
-  accessory?: ReactNode;
-  children: ReactNode;
-  style?: object;
-}) {
-  return (
-    <View style={[styles.card, style]}>
-      <View style={styles.cardHeading}>
-        <View style={styles.cardHeadingCopy}>
-          <Text style={styles.cardTitle}>{title}</Text>
-          <Text style={styles.cardSubtitle}>{subtitle}</Text>
-        </View>
-        {accessory}
-      </View>
-      {children}
-    </View>
-  );
-}
 
 export function HomeView({
   draft,
@@ -162,14 +138,16 @@ export function HomeView({
         </View>
 
         {draftError && (
-          <View style={styles.card}>
+          <View style={sectionCardStyles.card}>
             <Text style={styles.stateText}>{s.mealCheckin.loadFailed}</Text>
             <AppButton label={s.common.retry} onPress={onRefresh} />
           </View>
         )}
         {draft && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{s.mealCheckin.resume}</Text>
+          <View style={sectionCardStyles.card}>
+            <Text style={sectionCardStyles.cardTitle}>
+              {s.mealCheckin.resume}
+            </Text>
             <Text style={styles.rowDescription}>
               {draft.mealDate} · {s.mealCheckin.foodCount(draft.foods.length)}
             </Text>
@@ -200,7 +178,7 @@ export function HomeView({
         )}
         {data && (
           <>
-            <HomeCard
+            <SectionCard
               title={s.home.sosTitle}
               subtitle={s.home.sosBody}
               style={styles.sosCard}
@@ -248,9 +226,9 @@ export function HomeView({
                   <Text style={styles.emptyText}>{s.home.noExposure}</Text>
                 </View>
               )}
-            </HomeCard>
+            </SectionCard>
 
-            <HomeCard
+            <SectionCard
               title={s.home.recommendations}
               subtitle={s.home.goalsSubtitle}
               style={styles.goalsCard}
@@ -296,9 +274,9 @@ export function HomeView({
                   </Text>
                 </View>
               )}
-            </HomeCard>
+            </SectionCard>
 
-            <HomeCard
+            <SectionCard
               title={s.home.calendar}
               subtitle={s.home.calendarSubtitle}
               style={styles.calendarCard}
@@ -352,7 +330,7 @@ export function HomeView({
                   );
                 })}
               </View>
-            </HomeCard>
+            </SectionCard>
           </>
         )}
       </ScrollView>
@@ -460,36 +438,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: fonts.poppinsSemiBold,
     flexShrink: 0,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: 20,
-    padding: 16,
-    gap: 14,
-    shadowColor: colors.navy,
-    shadowOpacity: 0.07,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 24,
-    elevation: 2,
-  },
-  cardHeading: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 8,
-    minHeight: 41,
-  },
-  cardHeadingCopy: { flex: 1, gap: 2 },
-  cardTitle: {
-    color: colors.homeText,
-    fontSize: 16,
-    fontFamily: fonts.poppinsSemiBold,
-  },
-  cardSubtitle: {
-    color: colors.homeMuted,
-    fontSize: 9,
-    lineHeight: 13,
-    fontFamily: fonts.poppinsRegular,
   },
   sosCard: { minHeight: 211 },
   goalsCard: { minHeight: 140 },

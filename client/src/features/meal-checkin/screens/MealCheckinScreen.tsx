@@ -6,7 +6,7 @@ import { AppButton } from '../../../components/AppButton';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
-import { MealCheckinView } from '../components/MealCheckinView';
+import { MealCheckinView } from './MealCheckinView';
 import { useMealCheckin } from '../hooks/useMealCheckin';
 
 export function MealCheckinScreen({
@@ -129,6 +129,7 @@ export function MealCheckinScreen({
       onSheet={model.setSheet}
       onTraits={model.setTraits}
       onSaveTraits={model.saveTraits}
+      onToggleTrait={model.toggleTrait}
       onRetryDraft={() => {
         void model.flush();
       }}

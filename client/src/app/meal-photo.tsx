@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ export default function MealPhotoScreen() {
   const query = useMealDraft(model.profile?.id ?? '');
   const s = copyFor(model.language);
   const photo = query.data?.photo?.id === photoId ? query.data.photo : null;
+  if (model.ready && !model.profile) return <Redirect href="/" />;
   return (
     <SafeAreaView style={styles.root}>
       <AppButton

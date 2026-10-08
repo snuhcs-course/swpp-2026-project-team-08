@@ -20,13 +20,8 @@ export function MealDateField({
   const [field, setField] = useState<0 | 1 | 2 | null>(null);
   const [year, month, day] = parts;
   const dayCount = new Date(year, month, 0).getDate();
-  const date = new Date(
-    ...([
-      Number(value.slice(0, 4)),
-      Number(value.slice(5, 7)) - 1,
-      Number(value.slice(8, 10)),
-    ] as [number, number, number]),
-  );
+  const [selectedYear, selectedMonth, selectedDay] = value.split('-').map(Number);
+  const date = new Date(selectedYear, selectedMonth - 1, selectedDay);
   const label = s.mealCheckin.dateLabel(
     date.toLocaleDateString(language === 'ko' ? 'ko-KR' : 'en-GB', {
       month: 'long',

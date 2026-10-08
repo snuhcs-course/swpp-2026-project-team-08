@@ -63,7 +63,9 @@ export async function pickMealPhoto(
   }
   if (!supported.includes(mimeType)) throw new PhotoError('image');
   try {
-    await Image.getSize(uri);
+    await new Promise<void>((resolve, reject) => {
+      Image.getSize(uri, () => resolve(), reject);
+    });
   } catch {
     throw new PhotoError('image');
   }

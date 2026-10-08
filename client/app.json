@@ -42,7 +42,13 @@
         }
       ],
       "expo-font",
-      "expo-image"
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "microphonePermission": false
+        }
+      ]
     ]
   }
 }

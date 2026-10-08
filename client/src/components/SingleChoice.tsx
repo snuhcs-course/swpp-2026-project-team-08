@@ -1,21 +1,17 @@
 import { View } from 'react-native';
 import { ChoiceRow } from './ChoiceRow';
-import type { Language } from '../types/profile';
-import { optionsFor, type OptionGroup } from '../util/strings';
 export function SingleChoice({
-  language,
-  group,
+  options,
   value,
   onChange,
 }: {
-  language: Language;
-  group: OptionGroup;
+  options: readonly { id: string; label: string }[];
   value: string;
   onChange: (value: string) => void;
 }) {
   return (
     <View>
-      {optionsFor(group, language).map((option) => (
+      {options.map((option) => (
         <ChoiceRow
           key={option.id}
           label={option.label}

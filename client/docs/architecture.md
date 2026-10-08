@@ -106,7 +106,7 @@ API와 Storage 함수는 일반 비동기 함수로 작성한다. TanStack Query
 
 예를 들어 하단 내비게이션, 바텀시트, 선택 행, 카드, 특성 태그, 날짜 선택기, 복수 선택, 음식 편집기는 공통 UI 조각의 후보가 된다. 날짜 선택기·복수 선택·음식 편집기는 입력 초안과 사용자 동작의 결과를 상위에서 관리하고, 선택지와 표시 문구를 props로 받는다. 공통 UI가 온보딩·식사 폼 등 시각적 variant를 제공하는 것은 허용한다.
 
-`HomeView`, `MealCheckinView`처럼 화면 전체를 그리는 View는 해당 Feature의 `screens/`에 둔다. 한 Feature의 화면 수와 화면 간 공유 구조를 살펴 Screen에 UI를 함께 둘지, 화면별 View를 분리할지 결정한다. 단계별 화면 본문이 모인 `OnboardingForm`도 작은 UI 조각과 별도로 검토한다. 라우트 연결, Navigation, 데이터 로딩, 기능 Hook을 소유하는 파일은 UI 조각으로 분류하지 않는다.
+`HomeView`, `MealCheckinView`처럼 화면 전체를 그리는 View는 해당 Feature의 `screens/`에 둔다. 한 Feature의 화면 수와 화면 간 공유 구조를 살펴 Screen에 UI를 함께 둘지, 화면별 View를 분리할지 결정한다. 온보딩과 식사 기록처럼 단계가 많은 흐름은 상위 View가 단계별 View를 선택하고, 각 단계 View를 `screens/`에 둔다. 날짜·음식 편집 초안처럼 화면 UI보다 오래 유지되는 입력 상태는 Feature Hook이 관리한다. 라우트 연결, Navigation, 데이터 로딩, 기능 Hook을 소유하는 파일은 UI 조각으로 분류하지 않는다.
 
 ### util — 공통 기반 도구
 

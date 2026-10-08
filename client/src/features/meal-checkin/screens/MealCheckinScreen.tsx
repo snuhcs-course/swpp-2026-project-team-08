@@ -8,6 +8,7 @@ import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import { MealCheckinView } from './MealCheckinView';
 import { useMealCheckin } from '../hooks/useMealCheckin';
+import { useMealCheckinInputs } from '../hooks/useMealCheckinInputs';
 
 export function MealCheckinScreen({
   childId,
@@ -23,6 +24,14 @@ export function MealCheckinScreen({
   startAfterMealId?: string;
 }) {
   const model = useMealCheckin(childId, startAfterMealId);
+  const inputs = useMealCheckinInputs({
+    draft: model.draft,
+    traits: model.traits,
+    onUpdate: model.update,
+    onEditFood: model.edit,
+    onChangeFood: model.changeFood,
+    onToggleTrait: model.toggleTrait,
+  });
   const s = copyFor(language);
   const exit = async () => {
     if (model.saving) return;
@@ -91,6 +100,8 @@ export function MealCheckinScreen({
       saving={model.saving}
       traits={model.traits}
       sheet={model.sheet}
+      dateInput={inputs.date}
+      foodInput={inputs.food}
       onUpdate={model.update}
       onGo={model.go}
       onBack={back}
@@ -110,8 +121,9 @@ export function MealCheckinScreen({
         void model.analyze();
       }}
       onCancelAnalysis={model.cancelAnalysis}
-      onEdit={model.edit}
+      onEdit={inputs.editFood}
       onRemove={model.removeFood}
+      onRemovePhoto={model.removePhoto}
       onChangeFood={model.changeFood}
       onSaveFood={model.saveFood}
       onConfirm={model.confirm}

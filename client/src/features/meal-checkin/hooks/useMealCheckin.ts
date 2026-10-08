@@ -327,6 +327,16 @@ export function useMealCheckin(childId: string, startAfterMealId?: string) {
             ? null
             : (current.current?.exposureFoodId ?? null),
       }),
+    removePhoto: () => {
+      const value = current.current;
+      if (!value) return;
+      update({
+        photo: null,
+        step: 'photo',
+        foods: value.foods.filter((food) => food.source === 'parent'),
+        exposureFoodId: null,
+      });
+    },
     confirm: () => {
       if (current.current?.foods.length)
         update({ foods: confirmFoods(current.current.foods), step: 'goal' });

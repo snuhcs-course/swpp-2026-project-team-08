@@ -2,7 +2,7 @@ import { getLocales } from 'expo-localization';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { clearDraft, readDraft, readLanguage, readProfile, saveDraft, saveLanguage, saveProfile } from '../../../data/storage/profileStorage';
 import type { ChildProfile, Language, SafeFood } from '../../../types/profile';
-import { addUnique, canContinue, canFinish, isDraft, toggleExclusive } from '../rules';
+import { addUnique, canAddSafeFood, canContinue, canFinish, isDraft, toggleExclusive, validEmail } from '../rules';
 import { emptyDraft, steps, type OnboardingDraft, type OnboardingStep } from '../types';
 
 type SaveStatus = 'saving' | 'saved' | 'error';
@@ -114,9 +114,17 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setDraft((current) => ({ ...current, [field]: current[field].filter((item) => item !== value) }));
   }, []);
   const addSafeFood = useCallback((food: Omit<SafeFood, 'id'>) => {
+    if (!canAddSafeFood(food)) return;
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     setDraft((current) => ({
-      ...current, safeFoods: [...current.safeFoods, { ...food, id }], noSafeFoods: false,
+      ...current,
+      safeFoods: [...current.safeFoods, {
+        id,
+        name: food.name.trim(),
+        preparation: food.preparation.trim(),
+        presentationNote: food.presentationNote.trim(),
+      }],
+      noSafeFoods: false,
       safeFoodInput: { name: '', preparation: '', presentationNote: '' },
     }));
   }, []);
@@ -172,7 +180,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setPassword, setLanguage, setField, setConsent, toggleList, setList, addListItem,
     removeListItem, addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setStep,
     startEdit, retrySave, finish, canContinue: (step) => step === 'review' ? canFinish(draft)
-      : step === 'account' && editing ? !!draft.caregiverName.trim() && /\S+@\S+\.\S+/.test(draft.caregiverEmail)
+      : step === 'account' && editing ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)
         : canContinue(step, draft, password),
   }}>{children}</OnboardingContext.Provider>;
 }

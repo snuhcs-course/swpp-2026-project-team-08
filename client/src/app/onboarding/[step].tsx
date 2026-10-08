@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from '@expo/vector-icons/Feather';
 import { AppButton } from '../../components/AppButton';
 import { useFontReady } from '../../components/FontReadyContext';
-import { OnboardingForm } from '../../features/onboarding/components/OnboardingForm';
+import { OnboardingStepView } from '../../features/onboarding/screens/OnboardingStepView';
 import { nextStep, previousStep, useOnboarding } from '../../features/onboarding/hooks/useOnboarding';
 import { isStep, steps, type OnboardingStep } from '../../features/onboarding/types';
 import { colors } from '../../util/colors';
@@ -62,7 +62,7 @@ export default function OnboardingStepScreen() {
           <Text style={styles.subtitle}>{s.onboarding.subtitles[step]}</Text>
         </View>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
-          <OnboardingForm key={step} step={step} model={model} onEditStep={(target) => navigate(target, true)} />
+          <OnboardingStepView key={step} step={step} model={model} onEditStep={(target) => navigate(target, true)} />
           {step === 'safe-foods' && <AppButton label={s.common.saveExit} secondary onPress={() => void handleSaveExit()} style={styles.saveExit} />}
           {model.saveStatus === 'error' && <AppButton label={s.common.retry} compact secondary onPress={() => void model.retrySave()} style={styles.retry} />}
         </ScrollView>

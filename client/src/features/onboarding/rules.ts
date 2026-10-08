@@ -2,6 +2,18 @@ import { isStep, type OnboardingDraft, type OnboardingStep } from './types';
 import type { Language } from '../../types/profile';
 import { labelFor } from '../../util/strings';
 
+export function validEmail(value: string): boolean {
+  return /\S+@\S+\.\S+/.test(value);
+}
+
+export function validPassword(value: string): boolean {
+  return value.length >= 8;
+}
+
+export function canAddSafeFood(input: OnboardingDraft['safeFoodInput']): boolean {
+  return !!input.name.trim() && !!input.preparation.trim();
+}
+
 export function toggleExclusive(values: string[], value: string, noneValue = 'none'): string[] {
   if (value === noneValue) return values.includes(noneValue) ? [] : [noneValue];
   const withoutNone = values.filter((item) => item !== noneValue);
@@ -12,7 +24,7 @@ export function toggleExclusive(values: string[], value: string, noneValue = 'no
 
 export function canContinue(step: OnboardingStep, draft: OnboardingDraft, password: string): boolean {
   switch (step) {
-    case 'account': return !!draft.caregiverName.trim() && /\S+@\S+\.\S+/.test(draft.caregiverEmail) && password.length >= 8;
+    case 'account': return !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail) && validPassword(password);
     case 'consent': return draft.consent.accountPrivacy && draft.consent.photoAnalysis;
     case 'child': return !!draft.childName.trim() && !!draft.ageRange;
     case 'allergies': return draft.allergies.length > 0;
@@ -24,7 +36,7 @@ export function canContinue(step: OnboardingStep, draft: OnboardingDraft, passwo
 
 export function canFinish(draft: OnboardingDraft): boolean {
   return !!draft.caregiverName.trim()
-    && /\S+@\S+\.\S+/.test(draft.caregiverEmail)
+    && validEmail(draft.caregiverEmail)
     && draft.consent.accountPrivacy && draft.consent.photoAnalysis
     && !!draft.childName.trim() && !!draft.ageRange
     && draft.allergies.length > 0 && draft.restrictions.length > 0

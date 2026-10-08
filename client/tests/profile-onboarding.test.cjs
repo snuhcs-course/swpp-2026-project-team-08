@@ -28,8 +28,9 @@ Module._load = function (name, ...args) {
 
 const { emptyDraft } = require('../src/features/onboarding/types.ts');
 const { canFinish, isDraft } = require('../src/features/onboarding/rules.ts');
-const { readProfile, saveProfile, readDraft, saveDraft, clearDraft, readLanguage, saveLanguage } =
-  require('../src/data/storage/profileStorage.ts');
+const { readProfile, saveProfile } = require('../src/data/storage/profileStorage.ts');
+const { readDraft, saveDraft, clearDraft } = require('../src/data/storage/onboardingDraftStorage.ts');
+const { readLanguage, saveLanguage } = require('../src/data/storage/languageStorage.ts');
 
 function completedDraft() {
   return {

@@ -1,6 +1,6 @@
-import { getLocales } from 'expo-localization';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { clearDraft, readDraft, readLanguage, readProfile, saveDraft, saveLanguage, saveProfile } from '../../../data/storage/profileStorage';
+import { clearDraft, readDraft, saveDraft } from '../../../data/storage/onboardingDraftStorage';
+import { useProfile } from '../../../providers/ProfileProvider';
 import type { ChildProfile, Language, SafeFood } from '../../../types/profile';
 import { addUnique, canAddSafeFood, canContinue, canFinish, isDraft, toggleExclusive, validEmail } from '../rules';
 import { emptyDraft, steps, type OnboardingDraft, type OnboardingStep } from '../types';
@@ -41,41 +41,36 @@ export type OnboardingContextValue = {
 
 const OnboardingContext = createContext<OnboardingContextValue | null>(null);
 
-function deviceLanguage(): Language {
-  return getLocales()[0]?.languageCode === 'ko' ? 'ko' : 'en';
-}
-
 export function OnboardingProvider({ children }: { children: ReactNode }) {
+  const { status, profile, language, commitProfile, changeLanguage } = useProfile();
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
-  const [profile, setProfile] = useState<ChildProfile | null>(null);
   const [draft, setDraft] = useState<OnboardingDraft>(emptyDraft);
   const [password, setPassword] = useState('');
-  const [language, setLanguageState] = useState<Language>(deviceLanguage);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   const [editing, setEditing] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
   const saveChain = useRef<Promise<void>>(Promise.resolve());
   const saveVersion = useRef(0);
   const skipFirstSave = useRef(true);
+  const finishing = useRef(false);
 
   useEffect(() => {
+    if (status === 'loading' || ready) return;
     let active = true;
-    Promise.all([readProfile(), readDraft(), readLanguage()])
-      .then(([storedProfile, storedDraft, storedLanguage]) => {
+    readDraft()
+      .then((storedDraft) => {
         if (!active) return;
-        setProfile(storedProfile);
         if (isDraft(storedDraft)) {
           setDraft(storedDraft);
           setHasDraft(true);
-          if (storedProfile) setEditing(true);
+          if (profile) setEditing(true);
         }
-        if (storedLanguage) setLanguageState(storedLanguage);
         setReady(true);
       })
       .catch(() => { if (active) { setLoadError(true); setReady(true); } });
     return () => { active = false; };
-  }, []);
+  }, [status, profile, ready]);
 
   const persist = useCallback((value: OnboardingDraft) => {
     const version = ++saveVersion.current;
@@ -90,10 +85,10 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!ready || loadError) return;
+    if (!ready || loadError || status !== 'ready' || finishing.current) return;
     if (skipFirstSave.current) { skipFirstSave.current = false; return; }
     if (!profile || editing) void Promise.resolve().then(() => persist(draft));
-  }, [draft, ready, loadError, profile, editing, persist]);
+  }, [draft, ready, loadError, status, profile, editing, persist]);
 
   const setField = useCallback((field: DraftField, value: string) => {
     setDraft((current) => ({ ...current, [field]: value }));
@@ -148,12 +143,12 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setEditing(true);
   }, [profile, editing]);
   const setLanguage = useCallback((value: Language) => {
-    setLanguageState(value);
-    void saveLanguage(value).catch(() => setSaveStatus('error'));
-  }, []);
+    void changeLanguage(value).catch(() => setSaveStatus('error'));
+  }, [changeLanguage]);
   const retrySave = useCallback(() => persist(draft), [draft, persist]);
   const finish = useCallback(async () => {
-    if (!canFinish(draft)) return false;
+    if (finishing.current || !canFinish(draft)) return false;
+    finishing.current = true;
     try {
       await persist(draft);
       await saveChain.current;
@@ -163,20 +158,22 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
         id: profile?.id ?? `child-${Date.now()}`,
         updatedAt: new Date().toISOString(),
       };
-      await saveProfile(next);
-      setProfile(next);
-      setEditing(false);
+      await commitProfile(next);
       await clearDraft();
+      setEditing(false);
       setHasDraft(false);
       return true;
     } catch {
       setSaveStatus('error');
       return false;
+    } finally {
+      finishing.current = false;
     }
-  }, [draft, profile, persist]);
+  }, [draft, profile, persist, commitProfile]);
 
   return <OnboardingContext.Provider value={{
-    ready, loadError, profile, draft, password, language, saveStatus, editing, hasDraft,
+    ready: ready && status !== 'loading', loadError: loadError || status === 'error',
+    profile, draft, password, language, saveStatus, editing, hasDraft,
     setPassword, setLanguage, setField, setConsent, toggleList, setList, addListItem,
     removeListItem, addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setStep,
     startEdit, retrySave, finish, canContinue: (step) => step === 'review' ? canFinish(draft)

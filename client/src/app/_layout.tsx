@@ -7,6 +7,7 @@ import { StyleSheet, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { OnboardingProvider } from '../features/onboarding/hooks/useOnboarding';
+import { ProfileProvider } from '../providers/ProfileProvider';
 import { FontReadyContext } from '../components/FontReadyContext';
 import { colors } from '../util/colors';
 
@@ -21,15 +22,17 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <FontReadyContext.Provider value={fontsLoaded || !!fontError}>
-          <OnboardingProvider>
-            <View style={styles.root}>
-              <StatusBar style="dark" />
-              <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.onboardingBackground } }}>
-                <Stack.Screen name="(main)" options={{ animation: 'none' }} />
-              </Stack>
-              {!fontsLoaded && !fontError && <View style={styles.fontGate} />}
-            </View>
-          </OnboardingProvider>
+          <ProfileProvider>
+            <OnboardingProvider>
+              <View style={styles.root}>
+                <StatusBar style="dark" />
+                <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.onboardingBackground } }}>
+                  <Stack.Screen name="(main)" options={{ animation: 'none' }} />
+                </Stack>
+                {!fontsLoaded && !fontError && <View style={styles.fontGate} />}
+              </View>
+            </OnboardingProvider>
+          </ProfileProvider>
         </FontReadyContext.Provider>
       </QueryClientProvider>
     </SafeAreaProvider>

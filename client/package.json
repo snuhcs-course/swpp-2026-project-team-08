@@ -39,6 +39,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
+    "test": "node --test tests/*.test.cjs",
+    "test:onboarding": "node --test tests/profile-onboarding.test.cjs",
     "test:meal-checkin": "node --test tests/meal-checkin.test.cjs"
   },
   "private": true

@@ -1,6 +1,6 @@
 # React Native 개발 구조 및 작업 규칙
 
-이 문서는 새 기능을 개발하는 Agent를 위한 코드 배치, 책임 분리, 상태 관리 기준이다. 구체적인 기능 요구사항은 해당 기능의 specification을 따른다. 아래 meal-checkin 흐름과 파일명은 구조를 설명하는 예시이며, 확정된 화면 명세가 아니다.
+이 문서는 기능에 관계없이 적용하는 코드 배치, 의존성, 상태 소유권 규칙이다. 기능별 동작과 화면 요구사항은 해당 specification에서 정의한다.
 
 ## 1. 기본 원칙
 
@@ -18,62 +18,45 @@
 
 ```text
 src/
-  data/
-    network/
-      httpClient.ts
-    device/
-      mealPhotoPicker.ts
-    api/
-      mealApi.ts
-      recognitionApi.ts
-    storage/
-      storageClient.ts
-      mealCheckinDraftStorage.ts
-    queries/
-      mealQueries.ts
-      recognitionMutations.ts
-
-  types/
-    meal.ts
-    food.ts
-    child.ts
+  app/
+    _layout.tsx
+    <route>.tsx
 
   providers/
-    ProfileProvider.tsx
-    AuthProvider.tsx            # 인증이 도입되면 추가
+    <shared-state>Provider.tsx
 
   features/
-    meal-checkin/
+    <feature>/
       screens/
-        BeforeMealScreen.tsx
-        FoodReviewScreen.tsx
-        FoodReviewView.tsx
-        AfterMealScreen.tsx
-        OutcomeReviewScreen.tsx
+        <flow>Screen.tsx
+        <flow>View.tsx
+        <step>View.tsx
       components/
-        RecognitionResultList.tsx
-        OutcomeSelector.tsx
+        <feature-only-ui>.tsx
       hooks/
-        useFoodReview.ts
-      types.ts
+        use<workflow>.ts
+      <feature>Provider.tsx
       rules.ts
+      types.ts
 
   components/
-    Button.tsx
-    TextField.tsx
-    FoodItemCard.tsx
+    <reusable-ui>.tsx
+
+  data/
+    network/
+    device/
+    api/
+    storage/
+    queries/
+
+  types/
 
   util/
     strings.ts
     colors.ts
-    date.ts
-
-  app/
-    _layout.tsx
-    meal-checkin.tsx
 ```
 
-구조 예시에 있는 파일을 일괄 생성하지 않고 필요한 것만 작성한다. `providers/`도 여러 기능이 실제로 공유할 상태가 생겼을 때 사용한다. 앱 초기화와 Provider 조합은 `app/_layout.tsx`에서, Navigation은 기존 Expo Router 구성에서 관리한다. 여러 라우트가 한 기능의 초안을 공유해야 하면 루트 레이아웃에서 그 Feature의 Provider를 마운트할 수 있지만, 초안의 소유권과 공개 API는 해당 Feature에 남긴다.
+`<...>`는 실제 기능과 책임에 맞는 이름으로 바꾼다. 이 트리는 허용 위치를 나타내며 파일·하위 폴더를 미리 모두 생성하라는 뜻이 아니다. `providers/`는 기능 간 공유 상태가 있을 때, Feature의 `components/`·Provider·`rules.ts`·`types.ts`는 해당 책임이 생겼을 때만 둔다. `data/network`와 `data/device`도 필요한 전송·기기 기능이 있을 때 만든다. 앱 초기화와 Provider 조합은 `app/_layout.tsx`에 둔다. 여러 라우트가 한 기능의 초안을 공유해야 하면 루트 레이아웃에서 그 Feature Provider를 마운트할 수 있지만, 상태의 소유권과 공개 API는 해당 Feature에 남긴다.
 
 ## 3. 각 영역의 책임
 

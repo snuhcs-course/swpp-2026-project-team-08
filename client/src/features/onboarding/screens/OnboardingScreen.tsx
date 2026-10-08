@@ -106,7 +106,6 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         onToggleList={model.toggleList}
         onAddListItem={model.addListItem}
         onRemoveListItem={model.removeListItem}
-        onSetList={model.setList}
       />
     );
     return null;
@@ -120,6 +119,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
       step={step}
       stepIndex={index}
       stepCount={steps.length}
+      childName={model.draft.childName}
       saveStatus={model.saveStatus}
       submitting={submitting}
       canContinue={model.canContinue(step)}

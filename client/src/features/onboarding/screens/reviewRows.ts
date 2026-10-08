@@ -14,18 +14,10 @@ export function reviewRows(draft: OnboardingDraft, language: Language): ReviewRo
     : s.common.notEntered;
 
   return [
-    { step: 'account', title: s.onboarding.titles.account, value: `${draft.caregiverName || s.common.notEntered} · ${draft.caregiverEmail || s.common.notEntered}` },
-    { step: 'child', title: s.onboarding.reviewChild, value: `${draft.childName || s.common.notEntered} · ${selectedValue('age', draft.ageRange)}` },
-    { step: 'allergies', title: s.onboarding.titles.allergies, value: listValue('allergies', draft.allergies) },
-    { step: 'restrictions', title: s.onboarding.titles.restrictions, value: listValue('restrictions', draft.restrictions) },
+    { step: 'allergies', title: s.onboarding.reviewSafety, value: `${s.onboarding.titles.allergies}: ${listValue('allergies', draft.allergies)}` },
     { step: 'family', title: s.onboarding.reviewFamily, value: listValue('family', draft.familyFoods) },
     { step: 'approaches', title: s.onboarding.reviewApproaches, value: listValue('approaches', draft.approaches) },
-    { step: 'texture', title: s.onboarding.titles.texture, value: listValue('texture', draft.texture) },
-    { step: 'smell', title: s.onboarding.titles.smell, value: selectedValue('smell', draft.smell) },
-    { step: 'taste', title: s.onboarding.titles.taste, value: listValue('taste', draft.taste) },
-    { step: 'presentation', title: s.onboarding.titles.presentation, value: listValue('presentation', draft.presentation) },
-    { step: 'temperature', title: s.onboarding.titles.temperature, value: selectedValue('temperature', draft.temperature) },
-    { step: 'familiarity', title: s.onboarding.reviewFamiliarity, value: selectedValue('familiarity', draft.familiarity) },
+    { step: 'texture', title: s.onboarding.reviewSensory, value: listValue('texture', draft.texture) },
     {
       step: 'safe-foods',
       title: s.onboarding.reviewSafeFoods,
@@ -35,5 +27,12 @@ export function reviewRows(draft: OnboardingDraft, language: Language): ReviewRo
           ? draft.safeFoods.map((food) => `${food.name} · ${food.preparation}`).join(', ')
           : s.common.notEntered,
     },
+    { step: 'child', title: s.onboarding.reviewChild, value: `${draft.childName || s.common.notEntered} · ${selectedValue('age', draft.ageRange)}` },
+    { step: 'restrictions', title: s.onboarding.titles.restrictions, value: listValue('restrictions', draft.restrictions) },
+    { step: 'presentation', title: s.onboarding.titles.presentation, value: listValue('presentation', draft.presentation) },
+    { step: 'temperature', title: s.onboarding.titles.temperature, value: selectedValue('temperature', draft.temperature) },
+    { step: 'taste', title: s.onboarding.titles.taste, value: listValue('taste', draft.taste) },
+    { step: 'smell', title: s.onboarding.titles.smell, value: selectedValue('smell', draft.smell) },
+    { step: 'familiarity', title: s.onboarding.reviewFamiliarity, value: selectedValue('familiarity', draft.familiarity) },
   ];
 }

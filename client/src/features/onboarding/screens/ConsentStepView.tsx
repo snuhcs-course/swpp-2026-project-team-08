@@ -1,6 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Pressable, Text, View } from 'react-native';
 import { colors } from '../../../util/colors';
+import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import { copyFor } from '../../../util/strings';
 import type { Language } from '../../../types/profile';
 import type { OnboardingDraft } from '../types';
@@ -23,18 +24,20 @@ export function ConsentStepView({ consent, language, onToggle }: {
               onPress={() => onToggle(key)}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: consent[key] }}
-              style={styles.consentRow}
+              style={styles.consentPressable}
             >
-              <View style={[styles.consentCheck, consent[key] && styles.consentChecked]}>
-                {consent[key] && <Feather name="check" size={13} color={colors.surface} />}
-              </View>
-              <View style={styles.consentCopy}>
-                <Text style={styles.consentTitle}>
-                  {s.onboarding[key]}{' '}
-                  <Text style={styles.consentRequired}>
+              <View style={styles.consentRow}>
+                <View style={[styles.consentCheck, consent[key] && styles.consentChecked]}>
+                  {consent[key] && <Feather name="check" size={13} color={colors.surface} />}
+                </View>
+                <Text style={styles.consentTitle}>{s.onboarding[key]}</Text>
+                <View style={[styles.consentBadge, key === 'aiTraining' && styles.consentOptionalBadge]}>
+                  <Text style={[styles.consentRequired, key === 'aiTraining' && styles.consentOptional]}>
                     {key === 'aiTraining' ? s.onboarding.optional : s.onboarding.required}
                   </Text>
-                </Text>
+                </View>
+              </View>
+              <View style={styles.consentCopy}>
                 <Text style={styles.consentDescription}>{s.onboarding.consentDescriptions[key]}</Text>
                 <Text style={styles.detail}>{s.onboarding.viewDetail}</Text>
               </View>
@@ -43,7 +46,7 @@ export function ConsentStepView({ consent, language, onToggle }: {
         ))}
       </View>
       <View style={styles.safetyBanner}>
-        <Feather name="shield" size={15} color={colors.error} />
+        <UiAssetIcon name="onboarding-shield" />
         <View style={styles.safetyCopy}>
           <Text style={styles.safetyTitle}>{s.onboarding.consentSafetyTitle}</Text>
           <Text style={styles.safetyText}>{s.onboarding.consentNote}</Text>

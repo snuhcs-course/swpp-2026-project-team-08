@@ -2,10 +2,12 @@ import { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { Text, View } from 'react-native';
 import { FormField } from '../../../components/FormField';
+import { DropdownChoice } from '../../../components/DropdownChoice';
+import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import { MultiChoice } from '../../../components/MultiChoice';
 import { SingleChoice } from '../../../components/SingleChoice';
 import { colors } from '../../../util/colors';
-import { copyFor, optionsFor } from '../../../util/strings';
+import { copyFor, labelFor, optionsFor } from '../../../util/strings';
 import type { Language } from '../../../types/profile';
 import type { OnboardingDraft } from '../types';
 import { styles } from './onboardingStyles';
@@ -21,7 +23,17 @@ type ChoiceValues = Pick<OnboardingDraft,
 type ListField = 'allergies' | 'restrictions' | 'familyFoods' | 'approaches' | 'texture' | 'taste' | 'presentation';
 type TextField = 'childName' | 'ageRange' | 'smell' | 'temperature' | 'familiarity';
 
-export function ChoiceStepView({ step, values, language, onSetField, onToggleList, onAddListItem, onRemoveListItem, onSetList }: {
+function Guidance({ title, body, icon = 'info' }: { title?: string; body: string; icon?: 'info' | 'calendar' | 'activity' }) {
+  return <View style={styles.infoBanner}>
+    <View style={styles.infoIcon}>{icon === 'calendar' ? <UiAssetIcon name="onboarding-calendar" /> : <Feather name={icon} size={13} color={colors.onboardingPrimary} />}</View>
+    <View style={styles.safetyCopy}>
+      {title && <Text style={styles.infoTitle}>{title}</Text>}
+      <Text style={styles.infoText}>{body}</Text>
+    </View>
+  </View>;
+}
+
+export function ChoiceStepView({ step, values, language, onSetField, onToggleList, onAddListItem, onRemoveListItem }: {
   step: ChoiceStep;
   values: ChoiceValues;
   language: Language;
@@ -29,7 +41,6 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
   onToggleList: (field: ListField, value: string) => void;
   onAddListItem: (field: ListField, value: string) => void;
   onRemoveListItem: (field: ListField, value: string) => void;
-  onSetList: (field: ListField, values: string[]) => void;
 }) {
   const [search, setSearch] = useState('');
   const [showOther, setShowOther] = useState(() => {
@@ -43,10 +54,10 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
       presentation: [values.presentation, 'presentation'],
     } as const;
     const config = groups[step as keyof typeof groups];
-    if (!config) return false;
+    if (!config) return step === 'family' || step === 'approaches';
     const [selectedValues, group] = config;
     const baseIds = optionsFor(group, language).map((option) => option.id);
-    return selectedValues.some((value) => value !== 'none' && !baseIds.includes(value));
+    return step === 'family' || step === 'approaches' || selectedValues.some((value) => value !== 'none' && !baseIds.includes(value));
   });
   const s = copyFor(language);
   const labels = {
@@ -58,6 +69,9 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
     noMatches: s.onboarding.noMatches,
     otherHint: s.onboarding.otherHint,
   };
+  const guidance = s.onboarding.choiceGuidance;
+  const subtitles = s.onboarding.choiceSubtitles as Record<string, Record<string, string>>;
+  const name = values.childName.trim() || s.onboarding.childFallback;
 
   if (step === 'child') return (
     <View>
@@ -66,12 +80,16 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
         value={values.childName}
         onChangeText={(value) => onSetField('childName', value)}
       />
+      <Text style={styles.fieldHint}>{guidance.childName}</Text>
       <Text style={styles.sectionLabel}>{s.onboarding.ageRange}</Text>
-      <SingleChoice
+      <DropdownChoice
         options={optionsFor('age', language)}
         value={values.ageRange}
         onChange={(value) => onSetField('ageRange', value)}
+        placeholder={s.onboarding.ageRange}
+        displayFallback={values.ageRange ? labelFor('age', values.ageRange, language) : undefined}
       />
+      <Guidance body={guidance.age} icon="calendar" />
     </View>
   );
 
@@ -93,9 +111,12 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
           : s.onboarding.otherApproach;
     return (
       <View>
+        {step === 'restrictions' && <Text style={styles.question}>{guidance.restrictionsQuestion(name)}</Text>}
+        {step === 'family' && <Guidance title={guidance.familyTitle} body={guidance.familyBody} />}
+        {step === 'approaches' && <Guidance title={guidance.approachesTitle} body={guidance.approachesBody} />}
         {step === 'allergies' && (
           <View style={styles.safetyBanner}>
-            <View style={styles.safetyIcon}><Feather name="shield" size={13} color={colors.error} /></View>
+            <View style={styles.safetyIcon}><UiAssetIcon name="onboarding-shield" /></View>
             <View style={styles.safetyCopy}>
               <Text style={styles.safetyTitle}>{s.onboarding.allergySafetyTitle}</Text>
               <Text style={styles.safetyText}>{s.onboarding.allergySafetyBody}</Text>
@@ -110,15 +131,17 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
           onSearchChange={setSearch}
           showOther={showOther}
           onShowOtherChange={setShowOther}
-          optionSubtitles={step === 'allergies' ? { 'tree-nut': s.onboarding.treeNutsHint } : undefined}
+          optionSubtitles={step === 'allergies' ? { 'tree-nut': s.onboarding.treeNutsHint } : subtitles[step]}
           selected={values[current.field]}
           noneLabel={current.none}
           otherLabel={otherLabel}
           onToggle={(value) => onToggleList(current.field, value)}
           onAdd={(value) => { onAddListItem(current.field, value); setSearch(''); }}
           onRemove={(value) => onRemoveListItem(current.field, value)}
-          onSetAll={step === 'family' ? () => onSetList(current.field, options.map((option) => option.id)) : undefined}
         />
+        <Text style={styles.selectionHint}>{guidance.multiple}</Text>
+        {step === 'restrictions' && <Guidance title={guidance.restrictionsTitle} body={guidance.restrictionsBody} />}
+        {step === 'family' && <Guidance title={guidance.familyWarningTitle} body={guidance.familyWarningBody} />}
       </View>
     );
   }
@@ -130,6 +153,9 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
         ? s.onboarding.noTaste
         : s.onboarding.noPresentation;
     return (
+      <View>
+      <Text style={styles.question}>{step === 'texture' ? guidance.textureQuestion(name) : step === 'taste' ? guidance.tasteQuestion(name) : guidance.presentationQuestion(name)}</Text>
+      {step === 'presentation' && <Text style={styles.questionHelper}>{guidance.presentationExample}</Text>}
       <MultiChoice
         options={optionsFor(step, language)}
         labels={labels}
@@ -138,20 +164,30 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
         showOther={showOther}
         onShowOtherChange={setShowOther}
         selected={values[step]}
+        optionSubtitles={subtitles[step]}
         noneLabel={noneLabel}
         freeText
         onToggle={(value) => onToggleList(step, value)}
         onAdd={(value) => { onAddListItem(step, value); setSearch(''); }}
         onRemove={(value) => onRemoveListItem(step, value)}
       />
+      {step === 'taste' && <Guidance body={guidance.tasteBody} icon="activity" />}
+      <Text style={styles.selectionHint}>{guidance.multiple}</Text>
+      </View>
     );
   }
 
   return (
+    <View>
+    <Text style={styles.question}>{step === 'smell' ? guidance.smellQuestion(name) : step === 'temperature' ? guidance.temperatureQuestion(name) : guidance.familiarityQuestion(name)}</Text>
+    {step === 'smell' && <Text style={styles.questionHelper}>{guidance.smellExample}</Text>}
     <SingleChoice
-      options={optionsFor(step, language)}
+      options={optionsFor(step, language).map((option) => ({ ...option, subtitle: subtitles[step]?.[option.id] }))}
       value={values[step]}
       onChange={(value) => onSetField(step, value)}
     />
+    <Guidance body={step === 'smell' ? guidance.smellBody : step === 'temperature' ? guidance.temperatureBody : guidance.familiarityBody} icon="activity" />
+    <Text style={styles.selectionHint}>{guidance.single}</Text>
+    </View>
   );
 }

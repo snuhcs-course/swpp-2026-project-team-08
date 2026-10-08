@@ -17,30 +17,34 @@ export function BottomSheet({
   children,
   onClose,
   closeLabel,
+  variant = 'sheet',
+  footer,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   closeLabel: string;
+  variant?: 'sheet' | 'dialog';
+  footer?: ReactNode;
 }) {
   return (
-    <Modal transparent animationType="slide" onRequestClose={onClose}>
+    <Modal transparent animationType={variant === 'dialog' ? 'fade' : 'slide'} onRequestClose={onClose}>
       <KeyboardAvoidingView
-        style={styles.scrim}
+        style={[styles.scrim, variant === 'dialog' && styles.dialogScrim]}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <Pressable
+        {variant === 'sheet' && <Pressable
           style={styles.dismiss}
           accessibilityRole="button"
           accessibilityLabel={closeLabel}
           onPress={onClose}
-        />
-        <SafeAreaView style={styles.sheet} edges={['bottom']}>
+        />}
+        <SafeAreaView style={[styles.sheet, variant === 'dialog' && styles.dialog]} edges={variant === 'dialog' ? [] : ['bottom']}>
           <View style={styles.handle} />
           <View style={styles.row}>
             <Text
               accessibilityRole="header"
-              style={[styles.heading, { flex: 1 }]}
+              style={[styles.heading, variant === 'dialog' && styles.dialogHeading, { flex: 1 }]}
             >
               {title}
             </Text>
@@ -59,6 +63,7 @@ export function BottomSheet({
           >
             {children}
           </ScrollView>
+          {footer && <View style={styles.sheetFooter}>{footer}</View>}
         </SafeAreaView>
       </KeyboardAvoidingView>
     </Modal>

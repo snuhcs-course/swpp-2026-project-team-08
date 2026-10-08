@@ -5,7 +5,7 @@ export function SingleChoice({
   value,
   onChange,
 }: {
-  options: readonly { id: string; label: string }[];
+  options: readonly { id: string; label: string; subtitle?: string }[];
   value: string;
   onChange: (value: string) => void;
 }) {
@@ -15,6 +15,7 @@ export function SingleChoice({
         <ChoiceRow
           key={option.id}
           label={option.label}
+          subtitle={option.subtitle}
           selected={value === option.id}
           onPress={() => onChange(option.id)}
         />

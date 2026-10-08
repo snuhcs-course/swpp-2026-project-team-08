@@ -5,6 +5,7 @@ export const colors = {
   onboardingMuted: '#667892',
   onboardingPrimary: '#1667FF',
   onboardingSelected: '#F3F8FF',
+  onboardingChoiceSelected: '#E7F0FF',
   homeBackground: '#F7FAFF',
   homeBorder: '#DCE6F3',
   homeText: '#13233A',

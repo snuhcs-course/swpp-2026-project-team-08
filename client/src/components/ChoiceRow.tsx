@@ -1,3 +1,4 @@
+import Feather from '@expo/vector-icons/Feather';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../util/colors';
 import { fonts } from '../util/fonts';
@@ -12,8 +13,8 @@ type Props = {
 };
 
 export function ChoiceRow({ label, selected, onPress, multiple, subtitle, controlPosition = 'trailing' }: Props) {
-  const control = <View style={[styles.control, !multiple && styles.radio, selected && styles.controlSelected]}>
-    {selected && <Text style={styles.check}>✓</Text>}
+  const control = <View style={[styles.control, selected && styles.controlSelected]}>
+    {selected && <Feather name="check" size={12} color={colors.surface} />}
   </View>;
   return (
     <Pressable
@@ -24,7 +25,7 @@ export function ChoiceRow({ label, selected, onPress, multiple, subtitle, contro
     >
       {controlPosition === 'leading' && control}
       <View style={styles.copy}>
-        <Text style={styles.label}>{label}</Text>
+        <Text style={[styles.label, selected && styles.selectedLabel]}>{label}</Text>
         {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       </View>
       {controlPosition === 'trailing' && control}
@@ -33,14 +34,13 @@ export function ChoiceRow({ label, selected, onPress, multiple, subtitle, contro
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 34, paddingHorizontal: 9, paddingVertical: 6, borderWidth: 1, borderColor: colors.onboardingBorder, borderRadius: 11, backgroundColor: colors.surface, marginBottom: 4 },
-  selected: { backgroundColor: colors.onboardingSelected, borderColor: colors.onboardingPrimary },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 34, paddingHorizontal: 9, paddingVertical: 5, borderWidth: 1, borderColor: colors.onboardingBorder, borderRadius: 11, backgroundColor: colors.surface, marginBottom: 5 },
+  selected: { backgroundColor: colors.onboardingChoiceSelected, borderColor: colors.onboardingPrimary, borderWidth: 1.4 },
   pressed: { opacity: 0.72 },
   control: { width: 20, height: 20, borderRadius: 6, borderWidth: 1, borderColor: colors.onboardingBorder, alignItems: 'center', justifyContent: 'center' },
-  radio: { borderRadius: 10 },
   controlSelected: { backgroundColor: colors.onboardingPrimary, borderColor: colors.onboardingPrimary },
-  check: { color: colors.surface, fontSize: 11, fontFamily: fonts.interBold, lineHeight: 17 },
   copy: { flex: 1 },
-  label: { color: colors.onboardingText, fontSize: 10, fontFamily: fonts.interMedium },
-  subtitle: { color: colors.onboardingMuted, fontSize: 9, fontFamily: fonts.interRegular, marginTop: 2 },
+  label: { color: colors.onboardingText, fontSize: 10, lineHeight: 12, fontFamily: fonts.interMedium },
+  selectedLabel: { color: colors.onboardingPrimary },
+  subtitle: { color: colors.onboardingMuted, fontSize: 8, lineHeight: 10, fontFamily: fonts.interRegular, marginTop: 1 },
 });

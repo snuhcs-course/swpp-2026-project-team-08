@@ -107,6 +107,7 @@ export function MealCheckinScreen({
       onUpdate={model.update}
       onGo={model.go}
       onBack={back}
+      onSaveExit={() => { void exit(); }}
       onPick={(source) => {
         void model.pick(source);
       }}

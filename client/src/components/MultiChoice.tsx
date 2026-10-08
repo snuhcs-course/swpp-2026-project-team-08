@@ -74,6 +74,7 @@ export function MultiChoice({
       {!!noneLabel && (
         <ChoiceRow
           label={noneLabel}
+          subtitle={optionSubtitles?.none}
           multiple
           selected={selected.includes(noneValue)}
           onPress={() => onToggle(noneValue)}
@@ -93,6 +94,7 @@ export function MultiChoice({
         <>
           <ChoiceRow
             label={otherLabel ?? labels.other}
+            subtitle={optionSubtitles?.other}
             multiple
             selected={showOther}
             onPress={() => onShowOtherChange(!showOther)}

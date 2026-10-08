@@ -36,6 +36,7 @@ export type MealCheckinViewProps = {
   onUpdate: (value: Partial<MealDraft>) => void;
   onGo: (step: MealStep) => void;
   onBack: () => void;
+  onSaveExit: () => void;
   onPick: (source: PhotoSource) => void;
   onFullPhoto: () => void;
   onAnalyze: () => void;

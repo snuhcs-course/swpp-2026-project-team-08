@@ -29,7 +29,7 @@ export function MealDetailsStepView({ p }: { p: Props }) {
       <Text style={ui.title}>{m.settingTitle}</Text>
       <DateField
         label={dateLabel}
-        labels={{ date: m.date, year: m.year, month: m.month, day: m.day, confirm: m.confirmDate, close: s.common.close }}
+        labels={{ date: m.date, year: m.year, month: m.month, day: m.day, confirm: m.confirmDate, close: s.common.close, select: m.selectDate, hint: m.dateHint, locale: p.language === 'ko' ? 'ko-KR' : 'en-GB' }}
         {...p.dateInput}
       />
       <Text style={ui.label}>{m.mealType}</Text>

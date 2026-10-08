@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
 import { colors } from '../util/colors';
 import { fonts } from '../util/fonts';
@@ -9,10 +10,11 @@ type Props = {
   disabled?: boolean;
   secondary?: boolean;
   compact?: boolean;
+  icon?: ReactNode;
   style?: StyleProp<ViewStyle>;
 };
 
-export function AppButton({ label, onPress, disabled, secondary, compact, style, variant = 'onboarding' }: Props) {
+export function AppButton({ label, onPress, disabled, secondary, compact, icon, style, variant = 'onboarding' }: Props) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -25,6 +27,7 @@ export function AppButton({ label, onPress, disabled, secondary, compact, style,
         disabled && styles.disabled, pressed && !disabled && styles.pressed, style,
       ]}
     >
+      {icon}
       <Text style={[styles.label, variant === 'meal' && styles.mealLabel, secondary && styles.secondaryLabel, disabled && styles.disabledLabel]}>{label}</Text>
     </Pressable>
   );
@@ -34,13 +37,13 @@ const styles = StyleSheet.create({
   meal: { minHeight: 52, paddingHorizontal: 16, borderRadius: 14, borderColor: colors.homeBorder },
   mealPrimary: { backgroundColor: colors.homePrimary },
   mealLabel: { fontSize: 14, fontFamily: fonts.poppinsSemiBold },
-  base: { minHeight: 46, borderRadius: 11, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 12 },
+  base: { minHeight: 46, borderRadius: 11, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 8, paddingHorizontal: 12 },
   compact: { minHeight: 34 },
   primary: { backgroundColor: colors.onboardingPrimary },
   secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.onboardingBorder },
   disabled: { opacity: 0.45 },
   pressed: { opacity: 0.78 },
-  label: { color: colors.surface, fontSize: 11, fontFamily: fonts.interBold, textAlign: 'center' },
-  secondaryLabel: { color: colors.onboardingText },
+  label: { color: colors.surface, fontSize: 13, fontFamily: fonts.interMedium, textAlign: 'center' },
+  secondaryLabel: { color: colors.onboardingText, fontSize: 11, fontFamily: fonts.interBold },
   disabledLabel: { opacity: 0.9 },
 });

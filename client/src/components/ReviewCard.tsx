@@ -1,25 +1,31 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Feather from '@expo/vector-icons/Feather';
 import { colors } from '../util/colors';
+import { fonts } from '../util/fonts';
+import { UiAssetIcon, type UiAssetIconName } from './UiAssetIcon';
 export function ReviewCard({
   title,
   value,
   onEdit,
   editLabel,
+  icon = 'review-info',
 }: {
   title: string;
   value: string;
   onEdit: () => void;
   editLabel: string;
+  icon?: UiAssetIconName;
 }) {
   return (
     <View style={styles.reviewCard}>
-      <View style={styles.reviewHeader}>
-        <Text style={styles.reviewTitle}>{title}</Text>
-        <Pressable onPress={onEdit} accessibilityRole="button">
-          <Text style={styles.edit}>{editLabel}</Text>
-        </Pressable>
+      <View style={styles.icon}><UiAssetIcon name={icon} /></View>
+      <View style={styles.reviewCopy}>
+        <Text style={styles.reviewTitle} numberOfLines={1}>{title}</Text>
+        <Text style={styles.reviewValue} numberOfLines={2}>{value}</Text>
       </View>
-      <Text style={styles.reviewValue}>{value}</Text>
+      <Pressable onPress={onEdit} accessibilityRole="button" accessibilityLabel={`${editLabel} ${title}`} style={styles.editButton}>
+        <Feather name="external-link" size={15} color={colors.onboardingMuted} />
+      </Pressable>
     </View>
   );
 }
@@ -27,29 +33,29 @@ export function ReviewCard({
 const styles = StyleSheet.create({
   reviewCard: {
     backgroundColor: colors.surface,
-    borderRadius: 12,
+    borderRadius: 11,
     borderWidth: 1,
     borderColor: colors.onboardingBorder,
-    padding: 13,
-    marginBottom: 9,
-  },
-  reviewHeader: {
+    paddingHorizontal: 8,
+    paddingVertical: 7,
+    minHeight: 42,
+    marginBottom: 7,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
+  icon: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.homeSelected, alignItems: 'center', justifyContent: 'center' },
+  reviewCopy: { flex: 1, gap: 2 },
   reviewTitle: {
     color: colors.onboardingText,
-    fontSize: 14,
-    fontWeight: '800',
-    flex: 1,
+    fontSize: 9,
+    fontFamily: fonts.interExtraBold,
   },
   reviewValue: {
     color: colors.onboardingMuted,
-    fontSize: 12,
-    lineHeight: 18,
-    marginTop: 5,
+    fontSize: 8,
+    lineHeight: 10,
+    fontFamily: fonts.interRegular,
   },
-  edit: { color: colors.onboardingPrimary, fontSize: 12, fontWeight: '800' },
+  editButton: { width: 20, height: 26, alignItems: 'center', justifyContent: 'center' },
 });

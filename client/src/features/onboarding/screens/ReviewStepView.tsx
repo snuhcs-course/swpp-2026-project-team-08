@@ -22,6 +22,7 @@ export function ReviewStepView({
       {rows.map((row) => (
         <ReviewCard
           key={row.step}
+          icon={row.step === 'allergies' ? 'review-shield' : row.step === 'family' ? 'review-users' : row.step === 'approaches' ? 'review-filter' : row.step === 'texture' || row.step === 'taste' ? 'review-sparkles' : row.step === 'safe-foods' ? 'review-heart' : row.step === 'child' ? 'review-utensils' : row.step === 'temperature' ? 'review-calendar' : row.step === 'presentation' || row.step === 'familiarity' ? 'review-route' : 'review-info'}
           title={row.title}
           value={row.value}
           editLabel={editLabel}

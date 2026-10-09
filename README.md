@@ -8,6 +8,8 @@
 - Android 에뮬레이터 또는 USB 디버깅을 켠 기기 (Android API 24 이상)
 - JDK 25: 프로젝트의 Gradle 데몬 설정이 이 버전을 사용합니다. 설치되어 있지 않으면 첫 빌드 때 인터넷을 통해 자동으로 내려받을 수 있습니다.
 
+실제 데모에 사용한 기기: Samsung Galaxy Note20 5G (Android 13, One UI 5.1).
+
 ## 실행 방법
 
 1. Android Studio에서 `client/` 폴더를 프로젝트로 열고 Gradle 동기화를 마칩니다.

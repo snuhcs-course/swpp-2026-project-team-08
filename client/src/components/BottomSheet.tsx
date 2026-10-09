@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { ReactNode } from 'react';
 import {
   Modal,

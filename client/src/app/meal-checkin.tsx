@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';

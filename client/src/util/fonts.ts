@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 export const fonts = {
   interRegular: 'Inter_400Regular',
   interMedium: 'Inter_500Medium',

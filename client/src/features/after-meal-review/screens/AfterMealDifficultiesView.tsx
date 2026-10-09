@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { StyleSheet, Text, View } from 'react-native';
 import { DifficultyEditor } from '../components/DifficultyEditor';
 import { colors } from '../../../util/colors';

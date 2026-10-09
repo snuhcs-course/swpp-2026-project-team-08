@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';

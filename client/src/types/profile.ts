@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 export type Language = 'ko' | 'en';
 
 export type SafeFood = {

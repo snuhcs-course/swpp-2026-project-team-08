@@ -1,3 +1,5 @@
+<!-- This Code is generated with AI -->
+
 # Home — Today
 
 ## Goal

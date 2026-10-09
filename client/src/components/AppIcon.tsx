@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '../util/colors';

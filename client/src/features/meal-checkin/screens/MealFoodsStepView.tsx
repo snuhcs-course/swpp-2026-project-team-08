@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useState } from 'react';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';

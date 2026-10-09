@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { AfterMealReviewDraft, DifficultyCategory, GoalFeedback, Outcome, ReviewStep, SuggestionFeedback } from '../../../types/afterMealReview';
 import type { SavedSuggestion } from '../../../types/home';
 import type { FoodItem, FoodTraits, Meal, PhotoSource, TraitGroup } from '../../../types/meal';

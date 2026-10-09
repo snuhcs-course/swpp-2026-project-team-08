@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useHomeRecords } from '../../../data/queries/homeQueries';
 import { useMeals } from '../../../data/queries/mealQueries';
 import type { ChildProfile } from '../../../types/profile';

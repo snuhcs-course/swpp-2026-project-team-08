@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { ChildProfile } from '../../types/profile';
 
 export const steps = [

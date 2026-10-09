@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';

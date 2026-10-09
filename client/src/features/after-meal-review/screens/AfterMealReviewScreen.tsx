@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, BackHandler, StyleSheet, Text } from 'react-native';

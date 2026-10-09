@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { outcomeValues, type Outcome, type OutcomeDecision } from '../../../types/afterMealReview';
 import { colors } from '../../../util/colors';

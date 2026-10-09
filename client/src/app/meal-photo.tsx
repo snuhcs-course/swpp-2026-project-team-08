@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useLocalSearchParams } from 'expo-router';
 import { MealPhotoScreen } from '../features/meal-checkin/screens/MealPhotoScreen';
 

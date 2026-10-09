@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useAfterMealDraft } from '../../../data/queries/afterMealReviewQueries';
 import { useMeal } from '../../../data/queries/mealQueries';
 

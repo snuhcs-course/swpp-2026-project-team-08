@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { recognizeMealPhoto } from '../api/recognitionApi';
 import { readMeal, readMealDraft, readMeals, saveMeal, updateMealFoods } from '../storage/mealStorage';

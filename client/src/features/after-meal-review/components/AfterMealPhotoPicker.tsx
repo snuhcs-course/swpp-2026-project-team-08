@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { PhotoSource } from '../../../types/meal';
 import { AppIcon } from '../../../components/AppIcon';

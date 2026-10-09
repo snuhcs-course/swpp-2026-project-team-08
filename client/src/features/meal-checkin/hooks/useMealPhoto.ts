@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useMealDraft } from '../../../data/queries/mealQueries';
 
 export function useMealPhoto(childId: string, photoId: string) {

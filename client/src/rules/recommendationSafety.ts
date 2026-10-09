@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { AfterMealReview } from '../types/afterMealReview';
 import type { SavedSuggestion } from '../types/home';
 import type { FoodItem, Meal } from '../types/meal';

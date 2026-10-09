@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Directory, Paths } from 'expo-file-system';

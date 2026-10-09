@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { getLocales } from 'expo-localization';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { readLanguage, saveLanguage } from '../data/storage/languageStorage';

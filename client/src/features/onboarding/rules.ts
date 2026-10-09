@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { isStep, type OnboardingDraft, type OnboardingStep } from './types';
 import type { Language } from '../../types/profile';
 import { labelFor } from '../../util/strings';

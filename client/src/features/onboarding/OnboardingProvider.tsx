@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
 import { useProfile } from '../../providers/ProfileProvider';

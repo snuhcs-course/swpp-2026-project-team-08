@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { Pressable, StyleSheet, Text, View } from 'react-native';

@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { FoodItem, FoodTraits } from '../types/meal';
 
 export const emptyTraits = (): FoodTraits => ({

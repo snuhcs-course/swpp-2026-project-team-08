@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 export const colors = {
   onboardingBackground: '#EEF7FF',
   onboardingBorder: '#C9DAED',

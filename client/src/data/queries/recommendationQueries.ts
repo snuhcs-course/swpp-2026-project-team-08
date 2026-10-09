@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { readAfterMealReview } from '../storage/afterMealReviewStorage';
 import { saveRecommendation } from '../storage/recommendationStorage';

@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { Pressable, Text, View } from 'react-native';
 import { ReviewCard } from '../../../components/ReviewCard';
 import type { OnboardingStep } from '../types';

@@ -1,3 +1,5 @@
+<!-- This Code is generated with AI -->
+
 # Meal Check-in implementation plan
 
 Reference: `specs/meal-checkin/spec.md`, `specs/ui-components/spec.md`, `docs/architecture.md`, and the onboarding Screen / Hook / View / rules pattern.

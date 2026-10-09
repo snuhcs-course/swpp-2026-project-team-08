@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { Redirect, router } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';

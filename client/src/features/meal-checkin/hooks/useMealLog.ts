@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useMeals } from '../../../data/queries/mealQueries';
 
 export function useMealLog(childId: string) {

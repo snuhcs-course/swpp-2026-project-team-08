@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { Outcome } from '../../types/afterMealReview';
 import type { FoodItem, MealPhoto } from '../../types/meal';
 import { ingredientId } from '../../rules/ingredientIds';

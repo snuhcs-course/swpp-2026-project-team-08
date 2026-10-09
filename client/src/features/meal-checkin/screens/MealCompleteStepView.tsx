@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';

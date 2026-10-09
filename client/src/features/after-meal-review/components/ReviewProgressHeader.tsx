@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppIcon } from '../../../components/AppIcon';
 import { colors } from '../../../util/colors';

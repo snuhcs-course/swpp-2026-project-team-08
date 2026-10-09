@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { FoodTraits, TraitGroup } from '../types/meal';
 
 export function toggleFoodTrait(traits: FoodTraits, group: TraitGroup, value: string): FoodTraits {

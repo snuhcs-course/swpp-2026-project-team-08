@@ -1,3 +1,5 @@
+<!-- This Code is generated with AI -->
+
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 
 ## Before starting work

@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { RecommendationEvidence, SavedSuggestion } from '../types/home';
 import type { ChildProfile, Language } from '../types/profile';
 import { copyFor } from '../util/strings';

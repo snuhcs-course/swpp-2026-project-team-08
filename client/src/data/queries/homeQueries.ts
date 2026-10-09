@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useQuery } from '@tanstack/react-query';
 import { readHomeRecords } from '../storage/homeStorage';
 

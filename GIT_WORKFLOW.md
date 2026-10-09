@@ -1,3 +1,5 @@
+<!-- This Code is generated with AI -->
+
 # Git Workflow — Frontend (React Native) / Backend (FastAPI)
 
 ## Branch / PR rule

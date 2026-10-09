@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { isCurrentRecommendation } from '../../rules/recommendationSafety';
 import type { SavedSuggestion } from '../../types/home';
 import { readAfterMealReview } from './afterMealReviewStorage';

@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { FoodItem, Meal, MealDraft } from '../../types/meal';
 import { isDraft, isMeal } from './mealValidation';

@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { Image } from 'expo-image';
 
 const iconAssets = {

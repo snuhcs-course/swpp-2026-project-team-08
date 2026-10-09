@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';

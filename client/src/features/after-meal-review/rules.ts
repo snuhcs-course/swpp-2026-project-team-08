@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome } from '../../types/afterMealReview';
 import type { FoodItem, Meal } from '../../types/meal';
 import { ingredientId } from '../../rules/ingredientIds';

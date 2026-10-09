@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { StyleSheet, Text, TextInput, View, type KeyboardTypeOptions } from 'react-native';
 import { colors } from '../util/colors';
 import { fonts } from '../util/fonts';

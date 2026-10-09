@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { HomeRecords } from '../../types/home';
 

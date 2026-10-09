@@ -1,3 +1,5 @@
+<!-- This Code is generated with AI -->
+
 # Shared UI Components — Design Specification
 
 ## Purpose

@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { formStyles as styles } from './formStyles';

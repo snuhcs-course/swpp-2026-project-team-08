@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { StyleSheet, Text, View } from 'react-native';
 import type { FoodTraits } from '../types/meal';
 import { formStyles as styles } from './formStyles';

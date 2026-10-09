@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="droplet" clip-path="url(#clip0_0_37)">
+<path id="Vector" d="M5 9.167C5.77364 9.167 6.51559 8.8597 7.06263 8.31269C7.60967 7.76569 7.917 7.02379 7.917 6.25021C7.917 5.41684 7.50029 4.62514 6.66686 3.95845C5.83343 3.29175 5.20836 2.29171 5 1.25C4.79164 2.29171 4.16657 3.29175 3.33314 3.95845C2.49971 4.62514 2.083 5.41684 2.083 6.25021C2.083 7.02379 2.39033 7.76569 2.93737 8.31269C3.48441 8.8597 4.22636 9.167 5 9.167Z" stroke-width="2" stroke-linecap="round" stroke="#71809A"/>
+</g>
+<defs>
+<clipPath id="clip0_0_37">
+<rect width="10" height="10" fill="white"/>
+</clipPath>
+</defs>
+</svg>

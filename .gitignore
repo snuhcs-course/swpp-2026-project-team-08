@@ -1,0 +1,25 @@
+# Expo client dependencies and generated files
+/client/node_modules/
+/client/.expo/
+/client/dist/
+/client/web-build/
+/client/expo-env.d.ts
+/client/ios/
+/client/android/
+/client/.kotlin/
+/client/.metro-health-check*
+
+# Local files and credentials
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+.DS_Store
+**/.env*.local
+*.tsbuildinfo
+npm-debug.*
+yarn-debug.*
+yarn-error.*

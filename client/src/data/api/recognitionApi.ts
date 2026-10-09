@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { FoodItem, MealPhoto } from '../../types/meal';
 /** Prototype fixture, never an inference about the supplied photo. Replace with a backend adapter. */
 export async function recognizeMealPhoto({

@@ -1,3 +1,5 @@
+<!-- This Code is generated with AI -->
+
 # After-meal Review
 
 ## Goal

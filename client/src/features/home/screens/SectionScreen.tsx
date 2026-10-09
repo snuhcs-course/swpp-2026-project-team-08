@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { Redirect } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import type { HomeTab } from '../../../components/BottomNavigation';

@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
 import { colors } from '../util/colors';

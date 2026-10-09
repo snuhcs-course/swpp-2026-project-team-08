@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { FoodItem, FoodTraits, MealDraft, MealStep, PhotoSource, TraitGroup } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
 

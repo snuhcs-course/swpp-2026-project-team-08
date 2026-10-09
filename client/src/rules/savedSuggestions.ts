@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { HomeRecords } from '../types/home';
 import type { ChildProfile } from '../types/profile';
 import type { Meal } from '../types/meal';

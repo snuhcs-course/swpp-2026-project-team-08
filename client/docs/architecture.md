@@ -1,3 +1,5 @@
+<!-- This Code is generated with AI -->
+
 # React Native 개발 구조 및 작업 규칙
 
 이 문서는 기능에 관계없이 적용하는 코드 배치, 의존성, 상태 소유권 규칙이다. 기능별 동작과 화면 요구사항은 해당 specification에서 정의한다.

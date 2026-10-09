@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 export const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 export const mealSettings = ['home', 'restaurant', 'school', 'others'] as const;
 export const histories = ['usually', 'sometimes', 'unsure'] as const;

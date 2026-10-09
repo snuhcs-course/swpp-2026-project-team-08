@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { Text, View } from 'react-native';
 import { AppIcon } from '../../../components/AppIcon';
 import { DateField } from '../../../components/DateField';

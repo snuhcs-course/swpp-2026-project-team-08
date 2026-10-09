@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useMemo } from 'react';
 import { PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../util/colors';

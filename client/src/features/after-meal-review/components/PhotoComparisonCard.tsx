@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { MealPhoto } from '../../../types/meal';

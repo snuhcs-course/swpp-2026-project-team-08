@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useLocalSearchParams } from 'expo-router';
 import { OnboardingScreen } from '../../features/onboarding/screens/OnboardingScreen';
 

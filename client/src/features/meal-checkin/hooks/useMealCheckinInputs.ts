@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useState } from 'react';
 import type { FoodItem, FoodTraits, MealDraft, TraitGroup } from '../../../types/meal';
 import { localDate } from '../../../util/date';

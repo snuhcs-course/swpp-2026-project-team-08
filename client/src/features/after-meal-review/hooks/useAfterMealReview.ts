@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useHomeRecords } from '../../../data/queries/homeQueries';

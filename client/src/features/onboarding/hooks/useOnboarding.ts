@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useContext } from 'react';
 import { OnboardingContext } from '../onboardingContext';
 

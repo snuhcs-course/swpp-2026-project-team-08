@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { Language } from '../types/profile';
 
 const en = {

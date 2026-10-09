@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { localDate, validDate } from '../../util/date';
 import {
   type FoodItem,

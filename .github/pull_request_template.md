@@ -1,3 +1,5 @@
+<!-- This Code is generated with AI -->
+
 ## 변경 내용
 
 - 무엇을 왜 바꾸었는지:

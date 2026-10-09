@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { foodFormKey, hasKnownFoodForm, hasVerifiedNoRestrictions } from '../../rules/recommendationSafety';
 import type { AfterMealReview } from '../../types/afterMealReview';
 import type { RecommendationEvidence } from '../../types/home';

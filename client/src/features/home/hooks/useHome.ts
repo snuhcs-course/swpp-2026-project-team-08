@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useCallback, useEffect, useState } from 'react';
 import { useMealDraft, useMeals } from '../../../data/queries/mealQueries';
 import { useHomeRecords } from '../../../data/queries/homeQueries';

@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Language } from '../types/profile';

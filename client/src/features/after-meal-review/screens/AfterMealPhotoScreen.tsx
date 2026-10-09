@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { Redirect, router } from 'expo-router';
 import { Image } from 'expo-image';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';

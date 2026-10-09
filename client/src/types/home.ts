@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 export type MealSummary = { id: string; childId: string; mealDate: string };
 export type ExposureSummary = { id: string; childId: string; foodName: string; stage: string; description?: string };
 export type RecommendationEvidence = {

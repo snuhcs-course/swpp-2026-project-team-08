@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DRAFT_KEY = 'nurturebites.onboarding.v1';

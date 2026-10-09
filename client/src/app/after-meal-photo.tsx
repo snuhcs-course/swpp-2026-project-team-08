@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { useLocalSearchParams } from 'expo-router';
 import { AfterMealPhotoScreen } from '../features/after-meal-review/screens/AfterMealPhotoScreen';
 

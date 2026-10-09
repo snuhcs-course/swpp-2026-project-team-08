@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { Language } from '../../../types/profile';
 import { copyFor, labelFor, type OptionGroup } from '../../../util/strings';
 import type { OnboardingDraft, OnboardingStep } from '../types';

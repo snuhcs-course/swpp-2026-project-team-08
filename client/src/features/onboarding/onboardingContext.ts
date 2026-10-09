@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { createContext } from 'react';
 import type { SafeFood } from '../../types/profile';
 import type { OnboardingDraft, OnboardingStep } from './types';

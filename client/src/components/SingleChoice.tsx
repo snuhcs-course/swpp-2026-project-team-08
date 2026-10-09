@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import { View } from 'react-native';
 import { ChoiceRow } from './ChoiceRow';
 export function SingleChoice({

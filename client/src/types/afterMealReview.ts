@@ -1,3 +1,5 @@
+// This Code is generated with AI
+
 import type { MealPhoto } from './meal';
 
 export const outcomeValues = ['eaten', 'tasted', 'untouched', 'unclear'] as const;

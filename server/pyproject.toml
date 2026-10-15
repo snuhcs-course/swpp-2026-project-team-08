@@ -1,0 +1,41 @@
+# AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+[project]
+name = "server"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.20.0",
+    "fastapi>=0.143.0",
+    "psycopg[binary]>=3.3.6",
+    "pwdlib[argon2]>=0.3.1",
+    "pydantic-settings>=2.15.0",
+    "pydantic[email]>=2.14.0",
+    "pyjwt>=2.15.1",
+    "sqlalchemy[asyncio]>=2.1.4",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "aiosqlite>=0.22.1",
+    "httpx>=0.28.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.10",
+]
+
+[tool.uv]
+# 배포용 애플리케이션이므로 프로젝트 자체를 빌드/설치하지 않고 의존성과 가상환경만 관리한다.
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["."]
+testpaths = ["tests"]

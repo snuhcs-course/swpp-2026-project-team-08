@@ -1,0 +1,24 @@
+# AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Virtualenv / uv
+.venv/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# DB / local
+*.sqlite3
+*.db
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store

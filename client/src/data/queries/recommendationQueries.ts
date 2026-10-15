@@ -1,10 +1,12 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { saveMealSuggestion } from '../api/mealLogApi';
 import { readAfterMealReview } from '../storage/afterMealReviewStorage';
 import { saveRecommendation } from '../storage/recommendationStorage';
 import { afterMealKeys } from './afterMealReviewQueries';
 import { homeKeys } from './homeQueries';
+import { mealLogKeys } from './mealLogQueries';
 
 export function useAfterMealResult(childId: string, mealId: string) {
   return useQuery({
@@ -17,8 +19,15 @@ export function useAfterMealResult(childId: string, mealId: string) {
 export function useSaveRecommendation() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: saveRecommendation,
+    mutationFn: async (suggestion: Parameters<typeof saveRecommendation>[0]) => {
+      const saved = await saveRecommendation(suggestion);
+      await saveMealSuggestion(saved);
+      return saved;
+    },
     retry: false,
-    onSuccess: (item) => { void client.invalidateQueries({ queryKey: homeKeys.byChild(item.childId) }); },
+    onSuccess: (item) => {
+      void client.invalidateQueries({ queryKey: homeKeys.byChild(item.childId) });
+      void client.invalidateQueries({ queryKey: mealLogKeys.all(item.childId) });
+    },
   });
 }

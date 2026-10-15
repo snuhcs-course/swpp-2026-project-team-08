@@ -1,8 +1,10 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { compareMealPhotos } from '../api/afterMealComparisonApi';
+import { saveMealReview } from '../api/mealLogApi';
 import { readAfterMealDraft, saveAfterMealReview } from '../storage/afterMealReviewStorage';
+import { mealLogKeys } from './mealLogQueries';
 
 export const afterMealKeys = {
   draft: (childId: string, mealId: string) => ['after-meal-draft', childId, mealId] as const,
@@ -24,11 +26,16 @@ export function useCompareMealPhotos() {
 export function useSaveAfterMealReview() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: saveAfterMealReview,
+    mutationFn: async (review: Parameters<typeof saveAfterMealReview>[0]) => {
+      const saved = await saveAfterMealReview(review);
+      await saveMealReview(saved);
+      return saved;
+    },
     retry: false,
     onSuccess: (review) => {
       client.setQueryData(afterMealKeys.result(review.childId, review.mealId), review);
       client.setQueryData(afterMealKeys.draft(review.childId, review.mealId), { ...review, step: 'complete', difficultyInputs: {} });
+      void client.invalidateQueries({ queryKey: mealLogKeys.all(review.childId) });
     },
   });
 }

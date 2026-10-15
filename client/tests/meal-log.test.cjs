@@ -28,6 +28,8 @@ const {
 } = require('../src/features/meal-log/rules.ts');
 const { emptyTraits } = require('../src/rules/foodDraft.ts');
 const { mealToUpsertBody, reviewToBody, suggestionToBody } = require('../src/data/api/mealLogApi.ts');
+const { demoMealCounts, demoMealDetail, demoMealList, mergeDemoMealList } = require('../src/data/api/mealLogFixtures.ts');
+const { applySuggestionSaved } = require('../src/data/storage/homeStorage.ts');
 
 const rice = {
   id: 'food-1',
@@ -81,10 +83,11 @@ test('food cards join stored outcomes, difficulties, and linked suggestions', ()
       outcomes: [{ foodId: 'food-1', decision: { confirmed: 'tasted', suggested: 'tasted' }, ingredients: [] }],
       difficulties: { 'food-1': [{ id: 'd1', category: 'texture', value: 'soft' }] },
     },
-    [{ foodId: 'food-1', title: 'Offer a small portion', description: 'Keep the same form', servingTip: 'Place separately' }],
+    [{ id: 'sug-1', foodId: 'food-1', title: 'Offer a small portion', description: 'Keep the same form', servingTip: 'Place separately' }],
   );
   assert.equal(cards[0].outcome, 'tasted');
   assert.deepEqual(cards[0].reasons, [{ category: 'texture', value: 'soft', note: undefined }]);
+  assert.equal(cards[0].suggestion.id, 'sug-1');
   assert.equal(cards[0].suggestion.title, 'Offer a small portion');
   assert.equal(foodResponseCards([food], null, [])[0].outcome, null);
 });
@@ -127,4 +130,41 @@ test('upsert, review, and suggestion bodies use the server field names', () => {
   });
   assert.equal(suggestion.food_id, 'food-1');
   assert.equal(suggestion.serving_tip, 'Keep the form');
+});
+
+test('demo meals vary by day so the calendar can show different densities', () => {
+  const counts = demoMealCounts('2026-10');
+  assert.equal(counts['2026-10-09'], 1);
+  assert.equal(counts['2026-10-12'], 2);
+  assert.equal(counts['2026-10-16'], 2);
+  assert.equal(counts['2026-10-17'], 3);
+  assert.equal(counts['2026-10-21'], 1);
+  assert.equal(counts['2026-10-24'], 3);
+  assert.equal(demoMealList('2026-10-16').map((meal) => meal.mealType).sort().join(','), 'dinner,lunch');
+  assert.equal(demoMealList('2026-10-17').length, 3);
+  const remote = [{ ...rice, id: 'demo-2026-10-16-lunch', mealDate: '2026-10-16' }];
+  assert.equal(mergeDemoMealList(remote, '2026-10-16').length, 2);
+  const dinner = demoMealDetail('child-1', 'demo-2026-10-16-dinner');
+  assert.equal(dinner.suggestions[0].id, 'sug-2026-10-16-dinner');
+  assert.equal(dinner.suggestions[0].foodId, 'food-omelet');
+  assert.equal(dinner.suggestions[0].title, 'Offer a smaller piece beside a familiar food.');
+  assert.equal(dinner.suggestions[0].servingTip, 'Keep the slices thin and serve warm.');
+});
+
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+test('bookmarking a linked suggestion toggles the saved flag without dropping it on a later unsave', () => {
+  const records = { meals: [], exposures: [], suggestions: [] };
+  const draft = {
+    id: 'sug-2026-10-16-dinner',
+    title: 'Offer a smaller piece beside a familiar food.',
+    description: 'Rolled omelet was eaten last time, so a similar texture may feel safer.',
+    servingTip: 'Keep the slices thin and serve warm.',
+    ingredients: ['Egg', 'Carrot'],
+  };
+  assert.equal(applySuggestionSaved(records, 'child-1', draft, true, 'v1'), true);
+  assert.equal(records.suggestions[0].isSaved, true);
+  assert.equal(applySuggestionSaved(records, 'child-1', draft, false, 'v1'), false);
+  assert.equal(records.suggestions[0].isSaved, false);
+  assert.equal(applySuggestionSaved(records, 'child-1', draft, true, 'v1'), true);
+  assert.equal(records.suggestions[0].id, 'sug-2026-10-16-dinner');
 });

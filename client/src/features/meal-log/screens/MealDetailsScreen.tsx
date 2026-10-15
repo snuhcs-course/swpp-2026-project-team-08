@@ -12,7 +12,7 @@ import { MealDetailsView } from './MealDetailsView';
 
 export function MealDetailsScreen({ mealId }: { mealId?: string }) {
   const profile = useProfile();
-  const details = useMealDetails(profile.profile?.id ?? '', mealId ?? '');
+  const details = useMealDetails(profile.profile?.id ?? '', mealId ?? '', profile.profile?.updatedAt ?? '');
   const s = copyFor(profile.language);
   const locale = profile.language === 'ko' ? 'ko-KR' : 'en-US';
 
@@ -28,11 +28,13 @@ export function MealDetailsScreen({ mealId }: { mealId?: string }) {
 
   const meal = details.meal;
   const parts = meal ? mealDateParts(meal.mealDate, locale) : null;
+  const mealType = meal ? s.mealCheckin.types[meal.mealType] : '';
+  const deleteLine = meal && parts ? `${parts.monthDay} (${parts.weekday}) · ${mealType}` : '';
   const heading = meal && parts
     ? s.mealLog.heading(
       parts.monthDay,
       parts.weekday,
-      s.mealCheckin.types[meal.mealType],
+      mealType,
       s.mealCheckin.settings[meal.setting],
     )
     : '';
@@ -41,16 +43,19 @@ export function MealDetailsScreen({ mealId }: { mealId?: string }) {
     <MealDetailsView
       language={profile.language}
       heading={heading}
+      deleteLine={deleteLine}
       beforeUri={meal?.beforePhotoUri ?? null}
       afterUri={meal?.review?.afterPhotoUri ?? null}
       awaitingReview={!!meal && !meal.review}
       cards={details.cards}
+      savedSuggestionIds={details.savedSuggestionIds}
       loading={details.loading}
       error={details.error || (!details.loading && !meal)}
       deleting={details.deleting}
       deleteError={details.deleteError}
       onBack={() => router.back()}
       onContinueReview={() => router.push({ pathname: '/after-meal-review', params: { mealId: mealId ?? '' } })}
+      onToggleSaved={details.toggleSaved}
       onRetry={() => { void details.retry(); }}
       onDelete={() => {
         void details.deleteMeal().then(() => {

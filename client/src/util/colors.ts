@@ -38,6 +38,7 @@ export const colors = {
   logDensity3: '#1769FF',
   logDensitySelected: '#0F4FD0',
   suggestionBack: '#E8F0FF',
+  bookmarkSaved: '#000000',
 } as const;
 
 export const difficultyColorDots = {

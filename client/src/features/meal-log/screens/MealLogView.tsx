@@ -68,13 +68,18 @@ export function MealLogView(p: Props) {
       }
     >
       <Text accessibilityRole="header" style={styles.title}>{m.title}</Text>
-      {p.draftName && p.draftMeta ? (
-        <View style={styles.continue}>
+      {p.draftMeta ? (
+        <View style={styles.continue} accessibilityLabel={m.continueLogging}>
           <AppIcon name="next" size={22} />
           <View style={styles.continueCopy}>
             <Text style={styles.continueEyebrow}>{m.continueLogging}</Text>
-            <Text style={styles.continueTitle}>{p.draftName}</Text>
-            <Text style={styles.continueMeta}>{p.draftMeta}</Text>
+            <Text style={styles.continueTitle}>{p.draftMeta}</Text>
+            <View style={styles.continueSubtitle}>
+              <Text style={styles.continueDraft}>{m.draft}</Text>
+              {p.draftName ? (
+                <Text style={styles.continueFood} numberOfLines={1}>{p.draftName}</Text>
+              ) : null}
+            </View>
           </View>
           <Pressable accessibilityRole="button" onPress={p.onContinueDraft} style={styles.resume}>
             <Text style={styles.resumeLabel}>{m.resume}</Text>

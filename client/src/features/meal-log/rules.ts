@@ -66,10 +66,18 @@ export function mealDateParts(iso: string, locale: string) {
   };
 }
 
+export function acceptanceFill(outcome: FoodResponseCard['outcome']): number {
+  if (outcome === 'eaten') return 1;
+  if (outcome === 'tasted') return 0.55;
+  if (outcome === 'unclear') return 0.35;
+  if (outcome === 'untouched') return 0.12;
+  return 0;
+}
+
 export function foodResponseCards(
   foods: FoodItem[],
   review: { outcomes: FoodOutcome[]; difficulties: AfterMealReview['difficulties'] } | null,
-  suggestions: { foodId: string; title: string; description: string; servingTip: string | null }[],
+  suggestions: { id: string; foodId: string; title: string; description: string; servingTip: string | null }[],
 ): FoodResponseCard[] {
   return foods.map((food) => {
     const outcome = review?.outcomes.find((item) => item.foodId === food.id);
@@ -86,7 +94,12 @@ export function foodResponseCards(
       outcome: outcome?.decision.confirmed ?? null,
       reasons: tags.map((tag) => ({ category: tag.category, value: tag.value, note: tag.note })),
       suggestion: suggestion
-        ? { title: suggestion.title, description: suggestion.description, servingTip: suggestion.servingTip }
+        ? {
+          id: suggestion.id,
+          title: suggestion.title,
+          description: suggestion.description,
+          servingTip: suggestion.servingTip,
+        }
         : null,
     };
   });

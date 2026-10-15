@@ -1,9 +1,9 @@
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { useCallback, useMemo, useState } from 'react';
-import { useMealCalendar, useMealList } from '../../../data/queries/mealLogQueries';
+import { useMealList } from '../../../data/queries/mealLogQueries';
 import { useMealDraft } from '../../../data/queries/mealQueries';
-import { countsByDate, filterMeals, isoDate, monthKey, shiftMonth } from '../rules';
+import { filterMeals, isoDate, monthKey, shiftMonth } from '../rules';
 
 export function useMealLog(childId: string) {
   const now = new Date();
@@ -14,17 +14,26 @@ export function useMealLog(childId: string) {
   const [unreviewedOnly, setUnreviewedOnly] = useState(false);
 
   const monthValue = monthKey(year, month);
-  const calendar = useMealCalendar(childId, monthValue);
-  const list = useMealList(childId, selectedDate);
+  const list = useMealList(childId, null);
   const draftQuery = useMealDraft(childId);
 
-  const counts = useMemo(() => countsByDate(calendar.data ?? []), [calendar.data]);
+  const counts = useMemo(() => {
+    const next: Record<string, number> = {};
+    for (const meal of list.data ?? []) {
+      if (!meal.mealDate.startsWith(`${monthValue}-`)) continue;
+      next[meal.mealDate] = (next[meal.mealDate] ?? 0) + 1;
+    }
+    return next;
+  }, [list.data, monthValue]);
   const meals = useMemo(
-    () => filterMeals(list.data ?? [], search, unreviewedOnly),
-    [list.data, search, unreviewedOnly],
+    () => filterMeals(
+      (list.data ?? []).filter((meal) => !selectedDate || meal.mealDate === selectedDate),
+      search,
+      unreviewedOnly,
+    ),
+    [list.data, search, selectedDate, unreviewedOnly],
   );
 
-  const refetchCalendar = calendar.refetch;
   const refetchList = list.refetch;
   const refetchDraft = draftQuery.refetch;
 
@@ -40,8 +49,8 @@ export function useMealLog(childId: string) {
   }, [year, month]);
 
   const refresh = useCallback(
-    () => Promise.all([refetchCalendar(), refetchList(), refetchDraft()]),
-    [refetchCalendar, refetchList, refetchDraft],
+    () => Promise.all([refetchList(), refetchDraft()]),
+    [refetchList, refetchDraft],
   );
 
   return {
@@ -55,9 +64,9 @@ export function useMealLog(childId: string) {
     counts,
     meals,
     draft: draftQuery.data?.step !== 'complete' ? (draftQuery.data ?? null) : null,
-    loading: (calendar.isPending && !calendar.data) || (list.isPending && !list.data),
-    error: calendar.isError || list.isError,
-    refreshing: (calendar.isFetching || list.isFetching) && !calendar.isPending && !list.isPending,
+    loading: list.isPending && !list.data,
+    error: list.isError && !(list.data && list.data.length),
+    refreshing: list.isFetching && !list.isPending,
     goMonth,
     toggleDate,
     clearDate: () => setSelectedDate(null),

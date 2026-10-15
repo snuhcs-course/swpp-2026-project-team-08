@@ -1,15 +1,24 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { useHomeRecords } from '../../../data/queries/homeQueries';
+import { useMealDetail } from '../../../data/queries/mealLogQueries';
 import { useMeals } from '../../../data/queries/mealQueries';
 import type { ChildProfile } from '../../../types/profile';
 import { visibleHomeData } from '../rules';
 
-export function useSuggestion(profile: ChildProfile, id: string) {
+export function useSuggestion(profile: ChildProfile, id: string, mealId?: string) {
   const query = useHomeRecords(profile.id);
   const meals = useMeals(profile.id);
+  const linked = useMealDetail(profile.id, mealId ?? '');
   const item = query.data && meals.data
     ? visibleHomeData(query.data, profile, meals.data).suggestions.find((suggestion) => suggestion.id === id)
     : undefined;
-  return { item, loading: query.isPending || meals.isPending, error: query.isError || meals.isError, ready: query.isSuccess && meals.isSuccess };
+  const fromMeal = linked.data?.suggestions.find((suggestion) => suggestion.id === id);
+  return {
+    item,
+    linked: fromMeal ?? null,
+    loading: query.isPending || meals.isPending || (!!mealId && linked.isPending && !linked.data),
+    error: query.isError || meals.isError,
+    ready: query.isSuccess && meals.isSuccess && (!mealId || linked.isSuccess || !!fromMeal),
+  };
 }

@@ -3,10 +3,9 @@
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../../../components/AppButton';
-import { BottomSheet } from '../../../components/BottomSheet';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
@@ -17,6 +16,7 @@ import { styles } from './mealLogStyles';
 type Props = {
   language: Language;
   heading: string;
+  deleteLine: string;
   beforeUri: string | null;
   afterUri: string | null;
   awaitingReview: boolean;
@@ -25,11 +25,26 @@ type Props = {
   error: boolean;
   deleting: boolean;
   deleteError: boolean;
+  savedSuggestionIds: string[];
   onBack: () => void;
   onContinueReview: () => void;
+  onToggleSaved: (card: Card, saved: boolean) => void;
   onRetry: () => void;
   onDelete: () => void;
 };
+
+function PhotoTile({ uri, label }: { uri: string | null; label: string }) {
+  return (
+    <View style={styles.photoTile}>
+      <View style={styles.photoWell}>
+        {uri
+          ? <Image source={{ uri }} style={styles.photo} contentFit="cover" />
+          : <Feather name="image" size={28} color={colors.homeMuted} />}
+      </View>
+      <Text style={styles.photoCaption}>{label}</Text>
+    </View>
+  );
+}
 
 export function MealDetailsView(p: Props) {
   const s = copyFor(p.language);
@@ -44,7 +59,7 @@ export function MealDetailsView(p: Props) {
         </Pressable>
         <Text accessibilityRole="header" style={styles.headerTitle}>{m.mealDetails}</Text>
         <Pressable accessibilityRole="button" accessibilityLabel={m.more} onPress={() => setMenuOpen(true)} style={styles.iconButton}>
-          <Feather name="more-horizontal" size={20} color={colors.homeText} />
+          <Feather name="more-vertical" size={18} color={colors.homeText} />
         </Pressable>
       </View>
       {p.loading ? (
@@ -59,69 +74,75 @@ export function MealDetailsView(p: Props) {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          {p.awaitingReview ? (
-            <AppButton variant="meal" label={m.continueReview} onPress={p.onContinueReview} />
-          ) : null}
-          <Text style={styles.heading}>{p.heading}</Text>
-          <View style={styles.photos}>
-            <View style={styles.photoFrame}>
-              {p.beforeUri
-                ? <Image source={{ uri: p.beforeUri }} style={styles.photo} contentFit="cover" />
-                : <View style={styles.photoEmpty}><Text style={styles.foodMeta}>{m.noRecord}</Text></View>}
-              <Text style={styles.photoLabel}>{m.beforeImage}</Text>
+          <Text style={styles.detailDate}>{p.heading}</Text>
+          <View style={styles.statusRow}>
+            <View style={[styles.badge, p.awaitingReview ? styles.awaiting : styles.reviewed]}>
+              <Text style={p.awaitingReview ? styles.awaitingText : styles.reviewedText}>
+                {p.awaitingReview ? m.awaitingReview : m.reviewed}
+              </Text>
             </View>
-            <View style={styles.photoFrame}>
-              {p.afterUri
-                ? <Image source={{ uri: p.afterUri }} style={styles.photo} contentFit="cover" />
-                : <View style={styles.photoEmpty}><Text style={styles.foodMeta}>{m.noRecord}</Text></View>}
-              <Text style={styles.photoLabel}>{m.afterImage}</Text>
-            </View>
+            {p.awaitingReview ? (
+              <Pressable accessibilityRole="button" onPress={p.onContinueReview} style={styles.continueReview}>
+                <Text style={styles.continueReviewLabel}>{m.continueReview}</Text>
+              </Pressable>
+            ) : null}
+          </View>
+          <View style={p.awaitingReview ? styles.photosSingle : styles.photos}>
+            <PhotoTile uri={p.beforeUri} label={m.beforeImage} />
+            {p.awaitingReview ? null : <PhotoTile uri={p.afterUri} label={m.afterImage} />}
           </View>
           <Text style={styles.sectionLabel}>{m.foodsAndResponses}</Text>
           {p.cards.map((card) => (
-            <FoodResponseCard key={card.foodId} card={card} language={p.language} />
+            <FoodResponseCard
+              key={card.foodId}
+              card={card}
+              language={p.language}
+              saved={!!card.suggestion && p.savedSuggestionIds.includes(card.suggestion.id)}
+              onToggleSaved={card.suggestion ? (saved) => p.onToggleSaved(card, saved) : undefined}
+            />
           ))}
         </ScrollView>
       )}
-      {menuOpen ? (
-        <BottomSheet title={m.more} closeLabel={s.common.close} onClose={() => setMenuOpen(false)}>
+      <Modal transparent animationType="none" visible={menuOpen} onRequestClose={() => setMenuOpen(false)}>
+        <Pressable style={styles.menuScrim} onPress={() => setMenuOpen(false)}>
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel={m.deleteMeal}
             onPress={() => { setMenuOpen(false); setConfirmOpen(true); }}
-            style={styles.menuItem}
+            style={styles.menuPopover}
           >
+            <Feather name="trash-2" size={14} color={colors.error} />
             <Text style={styles.menuDanger}>{m.deleteMeal}</Text>
           </Pressable>
-        </BottomSheet>
-      ) : null}
-      {confirmOpen ? (
-        <BottomSheet
-          title={m.deleteTitle}
-          closeLabel={s.common.close}
-          variant="dialog"
-          onClose={() => { if (!p.deleting) setConfirmOpen(false); }}
-          footer={(
+        </Pressable>
+      </Modal>
+      <Modal transparent animationType="fade" visible={confirmOpen} onRequestClose={() => { if (!p.deleting) setConfirmOpen(false); }}>
+        <View style={styles.dialogScrim}>
+          <View style={styles.confirmCard}>
+            <Text style={styles.confirmTitle}>{m.deleteTitle}</Text>
+            <Text style={styles.deleteBody}>{m.deleteBody(p.deleteLine)}</Text>
+            {p.deleteError ? <Text style={styles.deleteBody}>{m.deleteFailed}</Text> : null}
             <View style={styles.deleteActions}>
-              <AppButton
-                secondary
-                label={m.cancel}
+              <Pressable
+                accessibilityRole="button"
                 disabled={p.deleting}
                 onPress={() => setConfirmOpen(false)}
-                style={styles.deleteAction}
-              />
-              <AppButton
-                label={p.deleting ? s.common.saving : m.delete}
+                style={styles.cancelButton}
+              >
+                <Text style={styles.cancelLabel}>{m.cancel}</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
                 disabled={p.deleting}
                 onPress={p.onDelete}
-                style={styles.deleteAction}
-              />
+                style={styles.deleteButton}
+              >
+                <Text style={styles.deleteLabel}>{p.deleting ? s.common.saving : m.delete}</Text>
+              </Pressable>
             </View>
-          )}
-        >
-          <Text style={styles.deleteBody}>{m.deleteBody(p.heading)}</Text>
-          {p.deleteError ? <Text style={styles.deleteBody}>{m.deleteFailed}</Text> : null}
-        </BottomSheet>
-      ) : null}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

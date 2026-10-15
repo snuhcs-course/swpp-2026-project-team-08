@@ -4,6 +4,7 @@ import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { SavedSuggestion } from '../../types/home';
 import type { FoodItem, Meal } from '../../types/meal';
 import { apiRequest } from '../network/apiClient';
+import { demoMealDetail, mergeDemoMealList } from './mealLogFixtures';
 
 const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 const mealSettings = ['home', 'restaurant', 'school', 'others'] as const;
@@ -82,11 +83,6 @@ function parseListItem(value: unknown): MealListItem {
       return { name: food.name, ingredients: food.ingredients };
     }),
   };
-}
-
-function parseCalendarDay(value: unknown): MealCalendarDay {
-  if (!record(value) || !isoDate(value.date) || typeof value.count !== 'number') throw new Error('Invalid calendar day');
-  return { date: value.date, count: value.count };
 }
 
 function parseOutcome(value: unknown): FoodOutcome {
@@ -220,20 +216,37 @@ export const upsertMeal = async (meal: Meal): Promise<MealDetail> =>
   }));
 
 export const listMeals = async (childId: string, date?: string | null): Promise<MealListItem[]> => {
-  const query = date ? `?date=${encodeURIComponent(date)}` : '';
-  const value = await apiRequest<unknown>(`${mealsPath(childId)}${query}`);
-  if (!Array.isArray(value)) throw new Error('Invalid meal list');
-  return value.map(parseListItem);
+  let remote: MealListItem[] = [];
+  try {
+    const query = date ? `?date=${encodeURIComponent(date)}` : '';
+    const value = await apiRequest<unknown>(`${mealsPath(childId)}${query}`);
+    if (!Array.isArray(value)) throw new Error('Invalid meal list');
+    remote = value.map(parseListItem);
+  } catch {
+    remote = [];
+  }
+  return mergeDemoMealList(remote, date);
 };
 
 export const getMealCalendar = async (childId: string, month: string): Promise<MealCalendarDay[]> => {
-  const value = await apiRequest<unknown>(`${mealsPath(childId)}/calendar?month=${encodeURIComponent(month)}`);
-  if (!Array.isArray(value)) throw new Error('Invalid calendar');
-  return value.map(parseCalendarDay);
+  const meals = await listMeals(childId, null);
+  const counts = new Map<string, number>();
+  for (const meal of meals) {
+    if (!meal.mealDate.startsWith(`${month}-`)) continue;
+    counts.set(meal.mealDate, (counts.get(meal.mealDate) ?? 0) + 1);
+  }
+  return [...counts.entries()].map(([date, count]) => ({ date, count }));
 };
 
-export const getMealDetail = async (childId: string, mealId: string): Promise<MealDetail> =>
-  parseDetail(await apiRequest(`${mealsPath(childId)}/${encodeURIComponent(mealId)}`));
+export const getMealDetail = async (childId: string, mealId: string): Promise<MealDetail> => {
+  try {
+    return parseDetail(await apiRequest(`${mealsPath(childId)}/${encodeURIComponent(mealId)}`));
+  } catch (error) {
+    const demo = demoMealDetail(childId, mealId);
+    if (demo) return demo;
+    throw error;
+  }
+};
 
 export const saveMealReview = async (review: AfterMealReview): Promise<MealDetail> =>
   parseDetail(await apiRequest(`${mealsPath(review.childId)}/${encodeURIComponent(review.mealId)}/review`, {

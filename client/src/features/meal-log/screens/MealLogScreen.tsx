@@ -54,12 +54,14 @@ export function MealLogScreen() {
         };
       })}
       query={log.search}
-      draftName={draft ? (draft.foods[0]?.name ?? s.mealLog.draft) : null}
+      draftName={draft?.foods.find((food) => food.name.trim())?.name ?? null}
       draftMeta={draft
-        ? s.mealLog.draftMeta(
-          mealDateParts(draft.mealDate, locale).monthDay,
-          draft.mealType ? s.mealCheckin.types[draft.mealType] : s.mealLog.draft,
-        )
+        ? (draft.mealType
+          ? s.mealLog.draftMeta(
+            mealDateParts(draft.mealDate, locale).monthDay,
+            s.mealCheckin.types[draft.mealType],
+          )
+          : mealDateParts(draft.mealDate, locale).monthDay)
         : null}
       loading={log.loading}
       error={log.error}

@@ -15,6 +15,17 @@ Module._load = function (name, ...args) {
   if (name === '@react-native-async-storage/async-storage') {
     return { getItem: async () => null, setItem: async () => undefined, removeItem: async () => undefined };
   }
+  // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+  if (name === 'expo-secure-store') {
+    const store = {
+      WHEN_UNLOCKED: 1,
+      isAvailableAsync: async () => false,
+      getItemAsync: async () => null,
+      setItemAsync: async () => undefined,
+      deleteItemAsync: async () => undefined,
+    };
+    return { __esModule: true, ...store, default: store };
+  }
   if (name === 'expo-constants') {
     const constants = { expoConfig: { hostUri: '127.0.0.1:8081' } };
     return { __esModule: true, default: constants, ...constants };

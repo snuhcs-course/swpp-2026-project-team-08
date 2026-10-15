@@ -1,3 +1,4 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -17,9 +18,21 @@ const storage = {
   async setItem(key, value) { values.set(key, value); },
   async removeItem(key) { values.delete(key); },
 };
+
+let secureAvailable = true;
+const secrets = new Map();
+const secureStore = {
+  WHEN_UNLOCKED: 1,
+  isAvailableAsync: async () => secureAvailable,
+  getItemAsync: async (key) => secrets.get(key) ?? null,
+  setItemAsync: async (key, value) => { secrets.set(key, value); },
+  deleteItemAsync: async (key) => { secrets.delete(key); },
+};
+
 const originalLoad = Module._load;
 Module._load = function (name, ...args) {
   if (name === '@react-native-async-storage/async-storage') return storage;
+  if (name === 'expo-secure-store') return { __esModule: true, ...secureStore, default: secureStore };
   if (name === 'expo-constants') {
     const constants = { expoConfig: { hostUri: '192.168.1.20:8081' } };
     return { __esModule: true, default: constants, ...constants };
@@ -31,15 +44,50 @@ const { readSession, saveSession, clearSession } = require('../src/data/storage/
 const { authFailure } = require('../src/data/api/authApi.ts');
 const { ApiError, apiBaseUrl } = require('../src/data/network/apiClient.ts');
 
-test('auth session round-trips and clears on sign out', async () => {
+const session = {
+  accessToken: 'access-secret',
+  refreshToken: 'refresh-secret',
+  user: { id: 'user-1', email: 'parent@example.com', fullName: 'Parent' },
+};
+
+test('auth session stores tokens in SecureStore and user in AsyncStorage', async () => {
   values.clear();
+  secrets.clear();
+  secureAvailable = true;
   await clearSession();
-  const session = {
-    accessToken: 'access', refreshToken: 'refresh',
-    user: { id: 'user-1', email: 'parent@example.com', fullName: 'Parent' },
-  };
   await saveSession(session);
   assert.deepEqual(await readSession(), session);
+  assert.equal(secrets.get('nurturebites.auth.accessToken'), 'access-secret');
+  assert.equal(secrets.get('nurturebites.auth.refreshToken'), 'refresh-secret');
+  assert.equal(values.get('nurturebites.auth.user.v1'), JSON.stringify(session.user));
+  assert.equal(values.get('nurturebites.auth.session.v1'), undefined);
+  assert.equal(values.get('nurturebites.auth.accessToken'), undefined);
+  await clearSession();
+  assert.equal(await readSession(), null);
+  assert.equal(secrets.size, 0);
+});
+
+test('auth session migrates plaintext AsyncStorage tokens into SecureStore', async () => {
+  values.clear();
+  secrets.clear();
+  secureAvailable = true;
+  await clearSession();
+  await storage.setItem('nurturebites.auth.session.v1', JSON.stringify(session));
+  assert.deepEqual(await readSession(), session);
+  assert.equal(secrets.get('nurturebites.auth.accessToken'), 'access-secret');
+  assert.equal(values.get('nurturebites.auth.session.v1'), undefined);
+});
+
+test('auth session falls back to AsyncStorage when SecureStore is unavailable', async () => {
+  values.clear();
+  secrets.clear();
+  secureAvailable = false;
+  await clearSession();
+  await saveSession(session);
+  assert.deepEqual(await readSession(), session);
+  assert.equal(values.get('nurturebites.auth.accessToken'), 'access-secret');
+  assert.equal(values.get('nurturebites.auth.refreshToken'), 'refresh-secret');
+  assert.equal(secrets.size, 0);
   await clearSession();
   assert.equal(await readSession(), null);
 });

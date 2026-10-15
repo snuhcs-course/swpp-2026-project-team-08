@@ -2,6 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const ts = require('typescript');
+const Module = require('node:module');
 
 require.extensions['.ts'] = (module, filename) => module._compile(
   ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
@@ -9,6 +10,17 @@ require.extensions['.ts'] = (module, filename) => module._compile(
   }).outputText,
   filename,
 );
+const originalLoad = Module._load;
+Module._load = function (name, ...args) {
+  if (name === '@react-native-async-storage/async-storage') {
+    return { getItem: async () => null, setItem: async () => undefined, removeItem: async () => undefined };
+  }
+  if (name === 'expo-constants') {
+    const constants = { expoConfig: { hostUri: '127.0.0.1:8081' } };
+    return { __esModule: true, default: constants, ...constants };
+  }
+  return originalLoad.call(this, name, ...args);
+};
 
 const {
   calendarCells, countsByDate, densityLevel, filterMeals, foodResponseCards,

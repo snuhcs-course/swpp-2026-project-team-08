@@ -1,0 +1,194 @@
+# AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
+"""식사 기록 요청/응답 DTO."""
+
+from datetime import date, datetime
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from app.core.errors import AppError
+
+MealType = Literal["breakfast", "lunch", "dinner", "snack"]
+MealSetting = Literal["home", "restaurant", "school", "others"]
+ReviewStatus = Literal["awaiting_review", "reviewed"]
+FoodSource = Literal["ai", "parent"]
+OutcomeValue = Literal["eaten", "tasted", "untouched", "unclear"]
+GoalFeedback = Literal["achieved", "tried", "notYet"]
+
+
+class InvalidMealTypeError(AppError):
+    def __init__(self, meal_type: str) -> None:
+        super().__init__()
+        self.meal_type = meal_type
+
+
+class InvalidMealSettingError(AppError):
+    def __init__(self, setting: str) -> None:
+        super().__init__()
+        self.setting = setting
+
+
+class EmptyFoodsError(AppError):
+    """식사에 음식 항목이 없다."""
+
+
+class DuplicateFoodIdError(AppError):
+    def __init__(self, food_id: str) -> None:
+        super().__init__()
+        self.food_id = food_id
+
+
+# ── 요청 ────────────────────────────────────────────
+
+
+class MealFoodRequest(BaseModel):
+    id: str = Field(min_length=1, max_length=80)
+    name: str = Field(min_length=1, max_length=200)
+    ingredients: list[str]
+    preparation: str = ""
+    serving_note: str = ""
+    traits: dict[str, Any]
+    history: str | None = None
+    source: FoodSource
+
+
+class MealUpsertRequest(BaseModel):
+    meal_date: date
+    meal_type: str
+    setting: str
+    before_photo_uri: str | None = None
+    exposure_food_id: str | None = None
+    foods: list[MealFoodRequest]
+    saved_at: datetime
+
+    @field_validator("meal_type")
+    @classmethod
+    def _check_meal_type(cls, value: str) -> str:
+        if value not in ("breakfast", "lunch", "dinner", "snack"):
+            raise InvalidMealTypeError(value)
+        return value
+
+    @field_validator("setting")
+    @classmethod
+    def _check_setting(cls, value: str) -> str:
+        if value not in ("home", "restaurant", "school", "others"):
+            raise InvalidMealSettingError(value)
+        return value
+
+    @field_validator("foods")
+    @classmethod
+    def _check_foods(cls, value: list[MealFoodRequest]) -> list[MealFoodRequest]:
+        if not value:
+            raise EmptyFoodsError()
+        seen: set[str] = set()
+        for food in value:
+            if food.id in seen:
+                raise DuplicateFoodIdError(food.id)
+            seen.add(food.id)
+        return value
+
+
+class OutcomeDecisionRequest(BaseModel):
+    confirmed: OutcomeValue | None = None
+    suggested: OutcomeValue | None = None
+
+
+class IngredientOutcomeRequest(BaseModel):
+    id: str
+    name: str
+    decision: OutcomeDecisionRequest
+
+
+class FoodOutcomeRequest(BaseModel):
+    food_id: str
+    decision: OutcomeDecisionRequest
+    ingredients: list[IngredientOutcomeRequest]
+
+
+class MealReviewRequest(BaseModel):
+    after_photo_uri: str = Field(min_length=1)
+    outcomes: list[FoodOutcomeRequest]
+    difficulties: dict[str, Any]
+    goal_feedback: GoalFeedback | None = None
+    saved_at: datetime
+
+
+class MealSuggestionRequest(BaseModel):
+    id: str = Field(min_length=1, max_length=80)
+    food_id: str = Field(min_length=1, max_length=80)
+    title: str = Field(min_length=1, max_length=200)
+    description: str
+    serving_tip: str | None = None
+    ingredients: list[str]
+
+
+# ── 응답 ────────────────────────────────────────────
+
+
+class MealFoodSummaryResponse(BaseModel):
+    name: str
+    ingredients: list[str]
+
+
+class MealListItemResponse(BaseModel):
+    id: str
+    meal_date: date
+    meal_type: str
+    setting: str
+    before_photo_uri: str | None
+    foods: list[MealFoodSummaryResponse]
+    review_status: ReviewStatus
+
+
+class CalendarDayResponse(BaseModel):
+    date: date
+    count: int
+
+
+class MealFoodResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    name: str
+    ingredients: list[str]
+    preparation: str
+    serving_note: str
+    traits: dict[str, Any]
+    history: str | None
+    source: str
+    position: int
+
+
+class MealReviewResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    after_photo_uri: str
+    outcomes: list[dict[str, Any]]
+    difficulties: dict[str, Any]
+    goal_feedback: str | None
+    saved_at: datetime
+
+
+class MealSuggestionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    food_id: str
+    title: str
+    description: str
+    serving_tip: str | None
+    ingredients: list[str]
+
+
+class MealDetailResponse(BaseModel):
+    id: str
+    child_id: str
+    meal_date: date
+    meal_type: str
+    setting: str
+    before_photo_uri: str | None
+    exposure_food_id: str | None
+    saved_at: datetime
+    foods: list[MealFoodResponse]
+    review: MealReviewResponse | None
+    suggestions: list[MealSuggestionResponse]

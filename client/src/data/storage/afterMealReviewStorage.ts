@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { difficultyCategories, outcomeValues, reviewSteps, type AfterMealReview, type AfterMealReviewDraft } from '../../types/afterMealReview';
@@ -91,4 +91,8 @@ export function saveAfterMealReview(review: AfterMealReview): Promise<AfterMealR
     await AsyncStorage.setItem(key, JSON.stringify({ ...review, step: 'complete', difficultyInputs: {} }));
     return review;
   });
+}
+
+export async function deleteAfterMealReview(childId: string, mealId: string): Promise<void> {
+  await AsyncStorage.multiRemove([draftKey(childId, mealId), resultKey(childId, mealId)]);
 }

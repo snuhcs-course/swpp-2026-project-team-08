@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { FoodItem, Meal, MealDraft } from '../../types/meal';
@@ -95,4 +95,13 @@ export const saveMeal = (meal: Meal): Promise<Meal> =>
       }),
     );
     return saved;
+  });
+export const deleteLocalMeal = (childId: string, mealId: string): Promise<void> =>
+  queued(childId, async () => {
+    const meals = (await readMeals(childId)).filter((meal) => meal.id !== mealId);
+    await AsyncStorage.setItem(mealsKey(childId), JSON.stringify(meals));
+    await updateHomeRecords(childId, (home) => {
+      home.meals = home.meals.filter((entry) => entry.id !== mealId);
+      home.suggestions = home.suggestions.filter((item) => item.recommendation?.mealId !== mealId);
+    });
   });

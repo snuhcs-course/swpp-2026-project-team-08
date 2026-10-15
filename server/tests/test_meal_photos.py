@@ -1,4 +1,4 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
+# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 """식전 · 식후 사진 URI 가 식사 기록에 저장되고 다시 읽히는지 검증한다."""
 
 from datetime import UTC, datetime

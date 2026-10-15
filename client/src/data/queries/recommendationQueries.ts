@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { saveMealSuggestion } from '../api/mealLogApi';

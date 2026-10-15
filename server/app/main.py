@@ -1,4 +1,4 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
+# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 """FastAPI 앱 팩토리 / 엔트리포인트.
 
 실행:  uv run uvicorn app.main:app --reload

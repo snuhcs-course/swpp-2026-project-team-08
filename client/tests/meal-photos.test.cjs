@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');

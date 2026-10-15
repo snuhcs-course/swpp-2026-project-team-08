@@ -1,4 +1,4 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
+# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 """식사에 포함된 음식 항목 (meal_foods)."""
 
 from datetime import datetime

@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { FoodItem, Meal, MealDraft } from '../../types/meal';

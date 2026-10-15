@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { authFailure, loginAccount, readCurrentUser, signUpAccount, type AuthFailure } from '../data/api/authApi';

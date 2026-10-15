@@ -1,4 +1,4 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
+# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 """식사 기록 HTTP 라우터: /children/{child_id}/meals."""
 
 from datetime import date

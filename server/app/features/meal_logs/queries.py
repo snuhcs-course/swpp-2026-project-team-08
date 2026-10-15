@@ -1,4 +1,4 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
+# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 """식사 기록 조회 함수."""
 
 from datetime import date

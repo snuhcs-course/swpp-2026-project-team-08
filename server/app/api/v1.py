@@ -1,4 +1,4 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Jaemin Kim
+# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 """API v1 라우터 집합.
 
 각 기능(features/*)의 라우터를 /api/v1 아래로 모은다.

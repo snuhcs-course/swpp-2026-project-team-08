@@ -1,19 +1,22 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { Redirect, router } from 'expo-router';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../../../components/AppButton';
+import { useAuth } from '../../../providers/AuthProvider';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import { useOnboarding } from '../hooks/useOnboarding';
+import { styles } from './entryStyles';
 
 export function EntryScreen() {
   const model = useOnboarding();
   const profile = useProfile();
+  const auth = useAuth();
   const s = copyFor(profile.language);
-  if (!model.ready) return (
+  if (auth.status === 'loading' || !model.ready) return (
     <SafeAreaView style={styles.root}><ActivityIndicator color={colors.onboardingPrimary} /><Text style={styles.loading}>{s.common.loading}</Text></SafeAreaView>
   );
   if (profile.status === 'error' || model.loadError) return (
@@ -28,24 +31,31 @@ export function EntryScreen() {
       }} />
     </SafeAreaView>
   );
-  if (profile.profile) return <Redirect href="/home" />;
-  if (!model.hasDraft) return <Redirect href={{ pathname: '/onboarding/[step]', params: { step: 'account' } }} />;
+  if (auth.session && profile.profile) return <Redirect href="/home" />;
+  if (auth.session && !profile.profile) {
+    return (
+      <SafeAreaView style={styles.root}>
+        <View style={styles.body}>
+          <Text style={styles.brand}>{s.common.brand}</Text>
+          <Text style={styles.title}>{s.onboarding.titles.account}</Text>
+        </View>
+        <AppButton
+          label={model.hasDraft ? s.onboarding.resume : s.onboarding.start}
+          onPress={() => router.push({ pathname: '/onboarding/[step]', params: { step: model.hasDraft ? model.draft.step : 'consent' } })}
+        />
+      </SafeAreaView>
+    );
+  }
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.body}>
         <Text style={styles.brand}>{s.common.brand}</Text>
         <Text style={styles.title}>{s.onboarding.titles.account}</Text>
       </View>
-      <AppButton label={model.hasDraft ? s.onboarding.resume : s.onboarding.start} onPress={() => router.push({ pathname: '/onboarding/[step]', params: { step: model.draft.step } })} />
+      <View style={styles.actions}>
+        <AppButton label={s.onboarding.start} onPress={() => router.push({ pathname: '/onboarding/[step]', params: { step: 'account' } })} />
+        <AppButton secondary label={s.onboarding.logIn} onPress={() => router.push('/login')} />
+      </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.onboardingBackground, paddingHorizontal: 24, paddingBottom: 25 },
-  body: { flex: 1, justifyContent: 'center', gap: 14 },
-  brand: { color: colors.onboardingPrimary, fontSize: 16, fontWeight: '800' },
-  title: { color: colors.onboardingText, fontSize: 28, fontWeight: '800' },
-  loading: { color: colors.onboardingMuted, marginTop: 12 },
-  error: { color: colors.error, fontSize: 13 },
-});

@@ -9,6 +9,9 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "infoPlist": {
         "CFBundleLocalizations": [
           "ko",
@@ -47,6 +50,12 @@
         "expo-image-picker",
         {
           "microphonePermission": false
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true
         }
       ]
     ]

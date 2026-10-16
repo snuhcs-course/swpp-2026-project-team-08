@@ -1,10 +1,11 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ChildProfile } from '../../../types/profile';
+import { useAuth } from '../../../providers/AuthProvider';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
@@ -57,15 +58,16 @@ function HomeContent({ profile }: { profile: ChildProfile }) {
 }
 
 export function HomeScreen() {
+  const auth = useAuth();
   const { status, profile, language } = useProfile();
-  if (status === 'loading')
+  if (auth.status === 'loading' || status === 'loading')
     return (
       <SafeAreaView style={styles.loading}>
         <ActivityIndicator color={colors.homePrimary} />
         <Text>{copyFor(language).common.loading}</Text>
       </SafeAreaView>
     );
-  if (status === 'error' || !profile) return <Redirect href="/" />;
+  if (!auth.session || status === 'error' || !profile) return <Redirect href="/" />;
   return <HomeContent profile={profile} />;
 }
 

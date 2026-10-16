@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 export const colors = {
   onboardingBackground: '#EEF7FF',
@@ -33,6 +33,12 @@ export const colors = {
   suggestionText: '#A14B63',
   overlay: 'rgba(19,35,58,0.45)',
   transparent: 'transparent',
+  logDensity1: '#C9DCFF',
+  logDensity2: '#7EA6F5',
+  logDensity3: '#1769FF',
+  logDensitySelected: '#0F4FD0',
+  suggestionBack: '#E8F0FF',
+  bookmarkSaved: '#000000',
 } as const;
 
 export const difficultyColorDots = {

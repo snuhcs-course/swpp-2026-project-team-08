@@ -1,9 +1,10 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
+import { useAuth } from '../../../providers/AuthProvider';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor, labelFor } from '../../../util/strings';
@@ -11,6 +12,7 @@ import { useOnboarding } from '../hooks/useOnboarding';
 
 export function ProfileScreen() {
   const model = useOnboarding();
+  const auth = useAuth();
   const appProfile = useProfile();
   const [languageError, setLanguageError] = useState(false);
   if (appProfile.status === 'loading' || !model.ready) return <View style={styles.root} />;
@@ -28,6 +30,7 @@ export function ProfileScreen() {
       <View style={styles.card}><Text style={styles.label}>{s.home.caregiver}</Text><Text style={styles.value}>{profile.caregiverName}</Text><Text style={styles.detail}>{profile.caregiverEmail}</Text></View>
       <View style={styles.card}><Text style={styles.label}>{s.home.child}</Text><Text style={styles.value}>{profile.childName}</Text><Text style={styles.detail}>{labelFor('age', profile.ageRange, appProfile.language)}</Text></View>
       <AppButton label={s.home.editProfile} onPress={() => { model.startEdit(); router.push({ pathname: '/onboarding/[step]', params: { step: 'review' } }); }} />
+      <AppButton secondary label={s.onboarding.logOut} onPress={() => { void auth.signOut().then(() => router.replace('/')); }} />
     </ScrollView>
   </View>;
 }

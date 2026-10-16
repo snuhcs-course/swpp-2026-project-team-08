@@ -1,10 +1,11 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import { FormField } from '../../../components/FormField';
+import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 
-export function AccountStepView({ language, caregiverName, email, password, editing, emailError, passwordError, onNameChange, onEmailChange, onPasswordChange }: {
+export function AccountStepView({ language, caregiverName, email, password, editing, emailError, passwordError, formError, onNameChange, onEmailChange, onPasswordChange }: {
   language: 'ko' | 'en';
   caregiverName: string;
   email: string;
@@ -12,6 +13,7 @@ export function AccountStepView({ language, caregiverName, email, password, edit
   editing: boolean;
   emailError?: string;
   passwordError?: string;
+  formError?: string;
   onNameChange: (value: string) => void;
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
@@ -42,6 +44,7 @@ export function AccountStepView({ language, caregiverName, email, password, edit
           error={passwordError}
         />
       )}
+      {formError ? <Text style={{ color: colors.error, fontSize: 12, marginTop: 8 }}>{formError}</Text> : null}
     </View>
   );
 }

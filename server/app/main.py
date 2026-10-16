@@ -1,4 +1,4 @@
-# AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 """FastAPI 앱 팩토리 / 엔트리포인트.
 
 실행:  uv run uvicorn app.main:app --reload
@@ -6,6 +6,7 @@
 """
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.errors import register_exception_handlers
 from app.api.v1 import api_v1_router
@@ -19,6 +20,12 @@ def create_app() -> FastAPI:
         title=settings.APP_NAME,
         version=settings.APP_VERSION,
         debug=settings.DEBUG,
+    )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     register_exception_handlers(app)

@@ -1,10 +1,12 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { upsertMeal } from '../api/mealLogApi';
 import { recognizeMealPhoto } from '../api/recognitionApi';
 import { readMeal, readMealDraft, readMeals, saveMeal, updateMealFoods } from '../storage/mealStorage';
 import type { FoodItem } from '../../types/meal';
 import { homeKeys } from './homeQueries';
+import { mealLogKeys } from './mealLogQueries';
 export const mealKeys = {
   draft: (childId: string) => ['meal-draft', childId] as const,
   detail: (childId: string, id: string) => ['meal', childId, id] as const,
@@ -32,19 +34,27 @@ export const useRecognition = () =>
 export function useUpdateMealFoods() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ childId, mealId, foods }: { childId: string; mealId: string; foods: FoodItem[] }) =>
-      updateMealFoods(childId, mealId, foods),
+    mutationFn: async ({ childId, mealId, foods }: { childId: string; mealId: string; foods: FoodItem[] }) => {
+      const meal = await updateMealFoods(childId, mealId, foods);
+      await upsertMeal(meal);
+      return meal;
+    },
     onSuccess: (meal) => {
       client.setQueryData(mealKeys.detail(meal.childId, meal.id), meal);
       void client.invalidateQueries({ queryKey: ['meals', meal.childId] });
       void client.invalidateQueries({ queryKey: mealKeys.draft(meal.childId) });
+      void client.invalidateQueries({ queryKey: mealLogKeys.all(meal.childId) });
     },
   });
 }
 export function useSaveMeal() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: saveMeal,
+    mutationFn: async (meal: Parameters<typeof saveMeal>[0]) => {
+      const saved = await saveMeal(meal);
+      await upsertMeal(saved);
+      return saved;
+    },
     retry: false,
     onSuccess: (meal) => {
       client.setQueryData(mealKeys.detail(meal.childId, meal.id), meal);
@@ -53,6 +63,7 @@ export function useSaveMeal() {
         queryKey: homeKeys.byChild(meal.childId),
       });
       void client.invalidateQueries({ queryKey: mealKeys.draft(meal.childId) });
+      void client.invalidateQueries({ queryKey: mealLogKeys.all(meal.childId) });
     },
   });
 }

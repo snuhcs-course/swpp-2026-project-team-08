@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -9,6 +9,7 @@ import { StyleSheet, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { OnboardingProvider } from '../features/onboarding/OnboardingProvider';
+import { AuthProvider } from '../providers/AuthProvider';
 import { ProfileProvider } from '../providers/ProfileProvider';
 import { FontReadyContext } from '../components/FontReadyContext';
 import { colors } from '../util/colors';
@@ -24,17 +25,19 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <FontReadyContext.Provider value={fontsLoaded || !!fontError}>
-          <ProfileProvider>
-            <OnboardingProvider>
-              <View style={styles.root}>
-                <StatusBar style="dark" />
-                <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.onboardingBackground } }}>
-                  <Stack.Screen name="(main)" options={{ animation: 'none' }} />
-                </Stack>
-                {!fontsLoaded && !fontError && <View style={styles.fontGate} />}
-              </View>
-            </OnboardingProvider>
-          </ProfileProvider>
+          <AuthProvider>
+            <ProfileProvider>
+              <OnboardingProvider>
+                <View style={styles.root}>
+                  <StatusBar style="dark" />
+                  <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.onboardingBackground } }}>
+                    <Stack.Screen name="(main)" options={{ animation: 'none' }} />
+                  </Stack>
+                  {!fontsLoaded && !fontError && <View style={styles.fontGate} />}
+                </View>
+              </OnboardingProvider>
+            </ProfileProvider>
+          </AuthProvider>
         </FontReadyContext.Provider>
       </QueryClientProvider>
     </SafeAreaProvider>

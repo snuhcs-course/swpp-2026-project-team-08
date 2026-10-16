@@ -1,7 +1,8 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
+import { useAuth } from '../../providers/AuthProvider';
 import { useProfile } from '../../providers/ProfileProvider';
 import type { ChildProfile, SafeFood } from '../../types/profile';
 import { addUnique, canAddSafeFood, canContinue, canFinish, isDraft, toggleExclusive, validEmail } from './rules';
@@ -10,6 +11,7 @@ import { OnboardingContext, type ConsentField, type DraftField, type ListField, 
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const { status, profile, commitProfile } = useProfile();
+  const auth = useAuth();
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [draft, setDraft] = useState<OnboardingDraft>(emptyDraft);
@@ -38,6 +40,18 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       .catch(() => { if (active) { setLoadError(true); setReady(true); } });
     return () => { active = false; };
   }, [status, profile, ready]);
+
+  useEffect(() => {
+    if (!ready || !auth.session || profile) return;
+    setDraft((current) => {
+      if (current.caregiverEmail.trim()) return current;
+      return {
+        ...current,
+        caregiverName: auth.session?.user.fullName ?? current.caregiverName,
+        caregiverEmail: auth.session?.user.email ?? current.caregiverEmail,
+      };
+    });
+  }, [ready, auth.session, profile]);
 
   const persist = useCallback((value: OnboardingDraft) => {
     const version = ++saveVersion.current;
@@ -124,7 +138,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       const { step: _step, safeFoodInput: _safeFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,
-        id: profile?.id ?? `child-${Date.now()}`,
+        id: profile?.id ?? auth.session?.user.id ?? `child-${Date.now()}`,
         updatedAt: new Date().toISOString(),
       };
       await commitProfile(next);
@@ -138,7 +152,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     } finally {
       finishing.current = false;
     }
-  }, [draft, profile, persist, commitProfile]);
+  }, [draft, profile, persist, commitProfile, auth.session]);
 
   return <OnboardingContext.Provider value={{
     ready: ready && status !== 'loading', loadError: loadError || status === 'error',
@@ -146,7 +160,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setPassword, setField, setConsent, toggleList, setList, addListItem,
     removeListItem, addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setStep,
     startEdit, retrySave, retryLoad, finish, canContinue: (step) => step === 'review' ? canFinish(draft)
-      : step === 'account' && editing ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)
+      : step === 'account' && (editing || !!auth.session) ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)
         : canContinue(step, draft, password),
   }}>{children}</OnboardingContext.Provider>;
 }

@@ -1,4 +1,4 @@
-# AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 """API v1 라우터 집합.
 
 각 기능(features/*)의 라우터를 /api/v1 아래로 모은다.
@@ -8,6 +8,8 @@
 from fastapi import APIRouter
 
 from app.features.auth.router import router as auth_router
+from app.features.meal_logs.router import router as meal_logs_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
 api_v1_router.include_router(auth_router)
+api_v1_router.include_router(meal_logs_router)

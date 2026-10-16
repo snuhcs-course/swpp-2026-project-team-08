@@ -1,9 +1,10 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { useFontReady } from '../../../components/FontReadyContext';
+import { useAuth } from '../../../providers/AuthProvider';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
@@ -25,9 +26,11 @@ const choiceSteps: ChoiceStep[] = [
 
 export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?: string }) {
   const model = useOnboarding();
+  const auth = useAuth();
   const { language } = useProfile();
   const fontReady = useFontReady();
   const [submitting, setSubmitting] = useState(false);
+  const [authError, setAuthError] = useState<string | undefined>();
   const step = typeof routeStep === 'string' && isStep(routeStep) ? routeStep : model.draft.step;
   const s = copyFor(language);
   const index = steps.indexOf(step);
@@ -43,6 +46,22 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
   };
   const handleContinue = async () => {
     if (submitting || !model.canContinue(step)) return;
+    if (step === 'account' && !model.editing && !auth.session) {
+      setSubmitting(true);
+      setAuthError(undefined);
+      const result = await auth.signUp({
+        email: model.draft.caregiverEmail,
+        password: model.password,
+        fullName: model.draft.caregiverName,
+      });
+      setSubmitting(false);
+      if (!result.ok) {
+        setAuthError(result.error === 'email-taken' ? s.onboarding.emailTaken
+          : result.error === 'network' ? s.onboarding.authNetwork
+            : s.onboarding.signupFailed);
+        return;
+      }
+    }
     if (step === 'review') {
       setSubmitting(true);
       const saved = await model.finish();
@@ -64,6 +83,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         editing={model.editing}
         emailError={model.draft.caregiverEmail && !validEmail(model.draft.caregiverEmail) ? s.onboarding.emailHint : undefined}
         passwordError={model.password && !validPassword(model.password) ? s.onboarding.passwordHint : undefined}
+        formError={authError}
         onNameChange={(value) => model.setField('caregiverName', value)}
         onEmailChange={(value) => model.setField('caregiverEmail', value)}
         onPasswordChange={model.setPassword}

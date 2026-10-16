@@ -1,0 +1,49 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+
+import { ApiError, apiRequest } from '../network/apiClient';
+import type { AuthUser } from '../storage/authStorage';
+
+export type AuthFailure = 'invalid-credentials' | 'email-taken' | 'network' | 'unknown';
+export type TokenPair = { accessToken: string; refreshToken: string };
+
+const record = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === 'object' && !Array.isArray(value);
+
+export function authFailure(error: unknown): AuthFailure {
+  if (error instanceof ApiError) {
+    if (error.errorCode === 'INVALID_CREDENTIALS') return 'invalid-credentials';
+    if (error.errorCode === 'EMAIL_ALREADY_EXISTS') return 'email-taken';
+    return 'unknown';
+  }
+  return 'network';
+}
+
+export async function signUpAccount(input: { email: string; password: string; fullName: string }): Promise<AuthUser> {
+  const value = await apiRequest<unknown>('/api/v1/auth/signup', {
+    method: 'POST',
+    body: JSON.stringify({ email: input.email, password: input.password, full_name: input.fullName }),
+  });
+  if (!record(value) || typeof value.id !== 'string' || typeof value.email !== 'string' || typeof value.full_name !== 'string') {
+    throw new Error('Invalid signup response');
+  }
+  return { id: value.id, email: value.email, fullName: value.full_name };
+}
+
+export async function loginAccount(input: { email: string; password: string }): Promise<TokenPair> {
+  const value = await apiRequest<unknown>('/api/v1/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email: input.email, password: input.password }),
+  });
+  if (!record(value) || typeof value.access_token !== 'string' || typeof value.refresh_token !== 'string') {
+    throw new Error('Invalid login response');
+  }
+  return { accessToken: value.access_token, refreshToken: value.refresh_token };
+}
+
+export async function readCurrentUser(): Promise<AuthUser> {
+  const value = await apiRequest<unknown>('/api/v1/auth/me');
+  if (!record(value) || typeof value.id !== 'string' || typeof value.email !== 'string' || typeof value.full_name !== 'string') {
+    throw new Error('Invalid user response');
+  }
+  return { id: value.id, email: value.email, fullName: value.full_name };
+}

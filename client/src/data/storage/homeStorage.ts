@@ -1,7 +1,53 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { HomeRecords } from '../../types/home';
+import type { HomeRecords, SavedSuggestion } from '../../types/home';
+
+export type SuggestionSavedDraft = {
+  id: string;
+  title: string;
+  description: string;
+  servingTip: string | null;
+  ingredients: string[];
+};
+
+export function applySuggestionSaved(
+  records: HomeRecords,
+  childId: string,
+  suggestion: SuggestionSavedDraft,
+  saved: boolean,
+  profileUpdatedAt: string,
+): boolean {
+  const existing = records.suggestions.find((item) => item.id === suggestion.id);
+  if (existing) {
+    existing.isSaved = saved;
+    return existing.isSaved;
+  }
+  if (!saved) return false;
+  const next: SavedSuggestion = {
+    id: suggestion.id,
+    childId,
+    title: suggestion.title,
+    description: suggestion.description,
+    ingredients: suggestion.ingredients,
+    isSaved: true,
+    safetyVerifiedForProfileAt: profileUpdatedAt,
+  };
+  if (suggestion.servingTip) next.servingTip = suggestion.servingTip;
+  records.suggestions.push(next);
+  return true;
+}
+
+export function setSuggestionSaved(
+  childId: string,
+  suggestion: SuggestionSavedDraft,
+  saved: boolean,
+  profileUpdatedAt: string,
+): Promise<boolean> {
+  return updateHomeRecords(childId, (records) =>
+    applySuggestionSaved(records, childId, suggestion, saved, profileUpdatedAt),
+  );
+}
 
 const keyFor = (childId: string) => `nurturebites.home.${childId}.v1`;
 const writeQueues = new Map<string, Promise<unknown>>();

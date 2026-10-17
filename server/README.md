@@ -1,4 +1,4 @@
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim -->
 
 # server
 
@@ -10,6 +10,7 @@
 |---|---|
 | 디렉토리 구조, 설치 · 실행 · 테스트, 작업 규칙, 컨벤션 | 이 문서 |
 | 아키텍처 (구조의 의도 · 설계 근거 · 코드 배치 규칙 · 에러 처리 · 새 기능 추가 · 버전 관리 전략) | [`docs/architecture.md`](docs/architecture.md) |
+| 배포 (CI/CD 흐름 · 운영 환경변수 · 서버 접속과 로그 · 배포 실패 대응) | [`docs/deploy.md`](docs/deploy.md) |
 | LLM(AI 코딩 도구)이 특히 지켜야 할 규칙 | [`AGENTS.md`](AGENTS.md) |
 | API 명세 (서버 실행 후) | http://localhost:8000/docs |
 | 환경변수 목록 | [`.env.example`](.env.example) |
@@ -52,11 +53,16 @@ server/
 ├── pyproject.toml            # 의존성 + 도구 설정 (uv, ruff, pytest)
 ├── .env.example              # 환경변수 템플릿 (.env 는 git 제외)
 ├── docker-compose.yml        # 로컬 Postgres
+├── Dockerfile                # 운영 배포용 이미지
+├── .dockerignore             # 이미지에서 제외할 파일 (.env 등)
+├── deploy/
+│   └── deploy.sh             # EC2 에서 실행되는 배포 스크립트 (GitHub Actions 가 SSM 으로 전달)
 ├── alembic.ini               # 마이그레이션 설정 (DB URL 은 env.py 가 주입)
 ├── README.md                 # (이 문서)
 ├── AGENTS.md                 # LLM 전용 규칙
 ├── docs/
-│   └── architecture.md       # 아키텍처
+│   ├── architecture.md       # 아키텍처
+│   └── deploy.md             # 배포
 ├── migrations/               # Alembic (async)
 │   ├── env.py
 │   ├── script.py.mako
@@ -303,11 +309,28 @@ async def list_meal_logs(
 **여러 기능의 데이터를 합친 화면**(홈 화면 등)은 조합 전용 기능(예: `features/home/`)을 만든다. 그
 기능의 `service.py`가 각 기능에서 분리된 함수 모듈을 호출해 조합한다.
 
+## 배포
+
+`main`에 `server/` 변경이 머지되면 GitHub Actions가 Docker 이미지를 만들어 AWS EC2에 자동으로 배포한다.
+DB는 AWS RDS의 PostgreSQL이다. 자세한 흐름 · 운영 방법은 [`docs/deploy.md`](docs/deploy.md)를 참고한다.
+
+- **PR에서는 CI가 검사한다.** `ruff check`, `ruff format --check`, `pytest`가 통과해야 한다.
+  PR 전에 `server/`에서 같은 명령을 실행하면 결과를 미리 알 수 있다.
+- **마이그레이션은 배포할 때 자동으로 적용된다.** 이미 적용된 마이그레이션은 서버를 이전 버전으로 되돌려도
+  되돌아가지 않는다. 컬럼 삭제처럼 되돌리기 어려운 변경은 두 번에 나누어 배포해야 한다.
+- **운영 환경변수는 AWS SSM Parameter Store(`/nurturebites/prod/*`)에 있다.** 로컬은 `.env`, 테스트는 설정이
+  필요 없다. 새 환경변수를 추가하면 `.env.example`에 적어야 하고, PR을 머지하기 **전에** Parameter Store에 같은
+  이름으로 등록해야 한다. 값을 바꾼 뒤에는 Actions 탭에서 Server Deploy를 수동 실행해야 반영된다.
+- **`Dockerfile`을 고쳤다면** CI는 이미지를 빌드하지 않으므로, 로컬에서 `docker build server`로 빌드가 되는지
+  확인해야 한다.
+- 비밀 값(DB 비밀번호, JWT 키)은 GitHub나 코드에 두지 않는다.
+
 ## 작업 규칙
 
 - **테스트 갱신 필수**: 새 엔드포인트/유스케이스를 추가하면 happy-path + 주요 에러 케이스 테스트를
   추가한다. 기존 동작(요청/응답 DTO, 도메인 규칙, 상태 코드 등)을 바꾸면 관련 테스트를 같이 수정한다.
-- 커밋/PR 전 `uv run pytest`와 `uv run ruff check .`가 **전부 통과**해야 한다. 테스트 없는 기능 변경은 미완료다.
+- 커밋/PR 전 `uv run pytest`, `uv run ruff check .`, `uv run ruff format --check .`가 **전부 통과**해야 한다
+  (PR에서 CI가 같은 세 가지를 실행한다). 테스트 없는 기능 변경은 미완료다.
   깨진 테스트를 지우거나 약화해서 통과시키지 않는다.
 - 아키텍처 관련 작업(폴더 구조, 의존성 방향, 새 기능 추가, 에러 처리, API 버전)은 먼저
   [`docs/architecture.md`](docs/architecture.md)를 따른다.

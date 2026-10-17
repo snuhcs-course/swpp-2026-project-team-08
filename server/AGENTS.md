@@ -1,11 +1,13 @@
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim -->
 
 이 디렉터리는 FastAPI + Postgres 백엔드 서버다. 이 문서는 **LLM이 특히 지켜야 할 규칙**만 담는다.
-설치·실행·테스트·일반 규칙은 `README.md`, 아키텍처는 `docs/architecture.md`에 있다.
+설치·실행·테스트·일반 규칙은 `README.md`, 아키텍처는 `docs/architecture.md`, 배포는 `docs/deploy.md`에 있다.
 
 ## 작업 전에
 
 - `README.md`(작업 규칙 · 컨벤션)와 `docs/architecture.md`를 먼저 읽는다.
+- `Dockerfile`, `deploy/`, `.github/workflows/`, 환경변수를 다루는 작업이면 [`docs/deploy.md`](docs/deploy.md)도
+  먼저 읽어야 한다.
 - 기존 코드와 패턴을 먼저 확인하고, 필요한 파일만 추가한다.
 
 ## AI 생성 코드 표기
@@ -40,6 +42,20 @@ DB 데이터나 스키마를 바꾸거나 지울 수 있는 작업은 **실행 �
 
 마이그레이션 파일을 *생성*(`alembic revision`)하거나 `alembic upgrade head --sql`처럼 SQL만 출력하는 것은
 DB를 바꾸지 않으므로 확인 없이 해도 된다.
+
+## 배포 관련 작업
+
+배포 흐름과 운영 방법은 [`docs/deploy.md`](docs/deploy.md)에 있다.
+
+- `Dockerfile`, `deploy/`, `.github/workflows/`, 환경변수, 배포 방식을 바꾸면 `docs/deploy.md`도 같은 변경에서
+  함께 고쳐야 한다.
+- `Dockerfile`을 바꾸면 `docker build server`로 빌드가 되는지 확인해야 한다. 확인하지 못했으면 그대로 보고해야 한다.
+- 새 환경변수를 추가하면 `core/config.py`와 `.env.example`을 함께 고쳐야 하고, 운영 Parameter Store 등록은
+  사용자가 해야 하므로 작업을 보고할 때 등록이 필요하다고 명시해야 한다.
+- 아래 작업은 **실행 전에 반드시 사용자에게 확인**받아야 한다. 확인받은 범위를 넘어 확장하지 않는다.
+  - AWS 리소스를 만들거나 바꾸거나 지우는 명령, SSM Parameter Store 값 변경
+  - 운영 RDS에 접속하거나 데이터를 바꾸는 작업
+  - 배포를 일으키는 동작 (`main` 머지, Server Deploy 수동 실행)
 
 ## 코드 품질 우선순위
 

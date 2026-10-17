@@ -1,6 +1,6 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
 import { useAuth } from '../../providers/AuthProvider';
 import { useProfile } from '../../providers/ProfileProvider';
@@ -14,7 +14,11 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const auth = useAuth();
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
-  const [draft, setDraft] = useState<OnboardingDraft>(emptyDraft);
+  const [storedDraftState, setDraft] = useState<OnboardingDraft>(emptyDraft);
+  const draft = useMemo(() => ready && auth.session && !profile && !storedDraftState.caregiverEmail.trim()
+    ? { ...storedDraftState, caregiverName: storedDraftState.caregiverName || auth.session.user.fullName,
+        caregiverEmail: auth.session.user.email }
+    : storedDraftState, [ready, auth.session, profile, storedDraftState]);
   const [password, setPassword] = useState('');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   const [editing, setEditing] = useState(false);
@@ -41,18 +45,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     return () => { active = false; };
   }, [status, profile, ready]);
 
-  useEffect(() => {
-    if (!ready || !auth.session || profile) return;
-    setDraft((current) => {
-      if (current.caregiverEmail.trim()) return current;
-      return {
-        ...current,
-        caregiverName: auth.session?.user.fullName ?? current.caregiverName,
-        caregiverEmail: auth.session?.user.email ?? current.caregiverEmail,
-      };
-    });
-  }, [ready, auth.session, profile]);
-
   const persist = useCallback((value: OnboardingDraft) => {
     const version = ++saveVersion.current;
     setSaveStatus('saving');
@@ -72,8 +64,15 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [draft, ready, loadError, status, profile, editing, persist]);
 
   const setField = useCallback((field: DraftField, value: string) => {
-    setDraft((current) => ({ ...current, [field]: value }));
-  }, []);
+    setDraft((current) => ({
+      ...current,
+      ...(!current.caregiverEmail.trim() && auth.session ? {
+        caregiverName: current.caregiverName || auth.session.user.fullName,
+        caregiverEmail: auth.session.user.email,
+      } : {}),
+      [field]: value,
+    }));
+  }, [auth.session]);
   const setConsent = useCallback((field: ConsentField, value: boolean) => {
     setDraft((current) => ({ ...current, consent: { ...current.consent, [field]: value } }));
   }, []);

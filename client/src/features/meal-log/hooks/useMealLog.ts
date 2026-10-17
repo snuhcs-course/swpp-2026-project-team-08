@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { useCallback, useMemo, useState } from 'react';
 import { useMealList } from '../../../data/queries/mealLogQueries';
@@ -41,7 +41,7 @@ export function useMealLog(childId: string) {
     const next = shiftMonth(year, month, delta);
     setYear(next.year);
     setMonth(next.month);
-  }, [year, month]);
+  }, [year, month, setYear, setMonth]);
 
   const toggleDate = useCallback((day: number) => {
     const value = isoDate(year, month, day);

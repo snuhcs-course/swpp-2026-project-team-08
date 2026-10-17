@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { upsertMeal } from '../api/mealLogApi';
@@ -6,11 +6,10 @@ import { recognizeMealPhoto } from '../api/recognitionApi';
 import { readMeal, readMealDraft, readMeals, saveMeal, updateMealFoods } from '../storage/mealStorage';
 import type { FoodItem } from '../../types/meal';
 import { homeKeys } from './homeQueries';
-import { mealLogKeys } from './mealLogQueries';
-export const mealKeys = {
-  draft: (childId: string) => ['meal-draft', childId] as const,
-  detail: (childId: string, id: string) => ['meal', childId, id] as const,
-};
+import { mealKeys, mealLogKeys } from './mealQueryKeys';
+
+export { mealKeys } from './mealQueryKeys';
+
 export const useMealDraft = (childId: string) =>
   useQuery({
     queryKey: mealKeys.draft(childId),

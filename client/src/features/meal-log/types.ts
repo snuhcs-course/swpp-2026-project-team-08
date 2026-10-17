@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import type { Outcome } from '../../types/afterMealReview';
 import type { FoodItem, FoodTraits, Meal } from '../../types/meal';
@@ -23,5 +23,5 @@ export type FoodResponseCard = {
   servingNote: string;
   outcome: Outcome | null;
   reasons: { category: string; value: string; note?: string }[];
-  suggestion: { id: string; title: string; description: string; servingTip: string | null } | null;
+  suggestion: { managed?: boolean; id: string; title: string; description: string; servingTip: string | null } | null;
 };

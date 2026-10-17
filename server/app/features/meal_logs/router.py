@@ -1,4 +1,4 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 """식사 기록 HTTP 라우터: /children/{child_id}/meals."""
 
 from datetime import date
@@ -163,7 +163,11 @@ async def get_meal(
     meal_id: str,
     service: Annotated[MealLogService, Depends(get_meal_log_service)],
 ) -> MealDetailResponse:
-    return _detail(await service.get_owned(child_id, meal_id))
+    meal = await service.get_owned(child_id, meal_id)
+    detail = _detail(meal)
+    snapshots = await service.linked_suggestions(meal)
+    detail.suggestions = [MealSuggestionResponse(**s) for s in snapshots] + detail.suggestions
+    return detail
 
 
 @router.put("/{meal_id}/review", response_model=MealDetailResponse, summary="식후 리뷰 저장")

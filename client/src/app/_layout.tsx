@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -12,6 +12,7 @@ import { OnboardingProvider } from '../features/onboarding/OnboardingProvider';
 import { AuthProvider } from '../providers/AuthProvider';
 import { ProfileProvider } from '../providers/ProfileProvider';
 import { FontReadyContext } from '../components/FontReadyContext';
+import { QueryScopeBoundary } from '../providers/QueryScopeBoundary';
 import { colors } from '../util/colors';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
@@ -27,6 +28,7 @@ export default function RootLayout() {
         <FontReadyContext.Provider value={fontsLoaded || !!fontError}>
           <AuthProvider>
             <ProfileProvider>
+              <QueryScopeBoundary />
               <OnboardingProvider>
                 <View style={styles.root}>
                   <StatusBar style="dark" />

@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -25,6 +25,8 @@ type Props = {
   error: boolean;
   deleting: boolean;
   deleteError: boolean;
+  suggestionSaveError?: boolean;
+  savingSuggestion?: boolean;
   savedSuggestionIds: string[];
   onBack: () => void;
   onContinueReview: () => void;
@@ -92,11 +94,13 @@ export function MealDetailsView(p: Props) {
             {p.awaitingReview ? null : <PhotoTile uri={p.afterUri} label={m.afterImage} />}
           </View>
           <Text style={styles.sectionLabel}>{m.foodsAndResponses}</Text>
+          {p.suggestionSaveError && <Text accessibilityRole="alert" style={styles.deleteBody}>{s.common.saveFailed}</Text>}
           {p.cards.map((card) => (
             <FoodResponseCard
               key={card.foodId}
               card={card}
               language={p.language}
+              disabled={p.savingSuggestion}
               saved={!!card.suggestion && p.savedSuggestionIds.includes(card.suggestion.id)}
               onToggleSaved={card.suggestion ? (saved) => p.onToggleSaved(card, saved) : undefined}
             />

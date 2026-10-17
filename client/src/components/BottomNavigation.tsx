@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -24,7 +24,7 @@ const tabs: {
   { key: 'today', icon: 'home-outline' },
   { key: 'mealLog', icon: 'silverware-fork-knife' },
   { key: 'sos', icon: 'alert-outline' },
-  { key: 'ideas', icon: 'creation-outline' },
+  { key: 'ideas', icon: 'bookmark-outline' },
   { key: 'insight', icon: 'chart-bar' },
   { key: 'profile', icon: 'account-outline' },
 ];

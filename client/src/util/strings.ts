@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import type { Language } from '../types/profile';
 
@@ -223,7 +223,7 @@ const en = {
     allDone: 'No more suggestions for this meal.', missingRecord: 'Save the after-meal review before asking for a recommendation.',
   },
   home: {
-    today: 'Today', mealLog: 'Meal Log', sos: 'SOS', ideas: 'Ideas', insight: 'Insight', profile: 'Profile',
+    today: 'Today', mealLog: 'Meal Log', sos: 'SOS', ideas: 'Suggestions', insight: 'Insight', profile: 'Profile',
     greetingMorning: (name: string) => `Good morning, ${name}`,
     greetingAfternoon: (name: string) => `Good afternoon, ${name}`,
     greetingEvening: (name: string) => `Good evening, ${name}`,
@@ -517,7 +517,7 @@ const ko = {
     allDone: '이번 식사에서 더 볼 제안이 없습니다.', missingRecord: '추천을 보려면 식후 검토를 먼저 저장해 주세요.',
   },
   home: {
-    today: '오늘', mealLog: '식사 기록', sos: 'SOS', ideas: '아이디어', insight: '인사이트', profile: '프로필',
+    today: '오늘', mealLog: '식사 기록', sos: 'SOS', ideas: '추천', insight: '인사이트', profile: '프로필',
     greetingMorning: (name: string) => `좋은 아침이에요, ${name}님`,
     greetingAfternoon: (name: string) => `좋은 오후예요, ${name}님`,
     greetingEvening: (name: string) => `좋은 저녁이에요, ${name}님`,
@@ -706,3 +706,76 @@ export function labelFor(group: OptionGroup, id: string, language: Language): st
     ?? legacyOptionLabels[group]?.[id]?.[language]
     ?? id;
 }
+
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+const suggestionCopy = {
+  en: {
+    generatingDetail: 'Using your meal review to find something to try next.', generationTitle: 'Couldn’t load suggestions', generationDetail: 'Something went wrong. Please try again in a moment.',
+    emptyDetail: 'Save a suggestion after reviewing a meal. It will appear here when you need it.',
+    suggested: 'Suggested', recordHeader: 'Record a try', since: (date: string) => `Meal reviews saved since ${date}`,
+    undoLast: '↶ Undo last action', chooseFoods: (count: number) => `Choose up to 3 foods · ${count} selected`,
+    title: 'Recommendations for this meal', targets: 'Suggestion targets', changeFoods: 'Change foods',
+    generating: 'Finding a next step…', generationFailed: 'Suggestions could not be created. Please try again.',
+    what: 'What to try', why: 'Why this may help', serving: 'Serving tip', foodDetails: 'FOOD DETAILS',
+    ingredients: 'Ingredients', cooking: 'Cooking method', linkedReason: 'Linked reason for recommendation',
+    tapDetails: 'Tap for food details', tapFront: 'Tap to see suggestion',
+    save: 'Save suggestion', dismiss: 'Dismiss suggestion', dismissTitle: 'What does not work for you?',
+    reasons: { restriction_conflict: 'This conflicts with an allergy or required restriction', disliked_food_or_form: 'My child dislikes this food or form', food_preferences: 'This does not fit our food preferences', too_much_preparation: 'Too much preparation', ingredient_unavailable: 'The ingredient is hard to get', already_tried: 'We already tried this' },
+    skipReason: 'Skip', done: 'Done', skip: 'Skip for now', undo: '↶ Undo',
+    savedNotice: '✓ Saved to suggestions', dismissedNotice: 'Suggestion dismissed',
+    saveFailed: "Changes couldn't be saved. Please try again.", allDone: 'All Suggestions Reviewed!',
+    allDoneBody: 'Your saved suggestions are ready whenever you want to try them.', savedTitle: 'Saved Suggestions',
+    savedIntro: 'Suggestions you can come back to', backMeal: 'Back to Meal', empty: 'No saved suggestions yet',
+    history: 'View Meal History', removed: 'Suggestion Removed from Saved', remove: 'Remove',
+    recordTry: 'Record a Try', addTry: 'Add a Try', tried: 'Tried', linkExisting: 'Link an existing record', logMeal: 'Log a meal',
+    tryChip: (date: string, mealType?: string) => `Tried · ${date}${mealType ? ` · ${mealType}` : ''}`,
+    unavailable: 'This suggestion is no longer saved.', linkedUnavailable: 'The linked meal is no longer available.',
+    selectMeal: 'When did you use this suggestion?', continue: 'Continue', reviewed: 'Reviewed', notReviewed: 'Not reviewed',
+    noEligible: 'No eligible meal records yet', recordsFailed: "Meal records couldn't be loaded. Please try again.",
+    confirmTry: 'Confirm this try', selectedRecord: 'Selected record', selectTarget: 'Which food did you use it for?',
+    change: 'Change', confirmLink: 'Confirm & Link Record', editMeal: 'Edit meal',
+    recordChanged: 'The selected record has changed. Select it again.', tryFailed: "Your try couldn't be recorded. Please try again.",
+    tryRecorded: 'Try recorded!', triedOn: 'Tried on', helpful: 'Helpful', notHelpful: 'Not helpful', notSure: 'Not sure',
+    feedbackPrompt: 'Was this suggestion helpful for you?', feedbackFailed: "Feedback couldn't be saved. Please try again.",
+    linkedReview: 'Linked meal review', backSaved: 'Back to saved suggestions', trying: 'Trying this suggestion',
+    sourceDate: 'Source meal', swipeSave: 'Keep swiping to save', swipeDismiss: 'Keep swiping to dismiss',
+    selected: (n: number, total: number) => `${n} of ${total} selected`, count: (n: number, total: number) => `${n} of ${total}`,
+    update: 'Update suggestions', close: 'Close', cancel: 'Cancel', back: 'Back', retry: 'Retry', saveFeedback: 'Save',
+    noDetails: 'Not entered', loading: 'Loading…', loadFailed: 'Suggestions could not be loaded. Please try again.',
+  },
+  ko: {
+    generatingDetail: '식사 검토를 바탕으로 다음에 시도할 방법을 찾고 있어요.', generationTitle: '추천을 불러오지 못했어요', generationDetail: '잠시 후 다시 시도해 주세요.',
+    emptyDetail: '식사를 검토한 뒤 추천을 저장하면 이곳에서 다시 볼 수 있어요.',
+    suggested: '추천 날짜', recordHeader: '시도 기록', since: (date: string) => `${date} 이후 저장한 식사 기록`,
+    undoLast: '↶ 마지막 동작 되돌리기', chooseFoods: (count: number) => `최대 3개 선택 · ${count}개 선택됨`,
+    title: '이 식사의 추천', targets: '추천받을 음식', changeFoods: '음식 변경',
+    generating: '추천을 만들고 있어요…', generationFailed: '추천을 만들지 못했어요. 다시 시도해 주세요.',
+    what: '시도해 볼 방법', why: '도움이 될 수 있는 이유', serving: '준비 방법', foodDetails: '음식 정보',
+    ingredients: '재료', cooking: '조리 방법', linkedReason: '추천과 연결된 이유',
+    tapDetails: '눌러서 음식 정보 보기', tapFront: '눌러서 추천으로 돌아가기',
+    save: '추천 저장', dismiss: '추천 제외', dismissTitle: '어떤 점이 맞지 않나요?',
+    reasons: { restriction_conflict: '알레르기나 식사 제한과 맞지 않아요', disliked_food_or_form: '아이가 이 음식이나 모양을 싫어해요', food_preferences: '우리 가족의 음식 취향과 맞지 않아요', too_much_preparation: '준비할 것이 너무 많아요', ingredient_unavailable: '재료를 구하기 어려워요', already_tried: '이미 시도했어요' },
+    skipReason: '건너뛰기', done: '완료', skip: '나중에 보기', undo: '↶ 되돌리기',
+    savedNotice: '✓ 추천을 저장했어요', dismissedNotice: '추천을 제외했어요',
+    saveFailed: '변경을 저장하지 못했어요. 다시 시도해 주세요.', allDone: '추천을 모두 확인했어요',
+    allDoneBody: '저장한 추천은 언제든 다시 볼 수 있어요.', savedTitle: '저장된 추천',
+    savedIntro: '다시 살펴볼 수 있는 추천이에요', backMeal: '식사로 돌아가기', empty: '아직 저장된 추천이 없어요',
+    history: '식사 기록 보기', removed: '저장 목록에서 추천을 제거했어요', remove: '제거',
+    recordTry: '시도 기록', addTry: '시도 추가', tried: '시도함', linkExisting: '기존 식사 기록 연결', logMeal: '식사 기록하기',
+    tryChip: (date: string, mealType?: string) => `시도함 · ${date}${mealType ? ` · ${mealType}` : ''}`,
+    unavailable: '더 이상 저장된 추천이 아니에요.', linkedUnavailable: '연결된 식사 기록을 볼 수 없어요.',
+    selectMeal: '언제 이 추천을 시도했나요?', continue: '계속', reviewed: '검토 완료', notReviewed: '검토 전',
+    noEligible: '연결할 수 있는 식사 기록이 아직 없어요', recordsFailed: '식사 기록을 불러오지 못했어요. 다시 시도해 주세요.',
+    confirmTry: '시도 확인', selectedRecord: '선택한 식사', selectTarget: '어떤 음식에 시도했나요?',
+    change: '변경', confirmLink: '확인하고 기록 연결', editMeal: '식사 편집',
+    recordChanged: '선택한 기록이 바뀌었어요. 다시 선택해 주세요.', tryFailed: '시도를 저장하지 못했어요. 다시 시도해 주세요.',
+    tryRecorded: '시도를 기록했어요!', triedOn: '시도한 날짜', helpful: '도움이 됐어요', notHelpful: '도움이 안 됐어요', notSure: '잘 모르겠어요',
+    feedbackPrompt: '이 추천이 도움이 됐나요?', feedbackFailed: '도움 여부를 저장하지 못했어요. 다시 시도해 주세요.',
+    linkedReview: '연결된 식사 검토', backSaved: '저장된 추천으로 돌아가기', trying: '이 추천을 시도하는 식사',
+    sourceDate: '추천 출처 식사', swipeSave: '더 밀면 저장해요', swipeDismiss: '더 밀면 제외해요',
+    selected: (n: number, total: number) => `${total}개 중 ${n}개 선택`, count: (n: number, total: number) => `${total}개 중 ${n}번째`,
+    update: '추천 업데이트', close: '닫기', cancel: '취소', back: '뒤로', retry: '다시 시도', saveFeedback: '저장',
+    noDetails: '입력하지 않음', loading: '불러오는 중…', loadFailed: '추천을 불러오지 못했어요. 다시 시도해 주세요.',
+  },
+};
+export const suggestionCopyFor = (language: Language) => suggestionCopy[language];

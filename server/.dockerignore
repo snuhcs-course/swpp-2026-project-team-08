@@ -1,0 +1,15 @@
+# AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
+# 비밀(.env)과 로컬 산출물이 이미지에 들어가지 않게 한다.
+.env
+.env.*
+!.env.example
+.venv
+.git
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+tests
+docs
+docker-compose.yml
+*.md

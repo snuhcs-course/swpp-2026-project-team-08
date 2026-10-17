@@ -62,5 +62,3 @@ async def calendar_counts(
 async def get_suggestion(session: AsyncSession, suggestion_id: str) -> MealSuggestion | None:
     result = await session.execute(select(MealSuggestion).where(MealSuggestion.id == suggestion_id))
     return result.scalar_one_or_none()
-
-

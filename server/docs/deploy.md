@@ -78,7 +78,7 @@ GitHub Actions 쪽 단계는 이렇습니다.
 
 EC2에서 `deploy.sh`가 하는 일은 이렇습니다.
 
-1. SSM Parameter Store의 `/nurturebites/prod/*` 값을 읽어 임시 환경변수 파일을 만듭니다. 파라미터를 하나도 읽지 못하면 중단합니다.
+1. SSM Parameter Store의 `/nurturebites/prod/*` 값을 읽어 임시 환경변수 파일을 만듭니다. 필수 파라미터(`ENVIRONMENT`, `JWT_SECRET_KEY`, `POSTGRES_HOST`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`)가 하나라도 없거나 비어 있거나, `ENVIRONMENT`가 `production`이 아니면 중단합니다.
 2. 새 이미지를 pull합니다.
 3. 새 이미지로 `alembic upgrade head`를 실행해 DB 마이그레이션을 적용합니다.
 4. 실행 중인 컨테이너를 지우고 새 컨테이너를 띄웁니다.

@@ -52,10 +52,11 @@ jobs:
           REGION: ${{ vars.AWS_REGION }}
           INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
         run: |
-          # deploy.sh 앞에 변수 설정 줄을 붙여 SSM 명령 본문을 만든다.
+          # SSM 명령 본문을 만든다. 셸뱅이 첫 줄에 있어야 AWS-RunShellScript 가 bash 로 실행하므로
+          # 셸뱅 → 변수 설정 → deploy.sh 순서로 붙인다 (deploy.sh 안의 셸뱅은 그냥 주석이 된다).
           jq -n --rawfile script server/deploy/deploy.sh \
             --arg vars "export IMAGE='$IMAGE' REGISTRY='$REGISTRY' REGION='$REGION'" \
-            '{commands: [$vars, $script]}' > ssm-params.json
+            '{commands: ["#!/bin/bash", $vars, $script]}' > ssm-params.json
 
           COMMAND_ID="$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \

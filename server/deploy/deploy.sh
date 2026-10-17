@@ -28,8 +28,21 @@ import sys
 for p in json.load(open(sys.argv[1]))["Parameters"]:
     print(f'{p["Name"].rsplit("/", 1)[-1]}={p["Value"]}')
 PY
-if [ ! -s "$ENV_FILE" ]; then
-  echo "SSM 경로 $PARAM_PATH 에서 파라미터를 읽지 못했습니다" >&2
+
+# 필수 파라미터가 하나라도 없으면 중단한다. ENVIRONMENT 가 없으면 서버가 local 설정(개발용 JWT 키 허용)으로
+# 떨어지므로, 부분만 등록된 상태로 운영 컨테이너가 뜨지 않도록 막는다. 값은 출력하지 않고 이름만 알린다.
+missing=0
+for key in ENVIRONMENT JWT_SECRET_KEY POSTGRES_HOST POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB; do
+  if ! grep -q "^${key}=." "$ENV_FILE"; then
+    echo "필수 파라미터가 없거나 비어 있습니다: $PARAM_PATH/$key" >&2
+    missing=1
+  fi
+done
+if ! grep -qx "ENVIRONMENT=production" "$ENV_FILE"; then
+  echo "ENVIRONMENT 는 production 이어야 합니다" >&2
+  missing=1
+fi
+if [ "$missing" -ne 0 ]; then
   exit 1
 fi
 

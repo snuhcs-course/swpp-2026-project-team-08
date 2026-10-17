@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import { emptyTraits } from '../../rules/foodDraft';
 import type { FoodItem } from '../../types/meal';
@@ -175,6 +175,7 @@ export function demoMealList(date?: string | null): MealListItem[] {
       mealType: item.mealType,
       setting: item.setting,
       beforePhotoUri: item.beforePhotoUri,
+      afterPhotoUri: item.review?.afterPhotoUri ?? null,
       foods: item.foods.map((entry) => ({ name: entry.name, ingredients: entry.ingredients })),
       reviewStatus: item.review ? 'reviewed' : 'awaiting_review',
     }));

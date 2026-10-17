@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { FoodItem } from '../../types/meal';
@@ -77,7 +77,7 @@ export function acceptanceFill(outcome: FoodResponseCard['outcome']): number {
 export function foodResponseCards(
   foods: FoodItem[],
   review: { outcomes: FoodOutcome[]; difficulties: AfterMealReview['difficulties'] } | null,
-  suggestions: { id: string; foodId: string; title: string; description: string; servingTip: string | null }[],
+  suggestions: { managed?: boolean; id: string; foodId: string; title: string; description: string; servingTip: string | null }[],
 ): FoodResponseCard[] {
   return foods.map((food) => {
     const outcome = review?.outcomes.find((item) => item.foodId === food.id);
@@ -95,6 +95,7 @@ export function foodResponseCards(
       reasons: tags.map((tag) => ({ category: tag.category, value: tag.value, note: tag.note })),
       suggestion: suggestion
         ? {
+          ...(suggestion.managed ? { managed: true } : {}),
           id: suggestion.id,
           title: suggestion.title,
           description: suggestion.description,

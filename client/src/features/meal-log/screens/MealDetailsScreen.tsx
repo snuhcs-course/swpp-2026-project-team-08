@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { Redirect, router } from 'expo-router';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
@@ -53,6 +53,8 @@ export function MealDetailsScreen({ mealId }: { mealId?: string }) {
       error={details.error || (!details.loading && !meal)}
       deleting={details.deleting}
       deleteError={details.deleteError}
+      suggestionSaveError={details.saveError}
+      savingSuggestion={details.savingSuggestion}
       onBack={() => router.back()}
       onContinueReview={() => router.push({ pathname: '/after-meal-review', params: { mealId: mealId ?? '' } })}
       onToggleSaved={details.toggleSaved}

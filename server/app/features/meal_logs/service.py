@@ -1,4 +1,4 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 """식사 기록 유스케이스. HTTP/DTO 를 모른다."""
 
 from datetime import date, datetime
@@ -143,6 +143,9 @@ class MealLogService:
         await self._session.refresh(suggestion)
         return suggestion
 
+    async def linked_suggestions(self, meal: MealLog) -> list[dict]:
+        return await queries.linked_suggestions(self._session, meal)
+
     async def delete(self, *, child_id: str, meal_id: str) -> None:
         meal = await self.get_owned(child_id, meal_id)
         await self._session.delete(meal)
@@ -151,8 +154,11 @@ class MealLogService:
 
 def _month_bounds(month: str) -> tuple[date, date]:
     parts = month.split("-")
-    if len(parts) != 2 or len(parts[0]) != 4 or len(parts[1]) != 2 or not all(
-        part.isdigit() for part in parts
+    if (
+        len(parts) != 2
+        or len(parts[0]) != 4
+        or len(parts[1]) != 2
+        or not all(part.isdigit() for part in parts)
     ):
         raise InvalidMonthError(month)
     year, month_number = int(parts[0]), int(parts[1])

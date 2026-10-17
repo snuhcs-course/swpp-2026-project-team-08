@@ -1,4 +1,4 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 """식사 기록 요청/응답 DTO."""
 
 from datetime import date, datetime
@@ -170,6 +170,7 @@ class MealReviewResponse(BaseModel):
 
 
 class MealSuggestionResponse(BaseModel):
+    managed: bool = False
     model_config = ConfigDict(from_attributes=True)
 
     id: str

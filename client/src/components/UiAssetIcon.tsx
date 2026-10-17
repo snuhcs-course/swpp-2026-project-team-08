@@ -1,8 +1,22 @@
-// This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { Image } from 'expo-image';
 
 const iconAssets = {
+  'suggestion-close': require('../../assets/ui/suggestion-close.svg'),
+  'suggestion-checked': require('../../assets/ui/suggestion-checked.svg'),
+  'suggestion-complete': require('../../assets/ui/suggestion-complete.svg'),
+  'suggestion-empty': require('../../assets/ui/suggestion-empty.svg'),
+  'suggestion-success': require('../../assets/ui/suggestion-success.svg'),
+  'suggestion-alert': require('../../assets/ui/suggestion-alert.svg'),
+  'suggestion-loader': require('../../assets/ui/suggestion-loader.svg'),
+
+  'suggestion-back': require('../../assets/ui/suggestion-back.svg'),
+  'suggestion-open': require('../../assets/ui/suggestion-open.svg'),
+  'suggestion-dismiss': require('../../assets/ui/suggestion-dismiss.svg'),
+  'suggestion-save': require('../../assets/ui/suggestion-save.svg'),
+  'suggestion-edit': require('../../assets/ui/suggestion-edit.svg'),
+  'suggestion-link': require('../../assets/ui/suggestion-link.svg'),
   'meal-maximize': require('../../assets/ui/meal-maximize.svg'),
   'meal-refresh': require('../../assets/ui/meal-refresh.svg'),
   'meal-trash': require('../../assets/ui/meal-trash.svg'),
@@ -38,6 +52,18 @@ const iconAssets = {
 export type UiAssetIconName = keyof typeof iconAssets;
 
 const size: Record<UiAssetIconName, number> = {
+  'suggestion-close': 20,
+  'suggestion-checked': 15,
+  'suggestion-complete': 28,
+  'suggestion-empty': 48,
+  'suggestion-success': 28,
+  'suggestion-alert': 28,
+  'suggestion-loader': 18,
+
+  'suggestion-back': 18, 'suggestion-open': 14,
+  'suggestion-dismiss': 20, 'suggestion-save': 20,
+  'suggestion-edit': 14,
+  'suggestion-link': 13,
   'meal-maximize': 15, 'meal-refresh': 17, 'meal-trash': 17, 'meal-lock': 15,
   'meal-check': 17, 'meal-sparkles': 17, 'meal-arrow-right': 17, 'meal-plus': 17,
   'meal-manual': 18,

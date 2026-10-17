@@ -1,18 +1,15 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { deleteMeal, getMealCalendar, getMealDetail, listMeals } from '../api/mealLogApi';
 import { deleteAfterMealReview } from '../storage/afterMealReviewStorage';
 import { deleteLocalMeal } from '../storage/mealStorage';
 import { homeKeys } from './homeQueries';
-import { mealKeys } from './mealQueries';
+import { mealKeys, mealLogKeys } from './mealQueryKeys';
 
-export const mealLogKeys = {
-  all: (childId: string) => ['meal-log', childId] as const,
-  list: (childId: string, date: string | null) => ['meal-log', childId, 'list', date] as const,
-  calendar: (childId: string, month: string) => ['meal-log', childId, 'calendar', month] as const,
-  detail: (childId: string, mealId: string) => ['meal-log', childId, 'detail', mealId] as const,
-};
+
+export { mealLogKeys } from './mealQueryKeys';
+
 
 export function useMealList(childId: string, date: string | null) {
   return useQuery({

@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 export const colors = {
   onboardingBackground: '#EEF7FF',
@@ -31,6 +31,17 @@ export const colors = {
   suggestionBorder: '#D68295',
   suggestionSurface: '#FCE8EC',
   suggestionText: '#A14B63',
+  suggestionTried: '#26874D',
+  suggestionMuted: '#71809A',
+  suggestionOverlay: 'rgba(19,35,58,0.20)',
+  suggestionCardBorder: '#CADDF0',
+  suggestionStackBack: '#EAF4FF',
+  suggestionStackMiddle: '#F0F7FF',
+  suggestionChipSurface: '#EEF5FF',
+  suggestionIngredientBorder: '#6CB27B',
+  suggestionDismissSurface: '#FFF7F8',
+  suggestionUnreviewedSurface: 'rgba(113,128,154,0.07)',
+  suggestionTriedSurface: 'rgba(38,135,77,0.07)',
   overlay: 'rgba(19,35,58,0.45)',
   transparent: 'transparent',
   logDensity1: '#C9DCFF',

@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import type { Outcome } from '../../types/afterMealReview';
 import type { FoodItem, FoodTraits, Meal } from '../../types/meal';
@@ -9,12 +9,15 @@ export type MealRecord = {
   mealType: Meal['mealType'];
   setting: Meal['setting'];
   beforePhotoUri: string | null;
+  afterPhotoUri: string | null;
   foods: { name: string; ingredients: string[] }[];
   reviewStatus: 'awaiting_review' | 'reviewed';
 };
 
 export type FoodResponseCard = {
   foodId: string;
+  kind: 'food' | 'ingredient';
+  parentName: string | null;
   name: string;
   ingredients: string[];
   traits: FoodTraits;

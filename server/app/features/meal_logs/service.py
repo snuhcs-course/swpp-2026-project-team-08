@@ -151,8 +151,11 @@ class MealLogService:
 
 def _month_bounds(month: str) -> tuple[date, date]:
     parts = month.split("-")
-    if len(parts) != 2 or len(parts[0]) != 4 or len(parts[1]) != 2 or not all(
-        part.isdigit() for part in parts
+    if (
+        len(parts) != 2
+        or len(parts[0]) != 4
+        or len(parts[1]) != 2
+        or not all(part.isdigit() for part in parts)
     ):
         raise InvalidMonthError(month)
     year, month_number = int(parts[0]), int(parts[1])

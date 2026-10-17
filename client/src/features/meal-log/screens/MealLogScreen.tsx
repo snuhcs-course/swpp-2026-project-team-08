@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
@@ -8,7 +8,7 @@ import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import { useMealLog } from '../hooks/useMealLog';
-import { mealDateParts } from '../rules';
+import { mealDateParts, mealThumbnail } from '../rules';
 import { MealLogView } from './MealLogView';
 
 export function MealLogScreen() {
@@ -49,11 +49,12 @@ export function MealLogScreen() {
           id: meal.id,
           title: s.mealLog.cardTitle(s.mealCheckin.types[meal.mealType], parts.monthDay, parts.weekday),
           foods: meal.foods.map((food) => food.name).join(', ') || s.common.empty,
-          photoUri: meal.beforePhotoUri,
+          photoUri: mealThumbnail(meal),
           awaiting: meal.reviewStatus === 'awaiting_review',
         };
       })}
-      query={log.search}
+      query={log.query}
+      hasMeals={log.hasMeals}
       draftName={draft?.foods.find((food) => food.name.trim())?.name ?? null}
       draftMeta={draft
         ? (draft.mealType
@@ -66,15 +67,25 @@ export function MealLogScreen() {
       loading={log.loading}
       error={log.error}
       refreshing={log.refreshing}
+      onBack={() => router.replace('/home')}
       onRefresh={() => { void log.retry(); }}
       onPrevMonth={() => log.goMonth(-1)}
       onNextMonth={() => log.goMonth(1)}
-      onToggleDay={log.toggleDate}
+      onMonthYear={log.setMonthYear}
+      onToggleDate={log.toggleDate}
       onClearDate={log.clearDate}
       onSearch={log.setSearch}
+      onSubmitSearch={log.submitSearch}
       onToggleUnreviewed={() => log.setUnreviewedOnly((value) => !value)}
-      onContinueDraft={() => router.push('/meal-checkin')}
+      onContinueDraft={() => {
+        if (draft?.savedMealId) {
+          router.push({ pathname: '/after-meal-photo', params: { mealId: draft.savedMealId } });
+          return;
+        }
+        router.push('/meal-checkin');
+      }}
       onOpenMeal={(id) => router.push({ pathname: '/meal/[mealId]', params: { mealId: id } })}
+      onGoCheckin={() => router.push('/meal-checkin')}
     />
   );
 }

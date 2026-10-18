@@ -1,4 +1,4 @@
-<!-- This Code is generated with AI -->
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; remove obsolete after-meal confirmation requirements -->
 
 # Personalized Recommendation
 
@@ -8,7 +8,7 @@
 
 ## Design Document
 
-현재 Figma에서 D. Personalized Recommendation의 독립 화면은 확인되지 않는다. 이 명세의 화면 근거는 C. After-meal Review의 [Recommended next step](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/NurtureBites?node-id=79-223) 카드와 [Did you try a saved suggestion?](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/NurtureBites?node-id=79-3), Home의 [Recommended action goals 위젯](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/NurtureBites?node-id=37-3369)이다. 카드·버튼·Home 위젯의 공통 시각 규칙은 [`specs/ui-components/spec.md`](../ui-components/spec.md)를 따른다. 별도의 Ideas 화면 구성, 카드 수, 추천 정렬 기준의 상세 디자인은 이 Figma 근거만으로 확정하지 않는다.
+현재 Figma에서 D. Personalized Recommendation의 독립 화면은 확인되지 않는다. 이 명세의 화면 근거는 C. After-meal Review의 [Recommended next step](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/NurtureBites?node-id=79-223) 카드와 Home의 [Recommended action goals 위젯](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/NurtureBites?node-id=37-3369)이다. 카드·버튼·Home 위젯의 공통 시각 규칙은 [`specs/ui-components/spec.md`](../ui-components/spec.md)를 따른다. 별도의 Ideas 화면 구성, 카드 수, 추천 정렬 기준의 상세 디자인은 이 Figma 근거만으로 확정하지 않는다. 현재 C 흐름은 [최종 식후 검토 명세](../after-meal-review/spec.md)를 따르며 이전 제안 사용 확인 화면은 포함하지 않는다.
 
 ## User Flow
 
@@ -17,7 +17,7 @@
 3. 필수 안전 정보를 확인하고, 기록으로 설명할 수 있는 작은 변화의 후보를 검토한다.
 4. 제공 가능한 후보가 있으면 보호자는 카드에서 시도할 일, 이유, 제공 팁을 읽는다.
 5. 보호자는 제안을 저장하거나 넘긴다. 뒤로 이동해도 이미 저장한 선택은 유지된다.
-6. 저장한 제안은 Home의 추천 목표 진입점과 이후 After-meal Review의 실행 여부 확인에서 다시 사용된다.
+6. 저장한 제안은 Home의 저장된 제안 진입점과 Meal Check-in의 음식 연결에서 다시 사용된다.
 
 ## Requirements
 
@@ -51,7 +51,7 @@
 
 1. 사용 가능한 제안이 있으면 Figma의 `Recommended next step`처럼 카드 덱에 실제 후보만 표시한다. 카드에는 `WHAT TO TRY`, `WHY THIS MAY BE EASIER`, `SERVING TIP`이 모두 있어야 한다. 디자인 예시의 채소·밥과 같은 내용은 고정하지 않는다.
 2. `✓` 또는 오른쪽 스와이프는 해당 제안을 저장하고, `×` 또는 왼쪽 스와이프는 해당 제안을 넘긴다. 두 입력 방식은 같은 결과를 내야 하며 한 번의 조작으로 한 카드만 처리한다.
-3. 저장 성공 후 해당 제안은 저장된 제안으로 구분되어 이후 Home 진입점과 After-meal Review의 실행 여부 확인에 연결된다. 넘긴 제안은 저장된 제안으로 표시하지 않는다.
+3. 저장 성공 후 해당 제안은 저장된 제안으로 구분되어 이후 Home 진입점과 Meal Check-in의 음식 연결에 사용된다. 넘긴 제안은 저장된 제안으로 표시하지 않는다.
 4. 뒤로 가기와 `Go back`은 이전 화면으로 돌아가며 이미 저장된 선택을 취소하지 않는다. 처리하지 않은 카드는 저장한 것으로 간주하지 않는다.
 5. 저장 중에는 중복 입력으로 같은 제안이 여러 번 저장되지 않아야 한다. 저장이 실패하면 현재 카드와 선택을 유지하고 오류 및 재시도 경로를 제공한다.
 
@@ -66,7 +66,7 @@
 
 1. 저장된 제안은 제안 ID, 대상 아동, 근거가 된 Meal 또는 기록, 제안 내용, 저장 상태를 구분할 수 있어야 한다. UI에 표시할 한글·영어 문구는 앱 설정에 맞춰 제공하고, 저장된 식별자와 상태 값은 화면 언어와 분리한다.
 2. Home의 Recommended action goals에는 실제 저장된 제안이 있을 때만 해당 제안과 `Try` 진입 동작을 연결한다. 저장된 제안이 없으면 디자인 예시를 실제 목표처럼 표시하지 않는다.
-3. 이후 After-meal Review는 저장된 제안만 가져와 보호자가 시도했는지 묻는다. 추천 화면에서 저장했다는 사실과 실제로 시도했다는 결과는 별도로 기록한다. C의 [제안 후속 요구사항](../after-meal-review/spec.md)을 따른다.
+3. After-meal Review는 제안 사용 여부 확인 단계를 표시하지 않는다. 저장 또는 음식 연결만으로 시도 결과를 생성하지 않으며 기존 명시적 응답은 호환성을 위해 보존한다. C의 [최종 저장 요구사항](../after-meal-review/spec.md)을 따른다.
 4. 프로필이나 음식 기록이 변경되어 저장된 제안의 근거 또는 안전성이 더 이상 성립하지 않으면 최신 정보에 맞게 상태를 갱신해야 한다. 과거의 선택·시도 기록은 지우지 않고, 현재 시도 가능한 제안과 구분한다.
 
 ### R7 — 앱 구조와 문구
@@ -134,8 +134,8 @@ When 오류 상태를 확인하면<br>
 Then 현재 카드와 선택이 유지되며 재시도할 수 있다.
 
 Given 이전에 저장한 제안이 있고<br>
-When 이후 Meal의 After-meal Review에서 실행 여부를 확인하면<br>
-Then 실제 저장된 제안이 표시되고 저장 여부와 시도 여부가 별도로 기록된다.
+When 이후 Meal의 After-meal Review를 저장하면<br>
+Then 제안 사용 확인 화면 없이 저장되며 제안 저장·연결만으로 시도 결과를 만들지 않는다.
 
 Given 저장된 제안 뒤에 필수 식이 제한이 변경되었고<br>
 When 그 제안을 다시 열면<br>

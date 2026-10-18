@@ -22,6 +22,7 @@ from pydantic import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.errors import ErrorMappedRoute, ErrorSpec, error_specs
+from app.core.config import get_settings
 from app.core.database import get_session
 from app.core.errors import AppError
 from app.features.auth.dependencies import CurrentUser
@@ -29,6 +30,8 @@ from app.features.auth.service import (
     AuthService,
     EmailAlreadyExistsError,
     InvalidCredentialsError,
+    InvalidEmailCodeError,
+    SameEmailError,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"], route_class=ErrorMappedRoute)
@@ -121,6 +124,48 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 
+class UpdateNameRequest(BaseModel):
+    full_name: str
+
+    @field_validator("full_name")
+    @classmethod
+    def _check_full_name(cls, value: str) -> str:
+        if not _FULL_NAME_MIN_LENGTH <= len(value) <= _FULL_NAME_MAX_LENGTH:
+            raise FullNameLengthError(value)
+        return value
+
+
+class EmailChangeRequest(BaseModel):
+    email: str
+
+    @field_validator("email")
+    @classmethod
+    def _check_email(cls, value: str) -> str:
+        if len(value) > _EMAIL_MAX_LENGTH:
+            raise InvalidEmailError(value)
+        try:
+            return _email_adapter.validate_python(value)
+        except ValidationError:
+            raise InvalidEmailError(value) from None
+
+
+class ConfirmEmailChangeRequest(EmailChangeRequest):
+    code: str
+
+    @field_validator("code")
+    @classmethod
+    def _check_code(cls, value: str) -> str:
+        if len(value) != 6 or not value.isdigit():
+            raise InvalidEmailCodeError()
+        return value
+
+
+class EmailChangeSentResponse(BaseModel):
+    sent: bool = True
+    # local 에서만 채워진다. 운영 응답에는 코드를 넣지 않는다.
+    dev_code: str | None = None
+
+
 # ── 의존성 ──────────────────────────────────────────
 
 
@@ -153,6 +198,33 @@ SIGN_UP_ERRORS = {
 
 LOGIN_ERRORS = {
     InvalidCredentialsError: ErrorSpec(status_code=401, error_code="INVALID_CREDENTIALS"),
+}
+
+UPDATE_NAME_ERRORS = {
+    FullNameLengthError: ErrorSpec(
+        status_code=422,
+        error_code="INVALID_FULL_NAME_LENGTH",
+        details=lambda e: {"input": e.full_name},
+    ),
+}
+
+EMAIL_CHANGE_ERRORS = {
+    InvalidEmailError: ErrorSpec(
+        status_code=422,
+        error_code="INVALID_EMAIL",
+        details=lambda e: {"input": e.email},
+    ),
+    SameEmailError: ErrorSpec(
+        status_code=422,
+        error_code="SAME_EMAIL",
+        details=lambda e: {"email": e.email},
+    ),
+    EmailAlreadyExistsError: ErrorSpec(
+        status_code=409,
+        error_code="EMAIL_ALREADY_EXISTS",
+        details=lambda e: {"email": e.email},
+    ),
+    InvalidEmailCodeError: ErrorSpec(status_code=400, error_code="INVALID_EMAIL_CODE"),
 }
 
 
@@ -204,3 +276,65 @@ async def read_me(current_user: CurrentUser) -> UserResponse:
     # current_user 는 FastAPI 가 토큰을 검증해 넣어 준다 (features/auth/dependencies.py).
     # 로그인하지 않은 경우의 401 응답 선언은 get_current_user 가 들고 있어 여기서 적지 않는다.
     return UserResponse.model_validate(current_user)
+
+
+# AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+@router.patch(
+    "/me",
+    response_model=UserResponse,
+    summary="내 이름 수정",
+)
+@error_specs(UPDATE_NAME_ERRORS)
+async def update_me(
+    payload: UpdateNameRequest,
+    current_user: CurrentUser,
+    service: Annotated[AuthService, Depends(get_auth_service)],
+) -> UserResponse:
+    user = await service.update_full_name(current_user, full_name=payload.full_name)
+    return UserResponse.model_validate(user)
+
+
+@router.post(
+    "/email-change",
+    response_model=EmailChangeSentResponse,
+    response_model_exclude_none=True,
+    summary="이메일 변경 코드 발급",
+)
+@error_specs(EMAIL_CHANGE_ERRORS)
+async def request_email_change(
+    payload: EmailChangeRequest,
+    current_user: CurrentUser,
+    service: Annotated[AuthService, Depends(get_auth_service)],
+) -> EmailChangeSentResponse:
+    # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+    code = await service.request_email_change(current_user, email=payload.email)
+    if get_settings().ENVIRONMENT == "local":
+        return EmailChangeSentResponse(dev_code=code)
+    return EmailChangeSentResponse()
+
+
+@router.post(
+    "/email-change/confirm",
+    response_model=UserResponse,
+    summary="이메일 변경 코드 확인",
+)
+@error_specs(EMAIL_CHANGE_ERRORS)
+async def confirm_email_change(
+    payload: ConfirmEmailChangeRequest,
+    current_user: CurrentUser,
+    service: Annotated[AuthService, Depends(get_auth_service)],
+) -> UserResponse:
+    user = await service.confirm_email_change(current_user, email=payload.email, code=payload.code)
+    return UserResponse.model_validate(user)
+
+
+@router.delete(
+    "/me",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="계정 삭제",
+)
+async def delete_me(
+    current_user: CurrentUser,
+    service: Annotated[AuthService, Depends(get_auth_service)],
+) -> None:
+    await service.delete_account(current_user)

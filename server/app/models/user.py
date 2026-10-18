@@ -21,6 +21,12 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+    pending_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    email_change_code_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    email_change_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False
     )

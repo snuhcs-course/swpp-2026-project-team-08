@@ -3,12 +3,34 @@
 
 from datetime import UTC, datetime
 
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+import pytest
 from httpx import AsyncClient
 
 CHILD = "child-1"
 OTHER = "child-2"
 MEAL_ID = "meal-dinner-1"
 FOOD_ID = "food-omelet"
+
+
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+@pytest.mark.parametrize("confirmed", [True, False])
+async def test_food_confirmation_preserves_ai_provenance(client: AsyncClient, confirmed: bool):
+    food = {**meal_payload()["foods"][0], "source": "ai", "confirmed": confirmed}
+    saved = await put_meal(client, foods=[food])
+    assert saved.status_code == 200, saved.text
+    detail = await client.get(f"/api/v1/children/{CHILD}/meals/{MEAL_ID}")
+    assert detail.json()["foods"][0]["source"] == "ai"
+    assert detail.json()["foods"][0]["confirmed"] is confirmed
+    assert "origin" not in detail.json()["foods"][0]
+
+
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+@pytest.mark.parametrize("confirmed", [0, 1, "true", "false", None])
+async def test_food_confirmation_rejects_non_booleans(client: AsyncClient, confirmed):
+    food = {**meal_payload()["foods"][0], "confirmed": confirmed}
+    result = await put_meal(client, foods=[food])
+    assert result.status_code == 422
 
 
 def meal_payload(**overrides: object) -> dict:
@@ -200,7 +222,7 @@ async def test_invalid_date_and_month_are_422(client: AsyncClient) -> None:
 
 # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 async def test_final_abc_fields_and_photo_free_review_roundtrip(client: AsyncClient) -> None:
-    food = {**meal_payload()["foods"][0], "acceptance": 0, "origin": "ai"}
+    food = {**meal_payload()["foods"][0], "acceptance": 0, "source": "ai", "confirmed": True}
     link = {
         "suggestion_id": "local-saved",
         "food_id": FOOD_ID,
@@ -210,7 +232,9 @@ async def test_final_abc_fields_and_photo_free_review_roundtrip(client: AsyncCli
     saved = await put_meal(client, foods=[food], suggestion_links=[link])
     assert saved.status_code == 200, saved.text
     assert saved.json()["foods"][0]["acceptance"] == 0
-    assert saved.json()["foods"][0]["origin"] == "ai"
+    assert saved.json()["foods"][0]["source"] == "ai"
+    assert saved.json()["foods"][0]["confirmed"] is True
+    assert "origin" not in saved.json()["foods"][0]
     assert saved.json()["suggestion_links"][0]["suggestion_id"] == "local-saved"
     review = review_payload()
     review["after_photo_uri"] = ""

@@ -100,7 +100,7 @@ test('frontend search matches food names or ingredients and can hide reviewed me
 test('food cards join stored outcomes, difficulties, and linked suggestions', () => {
   const food = {
     id: 'food-1', name: 'Rice', ingredients: ['rice'], preparation: 'steamed', servingNote: '',
-    source: 'parent',
+    source: 'parent', confirmed: true,
   };
   const cards = foodResponseCards(
     [food],
@@ -138,7 +138,7 @@ test('upsert, review, and suggestion bodies use the server field names', () => {
     photo: { id: 'p1', uri: 'file:///before.png', mimeType: 'image/png' },
     foods: [{
       id: 'food-1', name: 'Rice', ingredients: ['rice'], preparation: 'steamed', servingNote: 'small bowl',
-      source: 'parent',
+      source: 'ai', confirmed: true,
     }],
     savedAt: '2026-10-12T12:00:00.000Z',
   });
@@ -147,6 +147,10 @@ test('upsert, review, and suggestion bodies use the server field names', () => {
   assert.equal(Object.hasOwn(body.foods[0], 'history'), false);
   assert.equal(Object.hasOwn(body.foods[0], 'traits'), false);
   assert.equal(body.foods[0].serving_note, 'small bowl');
+  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+  assert.equal(body.foods[0].source, 'ai');
+  assert.equal(body.foods[0].confirmed, true);
+  assert.equal(Object.hasOwn(body.foods[0], 'origin'), false);
   const review = reviewToBody({
     mealId: 'meal-1', childId: 'child-1',
     afterPhoto: { id: 'p2', uri: 'file:///after.png', mimeType: 'image/png' },
@@ -209,7 +213,7 @@ test('bookmarking a linked suggestion toggles the saved flag without dropping it
 test('meal history food and ingredient cards preserve managed suggestion routing', () => {
   const food = {
     id: 'food-managed', name: 'Omelet', ingredients: ['Egg'], preparation: 'pan-fried',
-    servingNote: '', source: 'parent',
+    servingNote: '', source: 'parent', confirmed: true,
   };
   const cards = foodResponseCards([food], {
     outcomes: [{ foodId: food.id, decision: { confirmed: 'tasted', suggested: null },

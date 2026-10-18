@@ -19,15 +19,17 @@ const { newFood } = require('../src/rules/foodDraft.ts');
 const { validDate } = require('../src/util/date.ts');
 const { isDraft } = require('../src/data/storage/mealValidation.ts');
 const { readMealDraft, saveMealDraft, readMeals, readMeal, saveMeal } = require('../src/data/storage/mealStorage.ts');
-function completeDraft(childId) { return { ...newDraft(childId), mealType: 'lunch', setting: 'home', foods: [{ ...newFood(), name: 'Rice' }], step: 'foods' }; }
+function completeDraft(childId) { return { ...newDraft(childId), mealType: 'lunch', setting: 'home', foods: [{ ...newFood(), name: 'Rice', confirmed: true }], step: 'foods' }; }
 
 test('valid calendar dates', () => {
   assert.equal(validDate('2024-02-29'), true); assert.equal(validDate('2026-02-29'), false); assert.equal(validDate('2026-04-31'), false);
 });
 test('unconfirmed AI and incomplete/empty meals cannot be saved', () => {
-  const draft = completeDraft('rules'); draft.foods[0].source = 'ai'; assert.throws(() => mealFromDraft(draft));
+  const draft = completeDraft('rules'); draft.foods[0].source = 'ai'; draft.foods[0].confirmed = false; assert.throws(() => mealFromDraft(draft));
   const foods = confirmFoods(draft.foods); assert.equal(foods[0].id, draft.foods[0].id); assert.equal(draft.foods[0].source, 'ai');
-  assert.equal(mealFromDraft({ ...draft, foods }).foods[0].source, 'parent');
+  assert.equal(mealFromDraft({ ...draft, foods }).foods[0].source, 'ai');
+  assert.equal(foods[0].confirmed, true);
+  assert.equal(draft.foods[0].confirmed, false);
   for (const patch of [{ foods: [] }, { mealType: null }, { setting: null }, { mealDate: '2026-13-01' }]) assert.throws(() => mealFromDraft({ ...draft, foods, ...patch }));
 });
 test('stored input is validated, including child ownership and duplicate foods', () => {
@@ -63,7 +65,7 @@ test('final save is queued after pending drafts, never overwritten by an earlier
 test('acceptance and pending suggestion links survive draft/final writes without recording a try', async () => {
   const draft = newDraft('abc-links');
   draft.mealType = 'lunch'; draft.setting = 'home';
-  draft.foods = [{ ...newFood(), id: 'served', name: 'Rice', acceptance: 0, confirmed: true, origin: 'ai' }];
+  draft.foods = [{ ...newFood(), id: 'served', name: 'Rice', acceptance: 0, confirmed: true, source: 'ai' }];
   draft.suggestionLinks = [{ suggestionId: 'saved-idea', foodId: 'served', title: 'Rice', description: 'Offer a small portion' }];
   assert.equal(isDraft(draft, draft.childId), true);
   assert.equal(isDraft({ ...draft, foods: [{ ...draft.foods[0], acceptance: 4 }] }, draft.childId), false);
@@ -72,7 +74,8 @@ test('acceptance and pending suggestion links survive draft/final writes without
   assert.deepEqual((await readMealDraft(draft.childId)).suggestionLinks, draft.suggestionLinks);
   const saved = await saveMeal(mealFromDraft(draft));
   assert.equal(saved.foods[0].acceptance, 0);
-  assert.equal(saved.foods[0].origin, 'ai');
+  assert.equal(saved.foods[0].source, 'ai');
+  assert.equal(saved.foods[0].confirmed, true);
   assert.deepEqual(saved.suggestionLinks, draft.suggestionLinks);
   assert.equal(saved.suggestionFeedback, undefined);
 });
@@ -82,6 +85,8 @@ test('new food is blank and unconfirmed legacy photo fixtures cannot become care
   assert.equal(fresh.name, ''); assert.deepEqual(fresh.ingredients, []);
   assert.equal(fresh.preparation, ''); assert.equal(fresh.servingNote, '');
   assert.equal(fresh.acceptance ?? null, null); assert.equal(fresh.source, 'parent');
+  assert.equal(fresh.confirmed, false);
+  assert.throws(() => mealFromDraft({ ...completeDraft('unconfirmed-parent'), foods: [{ ...fresh, name: 'Rice' }] }));
   const draft = completeDraft('legacy-manual');
   const ai = { ...newFood(), id: 'legacy-ai', name: 'Rolled omelet', source: 'ai' };
   const confirmedAI = { ...ai, id: 'confirmed-ai', confirmed: true };
@@ -91,6 +96,22 @@ test('new food is blank and unconfirmed legacy photo fixtures cannot become care
   const restored = await readMealDraft(draft.childId);
   assert.deepEqual(restored.foods.map((food) => food.id), [draft.foods[0].id, confirmedAI.id]);
   assert.equal(restored.editingFood, null); assert.deepEqual(restored.suggestionLinks, []);
+});
+
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+test('legacy origin becomes provenance while explicit confirmation is preserved', async () => {
+  const draft = completeDraft('legacy-provenance');
+  const { confirmed, ...legacy } = draft.foods[0];
+  const legacyFood = { ...legacy, source: 'parent', origin: 'ai' };
+  values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({ ...draft, foods: [legacyFood] }));
+  const expected = { ...draft.foods[0], source: 'ai', confirmed: true };
+  assert.deepEqual((await readMealDraft(draft.childId)).foods, [expected]);
+  const meal = mealFromDraft({ ...draft, foods: [expected] });
+  values.set(`nurturebites.meals.${draft.childId}.v1`, JSON.stringify([{ ...meal, foods: [legacyFood] }]));
+  assert.deepEqual(await readMeals(draft.childId), [meal]);
+  const unconfirmed = { ...legacyFood, confirmed: false };
+  values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({ ...draft, foods: [unconfirmed] }));
+  assert.deepEqual((await readMealDraft(draft.childId)).foods, []);
 });
 
 test('legacy completed receipts preserve confirmed records even when their source was AI', async () => {

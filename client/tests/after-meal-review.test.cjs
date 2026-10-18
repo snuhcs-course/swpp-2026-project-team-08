@@ -38,7 +38,7 @@ function savedMeal(childId) {
   const draft = newDraft(childId);
   draft.mealType = 'lunch'; draft.setting = 'home';
   draft.photo = { id: 'before', uri: 'file:///before.png', mimeType: 'image/png' };
-  draft.foods = [{ ...newFood(), id: 'food-1', name: 'Rice', ingredients: ['Carrot', 'Egg'] }];
+  draft.foods = [{ ...newFood(), confirmed: true, id: 'food-1', name: 'Rice', ingredients: ['Carrot', 'Egg'] }];
   draft.step = 'foods';
   return mealFromDraft(draft);
 }

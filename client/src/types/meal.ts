@@ -8,8 +8,8 @@ export type FoodItem = {
   preparation: string;
   servingNote: string;
   source: 'ai' | 'parent';
-  confirmed?: boolean;
-  origin?: 'ai' | 'parent';
+  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+  confirmed: boolean;
   acceptance?: number | null;
 };
 export type MealPhoto = { id: string; uri: string; mimeType: string };

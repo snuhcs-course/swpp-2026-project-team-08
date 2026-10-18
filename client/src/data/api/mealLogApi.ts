@@ -105,6 +105,7 @@ function parseOutcome(value: unknown): FoodOutcome {
 function parseFood(value: unknown): FoodItem {
   if (!record(value) || typeof value.id !== 'string' || typeof value.name !== 'string' || !strings(value.ingredients)
     || typeof value.preparation !== 'string' || typeof value.serving_note !== 'string'
+    || typeof value.confirmed !== 'boolean'
     || (value.source !== 'ai' && value.source !== 'parent')) throw new Error('Invalid meal food');
   return {
     id: value.id,
@@ -113,7 +114,8 @@ function parseFood(value: unknown): FoodItem {
     preparation: value.preparation,
     servingNote: value.serving_note,
     source: value.source,
-    origin: value.origin === 'ai' || value.origin === 'parent' ? value.origin : undefined,
+    // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    confirmed: value.confirmed,
     acceptance: typeof value.acceptance === 'number' ? value.acceptance : null,
   };
 }
@@ -184,7 +186,8 @@ export function mealToUpsertBody(meal: Meal) {
       serving_note: food.servingNote,
       source: food.source,
       acceptance: food.acceptance ?? null,
-      origin: food.origin ?? food.source,
+      // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+      confirmed: food.confirmed,
     })),
   };
 }

@@ -201,7 +201,8 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const saveFood = async () => {
     if (!editingFood?.name.trim() || !meal || !profile || editorBusy.current) return;
     editorBusy.current = true;
-    const item: FoodItem = { ...editingFood, name: editingFood.name.trim(), source: 'parent' };
+    // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    const item: FoodItem = { ...editingFood, name: editingFood.name.trim(), confirmed: true };
     const foods = meal.foods.some((food) => food.id === item.id)
       ? meal.foods.map((food) => food.id === item.id ? item : food)
       : [...meal.foods, item];

@@ -234,8 +234,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     const item: FoodItem = {
       ...food,
       name: food.name.trim(),
-      source: 'parent',
-      origin: food.origin ?? food.source,
+      // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
       confirmed: true,
     };
     const foods = current.current?.foods ?? [];

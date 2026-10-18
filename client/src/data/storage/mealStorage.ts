@@ -27,6 +27,11 @@ function normalizeStoredFood(value: unknown): unknown {
   const next = { ...value } as Record<string, unknown>;
   delete next.history;
   delete next.traits;
+  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+  // Older entries used source for confirmation and origin for provenance.
+  if (next.confirmed === undefined) next.confirmed = next.source === 'parent';
+  if (next.origin === 'ai' || next.origin === 'parent') next.source = next.origin;
+  delete next.origin;
   return next;
 }
 

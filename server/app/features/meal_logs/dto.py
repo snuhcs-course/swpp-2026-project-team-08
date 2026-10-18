@@ -42,6 +42,7 @@ class DuplicateFoodIdError(AppError):
 # ── 요청 ────────────────────────────────────────────
 
 
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 class MealFoodRequest(BaseModel):
     id: str = Field(min_length=1, max_length=80)
     name: str = Field(min_length=1, max_length=200)
@@ -51,7 +52,8 @@ class MealFoodRequest(BaseModel):
     source: FoodSource
     # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
     acceptance: int | None = Field(default=None, ge=0, le=3, strict=True)
-    origin: FoodSource | None = None
+    # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    confirmed: StrictBool = False
 
 
 # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -170,9 +172,10 @@ class MealFoodResponse(BaseModel):
     ingredients: list[str]
     cooking_method: FoodPreparation | None = None
     serving_note: str
-    source: str
+    source: FoodSource
     acceptance: int | None = None
-    origin: FoodSource | None = None
+    # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    confirmed: StrictBool = False
     position: int
 
 

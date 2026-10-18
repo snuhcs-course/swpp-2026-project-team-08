@@ -12,13 +12,39 @@ from alembic.script import ScriptDirectory
 MIGRATIONS = Path(__file__).resolve().parents[1] / "migrations"
 
 
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0008_remove_food_traits"]
+    assert scripts.get_heads() == ["0009_food_confirmation"]
     assert set(scripts.get_revision("0005_remove_exposure").down_revision) == {
         "0004_final_abc_fields",
         "0004_user_email_change",
     }
+
+
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+def test_food_confirmation_migration_preserves_provenance_before_dropping_origin():
+    migration = run_path(str(MIGRATIONS / "versions" / "20261019_1600_food_confirmation.py"))
+    assert migration["down_revision"] == "0008_remove_food_traits"
+    output = StringIO()
+    context = MigrationContext.configure(
+        dialect_name="postgresql", opts={"as_sql": True, "output_buffer": output}
+    )
+    with Operations.context(context):
+        migration["upgrade"]()
+    sql = output.getvalue()
+    assert "ADD COLUMN confirmed BOOLEAN DEFAULT false NOT NULL" in sql
+    confirmation = sql.index("UPDATE meal_foods SET confirmed = (source = 'parent')")
+    provenance = sql.index("UPDATE meal_foods SET source = COALESCE(origin, source)")
+    removal = sql.index("DROP COLUMN origin")
+    assert confirmation < provenance < removal
+    output.seek(0)
+    output.truncate()
+    with Operations.context(context):
+        migration["downgrade"]()
+    sql = output.getvalue()
+    assert sql.index("SET origin = source") < sql.index("SET source = 'parent'")
+    assert "DROP COLUMN confirmed" in sql
 
 
 def test_removal_sql_and_empty_column_restore():

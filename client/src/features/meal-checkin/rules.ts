@@ -19,15 +19,16 @@ export const newDraft = (childId: string): MealDraft => ({
   editingFood: null,
   savedMealId: null,
 });
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 export const confirmFoods = (foods: FoodItem[]): FoodItem[] =>
-  foods.map((food) => ({ ...food, name: food.name.trim(), origin: food.origin ?? food.source, confirmed: true, source: 'parent' }));
+  foods.map((food) => ({ ...food, name: food.name.trim(), confirmed: true }));
 export function mealFromDraft(draft: MealDraft): Meal {
   if (
     !validDate(draft.mealDate) ||
     !draft.mealType ||
     !draft.setting ||
     !draft.foods.length ||
-    draft.foods.some((food) => !food.name.trim() || food.source !== 'parent')
+    draft.foods.some((food) => !food.name.trim() || food.confirmed !== true)
   )
     throw new Error('Invalid meal');
   return {

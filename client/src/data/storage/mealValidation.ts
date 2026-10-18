@@ -20,8 +20,8 @@ export function isFood(v: unknown): v is FoodItem {
     !list(v.ingredients) ||
     typeof v.preparation !== 'string' ||
     typeof v.servingNote !== 'string' ||
-    !(v.confirmed === undefined || typeof v.confirmed === 'boolean') ||
-    !(v.origin === undefined || v.origin === 'ai' || v.origin === 'parent') ||
+    // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    typeof v.confirmed !== 'boolean' ||
     !(v.acceptance === undefined || v.acceptance === null || (typeof v.acceptance === 'number' && Number.isInteger(v.acceptance) && v.acceptance >= 0 && v.acceptance <= 3)) ||
     (v.source !== 'ai' && v.source !== 'parent')
   )
@@ -64,7 +64,7 @@ export function isMeal(v: unknown, childId: string): v is Meal {
     Array.isArray(v.foods) &&
     v.foods.length > 0 &&
     v.foods.every(
-      (food) => isFood(food) && food.source === 'parent' && !!food.name.trim(),
+      (food) => isFood(food) && food.confirmed === true && !!food.name.trim(),
     )
   );
 }

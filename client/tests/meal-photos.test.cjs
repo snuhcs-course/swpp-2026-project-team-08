@@ -50,7 +50,7 @@ function mealWithBeforePhoto(childId = 'child-photo') {
   draft.mealType = 'lunch';
   draft.setting = 'home';
   draft.photo = beforePhoto;
-  draft.foods = [{ ...newFood(), id: 'food-1', name: 'Rice', ingredients: ['Egg'], source: 'parent' }];
+  draft.foods = [{ ...newFood(), id: 'food-1', name: 'Rice', ingredients: ['Egg'], source: 'parent', confirmed: true }];
   draft.step = 'foods';
   return mealFromDraft(draft);
 }
@@ -98,7 +98,7 @@ test('live API stores a before-meal photo then an after-meal photo', async (t) =
     ingredients: ['Egg'],
     preparation: '',
     serving_note: '',
-    source: 'parent',
+    source: 'parent', confirmed: true,
   };
   const mealRes = await fetch(`${api}/api/v1/children/${encodeURIComponent(childId)}/meals/${encodeURIComponent(mealId)}`, {
     method: 'PUT',

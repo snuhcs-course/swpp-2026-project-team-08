@@ -4,7 +4,8 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -31,7 +32,8 @@ class MealFood(Base):
     source: Mapped[str] = mapped_column(String(20), nullable=False)
     # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
     acceptance: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    origin: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    confirmed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False
     )

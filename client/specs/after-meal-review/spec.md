@@ -94,7 +94,7 @@
 
 `features/after-meal-review`, 결과·어려움 타입, 저장 검증과 기존 결과 호환, 공통 음식 편집기, 한글·영어 문구를 변경한다. 추천 알고리즘·홈 전체 개편은 포함하지 않는다.
 
-서버 연동: 식사 API는 acceptance·origin·suggestion_links, 식후 API는 사진 없는 입력과 suggestion_feedback을 보존한다. 기존 결과의 명시적 `{ tried: true }` 응답 처리와 중복 방지는 호환성을 위해 유지하지만, 이번 화면 흐름에서는 suggestion_feedback 응답을 새로 만들지 않는다. 새 저장 필드의 마이그레이션은 작성만 하고 적용은 별도 확인 후 진행한다.
+서버 연동: 식사 API는 acceptance·source·confirmed·suggestion_links, 식후 API는 사진 없는 입력과 suggestion_feedback을 보존한다. 기존 결과의 명시적 `{ tried: true }` 응답 처리와 중복 방지는 호환성을 위해 유지하지만, 이번 화면 흐름에서는 suggestion_feedback 응답을 새로 만들지 않는다. 새 저장 필드의 마이그레이션은 작성만 하고 적용은 별도 확인 후 진행한다.
 
 ## 화면 대조 보완 — 2026-10-18
 

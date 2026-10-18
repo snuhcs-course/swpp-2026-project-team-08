@@ -11,6 +11,8 @@ function food(id: string, name: string, ingredients: string[], extras: Partial<F
     preparation: extras.preparation ?? '',
     servingNote: extras.servingNote ?? '',
     source: extras.source ?? 'parent',
+    // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    confirmed: extras.confirmed ?? true,
   };
 }
 

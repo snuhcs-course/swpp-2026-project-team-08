@@ -49,7 +49,7 @@ function fixtures(childId = 'child-d') {
   };
   const draft = newDraft(childId);
   draft.mealType = 'lunch'; draft.setting = 'home'; draft.step = 'foods';
-  draft.foods = [{ ...newFood(), id: 'food-d', name: 'Rice', ingredients: ['Rice'], preparation: 'boiled', servingNote: 'mixed on plate' }];
+  draft.foods = [{ ...newFood(), confirmed: true, id: 'food-d', name: 'Rice', ingredients: ['Rice'], preparation: 'boiled', servingNote: 'mixed on plate' }];
   const meal = mealFromDraft(draft);
   const reviewDraft = newReviewDraft(meal);
   reviewDraft.afterPhoto = { id: 'after', uri: 'file:///after.png', mimeType: 'image/png' };

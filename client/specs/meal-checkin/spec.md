@@ -90,7 +90,7 @@
 
 `features/meal-checkin`, 공유 FoodEditor, Meal 타입·저장 검증, 한글·영어 문구를 변경한다. 기존 로컬 Meal 저장 경로에서 연결 스냅샷까지 보존하고, 서버 tries 생성은 보호자의 식후 확인 전 실행하지 않는다. 홈의 전체 위젯 개편은 세 기능 구현에 포함하지 않는다.
 
-서버 연동: 식사 API는 acceptance·origin·suggestion_links, 식후 API는 사진 없는 입력과 suggestion_feedback을 보존한다. 식후 검토 저장 트랜잭션에서 연결 제안의 `{ tried: true }` 응답만 서버 시도로 확정하며 같은 Meal·음식·제안의 재시도는 중복을 만들지 않는다. 새 저장 필드의 마이그레이션은 작성만 하고 적용은 별도 확인 후 진행한다.
+서버 연동: 식사 API는 acceptance·source·confirmed·suggestion_links, 식후 API는 사진 없는 입력과 suggestion_feedback을 보존한다. 식후 검토 저장 트랜잭션에서 연결 제안의 `{ tried: true }` 응답만 서버 시도로 확정하며 같은 Meal·음식·제안의 재시도는 중복을 만들지 않는다. 새 저장 필드의 마이그레이션은 작성만 하고 적용은 별도 확인 후 진행한다.
 
 ## 변경 범위와 호환
 

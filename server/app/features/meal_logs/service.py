@@ -87,7 +87,8 @@ class MealLogService:
                     ingredients=list(food.get("ingredients") or []),
                     source=food["source"],
                     acceptance=food.get("acceptance"),
-                    origin=food.get("origin"),
+                    # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+                    confirmed=food.get("confirmed", False),
                 )
             )
         await self._session.flush()

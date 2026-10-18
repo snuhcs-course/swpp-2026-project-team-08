@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -79,7 +80,7 @@ const { useMealCheckin } = require('../src/features/meal-checkin/hooks/useMealCh
 
 function createMeal(childId) {
   return mealFromDraft({ ...newDraft(childId), mealType: 'lunch', setting: 'home',
-    foods: [{ ...newFood(), id: 'rice', name: 'Rice' }] });
+    foods: [{ ...newFood(), confirmed: true, id: 'rice', name: 'Rice' }] });
 }
 
 test('failed server save stays pending on Home and restores editable answers until retry succeeds', async () => {
@@ -147,8 +148,8 @@ test('skipping a delayed photo ignores its result without cancelling a newer pho
 test('meal check-in Hook owns linking, cancellation, editing return, and unlinking', async () => {
   values.clear();
   slots = []; cursor = 0; effects = [];
-  const firstFood = { ...newFood(), id: 'rice', name: 'Rice' };
-  const secondFood = { ...newFood(), id: 'soup', name: 'Soup' };
+  const firstFood = { ...newFood(), confirmed: true, id: 'rice', name: 'Rice' };
+  const secondFood = { ...newFood(), confirmed: true, id: 'soup', name: 'Soup' };
   const draft = { ...newDraft('linking'), step: 'foods', mealType: 'lunch', setting: 'home', foods: [firstFood, secondFood] };
   await saveMealDraft(draft);
   const suggestion = { id: 'saved-idea', title: 'Try a smaller portion', description: 'Keep it separate', servingTip: 'No pressure' };

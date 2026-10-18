@@ -60,6 +60,13 @@ an empty JSON object for each food without recovering removed traits. Existing
 saved suggestions remain stored; recommendation generation uses revisions based
 on the remaining food fields and may regenerate suggestions on the next request.
 
+<!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
+Migration `0009_food_confirmation` replaces food `origin` with a strict boolean
+`confirmed`. `source` now always records provenance (`ai` or `parent`); confirming
+or editing a food preserves it. Existing rows derive confirmation from the old
+`source = 'parent'` state and restore provenance from `origin` when present.
+Apply this migration explicitly before deploying the matching client and server.
+
 ## 코드 품질 기준
 
 코드 품질은 아래 두 가지를 순서대로 우선한다.

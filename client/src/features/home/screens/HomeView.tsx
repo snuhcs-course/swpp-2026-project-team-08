@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; address the caregiver in the home greeting
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; implement final ABC home
 // This Code is generated with AI
 
@@ -39,10 +40,11 @@ export function HomeView(p: HomeViewProps) {
   const s = copyFor(p.language);
   const h = s.home;
   const name = p.profile.childName.trim();
+  const caregiverName = p.profile.caregiverName.trim();
   const locale = p.language === 'ko' ? 'ko-KR' : 'en-GB';
   const day = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(p.now);
   const date = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(p.now);
-  const greeting = (p.now.getHours() < 12 ? h.greetingMorning : p.now.getHours() < 18 ? h.greetingAfternoon : h.greetingEvening)(name);
+  const greeting = (p.now.getHours() < 12 ? h.greetingMorning : p.now.getHours() < 18 ? h.greetingAfternoon : h.greetingEvening)(caregiverName);
   const fresh = !p.loading && !p.error && !p.meals.length && !p.draft;
   const idea = p.data?.suggestions[0];
   return <View style={styles.root}>

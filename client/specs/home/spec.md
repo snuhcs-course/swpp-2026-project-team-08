@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify caregiver name in greetings -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; use existing shared bottom navigation by user request -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; replaced legacy home requirements with final ABC home states -->
 <!-- This Code is generated with AI -->
@@ -40,7 +41,7 @@
 ### R2 — 인사말과 새 식사 카드
 
 - 좌우 24px. 현재 현지 날짜를 대문자 요일 · 일 월 연도로 표시한다. 글자 10px Poppins Bold·파란색, 아래 인사말 23px SemiBold·행간 1.25, 둘 사이 4px이다.
-- 최신 프레임의 Child avatar에 따라 아동 이름·이니셜을 사용한다. 인사말은 현재 시간에 맞추고 이름이 없으면 임의 이름을 만들지 않는다. 아바타는 44px 원이다.
+- 인사말은 현재 시간에 맞추고 Good morning/afternoon/evening 옆에 프로필의 Caregiver name(보호자 이름)을 표시한다. 이름이 없으면 임의 이름이나 아이 이름으로 대체하지 않는다. Child avatar의 아동 이름·이니셜과 44px 원은 유지한다.
 - 남색 카드: 모서리 22px, 안쪽 20px, 항목 간 14px. 오른쪽 위 104px 장식 원을 표시한다.
 - LOG THIS MEAL · FOR {아동 이름} 10px Bold, Ready when you are 17px SemiBold, A little note about a meal is a good start. Add foods with or without a photo. 12px·행간 18px이다.
 - 파란 버튼은 높이 46px·모서리 14px·카메라 18px·문구 13px이다. 기록이 있으면 Log new meal, 없으면 Log this meal. 미완료 초안이 있어도 별도 가짜 식사 유형을 표시하지 않고 기존 초안 진입 흐름을 따른다.

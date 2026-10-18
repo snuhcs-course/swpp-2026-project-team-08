@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; update caregiver greeting expectation
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; update shared navigation expectations
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify direct review saving
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify final ABC home states
@@ -141,14 +142,14 @@ test('ongoing meal entry handles a photo-free empty draft without fake meal info
 });
 
 function homeProps() {
- return {profile:{id:'home-child',childName:'Luna'},language:'en',now:new Date(2026,9,8,9),draft:null,draftLoading:false,draftError:false,pendingMeals:[],meals:[],data:{loggedDates:new Set(),exposures:[],suggestions:[]},loading:false,error:false,refreshing:false,onRefresh:noop,onLogMeal:noop,onReviewDraft:noop,onReviewMeal:noop,onSavedSuggestions:noop,onMealHistory:noop,onTrySuggestion:noop,suggestionText:{}};
+ return {profile:{id:'home-child',childName:'Luna',caregiverName:'Alex'},language:'en',now:new Date(2026,9,8,9),draft:null,draftLoading:false,draftError:false,pendingMeals:[],meals:[],data:{loggedDates:new Set(),exposures:[],suggestions:[]},loading:false,error:false,refreshing:false,onRefresh:noop,onLogMeal:noop,onReviewDraft:noop,onReviewMeal:noop,onSavedSuggestions:noop,onMealHistory:noop,onTrySuggestion:noop,suggestionText:{}};
 }
 test('saved-meal home renders real pending-review metadata and current Figma sections', () => {
  const { HomeView }=require('../src/features/home/screens/HomeView.tsx');
  const meal={...newDraft('home-child'),id:'real-meal',mealType:'lunch',mealDate:'2026-10-08',foods:[{...newFood(),name:'Soup'},{...newFood(),name:'Rice'}]};
  const p={...homeProps(),meals:[meal],pendingMeals:[meal],data:{loggedDates:new Set(),exposures:[],suggestions:[{id:'idea',title:'Actual saved idea'}]}};
  const html=renderToStaticMarkup(React.createElement(HomeView,p));
- for(const text of ['Good morning, Luna','THURSDAY','LOG THIS MEAL · FOR LUNA','Log new meal','After-meal Review','Luna · Lunch','Oct 8, 2026','2 foods','Awaiting review','Saved Suggestions','Actual saved idea','View saved suggestions']) assert.ok(html.includes(text),text);
+ for(const text of ['Good morning, Alex','THURSDAY','LOG THIS MEAL · FOR LUNA','Log new meal','After-meal Review','Luna · Lunch','Oct 8, 2026','2 foods','Awaiting review','Saved Suggestions','Actual saved idea','View saved suggestions']) assert.ok(html.includes(text),text);
  assert.doesNotMatch(html,/SOS Progress|Recommended action goals|Meal Log Calendar|Put carrot next to fish/);
 });
 test('fresh home shows Sunday-first calendar and honest empty saved-suggestion state', () => {

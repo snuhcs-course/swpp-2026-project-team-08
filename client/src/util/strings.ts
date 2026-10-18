@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised for current ABC design
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
@@ -41,12 +42,12 @@ const en = {
     caregiverName: 'Parent or caregiver full name', email: 'Email', password: 'Password',
     passwordHint: 'Use at least 8 characters.', emailHint: 'Enter a valid email address.',
     childName: 'Nickname', ageRange: 'Age range', childFallback: 'your child',
-    accountPrivacy: 'Account and core privacy', photoAnalysis: 'Photo analysis and personalization',
+    accountPrivacy: 'Account and core privacy', photoAnalysis: 'Meal records and personalization',
     aiTraining: 'AI training and model research', required: 'Required', optional: 'Optional',
     consentDescriptions: {
       accountPrivacy: 'Account details are used for identification and verification. Password protection, security, retention, account deletion and deletion timing are explained in the full privacy policy.',
-      photoAnalysis: 'Meal photos and the child profile are used to analyze your meal records and personalize suggestions using sensory profile, allergies/restrictions, safe foods, meal history, feedback and learning-food progress.',
-      aiTraining: 'Meal photos are used only for your meal analysis and are not used to train AI models or build research datasets without this separate consent.',
+      photoAnalysis: 'Your meal records and child profile personalize suggestions using sensory preferences, allergies, restrictions, safe foods and feedback. Photos are optional records and are not analyzed.',
+      aiTraining: 'Photos are not sent for analysis or AI training in this version. Any future training or research use requires separate consent.',
     },
     viewDetail: 'View details', consentNote: 'The app does not diagnose, calculate nutritional adequacy or replace medical advice. Allergies and caregiver decisions always come first.',
     consentPanelTitle: 'Consent to Collection and Use of Personal Information',
@@ -339,11 +340,11 @@ const ko = {
     caregiverName: '보호자 이름', email: '이메일 주소', password: '비밀번호',
     passwordHint: '8글자 이상 입력해 주세요.', emailHint: '올바른 이메일 주소를 입력해 주세요.',
     childName: '아이의 별명', ageRange: '연령대', childFallback: '아이',
-    accountPrivacy: '계정 및 돌봄 정보', photoAnalysis: '사진 분석 및 개인화',
+    accountPrivacy: '계정 및 돌봄 정보', photoAnalysis: '식사 기록 및 개인화',
     aiTraining: 'AI 학습 및 모델 연구', required: '필수', optional: '선택',
     consentDescriptions: {
       accountPrivacy: '돌봄 설정을 위해 계정 정보와 아동 프로필을 보관합니다.',
-      photoAnalysis: '식사 분석을 선택했을 때 사진과 음식 정보를 사용합니다.',
+      photoAnalysis: '직접 입력한 식사 기록과 아동 프로필을 맞춤 제안에 사용합니다. 사진은 선택 기록이며 분석하지 않습니다.',
       aiTraining: '이 항목을 선택하지 않으면 모델 연구에 정보를 사용하지 않습니다.',
     },
     viewDetail: '자세히 보기', consentNote: '프로필은 기기에 저장하며 비밀번호는 저장하지 않습니다. 계속하려면 필수 항목에 동의해 주세요.',
@@ -624,9 +625,10 @@ const options: Record<OptionGroup, Option[]> = {
   ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
   restrictions: [
     ['gluten-free', 'Gluten-free', '글루텐 제한'], ['lactose-free', 'Lactose-free', '유당 제한'],
-    ['low-fructose', 'Low fructose', '저과당식'], ['casein-free', 'Casein-free', '카제인 제한'],
+    ['casein-free', 'Casein-free', '카제인 제한'],
   ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
   restrictionCatalog: [
+    ['low-fructose', 'Low fructose', '저과당식'],
     ['no-pork', 'No pork', '돼지고기 제외'], ['no-beef', 'No beef', '소고기 제외'],
   ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
   family: [
@@ -794,7 +796,7 @@ export const suggestionCopyFor = (language: Language) => suggestionCopy[language
 const abcCopy = {
   en: {
     viewMealSuggestions: 'View Meal Suggestions',
-    ready: 'You’re ready to begin', readyFor: (name: string) => `Learn what food ${name} can explore`, next: 'Next step',
+    ready: 'You’re ready to begin', readyFor: (name: string) => `Learn what food ${name} can explore`, next: 'Go to home',
     required: 'Required step', confirmed: 'Confirmed food', suggested: 'Suggested food', acceptance: 'Acceptance',
     cooking: 'Cooking method', detail: 'Additional detail', selectCooking: 'Select method',
     cookingOptions: ['Steamed', 'Boiled', 'Pan-fried', 'Baked', 'Roasted', 'Grilled', 'Raw', 'Other'],
@@ -815,7 +817,7 @@ const abcCopy = {
   },
   ko: {
     viewMealSuggestions: '이 식사의 제안 보기',
-    ready: '시작할 준비가 되었어요', readyFor: (name: string) => `${name}이(가) 탐색할 수 있는 음식을 알아보세요`, next: '다음 단계',
+    ready: '시작할 준비가 되었어요', readyFor: (name: string) => `${name}이(가) 탐색할 수 있는 음식을 알아보세요`, next: '홈으로 이동',
     required: '필수 단계', confirmed: '확인한 음식', suggested: '제안된 음식', acceptance: '수용 정도',
     cooking: '조리 방법', detail: '추가 설명', selectCooking: '조리 방법 선택',
     cookingOptions: ['찜', '삶기', '팬에 굽기', '오븐에 굽기', '로스팅', '직화 구이', '생식', '기타'],

@@ -1,7 +1,10 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
+import { fonts } from "../../../util/fonts";
 import { colors } from "../../../util/colors";
 import { useState } from "react";
 import {
@@ -22,7 +25,8 @@ import { abcCopyFor, copyFor } from "../../../util/strings";
 import { MealCompleteStepView } from "./MealCompleteStepView";
 import { MealDetailsStepView } from "./MealDetailsStepView";
 import { MealFoodsStepView } from "./MealFoodsStepView";
-import { BottomSheet } from "../../../components/BottomSheet";
+import { MealSaveStatusView } from "../../../components/MealSaveStatusView";
+import { Dialog } from "../../../components/Dialog";
 import { MealGoalSheetsView } from "./MealGoalSheetsView";
 import { MealPhotoStepsView } from "./MealPhotoStepsView";
 import type { MealCheckinViewProps } from "./mealCheckinViewTypes";
@@ -32,11 +36,13 @@ export function MealCheckinView(p: MealCheckinViewProps) {
   const d = p.draft;
   const s = copyFor(p.language);
   const m = s.mealCheckin;
+  const [savePanelHidden, setSavePanelHidden] = useState(false);
   const [replaceConfirm, setReplaceConfirm] = useState(false);
   const a = abcCopyFor(p.language);
   const [replace, setReplace] = useState(false);
   const [imageError, setImageError] = useState(false);
   const review = d.step === "foods" || d.step === "goal";
+  const emptyManual = review && !d.photo && !d.foods.length && !p.removedName;
   const photoStep = [
     "photo",
     "preview",
@@ -50,6 +56,11 @@ export function MealCheckinView(p: MealCheckinViewProps) {
         : d.step === "foods"
           ? 3
           : 4;
+
+  if (!savePanelHidden && d.step !== 'complete' && (p.saving || p.error === 'save')) return <MealSaveStatusView
+    status={p.saving ? 'saving' : 'error'} language={p.language} photos={d.photo ? [d.photo.uri] : []}
+    mealDate={d.mealDate} mealType={d.mealType} foods={d.foods} onRetry={p.onConfirm} onSaveExit={p.onSaveExit}
+    onReturn={() => setSavePanelHidden(true)} />;
 
   return (
     <SafeAreaView
@@ -75,7 +86,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             <AppIcon name="back" size={18} />
           </Pressable>
           <View style={styles.headerCopy}>
-            <Text style={ui.heading}>{m.titles[d.step]}</Text>
+            <Text style={ui.heading}>{emptyManual ? m.addFoodsTitle : d.step === "complete" ? a.mealCheckinHeader : m.titles[d.step]}</Text>
             {d.step === "preview" && (
               <Text style={styles.headerNote}>{m.draftLabel}</Text>
             )}
@@ -97,7 +108,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             />
           ))}
         </View>
-        {review && (
+        {review && !emptyManual && (
           <View style={styles.reviewIntro}>
             <Text style={styles.reviewIntroTitle}>
               {m.foodCount(d.foods.length)}
@@ -108,6 +119,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
           <ScrollView
             contentContainerStyle={[
               styles.content,
+              review && !emptyManual && { paddingTop: 4 },
               d.step === "photo" && styles.photoContent,
             ]}
             keyboardShouldPersistTaps="handled"
@@ -229,21 +241,22 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                         : m.confirmFoods
                   }
                   icon={<UiAssetIcon name="meal-check" />}
+                  style={{ minHeight: 50 }} labelStyle={{ fontSize: emptyManual ? 13 : 16 }}
                   disabled={!d.foods.length || p.saving}
-                  onPress={p.onConfirm}
+                  onPress={() => { setSavePanelHidden(false); p.onConfirm(); }}
                 />
                 {p.saving && (
                   <Text style={styles.confirmHint}>{a.draftKept}</Text>
                 )}
-                <Pressable
+                {!emptyManual && <Pressable
                   accessibilityRole="button"
                   onPress={p.onSaveExit}
                   style={{ padding: 12, alignItems: "center" }}
                 >
-                  <Text style={{ color: colors.homePrimary, fontSize: 16 }}>
+                  <Text style={{ color: colors.homePrimary, fontSize: 16, fontFamily: fonts.poppinsSemiBold }}>
                     {a.saveExit}
                   </Text>
-                </Pressable>
+                </Pressable>}
               </>
             )}
             {d.step === "photo" && (
@@ -262,6 +275,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
           <FoodEditor
             key={d.editingFood.id}
             food={d.editingFood}
+            mode={d.foods.some((item) => item.id === d.editingFood?.id) ? 'edit' : 'add'}
             labels={{ meal: m, common: s.common }}
             traits={p.traits}
             {...p.foodInput}
@@ -276,14 +290,12 @@ export function MealCheckinView(p: MealCheckinViewProps) {
           />
         )}
         {replaceConfirm && (
-          <BottomSheet
-            title={a.replaceTitle}
-            closeLabel={s.common.close}
-            onClose={() => setReplaceConfirm(false)}
-          >
-            <Text style={ui.text}>{a.replaceBody}</Text>
+          <Dialog compact title={a.replaceTitle} closeLabel={s.common.close} onClose={() => setReplaceConfirm(false)} footer={<>
             <AppButton
+              style={{ minHeight: 50 }}
+              variant="meal"
               label={m.replace}
+              labelStyle={styles.replaceButtonLabel}
               onPress={() => {
                 setReplaceConfirm(false);
                 setReplace(true);
@@ -291,10 +303,16 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             />
             <AppButton
               secondary
+              style={{ minHeight: 50 }}
+              variant="meal"
               label={m.cancel}
+              labelStyle={styles.replaceCancelLabel}
               onPress={() => setReplaceConfirm(false)}
             />
-          </BottomSheet>
+          </>}>
+            <Text style={styles.replaceBody}>{a.replaceBody}</Text>
+            <Text style={styles.replaceHint}>{a.replaceHint}</Text>
+          </Dialog>
         )}
         <MealGoalSheetsView
           p={{

@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; expose source meal metadata
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -31,7 +32,7 @@ export type MealCheckinViewProps = {
   onConfirmFood: (id: string) => void;
   removedName?: string;
   onUndoRemove: () => void;
-  suggestions: { id: string; title: string; description: string; servingTip?: string }[];
+  suggestions: { id: string; title: string; description: string; servingTip?: string; mealDate?: string; mealType?: string }[];
   suggestionsLoading: boolean;
   suggestionsError: boolean;
   onRetrySuggestions: () => void;

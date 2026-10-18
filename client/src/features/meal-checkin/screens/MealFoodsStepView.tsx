@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; aligned ABC button typography
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
@@ -16,6 +17,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppButton } from "../../../components/AppButton";
 import { UiAssetIcon } from "../../../components/UiAssetIcon";
+import { displayDate } from "../../../util/date";
+import { AppIcon } from "../../../components/AppIcon";
 import { colors } from "../../../util/colors";
 import { fonts } from "../../../util/fonts";
 import { abcCopyFor, copyFor } from "../../../util/strings";
@@ -43,7 +46,7 @@ type Props = Pick<
 >;
 
 export function MealFoodsStepView({ p }: { p: Props }) {
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(p.draft.foods[0]?.id ?? null);
   const [linkStep, setLinkStep] = useState<0 | 1 | 2>(
     p.initialSuggestionId ? 1 : 0,
   );
@@ -60,7 +63,10 @@ export function MealFoodsStepView({ p }: { p: Props }) {
   const m = s.mealCheckin;
   const a = abcCopyFor(p.language);
   const d = p.draft;
+  const emptyManual = !d.photo && !d.foods.length && !p.removedName;
   const suggestion = p.suggestions.find((item) => item.id === suggestionId);
+  const sourceMeal = (item: Props['suggestions'][number]) => item.mealDate
+    ? `${displayDate(item.mealDate, p.language, true)}${item.mealType && item.mealType in m.types ? ` · ${m.types[item.mealType as keyof typeof m.types]}` : ''}` : null;
   const openFood = (food: FoodItem) => {
     setExpanded(expanded === food.id ? null : food.id);
   };
@@ -97,7 +103,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
           </View>
           <Text style={styles.foodName}>{food.name}</Text>
           {selecting ? (
-            <Text style={styles.link}>{targetId === food.id ? "◉" : "○"}</Text>
+            <View style={[styles.linkRadio, targetId === food.id && styles.linkRadioSelected]}>{targetId === food.id && <View style={styles.linkRadioDot} />}</View>
           ) : null}
         </Pressable>
         {open && (
@@ -189,10 +195,14 @@ export function MealFoodsStepView({ p }: { p: Props }) {
       </View>
     );
   };
+  if (emptyManual) return <View style={styles.emptyManual}>
+    <Text style={styles.emptyManualIntro}>{m.addFoodPrompt}</Text>
+    <AppButton variant="meal" secondary label={m.addFood} icon={<UiAssetIcon name="meal-plus" />} style={styles.emptyAddButton} labelStyle={styles.emptyAddLabel} onPress={() => p.onEdit()} />
+  </View>;
   return (
     <>
-      <Text style={styles.muted}>
-        {p.childName} · {d.mealDate} · {d.mealType ? m.types[d.mealType] : ""}
+      <Text style={[styles.muted, { fontSize: 14, lineHeight: 20 } ]}>
+        {p.childName} · {displayDate(d.mealDate, p.language)} · {d.mealType ? m.types[d.mealType] : ""}
         {d.setting ? ` · ${m.settings[d.setting]}` : ""}
       </Text>
       <View style={styles.photoCard}>
@@ -213,14 +223,14 @@ export function MealFoodsStepView({ p }: { p: Props }) {
         ) : (
           <Text style={styles.photoTitle}>{a.missingPhoto}</Text>
         )}
-        <Pressable
+        {!d.photo && <Pressable
           accessibilityRole="button"
           onPress={() => p.onGo(d.photo ? "preview" : "photo")}
         >
           <Text style={styles.link}>
             {d.photo ? s.common.edit : s.common.add}
           </Text>
-        </Pressable>
+        </Pressable>}
       </View>
       <View style={styles.addRow}>
         <AppButton
@@ -242,12 +252,9 @@ export function MealFoodsStepView({ p }: { p: Props }) {
         </View>
       )}
       {!d.foods.length && (
-        <View style={styles.foodCard}>
-          <Text style={styles.foodName}>{m.emptyFoodTitle}</Text>
-          <Text style={styles.muted}>{m.emptyFoodBody}</Text>
-        </View>
+        <Text style={styles.emptyFoodText}>{m.emptyFoodBody}</Text>
       )}
-      {d.foods.map((food) => card(food))}
+      <View style={[styles.foodList, !d.foods.length && { flex: 1 }]}>{d.foods.map((food) => card(food))}</View>
       <Pressable
         accessibilityRole="button"
         onPress={() => setLinkStep(1)}
@@ -256,25 +263,22 @@ export function MealFoodsStepView({ p }: { p: Props }) {
         <Text style={styles.suggestionTitle}>{a.previousSuggestion}</Text>
         <UiAssetIcon name="abc-open" />
       </Pressable>
-      <Text style={styles.muted}>{m.reviewAiReminder}</Text>
+      <Text style={[styles.muted, { fontSize: 13, opacity: 0.44, marginTop: "auto", paddingTop: 32 }]}>{m.reviewAiReminder}</Text>
       <Modal
         visible={linkStep !== 0}
         animationType="slide"
         onRequestClose={() => setLinkStep(linkStep === 2 ? 1 : 0)}
       >
         <SafeAreaView style={styles.modal}>
-          <ScrollView
-            contentContainerStyle={styles.modalContent}
-            keyboardShouldPersistTaps="handled"
-          >
-            <Text style={styles.modalTitle}>
-              {linkStep === 1 ? a.previousSuggestion : a.selectFood}
-            </Text>
-            <Text style={styles.muted}>
-              {p.childName} · {d.mealDate} ·{" "}
-              {d.mealType ? m.types[d.mealType] : ""}
-            </Text>
-            <Text style={styles.muted}>{a.chooseSuggestion}</Text>
+          <View style={styles.linkHeader}>
+            <Pressable accessibilityRole="button" accessibilityLabel={s.common.back} onPress={() => setLinkStep(linkStep === 2 ? 1 : 0)} style={styles.linkBack}><AppIcon name="back" size={18} /></Pressable>
+            <Text style={styles.modalTitle}>{linkStep === 1 ? a.previousSuggestion : a.selectFood}</Text>
+            <Text style={[styles.muted, { fontSize: linkStep === 1 ? 14 : 10 }]}>{p.childName} · {displayDate(d.mealDate, p.language)} · {d.mealType ? m.types[d.mealType] : ""} · {d.setting ? m.settings[d.setting] : ""}</Text>
+            <View style={styles.linkProgress}>{[0,1,2,3,4].map(i => <View key={i} style={[styles.linkSegment, i < 4 && { backgroundColor: colors.homePrimary }]} />)}</View>
+          </View>
+          <ScrollView contentContainerStyle={styles.modalContent} keyboardShouldPersistTaps="handled">
+            {linkStep === 1 && <Text style={[styles.muted, { fontSize: 11 }]}>{a.chooseSuggestion}</Text>}
+            <View style={styles.linkBadges}><Text style={styles.linkBadge}>{a.linkStep(linkStep)}</Text><Text style={[styles.linkBadge, { color: colors.mealReviewMuted }]}>{linkStep === 1 ? a.savedEarlier : m.optional}</Text></View>
             {linkStep === 1 &&
               (p.suggestionsLoading ? (
                 <Text style={styles.muted}>{s.common.loading}</Text>
@@ -297,12 +301,13 @@ export function MealFoodsStepView({ p }: { p: Props }) {
                       setTargetId("");
                     }}
                     style={[
-                      styles.foodCard,
+                      styles.foodCard, styles.suggestionCard,
                       item.id === suggestionId && styles.selectedCard,
                     ]}
                   >
-                    <Text style={styles.foodName}>{item.title}</Text>
-                    <Text style={styles.fieldValue}>{item.description}</Text>
+                    <View style={styles.linkCardHeading}><Text style={styles.suggestionName}>{item.title}</Text><View style={[styles.linkRadio, item.id === suggestionId && styles.linkRadioSelected]}>{item.id === suggestionId && <View style={styles.linkRadioDot} />}</View></View>
+                    <Text style={styles.suggestionBody}>{item.description}</Text>
+                    {sourceMeal(item) && <Text style={styles.suggestionDate}>{sourceMeal(item)}</Text>}
                   </Pressable>
                 ))
               ) : (
@@ -310,21 +315,26 @@ export function MealFoodsStepView({ p }: { p: Props }) {
               ))}
             {linkStep === 2 && (
               <>
-                <View style={styles.foodCard}>
-                  <Text style={styles.foodName}>{suggestion?.title}</Text>
-                  <Text style={styles.fieldValue}>
+                <Text style={styles.linkSection}>{a.selectedSuggestion}</Text>
+                <View style={[styles.foodCard, styles.suggestionCard]}>
+                  <Text style={styles.suggestionName}>{suggestion?.title}</Text>
+                  <Text style={styles.suggestionBody}>
                     {suggestion?.description}
                   </Text>
+                  {suggestion && sourceMeal(suggestion) && <Text style={styles.suggestionDate}>{sourceMeal(suggestion)}</Text>}
                 </View>
+                <Text style={styles.linkSection}>{a.foodList}</Text>
+                <Text style={[styles.muted, { fontSize: 11 }]}>{a.selectMealFood}</Text>
                 {d.foods.map((food) => card(food, true))}
               </>
             )}
           </ScrollView>
           <View style={styles.modalFooter}>
-            <Text style={styles.muted}>{a.linkHint}</Text>
+            {linkStep === 1 && <View style={styles.linkHint}><Text style={styles.linkHintText}>{a.linkHint}</Text></View>}
             <AppButton
               variant="meal"
               label={linkStep === 1 ? s.common.continue : a.link}
+              labelStyle={{ fontSize: 16 }}
               disabled={
                 !suggestion ||
                 (linkStep === 2 &&
@@ -354,6 +364,8 @@ export function MealFoodsStepView({ p }: { p: Props }) {
             <AppButton
               secondary
               label={linkStep === 1 ? m.cancel : s.common.back}
+              labelStyle={{ fontSize: 16, color: colors.homePrimary }}
+              style={{ backgroundColor: colors.transparent, borderWidth: 0, minHeight: 48 }}
               onPress={() => setLinkStep(linkStep === 1 ? 0 : 1)}
             />
           </View>
@@ -363,11 +375,34 @@ export function MealFoodsStepView({ p }: { p: Props }) {
   );
 }
 const styles = StyleSheet.create({
-  modal: { flex: 1, backgroundColor: colors.homeBackground },
-  modalContent: { padding: 24, gap: 14 },
-  modalFooter: { padding: 24, gap: 12 },
+  suggestionCard: { padding: 15, borderRadius: 18, gap: 8 },
+  suggestionDate: { color: colors.mealReviewMuted, fontSize: 13, fontFamily: fonts.poppinsMedium },
+  linkHeader: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 14, gap: 10 },
+  linkBack: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  linkProgress: { flexDirection: 'row', gap: 6 },
+  linkSegment: { flex: 1, height: 4, borderRadius: 999, backgroundColor: colors.mealReviewBorder },
+  linkBadges: { flexDirection: 'row', gap: 6 },
+  linkBadge: { backgroundColor: colors.homeSelected, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 999, color: colors.homeText, fontSize: 9, fontFamily: fonts.poppinsRegular },
+  linkSection: { color: colors.homeText, fontSize: 13, fontFamily: fonts.poppinsSemiBold, marginTop: 3 },
+  linkCardHeading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  suggestionName: { flex: 1, color: colors.homeText, fontSize: 16, fontFamily: fonts.poppinsSemiBold, lineHeight: 24 },
+  suggestionBody: { color: colors.homeText, fontSize: 14, fontFamily: fonts.poppinsRegular, lineHeight: 20 },
+  linkRadio: { width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: colors.mealReviewBorder, alignItems: 'center', justifyContent: 'center' },
+  linkRadioSelected: { borderWidth: 2, borderColor: colors.homePrimary },
+  linkRadioDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.homePrimary },
+  linkHint: { backgroundColor: colors.calendarEmpty, padding: 10, marginHorizontal: -24 },
+  linkHintText: { color: colors.homeText, fontSize: 10, lineHeight: 15, fontFamily: fonts.poppinsRegular },
+  emptyManual: { gap: 12 },
+  emptyManualIntro: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 12, lineHeight: 18 },
+  emptyAddButton: { minHeight: 46, height: 46 },
+  emptyAddLabel: { fontSize: 13 },
+  emptyFoodText: { color: colors.homeText, fontFamily: fonts.poppinsMedium, fontSize: 12, lineHeight: 18 },
+  foodList: { gap: 12 },
+  modal: { flex: 1, backgroundColor: colors.mealReviewBackground },
+  modalContent: { paddingHorizontal: 24, paddingTop: 0, paddingBottom: 12, gap: 12 },
+  modalFooter: { paddingHorizontal: 24, paddingBottom: 16, paddingTop: 8, gap: 8 },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 17,
     color: colors.homeText,
     fontFamily: fonts.poppinsSemiBold,
   },
@@ -377,17 +412,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.homeBorder,
     borderRadius: 14,
-    padding: 7,
+    padding: 3,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 8,
   },
   photoOpen: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
-  photoThumbnail: { width: 50, height: 44, borderRadius: 9 },
+  photoThumbnail: { width: 50, height: 46, borderRadius: 8 },
   photoTitle: {
     color: colors.homeText,
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: fonts.poppinsSemiBold,
   },
   legend: { flexDirection: "row", gap: 6 },
@@ -448,7 +483,8 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 9,
     paddingVertical: 5,
-    fontSize: 12,
+    fontSize: 13,
+    fontFamily: fonts.poppinsMedium,
   },
   confirmedTag: { backgroundColor: colors.foodIngredientBackground },
   twoColumns: { flexDirection: "row", gap: 10 },
@@ -498,11 +534,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 6,
     alignItems: "center",
-    marginTop: 14,
+    marginTop: 20,
   },
   suggestionTitle: {
     color: colors.homeText,
-    fontSize: 13,
+    fontSize: 14,
     textDecorationLine: "underline",
     fontFamily: fonts.poppinsSemiBold,
   },

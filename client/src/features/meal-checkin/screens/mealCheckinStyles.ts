@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
 // This Code is generated with AI
 
 import { StyleSheet } from 'react-native';
@@ -6,6 +7,10 @@ import { formStyles as ui } from '../../../components/formStyles';
 import { fonts } from '../../../util/fonts';
 
 export const styles = StyleSheet.create({
+  replaceBody: { color: colors.homeText, fontFamily: fonts.poppinsRegular, fontSize: 12, lineHeight: 17.4, textAlign: 'center' },
+  replaceHint: { color: colors.mealReviewMuted, fontFamily: fonts.poppinsRegular, fontSize: 11, lineHeight: 15.95, textAlign: 'center' },
+  replaceButtonLabel: { fontSize: 13 },
+  replaceCancelLabel: { color: colors.homePrimary, fontSize: 13 },
   root: { flex: 1, backgroundColor: colors.homeBackground },
   photoRoot: { backgroundColor: colors.mealReviewBackground },
   reviewRoot: { backgroundColor: colors.mealReviewBackground },
@@ -32,8 +37,8 @@ export const styles = StyleSheet.create({
   },
   headerCopy: { flex: 1 },
   headerNote: { color: colors.homeMuted, fontSize: 10, fontFamily: fonts.poppinsRegular, marginTop: 1 },
-  reviewIntro: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingBottom: 8, gap: 8 },
-  reviewIntroTitle: { color: colors.homeText, fontSize: 12, fontFamily: fonts.poppinsSemiBold },
+  reviewIntro: { paddingTop: 10, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingBottom: 8, gap: 8 },
+  reviewIntroTitle: { color: colors.homeText, fontSize: 14, fontFamily: fonts.poppinsSemiBold },
   reviewIntroText: { color: colors.homeMuted, fontSize: 9, fontFamily: fonts.poppinsRegular },
   reviewBadge: { borderRadius: 999, backgroundColor: colors.homeSelected, paddingHorizontal: 8, paddingVertical: 5 },
   reviewBadgeText: { color: colors.homePrimary, fontSize: 8, fontFamily: fonts.poppinsSemiBold },

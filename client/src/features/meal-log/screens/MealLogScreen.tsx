@@ -1,6 +1,7 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; accept a date selected on home calendar
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
-import { Redirect, router, useFocusEffect } from 'expo-router';
+import { Redirect, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback } from 'react';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,7 +14,8 @@ import { MealLogView } from './MealLogView';
 
 export function MealLogScreen() {
   const profile = useProfile();
-  const log = useMealLog(profile.profile?.id ?? '');
+  const { date } = useLocalSearchParams<{ date?: string }>();
+  const log = useMealLog(profile.profile?.id ?? '', date);
   const s = copyFor(profile.language);
   const locale = profile.language === 'ko' ? 'ko-KR' : 'en-US';
   const refresh = log.retry;

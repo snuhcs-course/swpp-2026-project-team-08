@@ -108,3 +108,27 @@ test('legacy completed receipts preserve confirmed records even when their sourc
   await saveMealDraft(draft);
   assert.deepEqual((await readMealDraft(draft.childId)).foods,draft.foods);
 });
+
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+test('home pending meals survive an unfinished review and disappear only after final review storage', async () => {
+  const { readHomeMeals } = require('../src/data/storage/homeMealStorage.ts');
+  const { pendingHomeMeals } = require('../src/features/home/rules.ts');
+  const { newReviewDraft, setOutcome, reviewFromDraft } = require('../src/features/after-meal-review/rules.ts');
+  const { saveAfterMealDraft, saveAfterMealReview } = require('../src/data/storage/afterMealReviewStorage.ts');
+  const child='home-review-lifecycle';
+  const old=mealFromDraft({...completeDraft(child),id:'old-meal',mealDate:'2026-10-10'});
+  const recent=mealFromDraft({...completeDraft(child),id:'recent-meal',mealDate:'2026-10-11'});
+  await saveMeal(old);await saveMeal(recent);
+  await saveMealDraft(completeDraft(child));
+  let entries=await readHomeMeals(child);
+  assert.deepEqual(pendingHomeMeals(child,entries).map(meal=>meal.id),['recent-meal','old-meal']);
+  assert.deepEqual(pendingHomeMeals('different-child',entries),[]);
+  const draft=newReviewDraft(recent);
+  draft.step='outcomes';await saveAfterMealDraft(draft);
+  assert.equal(pendingHomeMeals(child,await readHomeMeals(child)).length,2);
+  draft.outcomes=setOutcome(draft.outcomes,recent.foods[0].id,'eaten');
+  await saveAfterMealReview(reviewFromDraft(draft,recent));
+  entries=await readHomeMeals(child);
+  assert.deepEqual(pendingHomeMeals(child,entries).map(meal=>meal.id),['old-meal']);
+  assert.equal((await readMeals(child)).length,2);
+});

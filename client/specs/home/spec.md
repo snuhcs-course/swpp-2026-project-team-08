@@ -14,7 +14,7 @@
 - [체크인 저장 완료 — 455:9843](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/?node-id=455-9843)
 - [식후 리뷰 시작 — 455:6876](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/?node-id=455-6876)
 
-이전 37:3607의 SOS Progress·Recommended action goals 위젯은 이 홈의 기준에서 제외한다. 공통 하단 탐색은 저장된 식사 화면의 6개 목적지를 기준으로 유지한다. 기록 없는 프레임의 4개 탭과 충돌하는 부분은 공통 탐색을 따른다. 상태 표시줄·홈 인디케이터는 앱 콘텐츠로 복제하지 않는다.
+이전 37:3607의 SOS Progress·Recommended action goals 위젯은 이 홈의 기준에서 제외한다. 기록 없는 홈은 Today·Meal Log·Ideas·Profile의 4개 탭, 저장된 식사 홈은 SOS·Insight를 포함한 6개 탭을 표시한다. 다른 탭의 기존 공통 탐색은 유지한다. 상태 표시줄·홈 인디케이터는 앱 콘텐츠로 복제하지 않는다.
 
 ## User Flow
 
@@ -68,7 +68,7 @@
 ### R6 — 공통 배치·언어·탐색
 
 - 화면 배경 #F7FAFF, 콘텐츠 좌우 24px, 인사말 위 10px·아래 20px, 본문 섹션 간 18px, 하단 여백 24px이다.
-- Today, Meal Log, SOS, Ideas, Insight, Profile 공통 탐색을 유지한다. 홈에서는 455:8912의 원본 아이콘·9px 라벨·5px 간격·좌우 12px 배치를 적용한다. 탭은 하단에 고정하고 콘텐츠는 세로 스크롤한다.
+- 저장된 식사 홈은 Today, Meal Log, SOS, Ideas, Insight, Profile의 6개 탭, 기록 없는 홈은 Today, Meal Log, Ideas, Profile의 4개 탭이다. 홈에서는 455:8912의 원본 아이콘·9px 라벨·5px 간격·좌우 12px 배치를 적용한다. 탭은 하단에 고정하고 콘텐츠는 세로 스크롤한다.
 - 모든 문구는 strings.ts, 색은 colors.ts에 모은다. 한국어·영어 모두 지원하며 실제 이름·음식명은 유지한다.
 - View는 props만 받아 렌더링하고 Hook·Query·Storage가 데이터 조회와 상태를 담당한다.
 

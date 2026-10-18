@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; add current home pending-review and saved-suggestion copy
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; add ongoing meal entry screen copy
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; add replacement source sheet title
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; synced before-meal photo copy from Figma 455:7879
@@ -235,12 +236,13 @@ const en = {
     greetingMorning: (name: string) => `Good morning, ${name}`,
     greetingAfternoon: (name: string) => `Good afternoon, ${name}`,
     greetingEvening: (name: string) => `Good evening, ${name}`,
+    ideasTab: 'Ideas', mealFor: (name: string) => `LOG THIS MEAL · FOR ${name.toLocaleUpperCase('en-US')}`, logNewMeal: 'Log new meal', afterMealTitle: 'After-meal Review', awaitingReview: 'Awaiting review', savedTitle: 'Saved Suggestions', savedEmptyTitle: 'Saved suggestions', savedHint: 'An idea to revisit, not a recorded try.', viewSaved: 'View saved suggestions', viewHistory: 'View meal history', logAMeal: 'Log a meal',
     nextUp: 'NEXT UP · MEAL',
-    nextTitle: 'Ready when you are', nextBody: 'A meal record helps you notice what made today easier.',
+    nextTitle: 'Ready when you are', nextBody: 'A little note about a meal is a good start. Add foods with or without a photo.',
     logMeal: 'Log this meal', sosTitle: 'SOS Progress',
     sosBody: 'Food experience steps you have recorded', noExposure: 'No foods are being tracked yet.',
     itemCount: (count: number) => `${count} items`,
-    recommendations: 'Recommended action goals', goalsSubtitle: 'Small steps to make meals easier', noRecommendations: 'No saved suggestions yet.',
+    recommendations: 'Recommended action goals', goalsSubtitle: 'Small steps to make meals easier', noRecommendations: 'No saved suggestions yet',
     try: 'Try', calendar: 'Meal Log Calendar', calendarSubtitle: 'Logged days in dark blue, unlogged days in light blue', logged: 'Logged', unlogged: 'Unlogged',
     calendarDayStatus: (day: number, logged: boolean) => `${day}: ${logged ? 'Logged' : 'Unlogged'}`,
     noMeals: 'No meals logged this month.', profileTitle: 'Profile',
@@ -534,7 +536,8 @@ const ko = {
     greetingMorning: (name: string) => `좋은 아침이에요, ${name}님`,
     greetingAfternoon: (name: string) => `좋은 오후예요, ${name}님`,
     greetingEvening: (name: string) => `좋은 저녁이에요, ${name}님`,
-    nextUp: '다음 식사', nextTitle: '준비됐을 때 시작하세요', nextBody: '식사 기록으로 오늘 편했던 점을 살펴볼 수 있어요.',
+    ideasTab: '추천', mealFor: (name: string) => `${name}의 식사 기록`, logNewMeal: '새 식사 기록', afterMealTitle: '식후 리뷰', awaitingReview: '리뷰 대기 중', savedTitle: '저장된 제안', savedEmptyTitle: '저장된 제안', savedHint: '나중에 참고할 제안이며, 시도한 기록은 아닙니다.', viewSaved: '저장된 제안 보기', viewHistory: '식사 기록 보기', logAMeal: '식사 기록하기',
+    nextUp: '다음 식사', nextTitle: '준비됐을 때 시작하세요', nextBody: '간단한 식사 기록부터 시작해 보세요. 사진 유무와 관계없이 음식을 추가할 수 있어요.',
     logMeal: '식사 기록하기', sosTitle: 'SOS 진행', sosBody: '기록한 음식 경험 단계',
     noExposure: '아직 추적 중인 음식이 없습니다.', itemCount: (count: number) => `${count}개`,
     recommendations: '추천 목표', goalsSubtitle: '식사를 더 편하게 만드는 작은 시도', noRecommendations: '저장한 제안이 없습니다.',

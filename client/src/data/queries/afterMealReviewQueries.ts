@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; refresh home pending meals after review completion
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
@@ -5,6 +6,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { saveMealReview } from '../api/mealLogApi';
 import { readAfterMealDraft, saveAfterMealReview } from '../storage/afterMealReviewStorage';
+import { homeKeys } from './homeQueries';
 import { mealLogKeys } from './mealLogQueries';
 
 export const afterMealKeys = {
@@ -31,6 +33,7 @@ export function useSaveAfterMealReview() {
     },
     retry: false,
     onSuccess: (review) => {
+      void client.invalidateQueries({ queryKey: homeKeys.byChild(review.childId) });
       client.setQueryData(afterMealKeys.result(review.childId, review.mealId), review);
       client.setQueryData(afterMealKeys.draft(review.childId, review.mealId), { ...review, step: 'complete', difficultyInputs: {} });
       void client.invalidateQueries({ queryKey: mealLogKeys.all(review.childId) });

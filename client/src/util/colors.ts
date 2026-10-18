@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; align final ABC home colors
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; add replacement source sheet palette
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; add full-photo back button colors
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
@@ -6,6 +7,14 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 export const colors = {
+  homeShadow: '#392D45',
+  homeNavBorder: '#EDF3FB',
+  homeCalendarBorder: '#E4EAF3',
+  homeCalendarField: '#E4E7EC',
+  homeCalendarText: '#1D2433',
+  homeCalendarHeading: '#121826',
+  homeCalendarMuted: '#98A2B3',
+  homeCalendarAdjacent: '#C5CDD6',
   photoSourceOverlay: 'rgba(23,36,59,0.6)',
   photoSourceCancel: '#334766',
   photoBackSurface: '#EEF7FF',

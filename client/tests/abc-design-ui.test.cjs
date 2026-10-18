@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify final ABC home states
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; cover ongoing meal entry summary
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 const { test } = require('node:test');
@@ -21,7 +22,7 @@ function primitive(tag) { return ({ children, style, accessibilityLabel, accessi
 }; }
 const load = Module._load;
 Module._load = function (name, ...args) {
-  if (name === 'react-native') return { ActivityIndicator: primitive('progress'), View: primitive('div'), Text: primitive('span'), Pressable: primitive('button'), TextInput: primitive('input'), ScrollView: primitive('section'), KeyboardAvoidingView: primitive('div'), Modal: ({visible = true, children}) => visible ? children : null, Platform: { OS: 'web' }, StyleSheet: { create: v => v, absoluteFill: {} } };
+  if (name === 'react-native') return { RefreshControl: () => null, ActivityIndicator: primitive('progress'), View: primitive('div'), Text: primitive('span'), Pressable: primitive('button'), TextInput: primitive('input'), ScrollView: primitive('section'), KeyboardAvoidingView: primitive('div'), Modal: ({visible = true, children}) => visible ? children : null, Platform: { OS: 'web' }, StyleSheet: { create: v => v, absoluteFill: {} } };
   if (name === 'react-native-safe-area-context') return { SafeAreaView: primitive('main') };
   if (name === 'expo-image') return { Image: primitive('img') };
   if (name === '@expo/vector-icons') return { Feather: primitive('i') };
@@ -135,4 +136,48 @@ test('ongoing meal entry handles a photo-free empty draft without fake meal info
   const { MealDraftResumeView } = require('../src/features/meal-checkin/screens/MealDraftResumeView.tsx');
   const html=renderToStaticMarkup(React.createElement(MealDraftResumeView,{draft:newDraft('child'),childName:'Alex',language:'en',onContinue:noop,onBack:noop}));
   assert.match(html,/No photo/);assert.match(html,/0 foods/);assert.doesNotMatch(html,/Lunch|Photo saved|Rolled omelet/);
+});
+
+function homeProps() {
+ return {profile:{id:'home-child',childName:'Luna'},language:'en',now:new Date(2026,9,8,9),draft:null,draftLoading:false,draftError:false,pendingMeals:[],meals:[],data:{loggedDates:new Set(),exposures:[],suggestions:[]},loading:false,error:false,refreshing:false,onRefresh:noop,onLogMeal:noop,onReviewDraft:noop,onReviewMeal:noop,onSavedSuggestions:noop,onMealHistory:noop,onTrySuggestion:noop,suggestionText:{}};
+}
+test('saved-meal home renders real pending-review metadata and current Figma sections', () => {
+ const { HomeView }=require('../src/features/home/screens/HomeView.tsx');
+ const meal={...newDraft('home-child'),id:'real-meal',mealType:'lunch',mealDate:'2026-10-08',foods:[{...newFood(),name:'Soup'},{...newFood(),name:'Rice'}]};
+ const p={...homeProps(),meals:[meal],pendingMeals:[meal],data:{loggedDates:new Set(),exposures:[],suggestions:[{id:'idea',title:'Actual saved idea'}]}};
+ const html=renderToStaticMarkup(React.createElement(HomeView,p));
+ for(const text of ['Good morning, Luna','THURSDAY','LOG THIS MEAL · FOR LUNA','Log new meal','After-meal Review','Luna · Lunch','Oct 8, 2026','2 foods','Awaiting review','Saved Suggestions','Actual saved idea','View saved suggestions']) assert.ok(html.includes(text),text);
+ assert.doesNotMatch(html,/SOS Progress|Recommended action goals|Meal Log Calendar|Put carrot next to fish/);
+});
+test('fresh home shows Sunday-first calendar and honest empty saved-suggestion state', () => {
+ const { HomeView }=require('../src/features/home/screens/HomeView.tsx');
+ const html=renderToStaticMarkup(React.createElement(HomeView,homeProps()));
+ assert.match(html,/Log this meal/);assert.match(html,/Meal Log Calendar/);assert.match(html,/No saved suggestions yet/);assert.match(html,/View meal history/);
+ assert.ok(html.indexOf('>Sun<')<html.indexOf('>Mon<'));assert.doesNotMatch(html,/Awaiting review|Actual saved idea/);
+});
+test('home record read errors show retry instead of declaring a fresh account', () => {
+ const { HomeView }=require('../src/features/home/screens/HomeView.tsx');
+ const html=renderToStaticMarkup(React.createElement(HomeView,{...homeProps(),error:true}));
+ assert.match(html,/Could not load your records/);assert.match(html,/Retry/);assert.doesNotMatch(html,/No saved suggestions yet|Meal Log Calendar/);
+});
+
+test('home navigation matches the four-tab fresh and six-tab saved designs', () => {
+ const { BottomNavigation }=require('../src/components/BottomNavigation.tsx');
+ const saved=renderToStaticMarkup(React.createElement(BottomNavigation,{language:'en',selected:'today',homeAppearance:true,onSelect:noop}));
+ const fresh=renderToStaticMarkup(React.createElement(BottomNavigation,{language:'en',selected:'today',homeAppearance:true,compactHome:true,onSelect:noop}));
+ assert.equal((saved.match(/role="tab"/g)||[]).length,6);assert.equal((fresh.match(/role="tab"/g)||[]).length,4);
+ assert.match(saved,/SOS/);assert.doesNotMatch(fresh,/SOS|Insight/);assert.match(fresh,/Ideas/);
+});
+test('pressing a pending home card passes the existing meal ID without creating a new meal', () => {
+ const { HomeView }=require('../src/features/home/screens/HomeView.tsx');
+ let opened;
+ const meal={...newDraft('home-child'),id:'existing-meal',mealType:'dinner',mealDate:'2026-10-08',foods:[{...newFood(),name:'Soup'}]};
+ const root=HomeView({...homeProps(),meals:[meal],pendingMeals:[meal],onReviewMeal:id=>{opened=id;}});
+ const walk=node=>{
+   if(!node||typeof node!=='object')return null;
+   if(node.props?.accessibilityLabel?.endsWith('Awaiting review'))return node;
+   for(const child of React.Children.toArray(node.props?.children)){const found=walk(child);if(found)return found;}
+   return null;
+ };
+ const card=walk(root);assert.ok(card);assert.equal(opened,undefined);card.props.onPress();assert.equal(opened,'existing-meal');
 });

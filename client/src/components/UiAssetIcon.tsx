@@ -1,8 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; use original onboarding edit asset
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; added original Add Food icon
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { Image } from 'expo-image';
 
 const iconAssets = {
@@ -62,14 +58,6 @@ const iconAssets = {
   'review-info': require('../../assets/ui/review-info.svg'),
   'review-route': require('../../assets/ui/review-route.svg'),
   'review-calendar': require('../../assets/ui/review-calendar.svg'),
-  'trait-leaf': require('../../assets/ui/trait-leaf.svg'),
-  'trait-droplet': require('../../assets/ui/trait-droplet.svg'),
-  'trait-sparkles': require('../../assets/ui/trait-sparkles.svg'),
-  'trait-wind': require('../../assets/ui/trait-wind.svg'),
-  'trait-square': require('../../assets/ui/trait-square.svg'),
-  'trait-check-circle': require('../../assets/ui/trait-check-circle.svg'),
-  'trait-eye': require('../../assets/ui/trait-eye.svg'),
-  'trait-sun': require('../../assets/ui/trait-sun.svg'),
 } as const;
 
 export type UiAssetIconName = keyof typeof iconAssets;
@@ -108,8 +96,6 @@ const size: Record<UiAssetIconName, number> = {
   'review-shield': 14, 'review-users': 14, 'review-filter': 14,
   'review-sparkles': 14, 'review-heart': 14, 'review-utensils': 14,
   'review-info': 14, 'review-route': 14, 'review-calendar': 14,
-  'trait-leaf': 10, 'trait-droplet': 10, 'trait-sparkles': 10, 'trait-wind': 10,
-  'trait-square': 10, 'trait-check-circle': 10, 'trait-eye': 10, 'trait-sun': 10,
 };
 
 export function UiAssetIcon({ name }: { name: UiAssetIconName }) {

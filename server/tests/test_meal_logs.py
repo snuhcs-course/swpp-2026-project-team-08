@@ -10,17 +10,6 @@ OTHER = "child-2"
 MEAL_ID = "meal-dinner-1"
 FOOD_ID = "food-omelet"
 
-TRAITS = {
-    "texture": ["soft"],
-    "tasteType": [],
-    "tasteIntensity": [],
-    "smell": [],
-    "shape": ["sliced"],
-    "visibility": [],
-    "temperature": ["warm"],
-    "color": [],
-}
-
 
 def meal_payload(**overrides: object) -> dict:
     body: dict = {
@@ -36,7 +25,6 @@ def meal_payload(**overrides: object) -> dict:
                 "ingredients": ["Egg", "Carrot"],
                 "preparation": "Pan-fried",
                 "serving_note": "Thin slices",
-                "traits": TRAITS,
                 "source": "parent",
             }
         ],

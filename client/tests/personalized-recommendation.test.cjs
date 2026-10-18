@@ -126,3 +126,18 @@ test('failed recommendation write keeps the card available for an idempotent ret
   await saveRecommendation(suggestion);
   assert.equal((await readHomeRecords(profile.id)).suggestions.length, 1);
 });
+
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+test('legacy recommendation forms ignore retired food traits and retain serving and rejection checks', () => {
+  const { foodFormKey, isCurrentRecommendation } = require('../src/rules/recommendationSafety.ts');
+  const { profile, meal, review } = fixtures('retired-traits-recommendation');
+  const card = saved(buildRecommendations(profile, meal, review).candidates[0], profile);
+  assert.ok(card);
+  const oldKey = JSON.stringify({ ...JSON.parse(foodFormKey(meal.foods[0])), traits: { texture: ['soft'] } });
+  const suggestion = { ...card, recommendation: { ...card.recommendation, foodFormKey: oldKey } };
+  const oldReview = { ...review, foodFormKeys: { [meal.foods[0].id]: oldKey } };
+  assert.equal(isCurrentRecommendation(suggestion, profile, meal, oldReview), true);
+  assert.equal(buildRecommendations(profile, meal, oldReview).status, 'ready');
+  assert.equal(isCurrentRecommendation(suggestion, profile, { ...meal, foods: [{ ...meal.foods[0], preparation: 'fried' }] }, oldReview), false);
+  assert.equal(isCurrentRecommendation(suggestion, profile, meal, { ...oldReview, difficulties: {} }), false);
+});

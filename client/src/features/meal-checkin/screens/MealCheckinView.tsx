@@ -14,7 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AppButton } from "../../../components/AppButton";
 import { AppIcon } from "../../../components/AppIcon";
 import { UiAssetIcon } from "../../../components/UiAssetIcon";
-import { FoodEditor } from "../../../components/FoodEditor";
+import { MealFoodEditorDialog } from "../../../components/MealFoodEditorDialog";
 import { formStyles as ui } from "../../../components/formStyles";
 import { abcCopyFor, copyFor, suggestionCopyFor } from "../../../util/strings";
 import { MealCompleteStepView } from "./MealCompleteStepView";
@@ -273,21 +273,17 @@ export function MealCheckinView(p: MealCheckinViewProps) {
           </View>
         )}
         {d.editingFood && (
-          <FoodEditor
+          <MealFoodEditorDialog
             key={d.editingFood.id}
             food={d.editingFood}
             mode={d.foods.some((item) => item.id === d.editingFood?.id) ? 'edit' : 'add'}
-            labels={{ meal: m, common: s.common }}
-            traits={p.traits}
+            meal={m}
+            common={s.common}
             {...p.foodInput}
             onChange={p.onChangeFood}
             onSave={p.onSaveFood}
             onCancel={() => p.onUpdate({ editingFood: null })}
-            onEditTraits={() => p.onTraits(d.editingFood!.traits)}
-            onToggleTrait={p.onToggleTrait}
-            onSaveTraits={p.onSaveTraits}
-            onCancelTraits={() => p.onTraits(null)}
-            finalLabels={a}
+            labels={a}
           />
         )}
         {replaceConfirm && (

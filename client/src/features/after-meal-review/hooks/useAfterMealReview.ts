@@ -5,10 +5,9 @@ import { useMeal, useUpdateMealFoods } from '../../../data/queries/mealQueries';
 import { afterMealKeys, useSaveAfterMealReview } from '../../../data/queries/afterMealReviewQueries';
 import { pickMealPhoto, PhotoError } from '../../../data/device/mealPhotoPicker';
 import { readAfterMealDraft, readAfterMealReview, saveAfterMealDraft } from '../../../data/storage/afterMealReviewStorage';
-import { toggleFoodTrait } from '../../../rules/foodTraits';
 import { newFood } from '../../../rules/foodDraft';
 import type { AfterMealReviewDraft, DifficultyCategory, Outcome, ReviewStep } from '../../../types/afterMealReview';
-import type { FoodItem, FoodTraits, PhotoSource, TraitGroup } from '../../../types/meal';
+import type { FoodItem, PhotoSource } from '../../../types/meal';
 import type { ChildProfile } from '../../../types/profile';
 import { addDifficulty, allOutcomesConfirmed, clearOutcomeSuggestions, canAddDifficulty, newReviewDraft, normalizeReviewStep, reconcileOutcomes, reviewFromDraft, setOutcome, toggleIngredient } from '../rules';
 
@@ -30,9 +29,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const [photoError, setPhotoError] = useState<'permission' | 'image' | null>(null);
   const [picking, setPicking] = useState(false);
   const [editingFood, setEditingFood] = useState<FoodItem | null>(null);
-  const [editingTraits, setEditingTraits] = useState<FoodTraits | null>(null);
   const [ingredient, setIngredient] = useState('');
-  const [customTrait, setCustomTrait] = useState({ color: '', shape: '' });
   const saveChain = useRef<Promise<void>>(Promise.resolve());
   const saveVersion = useRef(0);
   const skipFirstSave = useRef(true);
@@ -197,12 +194,8 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   };
   const editFood = (food?: FoodItem) => {
     const item = food ?? newFood();
-    setEditingFood({ ...item, ingredients: [...item.ingredients], traits: Object.fromEntries(
-      Object.entries(item.traits).map(([key, values]) => [key, [...values]]),
-    ) as FoodTraits });
+    setEditingFood({ ...item, ingredients: [...item.ingredients] });
     setIngredient('');
-    setCustomTrait({ color: '', shape: '' });
-    setEditingTraits(null);
   };
   const changeFood = (patch: Partial<FoodItem>) => setEditingFood((old) => old ? { ...old, ...patch } : null);
   const saveFood = async () => {
@@ -221,7 +214,6 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
         difficultyInputs: Object.fromEntries(savedMeal.foods.map((food) => [food.id, value.difficultyInputs[food.id] ?? { category: null, value: '', note: '' }])),
       });
       setEditingFood(null);
-      setEditingTraits(null);
     } catch { setSaveStatus('error'); }
     finally { editorBusy.current = false; }
   };
@@ -244,7 +236,6 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     if (value && editingFood && !editingFood.ingredients.includes(value)) changeFood({ ingredients: [...editingFood.ingredients, value] });
     setIngredient('');
   };
-  const toggleTrait = (group: TraitGroup, value: string) => setEditingTraits((old) => old ? toggleFoodTrait(old, group, value) : null);
 
   const finish = async (): Promise<boolean> => {
     const value = current.current;
@@ -277,22 +268,14 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     saveStatus, finalSaveState, photoError, picking,
     markImageError: () => setPhotoError('image'),
     saving: finalSaveState === 'saving',
-    editingFood, editingTraits, ingredient, customTrait, editorSaving: updateMealMutation.isPending,
+    editingFood, ingredient, editorSaving: updateMealMutation.isPending,
     canContinueOutcomes: !!draft && allOutcomesConfirmed(draft.outcomes),
     toggleIngredient: (foodId: string, ingredientId: string) => { if (current.current) update({ outcomes: toggleIngredient(current.current.outcomes, foodId, ingredientId) }); },
     update, go, back, pick, removePhoto, manual, chooseOutcome,
     setDifficultyInput, addDifficultyTag, removeDifficultyTag,
     finish, retrySave: () => current.current ? persist(current.current) : Promise.resolve(),
-    editFood, removeFood, changeFood, saveFood, cancelFoodEdit: () => { setEditingFood(null); setEditingTraits(null); },
+    editFood, removeFood, changeFood, saveFood, cancelFoodEdit: () => { setEditingFood(null); },
     setIngredient, addIngredient,
     removeIngredient: (name: string) => editingFood && changeFood({ ingredients: editingFood.ingredients.filter((item) => item !== name) }),
-    setCustomTrait: (group: 'color' | 'shape', text: string) => setCustomTrait((old) => ({ ...old, [group]: text })),
-    addCustomTrait: (group: 'color' | 'shape') => {
-      const text = customTrait[group].trim();
-      if (text && editingTraits && !editingTraits[group].includes(text)) toggleTrait(group, text);
-      setCustomTrait((old) => ({ ...old, [group]: '' }));
-    },
-    setEditingTraits, toggleTrait,
-    saveTraits: () => { if (editingTraits) changeFood({ traits: editingTraits }); setEditingTraits(null); },
   };
 }

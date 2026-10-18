@@ -1,10 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; remove non-Figma suggestion confirmation step
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma audit details
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -18,7 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MealSaveStatusView } from "../../../components/MealSaveStatusView";
 import { AppButton } from "../../../components/AppButton";
-import { FoodEditor } from "../../../components/FoodEditor";
+import { MealFoodEditorDialog } from "../../../components/MealFoodEditorDialog";
 import { ReviewProgressHeader } from "../components/ReviewProgressHeader";
 import { colors } from "../../../util/colors";
 import { displayDate } from '../../../util/date';
@@ -237,26 +231,19 @@ export function AfterMealReviewView(
           </View>
         )}
         {p.editingFood && (
-          <FoodEditor
+          <MealFoodEditorDialog
             food={p.editingFood}
             mode={p.meal.foods.some((item) => item.id === p.editingFood?.id) ? 'edit' : 'add'}
-            finalLabels={a}
-            labels={{ meal: s.mealCheckin, common: s.common }}
-            traits={p.editingTraits}
+            labels={a}
+            meal={s.mealCheckin}
+            common={s.common}
             ingredient={p.ingredient}
             onIngredientChange={p.onIngredientChange}
             onAddIngredient={p.onAddIngredient}
             onRemoveIngredient={p.onRemoveIngredient}
-            custom={p.customTrait}
-            onCustomChange={p.onCustomTraitChange}
-            onAddCustomTrait={p.onAddCustomTrait}
             onChange={p.onChangeFood}
             onSave={p.onSaveFood}
             onCancel={p.onCancelFoodEdit}
-            onEditTraits={() => p.onSetTraits(p.editingFood!.traits)}
-            onToggleTrait={p.onToggleTrait}
-            onSaveTraits={p.onSaveTraits}
-            onCancelTraits={() => p.onSetTraits(null)}
           />
         )}
       </KeyboardAvoidingView>

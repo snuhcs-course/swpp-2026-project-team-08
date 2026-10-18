@@ -54,6 +54,12 @@ Migration `0007_remove_food_history` drops `meal_foods.history`. Applying it
 permanently removes food acceptance history values. Downgrading restores an empty
 nullable column. Meal records and suggestion attempt history are separate features.
 
+Migration `0008_remove_food_traits` drops `meal_foods.traits`. It preserves
+`meal_reviews.difficulties` (after-meal rejection reasons). Downgrading restores
+an empty JSON object for each food without recovering removed traits. Existing
+saved suggestions remain stored; recommendation generation uses revisions based
+on the remaining food fields and may regenerate suggestions on the next request.
+
 ## 코드 품질 기준
 
 코드 품질은 아래 두 가지를 순서대로 우선한다.

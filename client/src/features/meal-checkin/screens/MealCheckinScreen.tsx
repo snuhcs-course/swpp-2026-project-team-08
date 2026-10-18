@@ -37,11 +37,9 @@ export function MealCheckinScreen({
   const [languageError, setLanguageError] = useState(false);
   const inputs = useMealCheckinInputs({
     draft: model.draft,
-    traits: model.traits,
     onUpdate: model.update,
     onEditFood: model.edit,
     onChangeFood: model.changeFood,
-    onToggleTrait: model.toggleTrait,
   });
   const s = copyFor(language);
   const exit = async () => {
@@ -129,7 +127,6 @@ export function MealCheckinScreen({
       error={model.error}
       picking={model.picking}
       saving={model.saving}
-      traits={model.traits}
       sheet={model.sheet}
       languageError={languageError}
       dateInput={inputs.date}
@@ -163,9 +160,6 @@ export function MealCheckinScreen({
         void exit();
       }}
       onSheet={model.setSheet}
-      onTraits={model.setTraits}
-      onSaveTraits={model.saveTraits}
-      onToggleTrait={model.toggleTrait}
       onRetryDraft={() => {
         void model.flush();
       }}

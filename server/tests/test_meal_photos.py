@@ -14,16 +14,6 @@ DATA_URI = (
     "data:image/png;base64,"
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
 )
-TRAITS = {
-    "texture": [],
-    "tasteType": [],
-    "tasteIntensity": [],
-    "smell": [],
-    "shape": [],
-    "visibility": [],
-    "temperature": [],
-    "color": [],
-}
 
 
 def meal_payload(**overrides: object) -> dict:
@@ -40,7 +30,6 @@ def meal_payload(**overrides: object) -> dict:
                 "ingredients": ["Egg"],
                 "preparation": "",
                 "serving_note": "",
-                "traits": TRAITS,
                 "source": "parent",
             }
         ],

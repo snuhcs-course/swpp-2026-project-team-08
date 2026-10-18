@@ -104,7 +104,7 @@ function parseOutcome(value: unknown): FoodOutcome {
 
 function parseFood(value: unknown): FoodItem {
   if (!record(value) || typeof value.id !== 'string' || typeof value.name !== 'string' || !strings(value.ingredients)
-    || typeof value.preparation !== 'string' || typeof value.serving_note !== 'string' || !record(value.traits)
+    || typeof value.preparation !== 'string' || typeof value.serving_note !== 'string'
     || (value.source !== 'ai' && value.source !== 'parent')) throw new Error('Invalid meal food');
   return {
     id: value.id,
@@ -112,7 +112,6 @@ function parseFood(value: unknown): FoodItem {
     ingredients: value.ingredients,
     preparation: value.preparation,
     servingNote: value.serving_note,
-    traits: value.traits as FoodItem['traits'],
     source: value.source,
     origin: value.origin === 'ai' || value.origin === 'parent' ? value.origin : undefined,
     acceptance: typeof value.acceptance === 'number' ? value.acceptance : null,
@@ -183,7 +182,6 @@ export function mealToUpsertBody(meal: Meal) {
       ingredients: food.ingredients,
       preparation: food.preparation,
       serving_note: food.servingNote,
-      traits: food.traits,
       source: food.source,
       acceptance: food.acceptance ?? null,
       origin: food.origin ?? food.source,

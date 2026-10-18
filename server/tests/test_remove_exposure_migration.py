@@ -14,7 +14,7 @@ MIGRATIONS = Path(__file__).resolve().parents[1] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0007_remove_food_history"]
+    assert scripts.get_heads() == ["0008_remove_food_traits"]
     assert set(scripts.get_revision("0005_remove_exposure").down_revision) == {
         "0004_final_abc_fields",
         "0004_user_email_change",
@@ -80,3 +80,24 @@ def test_food_history_removal_sql_and_nullable_restore():
     with Operations.context(context):
         migration["downgrade"]()
     assert output.getvalue().strip() == "ALTER TABLE meal_foods ADD COLUMN history VARCHAR(20);"
+
+
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+def test_food_traits_removal_preserves_review_reasons_and_restores_empty_objects():
+    migration = run_path(str(MIGRATIONS / "versions" / "20261019_1500_remove_food_traits.py"))
+    assert migration["down_revision"] == "0007_remove_food_history"
+    output = StringIO()
+    context = MigrationContext.configure(
+        dialect_name="postgresql", opts={"as_sql": True, "output_buffer": output}
+    )
+    with Operations.context(context):
+        migration["upgrade"]()
+    assert output.getvalue().strip() == "ALTER TABLE meal_foods DROP COLUMN traits;"
+    output.seek(0)
+    output.truncate()
+    with Operations.context(context):
+        migration["downgrade"]()
+    sql = output.getvalue()
+    assert "ALTER TABLE meal_foods ADD COLUMN traits JSON DEFAULT '{}' NOT NULL" in sql
+    assert "ALTER TABLE meal_foods ALTER COLUMN traits DROP DEFAULT" in sql
+    assert "meal_reviews" not in sql

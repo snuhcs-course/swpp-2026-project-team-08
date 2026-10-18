@@ -1,9 +1,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
-import { emptyTraits } from '../../rules/foodDraft';
 import type { FoodItem } from '../../types/meal';
 import type { MealDetail, MealListItem, MealLogSuggestion } from './mealLogApi';
 
-const traits = emptyTraits();
 
 function food(id: string, name: string, ingredients: string[], extras: Partial<FoodItem> = {}): FoodItem {
   return {
@@ -12,7 +10,6 @@ function food(id: string, name: string, ingredients: string[], extras: Partial<F
     ingredients,
     preparation: extras.preparation ?? '',
     servingNote: extras.servingNote ?? '',
-    traits: extras.traits ?? traits,
     source: extras.source ?? 'parent',
   };
 }

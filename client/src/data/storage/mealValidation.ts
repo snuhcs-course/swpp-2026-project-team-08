@@ -2,7 +2,6 @@
 import {
   mealSettings,
   mealTypes,
-  traitOptions,
   mealSteps,
   type FoodItem,
   type MealDraft,
@@ -21,20 +20,13 @@ export function isFood(v: unknown): v is FoodItem {
     !list(v.ingredients) ||
     typeof v.preparation !== 'string' ||
     typeof v.servingNote !== 'string' ||
-    !record(v.traits) ||
     !(v.confirmed === undefined || typeof v.confirmed === 'boolean') ||
     !(v.origin === undefined || v.origin === 'ai' || v.origin === 'parent') ||
     !(v.acceptance === undefined || v.acceptance === null || (typeof v.acceptance === 'number' && Number.isInteger(v.acceptance) && v.acceptance >= 0 && v.acceptance <= 3)) ||
     (v.source !== 'ai' && v.source !== 'parent')
   )
     return false;
-  const traits = v.traits;
-  return Object.keys(traitOptions).every(
-    (key) =>
-      list(traits[key]) &&
-      (['texture', 'tasteType', 'color'].includes(key) ||
-        (traits[key] as string[]).length <= 1),
-  );
+  return true;
 }
 export function isDraft(v: unknown, childId: string): v is MealDraft {
   return (

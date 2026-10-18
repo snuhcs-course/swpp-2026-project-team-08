@@ -15,18 +15,14 @@ const storage = {
 const originalLoad = Module._load;
 Module._load = function (name, ...args) { return name === '@react-native-async-storage/async-storage' ? storage : originalLoad.call(this, name, ...args); };
 const { newDraft, confirmFoods, mealFromDraft } = require('../src/features/meal-checkin/rules.ts');
-const { newFood, emptyTraits } = require('../src/rules/foodDraft.ts');
-const { toggleFoodTrait } = require('../src/rules/foodTraits.ts');
+const { newFood } = require('../src/rules/foodDraft.ts');
 const { validDate } = require('../src/util/date.ts');
 const { isDraft } = require('../src/data/storage/mealValidation.ts');
 const { readMealDraft, saveMealDraft, readMeals, readMeal, saveMeal } = require('../src/data/storage/mealStorage.ts');
 function completeDraft(childId) { return { ...newDraft(childId), mealType: 'lunch', setting: 'home', foods: [{ ...newFood(), name: 'Rice' }], step: 'foods' }; }
 
-test('valid calendar dates and trait selection cardinality', () => {
+test('valid calendar dates', () => {
   assert.equal(validDate('2024-02-29'), true); assert.equal(validDate('2026-02-29'), false); assert.equal(validDate('2026-04-31'), false);
-  let traits = toggleFoodTrait(emptyTraits(), 'texture', 'soft'); traits = toggleFoodTrait(traits, 'texture', 'crunchy');
-  assert.deepEqual(traits.texture, ['soft', 'crunchy']); traits = toggleFoodTrait(traits, 'temperature', 'warm'); traits = toggleFoodTrait(traits, 'temperature', 'cool');
-  assert.deepEqual(traits.temperature, ['cool']); assert.deepEqual(toggleFoodTrait(traits, 'texture', 'soft').texture, ['crunchy']);
 });
 test('unconfirmed AI and incomplete/empty meals cannot be saved', () => {
   const draft = completeDraft('rules'); draft.foods[0].source = 'ai'; assert.throws(() => mealFromDraft(draft));
@@ -34,9 +30,8 @@ test('unconfirmed AI and incomplete/empty meals cannot be saved', () => {
   assert.equal(mealFromDraft({ ...draft, foods }).foods[0].source, 'parent');
   for (const patch of [{ foods: [] }, { mealType: null }, { setting: null }, { mealDate: '2026-13-01' }]) assert.throws(() => mealFromDraft({ ...draft, foods, ...patch }));
 });
-test('stored input is validated, including nested traits and child ownership', () => {
+test('stored input is validated, including child ownership and duplicate foods', () => {
   const draft = completeDraft('validate'); assert.equal(isDraft(draft, 'validate'), true); assert.equal(isDraft(draft, 'other-child'), false);
-  assert.equal(isDraft({ ...draft, foods: [{ ...draft.foods[0], traits: { ...emptyTraits(), smell: ['mild', 'strong'] } }] }, 'validate'), false);
   assert.equal(isDraft({ ...draft, foods: [draft.foods[0], draft.foods[0]] }, 'validate'), false);
 });
 test('autosaves are ordered, recover edits and migrate interrupted legacy analysis safely', async () => {
@@ -171,4 +166,18 @@ test('retired food history is removed from legacy drafts, editors, receipts and 
   values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({ ...draft, step: 'complete', savedMealId: meal.id, foods: [food] }));
   assert.deepEqual((await readMealDraft(draft.childId)).foods, draft.foods);
   assert.equal(Object.hasOwn(newFood(), 'history'), false);
+});
+
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+test('legacy food traits are removed from meals, drafts and editor data', async () => {
+  const draft = completeDraft('retired-traits');
+  const legacyFood = { ...draft.foods[0], traits: { texture: ['soft'] } };
+  values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({ ...draft, foods: [legacyFood], editingFood: legacyFood }));
+  const restored = await readMealDraft(draft.childId);
+  assert.deepEqual(restored.foods, draft.foods);
+  assert.deepEqual(restored.editingFood, draft.foods[0]);
+  const meal = mealFromDraft(draft);
+  values.set(`nurturebites.meals.${draft.childId}.v1`, JSON.stringify([{ ...meal, foods: [legacyFood] }]));
+  assert.deepEqual(await readMeals(draft.childId), [meal]);
+  assert.equal(Object.hasOwn(newFood(), 'traits'), false);
 });

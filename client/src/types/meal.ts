@@ -1,25 +1,12 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 export const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 export const mealSettings = ['home', 'restaurant', 'school', 'others'] as const;
-export const traitOptions = {
-  texture: ['soft', 'crunchy', 'chewy', 'smooth', 'mixed'],
-  tasteType: ['sweet', 'salty', 'sour', 'bitter', 'savory'],
-  tasteIntensity: ['mild', 'medium', 'strong'],
-  smell: ['mild', 'strong'],
-  shape: ['small', 'large', 'sliced', 'whole'],
-  visibility: ['visible', 'hidden', 'mixed'],
-  temperature: ['warm', 'cool', 'room'],
-  color: ['red', 'orange', 'yellow', 'green', 'white', 'brown'],
-} as const;
-export type TraitGroup = keyof typeof traitOptions;
-export type FoodTraits = Record<TraitGroup, string[]>;
 export type FoodItem = {
   id: string;
   name: string;
   ingredients: string[];
   preparation: string;
   servingNote: string;
-  traits: FoodTraits;
   source: 'ai' | 'parent';
   confirmed?: boolean;
   origin?: 'ai' | 'parent';

@@ -48,7 +48,6 @@ class MealFoodRequest(BaseModel):
     ingredients: list[str]
     cooking_method: FoodPreparation | None = None
     serving_note: str = ""
-    traits: dict[str, Any]
     source: FoodSource
     # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
     acceptance: int | None = Field(default=None, ge=0, le=3, strict=True)
@@ -171,7 +170,6 @@ class MealFoodResponse(BaseModel):
     ingredients: list[str]
     cooking_method: FoodPreparation | None = None
     serving_note: str
-    traits: dict[str, Any]
     source: str
     acceptance: int | None = None
     origin: FoodSource | None = None

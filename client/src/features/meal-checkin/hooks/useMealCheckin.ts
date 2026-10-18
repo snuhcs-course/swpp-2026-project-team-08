@@ -12,13 +12,10 @@ import {
 import { pickMealPhoto, PhotoError } from '../../../data/device/mealPhotoPicker';
 import type {
   FoodItem,
-  FoodTraits,
   MealDraft,
   MealStep,
   PhotoSource,
-  TraitGroup,
 } from '../../../types/meal';
-import { toggleFoodTrait } from '../../../rules/foodTraits';
 import { newFood } from '../../../rules/foodDraft';
 import type { MealSuggestionLinking, MealSuggestionOption } from '../types';
 import {
@@ -53,7 +50,6 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     null,
   );
   const [picking, setPicking] = useState(false);
-  const [traits, setTraits] = useState<FoodTraits | null>(null);
   const [sheet, setSheet] = useState<'privacy' | null>(null);
   const client = useQueryClient();
   const saving = useSaveMeal();
@@ -136,10 +132,6 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     if (!current.current) return false;
     if (sheet) {
       setSheet(null);
-      return true;
-    }
-    if (traits) {
-      setTraits(null);
       return true;
     }
     if (current.current.editingFood) {
@@ -228,12 +220,6 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
         ? {
             ...food,
             ingredients: [...food.ingredients],
-            traits: Object.fromEntries(
-              Object.entries(food.traits).map(([key, values]) => [
-                key,
-                [...values],
-              ]),
-            ) as FoodTraits,
           }
         : newFood(),
     });
@@ -308,10 +294,8 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     error,
     picking,
     saving: saving.isPending,
-    traits,
     sheet,
     setSheet,
-    setTraits,
     update,
     go,
     back,
@@ -342,17 +326,6 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     confirm: () => {
       if (current.current?.foods.length)
         update({ foods: confirmFoods(current.current.foods), step: 'foods' });
-    },
-    toggleTrait: (group: TraitGroup, value: string) => {
-      setTraits((current) =>
-        current ? toggleFoodTrait(current, group, value) : null,
-      );
-    },
-    saveTraits: () => {
-      if (traits) {
-        changeFood({ traits });
-        setTraits(null);
-      }
     },
     flush: () =>
       !busy.current && current.current

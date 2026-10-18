@@ -1,9 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; remove non-Figma suggestion confirmation step
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; wire final save screen state
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, BackHandler, StyleSheet, Text } from 'react-native';
@@ -72,9 +67,7 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
       saving={review.saving}
       canContinueOutcomes={review.canContinueOutcomes}
       editingFood={review.editingFood}
-      editingTraits={review.editingTraits}
       ingredient={review.ingredient}
-      customTrait={review.customTrait}
       difficultyForms={difficultyForms}
       onBack={back}
       onGo={review.go}
@@ -96,14 +89,9 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
       onChangeFood={review.changeFood}
       onSaveFood={() => { void review.saveFood(); }}
       onCancelFoodEdit={review.cancelFoodEdit}
-      onSetTraits={review.setEditingTraits}
-      onToggleTrait={review.toggleTrait}
-      onSaveTraits={review.saveTraits}
       onIngredientChange={review.setIngredient}
       onAddIngredient={review.addIngredient}
       onRemoveIngredient={(name) => { review.removeIngredient(name); }}
-      onCustomTraitChange={review.setCustomTrait}
-      onAddCustomTrait={review.addCustomTrait}
       onDifficultyInput={review.setDifficultyInput}
       onAddDifficulty={review.addDifficultyTag}
       onRemoveDifficulty={review.removeDifficultyTag}

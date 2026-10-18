@@ -1,11 +1,6 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; remove non-Figma suggestion confirmation step
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; expose final save state
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import type { AfterMealReviewDraft, DifficultyCategory, Outcome, ReviewStep } from '../../../types/afterMealReview';
-import type { FoodItem, FoodTraits, Meal, PhotoSource, TraitGroup } from '../../../types/meal';
+import type { FoodItem, Meal, PhotoSource } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
 
 export type ReviewViewProps = {
@@ -20,9 +15,7 @@ export type ReviewViewProps = {
   saving: boolean;
   canContinueOutcomes: boolean;
   editingFood: FoodItem | null;
-  editingTraits: FoodTraits | null;
   ingredient: string;
-  customTrait: { color: string; shape: string };
   onBack: () => void;
   onGo: (step: ReviewStep) => void;
   onPick: (source: PhotoSource) => void;
@@ -38,14 +31,9 @@ export type ReviewViewProps = {
   onChangeFood: (patch: Partial<FoodItem>) => void;
   onSaveFood: () => void;
   onCancelFoodEdit: () => void;
-  onSetTraits: (traits: FoodTraits | null) => void;
-  onToggleTrait: (group: TraitGroup, value: string) => void;
-  onSaveTraits: () => void;
   onIngredientChange: (value: string) => void;
   onAddIngredient: () => void;
   onRemoveIngredient: (name: string) => void;
-  onCustomTraitChange: (group: 'color' | 'shape', value: string) => void;
-  onAddCustomTrait: (group: 'color' | 'shape') => void;
   onDifficultyInput: (foodId: string, patch: Partial<{ category: DifficultyCategory | null; value: string; note: string; subcategory?: string }>) => void;
   onAddDifficulty: (foodId: string) => void;
   onRemoveDifficulty: (foodId: string, tagId: string) => void;

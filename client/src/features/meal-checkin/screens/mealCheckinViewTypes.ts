@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
-import type { FoodItem, FoodTraits, MealDraft, MealStep, PhotoSource, TraitGroup } from '../../../types/meal';
+import type { FoodItem, MealDraft, MealStep, PhotoSource } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 import type { MealSuggestionLinking, MealSuggestionOption } from '../types';
@@ -19,9 +19,6 @@ type FoodInput = {
   onIngredientChange: (value: string) => void;
   onAddIngredient: () => void;
   onRemoveIngredient: (value: string) => void;
-  custom: { color: string; shape: string };
-  onCustomChange: (group: 'color' | 'shape', value: string) => void;
-  onAddCustomTrait: (group: 'color' | 'shape') => void;
 };
 
 export type MealCheckinViewProps = {
@@ -42,7 +39,6 @@ export type MealCheckinViewProps = {
   error: 'permission' | 'image' | 'save' | null;
   picking: boolean;
   saving: boolean;
-  traits: FoodTraits | null;
   sheet: 'privacy' | null;
   languageError: boolean;
   dateInput: DateInput;
@@ -62,9 +58,6 @@ export type MealCheckinViewProps = {
   onAfterMeal: () => void;
   onHome: () => void;
   onSheet: (sheet: 'privacy' | null) => void;
-  onTraits: (value: FoodTraits | null) => void;
-  onSaveTraits: () => void;
-  onToggleTrait: (group: TraitGroup, value: string) => void;
   onRetryDraft: () => void;
   onLanguage: () => void;
 };

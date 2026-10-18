@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; matched onboarding Figma typography and spacing
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
@@ -13,9 +14,11 @@ import { abcCopyFor, copyFor } from '../../../util/strings';
 import type { OnboardingStep } from '../types';
 import { styles } from './onboardingFlowStyles';
 
+const designStepNumber: Record<OnboardingStep, number> = { account: 1, consent: 2, child: 4, allergies: 5, restrictions: 6, family: 7, approaches: 9, texture: 10, smell: 11, taste: 12, presentation: 13, temperature: 14, familiarity: 15, 'safe-foods': 16, review: 17 };
+
 export function OnboardingFlowView({
-  language, step, stepIndex, stepCount, childName, saveStatus, submitting, canContinue,
-  content, onPrevious, onContinue, onRetrySave, onSaveExit,
+  language, step, childName, saveStatus, submitting, canContinue,
+  content, onPrevious, onContinue, onRetrySave,
 }: {
   language: Language;
   step: OnboardingStep;
@@ -43,7 +46,7 @@ export function OnboardingFlowView({
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.header}>
           <View style={styles.progressRow}>
-            <Text style={styles.progressText}>{s.onboarding.progress(stepIndex + 1, stepCount)}</Text>
+            <Text style={styles.progressText}>{s.onboarding.progress(designStepNumber[step], 18)}</Text>
             <View style={styles.headerRight}>
               {saveStatus === 'error'
                 ? <Feather name="cloud-off" size={13} color={colors.error} />
@@ -54,16 +57,16 @@ export function OnboardingFlowView({
             </View>
           </View>
           {sensory && <Text style={styles.sensoryTitle}>{title}</Text>}
-          <View style={styles.track}><View style={[styles.fill, { width: `${((stepIndex + 1) / stepCount) * 100}%` }]} /></View>
+          <View style={styles.track}><View style={[styles.fill, { width: `${(designStepNumber[step] / 18) * 100}%` }]} /></View>
           {!sensory && <Text style={styles.title}>{title}</Text>}
-          {!sensory && <Text style={styles.subtitle}>{s.onboarding.subtitles[step]}</Text>}
+          {!sensory && <Text style={styles.subtitle}>{step === "safe-foods" ? s.onboarding.safeFoodsDescription(childName || s.onboarding.childFallback) : s.onboarding.subtitles[step]}</Text>}
         </View>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           {content}
           {saveStatus === 'error' && <AppButton label={s.common.retry} compact secondary onPress={onRetrySave} style={styles.retry} />}
         </ScrollView>
         <View style={styles.footer}>
-          <AppButton label={s.common.previous} secondary onPress={onPrevious} style={styles.previous} />
+          {step !== 'account' && (step !== 'consent' || canContinue) && <AppButton label={s.common.previous} secondary onPress={onPrevious} style={styles.previous} />}
           <AppButton
             label={step === 'review' ? s.onboarding.looksGood : s.common.continue}
             disabled={submitting || !canContinue}
@@ -72,7 +75,7 @@ export function OnboardingFlowView({
           />
         </View>
         {step === 'family' && <Text style={{ textAlign: 'right', color: colors.onboardingMuted, paddingRight: 22, fontSize: 12 }}>{abcCopyFor(language).required}</Text>}
-        {step === 'safe-foods' && <AppButton secondary label={s.common.saveExit} disabled={submitting} onPress={onSaveExit} />}
+
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

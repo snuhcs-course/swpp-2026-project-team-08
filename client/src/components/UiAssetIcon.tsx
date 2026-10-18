@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; use original onboarding edit asset
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; added original Add Food icon
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -5,6 +6,19 @@
 import { Image } from 'expo-image';
 
 const iconAssets = {
+  'outcome-help': require('../../assets/ui/outcome-help.svg'),
+  'meal-save-error': require('../../assets/ui/meal-save-error.svg'),
+  'difficulty-texture': require('../../assets/ui/difficulty-texture.svg'),
+  'difficulty-taste': require('../../assets/ui/difficulty-taste.svg'),
+  'difficulty-smell': require('../../assets/ui/difficulty-smell.svg'),
+  'difficulty-color': require('../../assets/ui/difficulty-color.svg'),
+  'difficulty-piece': require('../../assets/ui/difficulty-piece.svg'),
+  'difficulty-arrangement': require('../../assets/ui/difficulty-arrangement.svg'),
+  'difficulty-temperature': require('../../assets/ui/difficulty-temperature.svg'),
+  'difficulty-unsure': require('../../assets/ui/difficulty-unsure.svg'),
+
+  'meal-saved-check': require('../../assets/ui/meal-saved-check.svg'),
+  'onboarding-edit': require('../../assets/ui/onboarding-edit.png'),
   'abc-add-food': require('../../assets/ui/abc-add-food.svg'),
   'abc-select': require('../../assets/ui/abc-select.svg'),
   'abc-utensils': require('../../assets/ui/abc-utensils.svg'),
@@ -61,7 +75,18 @@ const iconAssets = {
 export type UiAssetIconName = keyof typeof iconAssets;
 
 const size: Record<UiAssetIconName, number> = {
-  'abc-add-food': 12.3333, 'abc-select': 14, 'abc-utensils': 13,
+  'outcome-help': 20,
+  'meal-save-error': 28,
+  'difficulty-texture': 12,
+  'difficulty-taste': 12,
+  'difficulty-smell': 12,
+  'difficulty-color': 12,
+  'difficulty-piece': 12,
+  'difficulty-arrangement': 12,
+  'difficulty-temperature': 12,
+  'difficulty-unsure': 12,
+
+  'meal-saved-check': 28, 'onboarding-edit': 15, 'abc-add-food': 12.3333, 'abc-select': 14, 'abc-utensils': 13,
   'abc-chevron': 16, 'abc-trash': 16, 'abc-edit': 16, 'abc-open': 16,
   'suggestion-close': 20,
   'suggestion-checked': 15,

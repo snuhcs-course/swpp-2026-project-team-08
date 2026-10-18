@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; support inline option explanations
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
@@ -13,9 +14,10 @@ type Props = {
   multiple?: boolean;
   subtitle?: string;
   controlPosition?: 'leading' | 'trailing';
+  inlineSubtitle?: boolean;
 };
 
-export function ChoiceRow({ label, selected, onPress, multiple, subtitle, controlPosition = 'trailing' }: Props) {
+export function ChoiceRow({ label, selected, onPress, multiple, subtitle, inlineSubtitle = false, controlPosition = 'trailing' }: Props) {
   const control = <View style={[styles.control, selected && styles.controlSelected]}>
     {selected && <Feather name="check" size={12} color={colors.surface} />}
   </View>;
@@ -28,8 +30,8 @@ export function ChoiceRow({ label, selected, onPress, multiple, subtitle, contro
     >
       {controlPosition === 'leading' && control}
       <View style={styles.copy}>
-        <Text style={[styles.label, selected && styles.selectedLabel]}>{label}</Text>
-        {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+        <Text style={[styles.label, selected && styles.selectedLabel]}>{label}{inlineSubtitle && !!subtitle && <Text style={{ color: colors.onboardingMuted, fontFamily: fonts.poppinsSemiBold }}> {subtitle}</Text>}</Text>
+        {!!subtitle && !inlineSubtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       </View>
       {controlPosition === 'trailing' && control}
     </Pressable>

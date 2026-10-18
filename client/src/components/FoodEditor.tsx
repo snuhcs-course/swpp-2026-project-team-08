@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed food source badge
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
@@ -5,6 +6,7 @@
 import { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { MealFoodEditorDialog } from './MealFoodEditorDialog';
 import { AppButton } from './AppButton';
 import { AppIcon } from './AppIcon';
 import { FormField } from './FormField';
@@ -15,7 +17,6 @@ import {
   type TraitGroup,
 } from '../types/meal';
 import type { copyFor } from '../util/strings';
-import { DropdownChoice } from './DropdownChoice';
 import { SelectionChoice } from './SelectionChoice';
 import { BottomSheet } from './BottomSheet';
 import { FoodTraitsTags } from './FoodTraitsTags';
@@ -54,7 +55,9 @@ export function FoodEditor({
   onCancelTraits,
   goal,
   finalLabels,
+  mode = 'add',
 }: {
+  mode?: 'add' | 'edit';
   food: FoodItem;
   labels: { meal: ReturnType<typeof copyFor>['mealCheckin']; common: Pick<ReturnType<typeof copyFor>['common'], 'add' | 'remove' | 'notEntered' | 'close'> };
   traits: FoodTraits | null;
@@ -79,6 +82,7 @@ export function FoodEditor({
   const m = labels.meal;
   const [historyOpen, setHistoryOpen] = useState(false);
   const [ingredientOpen, setIngredientOpen] = useState(!!ingredient);
+  if (finalLabels && !traits) return <MealFoodEditorDialog food={food} mode={mode} meal={m} common={s.common} labels={finalLabels} ingredient={ingredient} onIngredientChange={onIngredientChange} onAddIngredient={onAddIngredient} onRemoveIngredient={onRemoveIngredient} onChange={onChange} onSave={onSave} onCancel={onCancel} />;
   return (
     <BottomSheet
       variant="dialog"
@@ -163,13 +167,6 @@ export function FoodEditor({
             <View style={{ flex: 1 }}><FormField variant="editor" label={m.addIngredient} value={ingredient} onChangeText={onIngredientChange} /></View>
             <AppButton label={s.common.add} secondary compact disabled={!ingredient.trim()} onPress={() => { onAddIngredient(); setIngredientOpen(false); }} />
           </View>}
-          {finalLabels ? <>
-            <Text style={styles.label}>{finalLabels.cooking}</Text>
-            <DropdownChoice value={food.preparation} placeholder={finalLabels.selectCooking} displayFallback={food.preparation || undefined} options={finalLabels.cookingOptions.map((label) => ({ id: label, label }))} onChange={(preparation) => onChange({ preparation })} />
-            <FormField variant="editor" label={finalLabels.detail} value={food.servingNote} onChangeText={(servingNote) => onChange({ servingNote })} />
-            <Text style={styles.label}>{finalLabels.acceptance} · {m.optional}</Text>
-            <View accessibilityRole="radiogroup" style={editorStyles.acceptanceRow}><View pointerEvents="none" style={editorStyles.acceptanceRail} />{food.acceptance != null && <View pointerEvents="none" style={[editorStyles.acceptanceRail, { width: `${food.acceptance / 3 * 100}%`, backgroundColor: colors.homePrimary }]} />}{[0, 1, 2, 3].map((value) => <Pressable key={value} accessibilityRole="radio" accessibilityLabel={`${finalLabels.acceptance}: ${value}`} accessibilityState={{ checked: food.acceptance === value }} onPress={() => onChange({ acceptance: food.acceptance === value ? null : value })} style={[editorStyles.acceptanceValue, food.acceptance === value && editorStyles.acceptanceSelected]}><View style={[editorStyles.acceptanceDot, food.acceptance !== value && { opacity: 0 }]} /><Text style={styles.text}>{value}</Text></Pressable>)}</View>
-          </> : <>
           <View style={editorStyles.twoFields}>
             <View style={{ flex: 1 }}><FormField variant="editor" label={m.preparation} value={food.preparation} onChangeText={(preparation) => onChange({ preparation })} /></View>
             <View style={{ flex: 1 }}><FormField variant="editor" label={m.servingNote} value={food.servingNote} onChangeText={(servingNote) => onChange({ servingNote })} /></View>
@@ -208,7 +205,6 @@ export function FoodEditor({
               ))}
             </View>
           )}
-          </>}
           {goal && <View style={editorStyles.goalRow}>
             <Feather name="target" size={18} color={colors.homePrimary} />
             <View style={{ flex: 1 }}><Text style={editorStyles.goalLabel}>{goal.label}</Text><Text style={editorStyles.goalValue}>{goal.value}</Text></View>

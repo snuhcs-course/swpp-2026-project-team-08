@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; aligned ABC button typography
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -18,6 +19,24 @@ export const colors = {
   homeSelected: '#EAF2FF',
   navy: '#13233A',
   navyDecoration: '#364660',
+  reviewHeading: '#173B64',
+  afterMealBackground: '#F5F8FD',
+  difficultyBackground: '#F7FBFF',
+  ingredientChip: '#EAEAEA',
+  outcomeDefinitionText: '#61758A',
+  outcomeEaten: '#DDF4EA',
+  outcomeEatenText: '#26785B',
+  outcomeTasted: '#DCEBFF',
+  outcomeTastedText: '#1D4F96',
+  outcomeUntouched: '#FFF0D8',
+  outcomeUntouchedText: '#A76016',
+  outcomeUnclear: '#EAF4FF',
+  outcomeUnanswered: '#F52424',
+  editorMuted: '#71809A',
+  editorInput: '#F8FBFF',
+  editorPlaceholder: '#5A5A5A',
+  editorRail: '#CBC7C7',
+  editorDisabled: '#DCE5F2',
   foodAddBackground: '#2C2C2C',
   foodIngredientBackground: '#F0F5FA',
   surface: '#FFFFFF',

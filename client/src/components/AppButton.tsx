@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; matched onboarding Figma typography and spacing
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; aligned ABC button typography
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
@@ -26,7 +28,7 @@ export function AppButton({ label, accessibilityLabel, onPress, disabled, second
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: !!disabled }}
       disabled={disabled}
-      onPress={onPress}
+      onPress={() => onPress()}
       style={({ pressed }) => [
         styles.base, compact && styles.compact, secondary ? styles.secondary : styles.primary,
         variant === 'meal' && styles.meal, variant === 'meal' && !secondary && styles.mealPrimary,
@@ -58,7 +60,7 @@ const styles = StyleSheet.create({
   secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.onboardingBorder },
   disabled: { opacity: 0.45 },
   pressed: { opacity: 0.78 },
-  label: { color: colors.surface, fontSize: 13, fontFamily: fonts.interMedium, textAlign: 'center' },
-  secondaryLabel: { color: colors.onboardingText, fontSize: 11, fontFamily: fonts.interBold },
+  label: { color: colors.surface, fontSize: 16, fontFamily: fonts.poppinsSemiBold, textAlign: 'center' },
+  secondaryLabel: { color: colors.onboardingText, fontSize: 13, fontFamily: fonts.poppinsSemiBold },
   disabledLabel: { opacity: 0.9 },
 });

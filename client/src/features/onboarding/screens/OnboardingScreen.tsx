@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; align account errors and combined safety-card edit flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised for current ABC design
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
@@ -71,7 +72,8 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
       const saved = await model.finish();
       setSubmitting(false);
       if (saved) { if (model.editing) router.replace('/home'); else setCompleted(true); }
-    } else if (from === 'review') navigate('review');
+    } else if (from === 'review' && step === 'allergies') navigate('restrictions', true);
+    else if (from === 'review') navigate('review');
     else navigate(nextStep(step));
   };
   const handleSaveExit = async () => {
@@ -86,7 +88,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         password={model.password}
         editing={model.editing}
         emailError={model.draft.caregiverEmail && !validEmail(model.draft.caregiverEmail) ? s.onboarding.emailHint : undefined}
-        passwordError={model.password && !validPassword(model.password) ? s.onboarding.passwordHint : undefined}
+        passwordError={model.password && !validPassword(model.password) ? s.onboarding.passwordTooShort : undefined}
         formError={authError}
         onNameChange={(value) => model.setField('caregiverName', value)}
         onEmailChange={(value) => model.setField('caregiverEmail', value)}
@@ -102,6 +104,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
     );
     if (step === 'safe-foods') return (
       <SafeFoodsStepView
+        childName={model.draft.childName}
         language={language}
         safeFoods={model.draft.safeFoods}
         noSafeFoods={model.draft.noSafeFoods}

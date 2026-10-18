@@ -1,12 +1,15 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
 // This Code is generated with AI
 
 import { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../util/colors';
+import { UiAssetIcon } from './UiAssetIcon';
 import { fonts } from '../util/fonts';
 
-export function DropdownChoice({ options, value, onChange, placeholder, displayFallback }: {
+export function DropdownChoice({ options, value, onChange, placeholder, displayFallback, variant = 'onboarding' }: {
+  variant?: 'onboarding' | 'editor';
   options: readonly { id: string; label: string }[];
   value: string;
   onChange: (value: string) => void;
@@ -17,9 +20,9 @@ export function DropdownChoice({ options, value, onChange, placeholder, displayF
   const selected = options.find((option) => option.id === value);
   return (
     <View style={styles.wrap}>
-      <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={() => setOpen(!open)} style={[styles.field, open && styles.activeField]}>
-        <Text style={styles.value}>{selected?.label ?? displayFallback ?? placeholder}</Text>
-        <Feather name={open ? 'chevron-up' : 'chevron-down'} size={15} color={colors.onboardingText} />
+      <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={() => setOpen(!open)} style={[styles.field, variant === 'editor' && styles.editorField, open && styles.activeField]}>
+        <Text style={[styles.value, variant === 'editor' && styles.editorValue]}>{selected?.label ?? displayFallback ?? placeholder}</Text>
+        {variant === 'editor' && !open ? <UiAssetIcon name="abc-select" /> : <Feather name={open ? 'chevron-up' : 'chevron-down'} size={15} color={colors.onboardingText} />}
       </Pressable>
       {open && <View style={styles.options}>
         {options.map((option) => (
@@ -33,13 +36,15 @@ export function DropdownChoice({ options, value, onChange, placeholder, displayF
 }
 
 const styles = StyleSheet.create({
+  editorField: { height: 38, borderRadius: 10, borderColor: colors.mealReviewBorder, backgroundColor: colors.editorInput },
+  editorValue: { color: colors.editorPlaceholder, fontFamily: fonts.poppinsMedium, fontSize: 13 },
   wrap: { gap: 5 },
   field: { height: 40, borderRadius: 8, borderWidth: 1, borderColor: colors.onboardingBorder, backgroundColor: colors.surface, paddingHorizontal: 11, flexDirection: 'row', alignItems: 'center', gap: 8 },
   activeField: { borderColor: colors.onboardingPrimary, borderWidth: 1.4 },
-  value: { flex: 1, color: colors.onboardingText, fontSize: 10, fontFamily: fonts.interMedium },
+  value: { flex: 1, color: colors.onboardingText, fontSize: 13, fontFamily: fonts.interMedium },
   options: { borderRadius: 8, borderWidth: 1, borderColor: colors.onboardingBorder, backgroundColor: colors.surface, overflow: 'hidden' },
   option: { height: 36, paddingHorizontal: 11, justifyContent: 'center', borderBottomWidth: 1, borderBottomColor: colors.onboardingBorder },
   selectedOption: { backgroundColor: colors.homeSelected },
-  optionText: { color: colors.onboardingText, fontSize: 10, fontFamily: fonts.interRegular },
+  optionText: { color: colors.onboardingText, fontSize: 13, fontFamily: fonts.interRegular },
   selectedText: { color: colors.onboardingPrimary, fontFamily: fonts.interBold },
 });

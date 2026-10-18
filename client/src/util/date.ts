@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; localized meal date display
 // This Code is generated with AI
 
 export const localDate = (date = new Date()) =>
@@ -8,4 +9,9 @@ export function validDate(value: unknown): value is string {
   const [year, month, day] = value.split('-').map(Number);
   const date = new Date(year, month - 1, day);
   return year >= 1900 && year <= 2200 && localDate(date) === value;
+}
+
+export function displayDate(value: string, language: 'en' | 'ko', short = false): string {
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString(language === 'ko' ? 'ko-KR' : short ? 'en-US' : 'en-GB', { day: 'numeric', month: short ? 'short' : 'long', year: 'numeric' });
 }

@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match allergy option explanation placement
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
@@ -133,12 +134,19 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
           search={search}
           onSearchChange={setSearch}
           showOther={showOther}
-          onShowOtherChange={setShowOther}
+          onShowOtherChange={(open) => {
+            setShowOther(open);
+            if (open && values[current.field].includes('none')) onRemoveListItem(current.field, 'none');
+          }}
+          inlineSubtitleIds={step === 'allergies' ? ['tree-nut'] : undefined}
           optionSubtitles={step === 'allergies' ? { 'tree-nut': s.onboarding.treeNutsHint } : subtitles[step]}
           selected={values[current.field]}
           noneLabel={current.none}
           otherLabel={otherLabel}
-          onToggle={(value) => onToggleList(current.field, value)}
+          onToggle={(value) => {
+            if (value === 'none') { setShowOther(false); setSearch(''); }
+            onToggleList(current.field, value);
+          }}
           onAdd={(value) => { onAddListItem(current.field, value); setSearch(''); }}
           onRemove={(value) => onRemoveListItem(current.field, value)}
         />

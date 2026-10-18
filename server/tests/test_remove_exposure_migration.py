@@ -14,7 +14,7 @@ MIGRATIONS = Path(__file__).resolve().parents[1] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0006_boolean_feedback"]
+    assert scripts.get_heads() == ["0007_remove_food_history"]
     assert set(scripts.get_revision("0005_remove_exposure").down_revision) == {
         "0004_final_abc_fields",
         "0004_user_email_change",
@@ -62,3 +62,21 @@ def test_boolean_feedback_migration_generates_conversion_sql():
         migration["downgrade"]()
     assert "value -> 'tried' = 'true'::jsonb" in output.getvalue()
     assert "value -> 'tried' = 'false'::jsonb" in output.getvalue()
+
+
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+def test_food_history_removal_sql_and_nullable_restore():
+    migration = run_path(str(MIGRATIONS / "versions" / "20261019_1400_remove_food_history.py"))
+    assert migration["down_revision"] == "0006_boolean_feedback"
+    output = StringIO()
+    context = MigrationContext.configure(
+        dialect_name="postgresql", opts={"as_sql": True, "output_buffer": output}
+    )
+    with Operations.context(context):
+        migration["upgrade"]()
+    assert output.getvalue().strip() == "ALTER TABLE meal_foods DROP COLUMN history;"
+    output.seek(0)
+    output.truncate()
+    with Operations.context(context):
+        migration["downgrade"]()
+    assert output.getvalue().strip() == "ALTER TABLE meal_foods ADD COLUMN history VARCHAR(20);"

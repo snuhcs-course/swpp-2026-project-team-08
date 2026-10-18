@@ -30,10 +30,10 @@ Run `npm run lint` and `npx tsc --noEmit`. Cover date validation, food confirmat
 ## Implementation and validation results
 
 - Models, boundary validation, serialized child-scoped storage, idempotent meal save, recognition/save mutations and durable photo selection implemented.
-- Five-segment flow, date overlay, separate full-photo route, food editor and traits selector, history dropdown, completion receipt and bilingual copy implemented.
+- Five-segment flow, date overlay, separate full-photo route, food editor and traits selector, completion receipt and bilingual copy implemented.
 - Home resumes an incomplete draft and routes its review intent through food confirmation and successful save. New meals start after the previous completion ID; reopening a completed flow keeps its saved ID.
 - Node regression suite: date/traits validation, confirmation guards, malformed input, draft restore, failed autosave recovery, partial final-save retry/idempotency, queue ordering and aborted recognition.
-- RN web at 390 × 844: date overlay, local file photo, full photo, persisted preview, mock analysis, AI → Parent edit, traits multi/single selection, history dropdown, language switch, draft restoration, Home resume/review intent, saved ID handoff and Home logged calendar verified.
+- RN web at 390 × 844: date overlay, local file photo, full photo, persisted preview, mock analysis, AI → Parent edit, traits multi/single selection, language switch, draft restoration, Home resume/review intent, saved ID handoff and Home logged calendar verified.
 - Fixed an RN Web compatibility error in image validation by using the supported `Image.getSize` callback overload.
 - Native camera/gallery permissions and document copying require physical-device or simulator QA. No iOS simulator tooling is available in this environment. The recognition backend and After-meal Review form remain separate, unimplemented features; the prototype UI explicitly labels both boundaries.
 - Additional runtime checks: photo-free manual food entry, unsaved food editor restore, and reloading the completion screen with its saved Meal ID all passed.

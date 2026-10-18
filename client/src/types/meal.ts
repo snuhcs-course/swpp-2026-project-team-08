@@ -1,7 +1,6 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 export const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 export const mealSettings = ['home', 'restaurant', 'school', 'others'] as const;
-export const histories = ['usually', 'sometimes', 'unsure'] as const;
 export const traitOptions = {
   texture: ['soft', 'crunchy', 'chewy', 'smooth', 'mixed'],
   tasteType: ['sweet', 'salty', 'sour', 'bitter', 'savory'],
@@ -21,7 +20,6 @@ export type FoodItem = {
   preparation: string;
   servingNote: string;
   traits: FoodTraits;
-  history: (typeof histories)[number] | null;
   source: 'ai' | 'parent';
   confirmed?: boolean;
   origin?: 'ai' | 'parent';

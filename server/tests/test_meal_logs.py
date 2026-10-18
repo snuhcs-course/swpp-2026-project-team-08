@@ -37,7 +37,6 @@ def meal_payload(**overrides: object) -> dict:
                 "preparation": "Pan-fried",
                 "serving_note": "Thin slices",
                 "traits": TRAITS,
-                "history": "usually",
                 "source": "parent",
             }
         ],

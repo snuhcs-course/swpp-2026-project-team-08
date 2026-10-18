@@ -21,10 +21,21 @@ function queued<T>(childId: string, work: () => Promise<T>): Promise<T> {
 }
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Compatibility for records written before the feature was removed.
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+function normalizeStoredFood(value: unknown): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  const next = { ...value } as Record<string, unknown>;
+  delete next.history;
+  return next;
+}
+
 function normalizeStoredMeal(value: unknown): unknown {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
   const next = { ...value } as Record<string, unknown>;
   delete next.exposureFoodId;
+  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+  if (Array.isArray(next.foods)) next.foods = next.foods.map(normalizeStoredFood);
+  if (next.editingFood) next.editingFood = normalizeStoredFood(next.editingFood);
   if (next.step === 'goal') next.step = 'foods';
   return next;
 }

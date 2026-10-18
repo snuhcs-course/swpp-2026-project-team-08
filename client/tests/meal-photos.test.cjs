@@ -102,7 +102,6 @@ test('live API stores a before-meal photo then an after-meal photo', async (t) =
       texture: [], tasteType: [], tasteIntensity: [], smell: [],
       shape: [], visibility: [], temperature: [], color: [],
     },
-    history: null,
     source: 'parent',
   };
   const mealRes = await fetch(`${api}/api/v1/children/${encodeURIComponent(childId)}/meals/${encodeURIComponent(mealId)}`, {

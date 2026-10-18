@@ -3,16 +3,9 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MealFoodEditorDialog } from './MealFoodEditorDialog';
 import { AppButton } from './AppButton';
-import { AppIcon } from './AppIcon';
 import { FormField } from './FormField';
-import {
-  histories,
-  type FoodItem,
-  type FoodTraits,
-  type TraitGroup,
-} from '../types/meal';
+import type { FoodItem, FoodTraits, TraitGroup } from '../types/meal';
 import type { copyFor } from '../util/strings';
-import { SelectionChoice } from './SelectionChoice';
 import { BottomSheet } from './BottomSheet';
 import { FoodTraitsTags } from './FoodTraitsTags';
 import { formStyles as styles } from './formStyles';
@@ -73,7 +66,6 @@ export function FoodEditor({
 }) {
   const s = labels;
   const m = labels.meal;
-  const [historyOpen, setHistoryOpen] = useState(false);
   const [ingredientOpen, setIngredientOpen] = useState(!!ingredient);
   if (finalLabels && !traits) return <MealFoodEditorDialog food={food} mode={mode} meal={m} common={s.common} labels={finalLabels} ingredient={ingredient} onIngredientChange={onIngredientChange} onAddIngredient={onAddIngredient} onRemoveIngredient={onRemoveIngredient} onChange={onChange} onSave={onSave} onCancel={onCancel} />;
   return (
@@ -130,9 +122,6 @@ export function FoodEditor({
       ) : (
         <>
           <Text style={editorStyles.subtitle}>{food.name ? m.reviewItemHint : m.addFoodHint}</Text>
-          <View style={editorStyles.badges}>
-            <Text style={editorStyles.neutralBadge}>{food.history ? m.histories[food.history] : s.common.notEntered}</Text>
-          </View>
           <FormField
             variant="editor"
             label={m.name}
@@ -173,31 +162,6 @@ export function FoodEditor({
             }}
           />
           <Pressable accessibilityRole="button" onPress={onEditTraits} style={editorStyles.traitEdit}><Text style={editorStyles.traitEditText}>{m.editTraits}</Text></Pressable>
-          <Text style={styles.label}>{m.history}</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ expanded: historyOpen }}
-            onPress={() => setHistoryOpen(!historyOpen)}
-            style={[styles.choice, editorStyles.historyField]}
-          >
-            <Text style={[styles.text, { flex: 1 }]}>{food.history ? m.histories[food.history] : m.selectHistory}</Text>
-            <AppIcon name="down" size={14} />
-          </Pressable>
-          {historyOpen && (
-            <View style={styles.card}>
-              {[null, ...histories].map((value) => (
-                <SelectionChoice
-                  key={value ?? 'none'}
-                  label={value ? m.histories[value] : s.common.notEntered}
-                  selected={food.history === value}
-                  onPress={() => {
-                    onChange({ history: value });
-                    setHistoryOpen(false);
-                  }}
-                />
-              ))}
-            </View>
-          )}
         </>
       )}
     </BottomSheet>
@@ -211,8 +175,6 @@ const editorStyles = StyleSheet.create({
   acceptanceValue: { minWidth: 20, paddingVertical: 4, alignItems: 'center' },
   acceptanceSelected: { opacity: 1 },
   subtitle: { color: colors.homeMuted, fontSize: 10, fontFamily: fonts.poppinsRegular },
-  badges: { flexDirection: 'row', gap: 5 },
-  neutralBadge: { color: colors.homeMuted, borderWidth: 1, borderColor: colors.homeBorder, backgroundColor: colors.homeBackground, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4, fontSize: 9, fontFamily: fonts.poppinsRegular },
   parentBadge: { color: colors.homeMuted, borderWidth: 1, borderColor: colors.homeBorder, backgroundColor: colors.homeBackground, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4, fontSize: 9, fontFamily: fonts.poppinsRegular },
   ingredientRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
   ingredientInput: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
@@ -235,5 +197,4 @@ const editorStyles = StyleSheet.create({
   customTraitRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   traitEdit: { alignSelf: 'flex-end', paddingVertical: 4 },
   traitEditText: { color: colors.homePrimary, fontSize: 10, fontFamily: fonts.poppinsSemiBold },
-  historyField: { minHeight: 36, borderRadius: 9, backgroundColor: colors.homeBackground, paddingHorizontal: 10 },
 });

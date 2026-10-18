@@ -172,7 +172,6 @@ class MealFoodResponse(BaseModel):
     cooking_method: FoodPreparation | None = None
     serving_note: str
     traits: dict[str, Any]
-    history: str | None
     source: str
     acceptance: int | None = None
     origin: FoodSource | None = None

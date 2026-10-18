@@ -29,8 +29,6 @@ class MealFood(Base):
     preparation: Mapped[str] = mapped_column(Text, nullable=False, default="")
     serving_note: Mapped[str] = mapped_column(Text, nullable=False, default="")
     ingredients: Mapped[list[str]] = mapped_column(JSON, nullable=False)
-    traits: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
-    history: Mapped[str | None] = mapped_column(String(20), nullable=True)
     source: Mapped[str] = mapped_column(String(20), nullable=False)
     # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
     acceptance: Mapped[int | None] = mapped_column(Integer, nullable=True)

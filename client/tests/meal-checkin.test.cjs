@@ -154,3 +154,21 @@ test('legacy goal drafts and receipts retain meals while discarding retired data
   values.set(`nurturebites.home.${child}.v1`, JSON.stringify({ meals: [], suggestions: [], exposures: [{ stage: 'touched' }] }));
   assert.deepEqual(await readHomeRecords(child), { meals: [], suggestions: [] });
 });
+
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+test('retired food history is removed from legacy drafts, editors, receipts and meals', async () => {
+  const draft = completeDraft('retired-food-history');
+  const food = { ...draft.foods[0], history: 'usually' };
+  const editor = { ...food, name: 'Editing rice', history: 'sometimes' };
+  values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({ ...draft, foods: [food], editingFood: editor }));
+  const loaded = await readMealDraft(draft.childId);
+  assert.deepEqual(loaded.foods, draft.foods);
+  assert.deepEqual(loaded.editingFood, { ...draft.foods[0], name: 'Editing rice' });
+  assert.equal(isDraft({ ...draft, foods: draft.foods }, draft.childId), true);
+  const meal = mealFromDraft(draft);
+  values.set(`nurturebites.meals.${draft.childId}.v1`, JSON.stringify([{ ...meal, foods: [food] }]));
+  assert.deepEqual(await readMeals(draft.childId), [meal]);
+  values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({ ...draft, step: 'complete', savedMealId: meal.id, foods: [food] }));
+  assert.deepEqual((await readMealDraft(draft.childId)).foods, draft.foods);
+  assert.equal(Object.hasOwn(newFood(), 'history'), false);
+});

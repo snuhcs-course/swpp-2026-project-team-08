@@ -101,7 +101,7 @@ test('frontend search matches food names or ingredients and can hide reviewed me
 test('food cards join stored outcomes, difficulties, and linked suggestions', () => {
   const food = {
     id: 'food-1', name: 'Rice', ingredients: ['rice'], preparation: 'steamed', servingNote: '',
-    traits: emptyTraits(), history: 'usually', source: 'parent',
+    traits: emptyTraits(), source: 'parent',
   };
   const cards = foodResponseCards(
     [food],
@@ -139,12 +139,13 @@ test('upsert, review, and suggestion bodies use the server field names', () => {
     photo: { id: 'p1', uri: 'file:///before.png', mimeType: 'image/png' },
     foods: [{
       id: 'food-1', name: 'Rice', ingredients: ['rice'], preparation: 'steamed', servingNote: 'small bowl',
-      traits: emptyTraits(), history: 'usually', source: 'parent',
+      traits: emptyTraits(), source: 'parent',
     }],
     savedAt: '2026-10-12T12:00:00.000Z',
   });
   assert.equal(body.meal_date, '2026-10-12');
   assert.equal(body.before_photo_uri, 'file:///before.png');
+  assert.equal(Object.hasOwn(body.foods[0], 'history'), false);
   assert.equal(body.foods[0].serving_note, 'small bowl');
   const review = reviewToBody({
     mealId: 'meal-1', childId: 'child-1',
@@ -208,7 +209,7 @@ test('bookmarking a linked suggestion toggles the saved flag without dropping it
 test('meal history food and ingredient cards preserve managed suggestion routing', () => {
   const food = {
     id: 'food-managed', name: 'Omelet', ingredients: ['Egg'], preparation: 'pan-fried',
-    servingNote: '', traits: emptyTraits(), history: 'usually', source: 'parent',
+    servingNote: '', traits: emptyTraits(), source: 'parent',
   };
   const cards = foodResponseCards([food], {
     outcomes: [{ foodId: food.id, decision: { confirmed: 'tasted', suggested: null },

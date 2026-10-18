@@ -50,6 +50,10 @@ Migration `0006_boolean_feedback` converts each `suggestion_feedback` value from
 API requires the object format with a strict boolean; omitted keys stay unanswered.
 The downgrade converts those objects back to strings.
 
+Migration `0007_remove_food_history` drops `meal_foods.history`. Applying it
+permanently removes food acceptance history values. Downgrading restores an empty
+nullable column. Meal records and suggestion attempt history are separate features.
+
 ## 코드 품질 기준
 
 코드 품질은 아래 두 가지를 순서대로 우선한다.

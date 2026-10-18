@@ -1,6 +1,5 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import {
-  histories,
   mealSettings,
   mealTypes,
   traitOptions,
@@ -26,8 +25,7 @@ export function isFood(v: unknown): v is FoodItem {
     !(v.confirmed === undefined || typeof v.confirmed === 'boolean') ||
     !(v.origin === undefined || v.origin === 'ai' || v.origin === 'parent') ||
     !(v.acceptance === undefined || v.acceptance === null || (typeof v.acceptance === 'number' && Number.isInteger(v.acceptance) && v.acceptance >= 0 && v.acceptance <= 3)) ||
-    (v.source !== 'ai' && v.source !== 'parent') ||
-    (v.history !== null && !histories.includes(v.history as never))
+    (v.source !== 'ai' && v.source !== 'parent')
   )
     return false;
   const traits = v.traits;

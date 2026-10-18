@@ -13,7 +13,6 @@ function food(id: string, name: string, ingredients: string[], extras: Partial<F
     preparation: extras.preparation ?? '',
     servingNote: extras.servingNote ?? '',
     traits: extras.traits ?? traits,
-    history: extras.history ?? null,
     source: extras.source ?? 'parent',
   };
 }
@@ -80,7 +79,7 @@ function reviewed(mealDate: string, foodId: string, ingredients: { id: string; n
   };
 }
 
-const omelet = food('food-omelet', 'Rolled omelet', ['Egg', 'Carrot'], { preparation: 'Pan-fried', history: 'usually' });
+const omelet = food('food-omelet', 'Rolled omelet', ['Egg', 'Carrot'], { preparation: 'Pan-fried' });
 const rice = food('food-kimchi-rice', 'Kimchi fried rice', ['Rice', 'Kimchi'], { preparation: 'Stir-fried' });
 const soup = food('food-seaweed-soup', 'Seaweed soup', ['Seaweed', 'Tofu'], { preparation: 'Simmered' });
 const oats = food('food-oatmeal', 'Banana oatmeal', ['Oats', 'Banana'], { preparation: 'Cooked' });

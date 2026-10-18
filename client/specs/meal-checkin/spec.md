@@ -58,7 +58,7 @@
 ### R4 — 음식 편집
 
 - 같은 음식 ID로 이름·재료·선택적 Cooking method·Additional detail·Acceptance를 편집한다. 재료는 개별 제거 가능한 토큰으로 표시하며 Add로 추가한다.
-- Cooking method는 선택 목록을 제공한다. Acceptance는 0–3의 네 단계로 입력하며 미입력은 0으로 자동 대체하지 않는다. 기존 Food history와 혼동하지 않는 별도 값이다.
+- Cooking method는 선택 목록을 제공한다. Acceptance는 0–3의 네 단계로 입력하며 미입력은 0으로 자동 대체하지 않는다.
 - 편집창은 흰색 대화상자와 어두운 배경, Cancel/Save food를 제공한다. 이름이 없으면 저장하지 않는다. Cancel은 편집 입력을 버리고 카드로 돌아온다.
 - 이번 화면에서는 이전 Food traits selector를 표시하지 않는다. 기존 저장 데이터는 읽을 수 있어야 한다.
 

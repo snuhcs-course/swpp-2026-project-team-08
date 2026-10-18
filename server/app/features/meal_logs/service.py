@@ -85,8 +85,6 @@ class MealLogService:
                     preparation=food.get("preparation") or "",
                     serving_note=food.get("serving_note") or "",
                     ingredients=list(food.get("ingredients") or []),
-                    traits=dict(food.get("traits") or {}),
-                    history=food.get("history"),
                     source=food["source"],
                     acceptance=food.get("acceptance"),
                     origin=food.get("origin"),

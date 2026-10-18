@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -37,7 +38,7 @@ function completedDraft() {
     ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
     childName: 'Child', ageRange: 'toddler',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
-    allergies: ['none'], restrictions: ['none'], approaches: ['none'],
+    allergies: ['none'], restrictions: ['none'], approaches: ['none'], familyFoods: ['dairy'],
   };
 }
 
@@ -47,6 +48,7 @@ test('saved profile, language, and in-progress draft remain independent', async 
   const profile = { ...draft, id: 'child-1', updatedAt: '2026-10-08T00:00:00.000Z' };
   delete profile.step;
   delete profile.safeFoodInput;
+  assert.equal(canFinish({ ...draft, familyFoods: [] }), false);
   assert.equal(canFinish(draft), true);
   await saveProfile(profile);
   await saveLanguage('ko');

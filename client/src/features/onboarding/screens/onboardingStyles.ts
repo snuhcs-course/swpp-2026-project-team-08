@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { StyleSheet } from 'react-native';
@@ -16,11 +17,11 @@ export const styles = StyleSheet.create({
   fieldHint: { color: colors.onboardingMuted, fontSize: 8, fontFamily: fonts.interRegular, marginTop: -4 },
   question: { color: colors.onboardingText, fontSize: 13, lineHeight: 16, fontFamily: fonts.interBold, marginBottom: 7 },
   questionHelper: { color: colors.onboardingMuted, fontSize: 8, lineHeight: 11, fontFamily: fonts.interRegular, marginTop: -5, marginBottom: 7 },
-  selectionHint: { color: colors.onboardingMuted, fontSize: 8, fontFamily: fonts.interRegular, textAlign: 'right', marginTop: 3, marginBottom: 6 },
+  selectionHint: { color: colors.onboardingMuted, fontSize: 12, fontFamily: fonts.interRegular, textAlign: 'right', marginTop: 3, marginBottom: 6 },
   infoBanner: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: colors.homeSelected, borderRadius: 11, padding: 8, marginTop: 8, marginBottom: 8 },
   infoIcon: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
-  infoTitle: { color: colors.onboardingPrimary, fontSize: 10, fontFamily: fonts.interMedium },
-  infoText: { color: colors.onboardingText, fontSize: 9, lineHeight: 12, fontFamily: fonts.interRegular },
+  infoTitle: { color: colors.onboardingPrimary, fontSize: 13, fontFamily: fonts.interMedium },
+  infoText: { color: colors.onboardingText, fontSize: 12, lineHeight: 16, fontFamily: fonts.interRegular },
   chip: {
     borderRadius: 999,
     backgroundColor: colors.onboardingSelected,

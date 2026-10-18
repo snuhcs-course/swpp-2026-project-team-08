@@ -168,7 +168,7 @@ export function FoodEditor({
             <DropdownChoice value={food.preparation} placeholder={finalLabels.selectCooking} displayFallback={food.preparation || undefined} options={finalLabels.cookingOptions.map((label) => ({ id: label, label }))} onChange={(preparation) => onChange({ preparation })} />
             <FormField variant="editor" label={finalLabels.detail} value={food.servingNote} onChangeText={(servingNote) => onChange({ servingNote })} />
             <Text style={styles.label}>{finalLabels.acceptance} · {m.optional}</Text>
-            <View accessibilityRole="radiogroup" style={editorStyles.acceptanceRow}>{[0, 1, 2, 3].map((value) => <Pressable key={value} accessibilityRole="radio" accessibilityLabel={`${finalLabels.acceptance}: ${value}`} accessibilityState={{ checked: food.acceptance === value }} onPress={() => onChange({ acceptance: food.acceptance === value ? null : value })} style={[editorStyles.acceptanceValue, food.acceptance === value && editorStyles.acceptanceSelected]}><Text style={styles.text}>{value}</Text></Pressable>)}</View>
+            <View accessibilityRole="radiogroup" style={editorStyles.acceptanceRow}><View pointerEvents="none" style={editorStyles.acceptanceRail} />{food.acceptance != null && <View pointerEvents="none" style={[editorStyles.acceptanceRail, { width: `${food.acceptance / 3 * 100}%`, backgroundColor: colors.homePrimary }]} />}{[0, 1, 2, 3].map((value) => <Pressable key={value} accessibilityRole="radio" accessibilityLabel={`${finalLabels.acceptance}: ${value}`} accessibilityState={{ checked: food.acceptance === value }} onPress={() => onChange({ acceptance: food.acceptance === value ? null : value })} style={[editorStyles.acceptanceValue, food.acceptance === value && editorStyles.acceptanceSelected]}><View style={[editorStyles.acceptanceDot, food.acceptance !== value && { opacity: 0 }]} /><Text style={styles.text}>{value}</Text></Pressable>)}</View>
           </> : <>
           <View style={editorStyles.twoFields}>
             <View style={{ flex: 1 }}><FormField variant="editor" label={m.preparation} value={food.preparation} onChangeText={(preparation) => onChange({ preparation })} /></View>
@@ -221,9 +221,11 @@ export function FoodEditor({
 }
 
 const editorStyles = StyleSheet.create({
-  acceptanceRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
-  acceptanceValue: { flex: 1, padding: 10, alignItems: 'center', borderBottomWidth: 3, borderBottomColor: colors.homeBorder },
-  acceptanceSelected: { borderBottomColor: colors.homePrimary, backgroundColor: colors.homeSelected },
+  acceptanceRow: { flexDirection: 'row', justifyContent: 'space-between', position: 'relative', marginHorizontal: 12 },
+  acceptanceRail: { position: 'absolute', left: 0, right: 0, top: 9, height: 3, backgroundColor: colors.homeBorder },
+  acceptanceDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.homePrimary, marginBottom: 6 },
+  acceptanceValue: { minWidth: 20, paddingVertical: 4, alignItems: 'center' },
+  acceptanceSelected: { opacity: 1 },
   subtitle: { color: colors.homeMuted, fontSize: 10, fontFamily: fonts.poppinsRegular },
   badges: { flexDirection: 'row', gap: 5 },
   neutralBadge: { color: colors.homeMuted, borderWidth: 1, borderColor: colors.homeBorder, backgroundColor: colors.homeBackground, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4, fontSize: 9, fontFamily: fonts.poppinsRegular },

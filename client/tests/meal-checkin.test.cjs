@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -69,4 +70,22 @@ test('mock recognition is cancellable and suggestions remain unconfirmed', async
   const result = await recognizeMealPhoto({ photo, signal: new AbortController().signal });
   assert.equal(result.photoId, photo.id); assert.equal(result.foods[0].source, 'ai');
   await assert.rejects(recognizeMealPhoto({ photo: { ...photo, mimeType: 'text/plain' }, signal: new AbortController().signal }));
+});
+
+
+test('acceptance and pending suggestion links survive draft/final writes without recording a try', async () => {
+  const draft = newDraft('abc-links');
+  draft.mealType = 'lunch'; draft.setting = 'home';
+  draft.foods = [{ ...newFood(), id: 'served', name: 'Rice', acceptance: 0, confirmed: true, origin: 'ai' }];
+  draft.suggestionLinks = [{ suggestionId: 'saved-idea', foodId: 'served', title: 'Rice', description: 'Offer a small portion' }];
+  assert.equal(isDraft(draft, draft.childId), true);
+  assert.equal(isDraft({ ...draft, foods: [{ ...draft.foods[0], acceptance: 4 }] }, draft.childId), false);
+  assert.equal(isDraft({ ...draft, suggestionLinks: [{ ...draft.suggestionLinks[0], foodId: 'missing' }] }, draft.childId), false);
+  await saveMealDraft(draft);
+  assert.deepEqual((await readMealDraft(draft.childId)).suggestionLinks, draft.suggestionLinks);
+  const saved = await saveMeal(mealFromDraft(draft));
+  assert.equal(saved.foods[0].acceptance, 0);
+  assert.equal(saved.foods[0].origin, 'ai');
+  assert.deepEqual(saved.suggestionLinks, draft.suggestionLinks);
+  assert.equal(saved.suggestionFeedback, undefined);
 });

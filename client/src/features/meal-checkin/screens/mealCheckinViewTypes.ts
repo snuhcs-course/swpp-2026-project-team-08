@@ -26,6 +26,7 @@ type FoodInput = {
 
 export type MealCheckinViewProps = {
   draft: MealDraft;
+  childName: string;
   onConfirmFood: (id: string) => void;
   removedName?: string;
   onUndoRemove: () => void;
@@ -33,7 +34,7 @@ export type MealCheckinViewProps = {
   suggestionsLoading: boolean;
   suggestionsError: boolean;
   onRetrySuggestions: () => void;
-  tryingSuggestion?: { checked: boolean; onToggle: () => void };
+  initialSuggestionId?: string;
   language: Language;
   saveStatus: 'saving' | 'saved' | 'error';
   error: 'permission' | 'image' | 'save' | null;

@@ -1,7 +1,8 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 export const colors = {
-  onboardingBackground: '#EEF7FF',
+  onboardingBackground: '#F7FAFF',
   onboardingBorder: '#C9DAED',
   onboardingText: '#10233F',
   onboardingMuted: '#667892',
@@ -21,6 +22,7 @@ export const colors = {
   infoSurface: '#E6F1FF',
   safetySurface: '#FFF0F2',
   calendarEmpty: '#F0F4FF',
+  textureSentence: '#F0F0F0',
   homeSubtitle: '#95A2B3',
   error: '#D92D20',
   success: '#19875F',

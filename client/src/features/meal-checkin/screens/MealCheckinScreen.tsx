@@ -33,7 +33,6 @@ export function MealCheckinScreen({
   const profile = useProfile().profile;
   const saved = useMealSuggestions(childId, profile);
   const model = useMealCheckin(childId, startAfterMealId, !!tryingSuggestionId);
-  const [trying, setTrying] = useState(!!tryingSuggestionId);
   const [languageError, setLanguageError] = useState(false);
   const inputs = useMealCheckinInputs({
     draft: model.draft,
@@ -104,6 +103,7 @@ export function MealCheckinScreen({
   return (
     <MealCheckinView
       draft={model.draft}
+      childName={profile?.childName ?? ''}
       onConfirmFood={model.confirmFood}
       removedName={model.removed?.food.name}
       onUndoRemove={model.undoRemove}
@@ -111,7 +111,7 @@ export function MealCheckinScreen({
       suggestionsLoading={saved.loading}
       suggestionsError={saved.error}
       onRetrySuggestions={saved.retry}
-      tryingSuggestion={tryingSuggestionId ? { checked: trying, onToggle: () => setTrying(old => !old) } : undefined}
+      initialSuggestionId={tryingSuggestionId}
       language={language}
       saveStatus={model.saveStatus}
       error={model.error}
@@ -150,9 +150,7 @@ export function MealCheckinScreen({
       onConfirm={() => { model.confirm(); void model.save(true).then((id) => { if (id && afterMealIntent) afterMeal(id); }); }}
       onSave={(skip) => {
         void model.save(skip).then((id) => {
-          if (id && trying && tryingSuggestionId) {
-            router.replace({ pathname: '/suggestion/[id]', params: { id: tryingSuggestionId, tryMealId: id } });
-          } else if (id && afterMealIntent) afterMeal(id);
+          if (id && afterMealIntent) afterMeal(id);
         });
       }}
       onAfterMeal={() => {

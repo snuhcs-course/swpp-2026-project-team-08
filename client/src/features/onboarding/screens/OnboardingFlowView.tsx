@@ -9,7 +9,7 @@ import { AppButton } from '../../../components/AppButton';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
-import { copyFor } from '../../../util/strings';
+import { abcCopyFor, copyFor } from '../../../util/strings';
 import type { OnboardingStep } from '../types';
 import { styles } from './onboardingFlowStyles';
 
@@ -71,6 +71,7 @@ export function OnboardingFlowView({
             style={styles.next}
           />
         </View>
+        {step === 'family' && <Text style={{ textAlign: 'right', color: colors.onboardingMuted, paddingRight: 22, fontSize: 12 }}>{abcCopyFor(language).required}</Text>}
         {step === 'safe-foods' && <AppButton secondary label={s.common.saveExit} disabled={submitting} onPress={onSaveExit} />}
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -26,9 +26,9 @@ type ChoiceValues = Pick<OnboardingDraft,
 type ListField = 'allergies' | 'restrictions' | 'familyFoods' | 'approaches' | 'texture' | 'taste' | 'presentation';
 type TextField = 'childName' | 'ageRange' | 'smell' | 'temperature' | 'familiarity';
 
-function Guidance({ title, body, icon = 'info' }: { title?: string; body: string; icon?: 'info' | 'calendar' | 'activity' }) {
+function Guidance({ title, body, icon = 'info' }: { title?: string; body: string; icon?: 'info' | 'calendar' | 'activity' | 'utensils' }) {
   return <View style={styles.infoBanner}>
-    <View style={styles.infoIcon}>{icon === 'calendar' ? <UiAssetIcon name="onboarding-calendar" /> : <Feather name={icon} size={13} color={colors.onboardingPrimary} />}</View>
+    <View style={styles.infoIcon}>{icon === 'utensils' ? <UiAssetIcon name="abc-utensils" /> : icon === 'calendar' ? <UiAssetIcon name="onboarding-calendar" /> : <Feather name={icon} size={13} color={colors.onboardingPrimary} />}</View>
     <View style={styles.safetyCopy}>
       {title && <Text style={styles.infoTitle}>{title}</Text>}
       <Text style={styles.infoText}>{body}</Text>
@@ -115,7 +115,7 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
     return (
       <View>
         {step === 'restrictions' && <Text style={styles.question}>{guidance.restrictionsQuestion(name)}</Text>}
-        {step === 'family' && <Guidance title={guidance.familyTitle} body={guidance.familyBody} />}
+        {step === 'family' && <Guidance title={guidance.familyTitle} body={guidance.familyBody} icon="utensils" />}
         {step === 'approaches' && <Guidance title={guidance.approachesTitle} body={guidance.approachesBody} />}
         {step === 'allergies' && (
           <View style={styles.safetyBanner}>

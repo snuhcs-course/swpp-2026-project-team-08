@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import Feather from '@expo/vector-icons/Feather';
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
   control: { width: 20, height: 20, borderRadius: 6, borderWidth: 1, borderColor: colors.onboardingBorder, alignItems: 'center', justifyContent: 'center' },
   controlSelected: { backgroundColor: colors.onboardingPrimary, borderColor: colors.onboardingPrimary },
   copy: { flex: 1 },
-  label: { color: colors.onboardingText, fontSize: 10, lineHeight: 12, fontFamily: fonts.interMedium },
+  label: { color: colors.onboardingText, fontSize: 13, lineHeight: 18, fontFamily: fonts.poppinsSemiBold },
   selectedLabel: { color: colors.onboardingPrimary },
-  subtitle: { color: colors.onboardingMuted, fontSize: 8, lineHeight: 10, fontFamily: fonts.interRegular, marginTop: 1 },
+  subtitle: { color: colors.onboardingMuted, fontSize: 11, lineHeight: 15, fontFamily: fonts.interRegular, marginTop: 1 },
 });

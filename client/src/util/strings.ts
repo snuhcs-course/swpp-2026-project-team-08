@@ -793,6 +793,7 @@ export const suggestionCopyFor = (language: Language) => suggestionCopy[language
 // Final ABC screens share these labels; persistent values remain language independent.
 const abcCopy = {
   en: {
+    viewMealSuggestions: 'View Meal Suggestions',
     ready: 'You’re ready to begin', readyFor: (name: string) => `Learn what food ${name} can explore`, next: 'Next step',
     required: 'Required step', confirmed: 'Confirmed food', suggested: 'Suggested food', acceptance: 'Acceptance',
     cooking: 'Cooking method', detail: 'Additional detail', selectCooking: 'Select method',
@@ -813,6 +814,7 @@ const abcCopy = {
     examples: { sweet: 'Honey, candy, banana', salty: 'Potato chips, pretzels, salted crackers', sour: 'Lemon, vinegar, plain yogurt', bitter: 'Coffee, dark chocolate, grapefruit', savory: 'Meat broth, mushrooms, tomatoes', fruit: 'Apple, strawberry, grape', herb: 'Basil, rosemary, parsley', mushroom: 'Mushroom, truffle, shiitake', toasted: 'Coffee, toast, roasted nuts', vanilla: 'Vanilla, caramel, honey', dairy: 'Milk, butter, cheese', meaty: 'Meat broth, roasted meat, soy sauce', sulfur: 'Boiled egg, cabbage, onion', sea: 'Seaweed, oyster, fish', fermented: 'Kimchi, cheese, doenjang', spice: 'Cinnamon, black pepper, clove', mint: 'Peppermint, spearmint, mint tea', smoke: 'Smoked bacon, smoked cheese, grilled corn' },
   },
   ko: {
+    viewMealSuggestions: '이 식사의 제안 보기',
     ready: '시작할 준비가 되었어요', readyFor: (name: string) => `${name}이(가) 탐색할 수 있는 음식을 알아보세요`, next: '다음 단계',
     required: '필수 단계', confirmed: '확인한 음식', suggested: '제안된 음식', acceptance: '수용 정도',
     cooking: '조리 방법', detail: '추가 설명', selectCooking: '조리 방법 선택',

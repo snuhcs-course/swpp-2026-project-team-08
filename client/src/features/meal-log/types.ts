@@ -26,5 +26,5 @@ export type FoodResponseCard = {
   servingNote: string;
   outcome: Outcome | null;
   reasons: { category: string; value: string; note?: string }[];
-  suggestion: { id: string; title: string; description: string; servingTip: string | null } | null;
+  suggestion: { managed?: boolean; id: string; title: string; description: string; servingTip: string | null } | null;
 };

@@ -1,6 +1,6 @@
-// This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
-import { router, Stack, usePathname } from 'expo-router';
+import { router, Stack, usePathname, useGlobalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomNavigation, tabOrder, type HomeTab } from '../../components/BottomNavigation';
@@ -17,6 +17,7 @@ function tabFromPath(pathname: string): HomeTab {
 
 export default function MainLayout() {
   const pathname = usePathname();
+  const { suggestionFlow } = useGlobalSearchParams<{ suggestionFlow?: string }>();
   const { language } = useProfile();
   const fontReady = useFontReady();
   const selected = tabFromPath(pathname);
@@ -44,7 +45,7 @@ export default function MainLayout() {
         contentStyle: { backgroundColor: colors.homeBackground },
       })} />
     </View>
-    <BottomNavigation language={language} selected={selected} onSelect={onSelect} />
+    {!(selected === 'ideas' && suggestionFlow === 'record') && <BottomNavigation language={language} selected={selected} onSelect={onSelect} />}
   </SafeAreaView>;
 }
 

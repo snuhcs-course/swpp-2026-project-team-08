@@ -53,6 +53,8 @@ export function MealDetailsScreen({ mealId }: { mealId?: string }) {
       error={details.error || (!details.loading && !meal)}
       deleting={details.deleting}
       deleteError={details.deleteError}
+      suggestionSaveError={details.saveError}
+      savingSuggestion={details.savingSuggestion}
       onBack={() => router.back()}
       onContinueReview={() => router.push({ pathname: '/after-meal-photo', params: { mealId: mealId ?? '' } })}
       onToggleSaved={details.toggleSaved}

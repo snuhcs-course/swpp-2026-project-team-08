@@ -1,4 +1,4 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 """모든 테이블 모델.
 
 여기서 import 해야 `Base.metadata` 에 테이블이 등록된다 (Alembic autogenerate 와 테스트의
@@ -12,3 +12,10 @@ from app.models.meal_suggestion import MealSuggestion
 from app.models.user import User
 
 __all__ = ["User", "MealLog", "MealFood", "MealReview", "MealSuggestion"]
+
+from app.models.suggestion import Suggestion
+from app.models.suggestion_action import SuggestionAction
+from app.models.suggestion_batch import SuggestionBatch
+from app.models.suggestion_try import SuggestionTry
+
+__all__ += ["SuggestionBatch", "Suggestion", "SuggestionAction", "SuggestionTry"]

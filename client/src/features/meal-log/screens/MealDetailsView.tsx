@@ -25,6 +25,8 @@ type Props = {
   error: boolean;
   deleting: boolean;
   deleteError: boolean;
+  suggestionSaveError?: boolean;
+  savingSuggestion?: boolean;
   savedSuggestionIds: string[];
   onBack: () => void;
   onContinueReview: () => void;
@@ -46,6 +48,7 @@ function PhotoTile({ uri, label }: { uri: string | null; label: string }) {
   );
 }
 
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 export function MealDetailsView(p: Props) {
   const s = copyFor(p.language);
   const m = s.mealLog;
@@ -92,11 +95,13 @@ export function MealDetailsView(p: Props) {
             <PhotoTile uri={p.afterUri} label={m.afterImage} />
           </View>
           <Text style={styles.foodsLabel}>{m.foodsAndResponses}</Text>
+          {p.suggestionSaveError && <Text accessibilityRole="alert" style={styles.deleteBody}>{s.common.saveFailed}</Text>}
           {p.cards.map((card, index) => (
             <FoodResponseCard
               key={card.foodId}
               card={card}
               language={p.language}
+              disabled={p.savingSuggestion}
               defaultOpen={index === 0}
               saved={!!card.suggestion && p.savedSuggestionIds.includes(card.suggestion.id)}
               onToggleSaved={card.suggestion ? (saved) => p.onToggleSaved(card, saved) : undefined}

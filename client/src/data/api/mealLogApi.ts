@@ -21,6 +21,7 @@ export type MealListItem = {
 };
 export type MealCalendarDay = { date: string; count: number };
 export type MealLogSuggestion = {
+  managed?: boolean;
   id: string;
   foodId: string;
   title: string;
@@ -156,6 +157,7 @@ function parseDetail(value: unknown): MealDetail {
         || typeof item.description !== 'string' || !strings(item.ingredients)
         || (item.serving_tip !== null && typeof item.serving_tip !== 'string')) throw new Error('Invalid suggestion');
       return {
+        ...(item.managed === true ? { managed: true } : {}),
         id: item.id, foodId: item.food_id, title: item.title, description: item.description,
         servingTip: item.serving_tip, ingredients: item.ingredients,
       };

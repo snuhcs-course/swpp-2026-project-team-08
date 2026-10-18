@@ -1,14 +1,18 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useHomeRecords, useSetSuggestionSaved } from '../../../data/queries/homeQueries';
 import { useDeleteMeal, useMealDetail } from '../../../data/queries/mealLogQueries';
+import { useSavedSuggestions, useSuggestionActions } from '../../../data/queries/suggestionQueries';
 import { foodResponseCards } from '../rules';
 import type { FoodResponseCard } from '../types';
 
 export function useMealDetails(childId: string, mealId: string, profileUpdatedAt: string) {
   const detail = useMealDetail(childId, mealId);
   const home = useHomeRecords(childId);
+  const serverSaved = useSavedSuggestions(childId);
+  const serverActions = useSuggestionActions(childId);
+  const [saveError, setSaveError] = useState(false);
   const del = useDeleteMeal();
   const save = useSetSuggestionSaved();
   const cards = useMemo(
@@ -16,13 +20,15 @@ export function useMealDetails(childId: string, mealId: string, profileUpdatedAt
     [detail.data],
   );
   const savedSuggestionIds = useMemo(
-    () => (home.data?.suggestions ?? []).filter((item) => item.isSaved).map((item) => item.id),
-    [home.data],
+    () => [...(serverSaved.data ?? []).map(i => i.id), ...(home.data?.suggestions ?? []).filter((item) => item.isSaved).map((item) => item.id)],
+    [home.data, serverSaved.data],
   );
   return {
     meal: detail.data ?? null,
     cards,
     savedSuggestionIds,
+    saveError,
+    savingSuggestion: serverActions.save.isPending || save.isPending,
     loading: !!mealId && detail.isPending && !detail.data,
     error: !mealId || detail.isError,
     retry: detail.refetch,
@@ -31,6 +37,11 @@ export function useMealDetails(childId: string, mealId: string, profileUpdatedAt
     deleteMeal: () => del.mutateAsync({ childId, mealId }),
     toggleSaved: (card: FoodResponseCard, saved: boolean) => {
       if (!card.suggestion) return;
+      setSaveError(false);
+      if (card.suggestion.managed) {
+        void serverActions.save.mutateAsync({ id: card.suggestion.id, saved }).catch(() => setSaveError(true));
+        return;
+      }
       void save.mutateAsync({
         childId,
         suggestion: {
@@ -42,7 +53,7 @@ export function useMealDetails(childId: string, mealId: string, profileUpdatedAt
         },
         saved,
         profileUpdatedAt,
-      }).catch(() => undefined);
+      }).catch(() => setSaveError(true));
     },
   };
 }

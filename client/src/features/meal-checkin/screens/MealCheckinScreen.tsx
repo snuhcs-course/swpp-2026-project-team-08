@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -18,14 +18,17 @@ export function MealCheckinScreen({
   onLanguage,
   afterMealIntent,
   startAfterMealId,
+  tryingSuggestionId,
 }: {
   childId: string;
   language: Language;
   onLanguage: () => Promise<void>;
   afterMealIntent: boolean;
   startAfterMealId?: string;
+  tryingSuggestionId?: string;
 }) {
-  const model = useMealCheckin(childId, startAfterMealId);
+  const model = useMealCheckin(childId, startAfterMealId, !!tryingSuggestionId);
+  const [trying, setTrying] = useState(!!tryingSuggestionId);
   const [languageError, setLanguageError] = useState(false);
   const inputs = useMealCheckinInputs({
     draft: model.draft,
@@ -96,6 +99,7 @@ export function MealCheckinScreen({
   return (
     <MealCheckinView
       draft={model.draft}
+      tryingSuggestion={tryingSuggestionId ? { checked: trying, onToggle: () => setTrying(old => !old) } : undefined}
       language={language}
       saveStatus={model.saveStatus}
       error={model.error}
@@ -134,7 +138,9 @@ export function MealCheckinScreen({
       onConfirm={model.confirm}
       onSave={(skip) => {
         void model.save(skip).then((id) => {
-          if (id && afterMealIntent) afterMeal(id);
+          if (id && trying && tryingSuggestionId) {
+            router.replace({ pathname: '/suggestion/[id]', params: { id: tryingSuggestionId, tryMealId: id } });
+          } else if (id && afterMealIntent) afterMeal(id);
         });
       }}
       onAfterMeal={() => {

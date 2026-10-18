@@ -94,11 +94,13 @@ export function acceptanceFill(outcome: FoodResponseCard['outcome']): number {
   return 0;
 }
 
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 function asSuggestion(
-  suggestion: { id: string; title: string; description: string; servingTip: string | null } | null,
+  suggestion: { managed?: boolean; id: string; title: string; description: string; servingTip: string | null } | null,
 ): FoodResponseCard['suggestion'] {
   return suggestion
     ? {
+      ...(suggestion.managed ? { managed: true } : {}),
       id: suggestion.id,
       title: suggestion.title,
       description: suggestion.description,
@@ -110,7 +112,7 @@ function asSuggestion(
 export function foodResponseCards(
   foods: FoodItem[],
   review: { outcomes: FoodOutcome[]; difficulties: AfterMealReview['difficulties'] } | null,
-  suggestions: { id: string; foodId: string; title: string; description: string; servingTip: string | null }[],
+  suggestions: { managed?: boolean; id: string; foodId: string; title: string; description: string; servingTip: string | null }[],
 ): FoodResponseCard[] {
   const cards: FoodResponseCard[] = [];
   for (const food of foods) {

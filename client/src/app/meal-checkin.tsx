@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator } from 'react-native';
@@ -8,8 +8,9 @@ import { MealCheckinScreen } from '../features/meal-checkin/screens/MealCheckinS
 import { colors } from '../util/colors';
 export default function MealCheckinEntry() {
   const model = useProfile();
-  const { intent, startAfterMealId } = useLocalSearchParams<{
+  const { intent, startAfterMealId, tryingSuggestionId } = useLocalSearchParams<{
     intent?: string;
+    tryingSuggestionId?: string;
     startAfterMealId?: string;
   }>();
   if (model.status === 'loading')
@@ -24,6 +25,7 @@ export default function MealCheckinEntry() {
       key={model.profile.id}
       childId={model.profile.id}
       startAfterMealId={startAfterMealId}
+      tryingSuggestionId={tryingSuggestionId}
       language={model.language}
       onLanguage={() => model.changeLanguage(model.language === 'ko' ? 'en' : 'ko')}
       afterMealIntent={intent === 'after-meal'}

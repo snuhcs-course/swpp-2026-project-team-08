@@ -5,6 +5,7 @@ import { useMealList } from '../../../data/queries/mealLogQueries';
 import { useMealDraft } from '../../../data/queries/mealQueries';
 import { filterMeals, monthKey, shiftMonth, sortMealsLatestFirst } from '../rules';
 
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 export function useMealLog(childId: string) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -42,12 +43,12 @@ export function useMealLog(childId: string) {
     const next = shiftMonth(year, month, delta);
     setYear(next.year);
     setMonth(next.month);
-  }, [year, month]);
+  }, [year, month, setYear, setMonth]);
 
   const setMonthYear = useCallback((nextYear: number, nextMonth: number) => {
     setYear(nextYear);
     setMonth(nextMonth);
-  }, []);
+  }, [setYear, setMonth]);
 
   const toggleDate = useCallback((value: string) => {
     setSelectedDate((current) => {
@@ -57,7 +58,7 @@ export function useMealLog(childId: string) {
       setMonth(nextMonth - 1);
       return value;
     });
-  }, []);
+  }, [setYear, setMonth]);
 
   const setSearchValue = useCallback((value: string) => {
     setSearch(value);

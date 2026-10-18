@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; synced before-meal photo text from Figma 455:7879 -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify anchored date dropdown pickers -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated compact meal choice tiles -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected requirements after screen-by-screen comparison -->
@@ -36,6 +37,8 @@
 - 저장된 Meal에는 안정적인 ID를 사용한다. 재시도는 같은 ID로 저장하며 중복 Meal을 생성하지 않는다.
 
 ### R2 — 선택적 참고 사진
+
+- 사진 추가 화면 `455:7879`의 상단 안내는 `Optional - keep a photo for your meal record.`, 사진 건너뛰기 버튼은 `Skip photo`, 보조 설명은 `Add foods yourself without a photo.`로 표시한다. 한국어는 각각 `선택 사항 - 식사 기록용 사진을 남길 수 있습니다.`, `사진 건너뛰기`, `사진 없이 음식을 직접 추가하세요.`로 표시한다.
 
 - 카메라·갤러리·파일 경로를 제공하고 해당 경로를 선택할 때 권한을 요청한다. 지원 이미지 형식만 받아들이며 취소·권한 거부·손상 이미지에는 기존 입력을 보존한다.
 - 좋은 조명·접시 중앙·음식이 잘 보이게 촬영하라는 안내와 기존 예시 사진을 표시한다. Skip photo는 분석 요청 없이 음식 입력으로 이동한다.

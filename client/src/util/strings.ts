@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; synced before-meal photo copy from Figma 455:7879
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised for current ABC design
@@ -125,11 +126,11 @@ const en = {
     settingTitle: 'Setting of the meal', date: 'Meal date', month: 'Month', day: 'Day', year: 'Year', selectDate: 'Select date', dateHint: 'Today or earlier (caregiver timezone)', confirmDate: 'Confirm date', mealType: 'Meal type', setting: 'Setting',
     types: { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' },
     settings: { home: 'Home', restaurant: 'Restaurant', school: 'School', others: 'Others' },
-    toPhoto: 'Continue to photo', addPhoto: 'Add a before-meal photo', photoTip: 'Optional — keep a photo for your meal record. Add foods yourself.',
+    toPhoto: 'Continue to photo', addPhoto: 'Add a before-meal photo', photoTip: 'Optional - keep a photo for your meal record.',
     photoTips: ['Use good light', 'Keep the plate centered', 'Make sure the food is easy to see'], example: 'Example meal photo',
     previewBadge: 'Preview', draftSaved: 'Your draft is saved as you go.', draftLabel: 'Draft', photoReady: 'photo ready',
     camera: 'Take a photo', gallery: 'Choose from gallery', files: 'Choose from files', fileHint: 'Supported images only',
-    skipPhoto: 'Skip photo, Enter foods manually', skipPhotoHint: 'Add foods yourself, with or without a photo.',
+    skipPhoto: 'Skip photo', skipPhotoHint: 'Add foods yourself without a photo.',
     replace: 'Replace photo', removePhoto: 'Remove photo', usePhoto: 'Use this photo', fullPhoto: 'Tap to view full photo',
     localPhoto: 'Optional photo for your meal record. Add the foods yourself.',
     analyze: 'Analyze photo', manual: 'Enter food items manually', noPhoto: 'Continue without a photo',
@@ -423,9 +424,9 @@ const ko = {
     settingTitle: '식사 정보', date: '식사 날짜', month: '월', day: '일', year: '연도', selectDate: '날짜 선택', dateHint: '보호자 시간대 기준 오늘 또는 이전 날짜', confirmDate: '날짜 확인', mealType: '식사 유형', setting: '장소 / 상황',
     types: { breakfast: '아침', lunch: '점심', dinner: '저녁', snack: '간식' },
     settings: { home: '집', restaurant: '식당', school: '학교', others: '기타' },
-    toPhoto: '사진 추가로 계속', addPhoto: '식전 사진을 추가해 주세요', photoTip: '사진은 선택 사항입니다. 음식은 사진 유무와 관계없이 직접 추가하세요.',
+    toPhoto: '사진 추가로 계속', addPhoto: '식전 사진을 추가해 주세요', photoTip: '선택 사항 - 식사 기록용 사진을 남길 수 있습니다.',
     photoTips: ['밝은 곳에서 촬영하세요', '접시를 중앙에 놓아 주세요', '음식이 잘 보이도록 촬영하세요'], example: '식사 사진 예시',
-    skipPhoto: '사진 없이 음식 직접 입력', skipPhotoHint: '사진 없이 음식 이름을 직접 추가합니다.',
+    skipPhoto: '사진 건너뛰기', skipPhotoHint: '사진 없이 음식을 직접 추가하세요.',
     previewBadge: '미리보기', draftSaved: '초안은 진행하면서 자동 저장됩니다.', draftLabel: '초안', photoReady: '사진 준비됨',
     camera: '사진 촬영', gallery: '사진 보관함에서 선택', files: '파일에서 선택', fileHint: 'JPEG, PNG, WebP, HEIC, HEIF, AVIF 이미지만 지원',
     replace: '사진 교체', removePhoto: '사진 삭제', usePhoto: '이 사진 사용', fullPhoto: '사진 전체 화면 보기',

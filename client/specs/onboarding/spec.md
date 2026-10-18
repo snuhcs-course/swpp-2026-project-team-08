@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected requirements after screen-by-screen comparison -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated after manual-entry design review -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing specification -->
 
@@ -12,7 +13,7 @@
 [최종 ABC 디자인 — A Onboarding](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/ABC?node-id=815-4315)
 
 근거: 가족 식품군 `455:2525`, 알레르기 `455:1278`·`455:4672`, 제한 `455:5060`, 식이 방식 `455:5143`, 검토 `455:1748`, 완료 `455:1729`.
-디자인의 빠진 번호를 빈 화면으로 만들지 않고 실제 입력 단계 수로 진행률을 계산한다. 이 페이지에 없는 감각 질문은 기존 R9를 유지한다. `xxxxxxx` 같은 임시 설명·예시 이름은 실제 문구로 사용하지 않는다.
+디자인의 빠진 번호를 빈 화면으로 만들지 않는다. 화면에 표시하는 단계 번호와 진행률은 Figma의 18단계 표기를 따른다(Child 4, Dietary approaches 9, Review 17). 이 페이지에 없는 감각 질문은 기존 R9를 유지한다. `xxxxxxx` 같은 임시 설명·예시 이름은 실제 문구로 사용하지 않는다.
 
 ## User Flow
 
@@ -128,8 +129,8 @@
 
 ### R12 — Review profile
 
-1. 보호자는 온보딩을 완료하기 전에 Child basics, Safety restrictions, Family practices, Dietary approaches, Sensory tendencies, Safe foods에 입력한 내용을 요약 카드로 검토할 수 있어야 한다.
-2. 감각 프로필과 새로운 음식에 대한 친숙도는 Food smell, Taste intensity, Presentation, Serving temperature, New-food familiarity 등 입력한 질문별로 확인할 수 있어야 한다.
+1. 보호자는 온보딩을 완료하기 전에 Child basics, Safety restrictions, Family practices, Dietary approaches, Safe foods의 다섯 카드에 입력한 내용을 요약 카드로 검토할 수 있어야 한다.
+2. 감각·친숙도 답변은 저장하고 Profile Settings에서 질문별로 수정할 수 있어야 한다. 현재 Figma 검토 화면에 없는 추가 카드는 온보딩 요약에 만들지 않는다. Safety restrictions 카드에는 알레르기와 실제 추가 제한을 함께 표시하며, 수정 시 알레르기와 제한을 차례로 편집한 뒤 검토로 돌아온다.
 3. 각 카드의 수정 버튼을 누르면 해당 입력 화면으로 이동해야 한다. 수정 후 검토 화면으로 돌아왔을 때 다른 항목의 답변은 유지되어야 한다.
 4. 검토 화면에는 입력하지 않은 항목도 미입력 상태로 구분되어야 하며, 보호자가 이를 수정할 수 있어야 한다.
 5. 새로 입력한 제한 조건이 Safe Food 또는 Learning Food와 충돌하면 기존 음식 기록은 유지하고, 충돌 안내와 해당 프로필 항목을 검토하는 동작을 제공해야 한다.
@@ -269,3 +270,14 @@ Then 검토 화면과 입력값이 유지되고 다시 시도할 수 있다.
 - 검토 화면(455:1748)은 Child basics, Safety restrictions, Family practices, Dietary approaches, Safe foods 순서로 핵심 카드를 배치한다. 기타 제한·감각 답변도 계속 확인·수정할 수 있다.
 - 동의 화면(455:3095·455:3160)의 사진 분석 문구는 Figma에 아직 남은 이전 문구다. 사용자의 분석 기능 제거 결정이 우선한다. 필수 동의는 계정 개인정보와 식사 기록·프로필을 활용한 개인화이며 사진 분석 동의를 요구하지 않는다. 호환을 위해 기존 저장 키 photoAnalysis는 개인화 동의 값으로만 읽고 쓴다. 별도 AI 학습 동의는 선택 사항이며 이 버전은 사진을 분석·학습에 전송하지 않는다.
 - 이미 작성된 프로필·초안·알레르기 및 추천 안전성 검사는 보존한다.
+
+## 화면 대조 보완 — 2026-10-18
+
+- 계정 `455:3229`·`455:1682`: 제목 20px Poppins Bold, 항목 이름 15px, 입력 40px, 안내·오류 12px. 정상 비밀번호 안내와 짧은 비밀번호 오류를 구분한다. 첫 계정 화면에는 Previous가 없다.
+- 동의 `455:3095`·`455:3160`: 패널·카드·안전 안내의 원본 간격과 13px 본문을 따른다. 분석 제거에 따른 동의 내용은 사용자의 결정이 우선한다.
+- 기타 입력 `455:1278`·`455:1382`: OTHER 14px, 입력 40px, 안내 12px. 검색 결과·선택 토큰을 별도 상태로 대조한다.
+- Safe foods `455:1916`: 빠른 입력 뒤 흰색 인라인 카드(너비 346px, 모서리 16px, 안쪽 16px)를 둔다. 제목과 설명은 한 묶음이며 필드 사이 8px이다. Presentation note와 Optional은 같은 줄에 둔다. 입력한 제공 메모도 추가된 음식에 표시한다.
+- 검토 `455:1748`: 다섯 카드에 27px 아이콘 영역·원본 수정 아이콘·13px 설명을 사용한다. 긴 내용은 잘라 숨기지 않는다.
+- 화면 대조는 390px 너비에서 수행한다. 웹에 없는 iOS 시계·배터리·홈 표시줄은 앱 콘텐츠와 분리해서 비교한다. 예시 아동 이름·답변은 실제 사용자 값으로 표시한다.
+
+- 기타 검색은 디자인에 나온 Lupin/Lupin flour/Lupin seed, Plant-based milk/yogurt/cheese, Low-histamine/Low-salicylate 항목을 포함한다. `keto a`, `keto b`, `xxxxxxx` 같은 임시 데이터는 실제 선택지로 만들지 않는다. 기타를 열면 None을 해제하고, None을 고르면 기타 입력을 닫는다.

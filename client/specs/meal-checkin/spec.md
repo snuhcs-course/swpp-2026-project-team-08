@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected requirements after screen-by-screen comparison -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated after manual-entry design review -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing specification -->
 
@@ -84,4 +85,16 @@
 
 ## 변경 범위와 호환
 
-분석 버튼·화면·요청 Hook 연결을 제거한다. 기존 분석 단계 초안은 직접 음식 목록으로 이동하며 기존 입력은 보존한다. 사진 선택과 Save check-in은 이미지 인식 요청을 만들지 않는다. 사진·제안 연결·Undo·저장 실패 복구는 유지한다.
+분석 버튼·화면·요청 Hook 연결을 제거한다. 기존 분석 단계 초안은 직접 음식 목록으로 이동한다. 보호자가 직접 추가했거나 확인한 음식은 보존하고, 확인하지 않은 과거 AI 샘플 음식·해당 음식의 편집 초안·제안 연결만 제외한다. 완료된 식사는 변경하지 않는다. 사진 선택과 Save check-in은 이미지 인식 요청을 만들지 않는다. 사진·제안 연결·Undo·저장 실패 복구는 유지한다.
+
+## 화면 대조 보완 — 2026-10-18
+
+- 교체 확인 `455:9247`: 화면 중앙의 342px 흰색 Dialog, 모서리 24px, 제목 18px. 본문 12px와 `Cancel or an invalid image keeps everything.` 11px 회색 보조문을 별도 줄로 둔다. Replace photo와 Cancel은 세로로 배치하며 바텀시트 손잡이를 표시하지 않는다.
+- 최초 사진 없는 빈 목록 `455:6970`: 제목 Add food items, 한 줄 안내, 46px 흰색 Add food item 버튼, 비활성 Save check-in만 표시한다. 사진 요약·음식 개수·이전 제안 링크를 추가하지 않는다.
+- 사진 있는 빈 목록 `815:3080`: Review food items·0 food items·식사 요약·사진 요약·검은 Add Food·일반 텍스트 빈 안내를 표시한다. 하단 추천 연결·직접 입력 안내·Save check-in·Save as Draft & Exit를 유지한다. 별도 빈 상태 카드를 만들지 않는다.
+- 추가 `455:8047`·편집 `455:8628`: 중앙 374px Dialog, 모서리 28px. 새 음식은 이름·재료·조리 방법·추가 설명·Acceptance가 전부 비어 있다. `Enter food name`은 입력값이 아닌 placeholder이며 예시 음식명을 넣지 않는다. 이름 입력 중에도 Add food item 제목을 유지한다.
+- Cooking method와 Additional detail은 동일한 줄의 두 열이며 사이 간격 8px, 입력 높이 38px이다. Optional은 각 제목 줄에 둔다. Acceptance 0–3은 최초 미선택이며 미입력을 0으로 저장하지 않는다. 이름이 비어 있으면 Save food는 비활성이다.
+- 음식 목록 `455:8123`: 처음에는 첫 음식 카드를 펼치고, 이후 한 번에 하나만 펼친다. 추천 링크는 카드 아래에 놓고 카드·하단 안내와 겹치지 않는다.
+- 제안 선택 `455:8856`·연결 `455:7013`: 뒤로가기·식사 요약·진행 바·Step 1/2 표시·라디오 선택·하단 Continue/Link suggestion을 표시한다. 카드의 날짜·식사 종류는 실제 제안의 원본 식사 정보를 사용하며 임의 날짜를 만들지 않는다.
+- 저장 `455:9936`·실패 `455:10158`·완료 `455:9843`: 버튼 문구만 바꾸지 않고 해당 전용 화면과 실제 식사 요약을 표시한다. 저장 중 편집 복귀는 요청을 취소하거나 중복 저장하지 않으며 입력은 잠근다. 오류 후 Retry는 동일 기록을 저장한다. 성공 뒤에만 식후 리뷰를 연다.
+- 비교 기준은 390px 콘텐츠 너비다. iOS 상태 표시줄과 예시 식사 데이터는 콘텐츠·실제 사용자 데이터와 구분한다.

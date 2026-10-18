@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify manual food and outcome entry
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -33,7 +34,6 @@ const { readAfterMealDraft, readAfterMealReview, saveAfterMealDraft, saveAfterMe
   require('../src/data/storage/afterMealReviewStorage.ts');
 const { newReviewDraft, reconcileOutcomes, setOutcome, applySuggestions, allOutcomesConfirmed, addDifficulty, reviewFromDraft, toggleIngredient, canAddDifficulty } =
   require('../src/features/after-meal-review/rules.ts');
-const { compareMealPhotos } = require('../src/data/api/afterMealComparisonApi.ts');
 
 function savedMeal(childId) {
   const draft = newDraft(childId);
@@ -117,19 +117,6 @@ test('stored after-meal draft and result are tied to one meal and preserve the b
   assert.equal((await readAfterMealDraft(meal.childId, meal.id)).step, 'complete');
 });
 
-test('comparison mock is cancellable and never asserts consumption from image pixels', async () => {
-  const meal = savedMeal('compare');
-  const after = { id: 'after', uri: 'file:///after.png', mimeType: 'image/png' };
-  const controller = new AbortController();
-  const cancelled = compareMealPhotos({ mealId: meal.id, before: meal.photo, after, foods: meal.foods, signal: controller.signal });
-  controller.abort();
-  await assert.rejects(cancelled);
-  const result = await compareMealPhotos({ mealId: meal.id, before: meal.photo, after, foods: meal.foods, signal: new AbortController().signal });
-  assert.equal(result.mealId, meal.id);
-  assert.equal(result.afterPhotoId, 'after');
-  assert.equal(result.suggestions.every((item) => item.outcome === 'unclear'), true);
-  await assert.rejects(compareMealPhotos({ mealId: '', before: meal.photo, after, foods: meal.foods, signal: new AbortController().signal }));
-});
 
 test('final review follows pending autosaves and rejects unanswered results', async () => {
   values.clear();

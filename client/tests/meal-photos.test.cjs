@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify manual food and outcome entry
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -38,8 +39,6 @@ Module._load = function (name, ...args) {
 const { newDraft, mealFromDraft } = require('../src/features/meal-checkin/rules.ts');
 const { newFood } = require('../src/rules/foodDraft.ts');
 const { newReviewDraft, setOutcome, reviewFromDraft } = require('../src/features/after-meal-review/rules.ts');
-const { recognizeMealPhoto } = require('../src/data/api/recognitionApi.ts');
-const { compareMealPhotos } = require('../src/data/api/afterMealComparisonApi.ts');
 const { mealToUpsertBody, reviewToBody } = require('../src/data/api/mealLogApi.ts');
 
 const PNG =
@@ -57,46 +56,7 @@ function mealWithBeforePhoto(childId = 'child-photo') {
   return mealFromDraft(draft);
 }
 
-test('before-meal photo recognition accepts an image and rejects a non-image', async () => {
-  const result = await recognizeMealPhoto({ photo: beforePhoto, signal: new AbortController().signal });
-  assert.equal(result.photoId, beforePhoto.id);
-  assert.equal(result.foods[0].source, 'ai');
-  await assert.rejects(
-    recognizeMealPhoto({
-      photo: { id: 'bad', uri: '', mimeType: 'application/pdf' },
-      signal: new AbortController().signal,
-    }),
-    /Invalid photo/,
-  );
-});
 
-test('after-meal comparison needs both photos and does not invent consumption', async () => {
-  const meal = mealWithBeforePhoto();
-  const result = await compareMealPhotos({
-    mealId: meal.id,
-    before: meal.photo,
-    after: afterPhoto,
-    foods: meal.foods,
-    signal: new AbortController().signal,
-  });
-  assert.equal(result.beforePhotoId, beforePhoto.id);
-  assert.equal(result.afterPhotoId, afterPhoto.id);
-  assert.equal(result.suggestions.every((item) => item.outcome === 'unclear'), true);
-  await assert.rejects(compareMealPhotos({
-    mealId: meal.id,
-    before: { ...beforePhoto, uri: '' },
-    after: afterPhoto,
-    foods: meal.foods,
-    signal: new AbortController().signal,
-  }));
-  await assert.rejects(compareMealPhotos({
-    mealId: meal.id,
-    before: meal.photo,
-    after: { ...afterPhoto, uri: '' },
-    foods: meal.foods,
-    signal: new AbortController().signal,
-  }));
-});
 
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 test('saving a meal keeps the before photo; manual after-meal review may omit its photo', () => {

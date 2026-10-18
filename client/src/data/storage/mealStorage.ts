@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; discard only unconfirmed legacy AI draft suggestions
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
@@ -30,8 +31,19 @@ export async function readMealDraft(
   if (!raw) return null;
   const value: unknown = JSON.parse(raw);
   if (!isDraft(value, childId)) throw new Error('Invalid meal draft');
-  // Completion can be restored, but must not appear as a new Home draft.
-  return { ...value, step: ['method', 'analyzing', 'analysis-error', 'goal'].includes(value.step) ? 'foods' : value.step };
+  // Preserve saved receipts and all user-confirmed foods. Old photo fixtures must
+  // never reappear as foods the caregiver entered.
+  if (value.step === 'complete') return value;
+  const keepFood = (food: FoodItem) => food.source !== 'ai' || food.confirmed === true;
+  const foods = value.foods.filter(keepFood);
+  return {
+    ...value,
+    foods,
+    editingFood: value.editingFood && keepFood(value.editingFood) ? value.editingFood : null,
+    suggestionLinks: value.suggestionLinks?.filter((link) => foods.some((food) => food.id === link.foodId)),
+    exposureFoodId: foods.some((food) => food.id === value.exposureFoodId) ? value.exposureFoodId : null,
+    step: ['method', 'analyzing', 'analysis-error', 'goal'].includes(value.step) ? 'foods' : value.step,
+  };
 }
 export const saveMealDraft = (draft: MealDraft) =>
   queued(draft.childId, async () => {

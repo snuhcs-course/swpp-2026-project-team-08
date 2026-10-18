@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify manual food and outcome entry
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -20,7 +21,6 @@ const { toggleFoodTrait } = require('../src/rules/foodTraits.ts');
 const { validDate } = require('../src/util/date.ts');
 const { isDraft } = require('../src/data/storage/mealValidation.ts');
 const { readMealDraft, saveMealDraft, readMeals, readMeal, saveMeal } = require('../src/data/storage/mealStorage.ts');
-const { recognizeMealPhoto } = require('../src/data/api/recognitionApi.ts');
 function completeDraft(childId) { return { ...newDraft(childId), mealType: 'lunch', setting: 'home', foods: [{ ...newFood(), name: 'Rice' }], step: 'goal' }; }
 
 test('valid calendar dates and trait selection cardinality', () => {
@@ -40,12 +40,12 @@ test('stored input is validated, including nested traits and child ownership', (
   assert.equal(isDraft({ ...draft, foods: [{ ...draft.foods[0], traits: { ...emptyTraits(), smell: ['mild', 'strong'] } }] }, 'validate'), false);
   assert.equal(isDraft({ ...draft, foods: [draft.foods[0], draft.foods[0]] }, 'validate'), false);
 });
-test('autosaves are ordered, recover edits and resume interrupted recognition safely', async () => {
+test('autosaves are ordered, recover edits and migrate interrupted legacy analysis safely', async () => {
   const draft = completeDraft('autosave');
   await Promise.all([saveMealDraft({ ...draft, step: 'details' }), saveMealDraft({ ...draft, step: 'foods', editingFood: { ...newFood(), name: 'Typing' } })]);
   assert.equal((await readMealDraft('autosave')).editingFood.name, 'Typing');
   await saveMealDraft({ ...draft, photo: { id: 'photo', uri: 'file:///photo.png', mimeType: 'image/png' }, step: 'analyzing' });
-  assert.equal((await readMealDraft('autosave')).step, 'method');
+  assert.equal((await readMealDraft('autosave')).step, 'foods');
   failedKey = 'nurturebites.meal-draft.autosave.v1'; await assert.rejects(saveMealDraft(draft)); await saveMealDraft(draft);
   assert.equal((await readMealDraft('autosave')).id, draft.id);
 });
@@ -64,13 +64,6 @@ test('final save is queued after pending drafts, never overwritten by an earlier
   await Promise.all([saveMealDraft({ ...draft, step: 'foods' }), saveMeal(mealFromDraft(draft))]);
   assert.equal((await readMealDraft('ordering')).step, 'complete');
 });
-test('mock recognition is cancellable and suggestions remain unconfirmed', async () => {
-  const photo = { id: 'photo-test', uri: 'file:///plate.png', mimeType: 'image/png' };
-  const controller = new AbortController(); const request = recognizeMealPhoto({ photo, signal: controller.signal }); controller.abort(); await assert.rejects(request);
-  const result = await recognizeMealPhoto({ photo, signal: new AbortController().signal });
-  assert.equal(result.photoId, photo.id); assert.equal(result.foods[0].source, 'ai');
-  await assert.rejects(recognizeMealPhoto({ photo: { ...photo, mimeType: 'text/plain' }, signal: new AbortController().signal }));
-});
 
 
 test('acceptance and pending suggestion links survive draft/final writes without recording a try', async () => {
@@ -88,4 +81,30 @@ test('acceptance and pending suggestion links survive draft/final writes without
   assert.equal(saved.foods[0].origin, 'ai');
   assert.deepEqual(saved.suggestionLinks, draft.suggestionLinks);
   assert.equal(saved.suggestionFeedback, undefined);
+});
+
+test('new food is blank and unconfirmed legacy photo fixtures cannot become caregiver foods', async () => {
+  const fresh = newFood();
+  assert.equal(fresh.name, ''); assert.deepEqual(fresh.ingredients, []);
+  assert.equal(fresh.preparation, ''); assert.equal(fresh.servingNote, '');
+  assert.equal(fresh.acceptance ?? null, null); assert.equal(fresh.source, 'parent');
+  const draft = completeDraft('legacy-manual');
+  const ai = { ...newFood(), id: 'legacy-ai', name: 'Rolled omelet', source: 'ai' };
+  const confirmedAI = { ...ai, id: 'confirmed-ai', confirmed: true };
+  draft.foods.push(ai, confirmedAI); draft.editingFood = ai;
+  draft.suggestionLinks = [{ suggestionId: 'old', foodId: ai.id, title: 'Old', description: 'Old link' }];
+  draft.exposureFoodId = ai.id;
+  await saveMealDraft(draft);
+  const restored = await readMealDraft(draft.childId);
+  assert.deepEqual(restored.foods.map((food) => food.id), [draft.foods[0].id, confirmedAI.id]);
+  assert.equal(restored.editingFood, null); assert.deepEqual(restored.suggestionLinks, []);
+  assert.equal(restored.exposureFoodId, null);
+});
+
+test('legacy completed receipts preserve confirmed records even when their source was AI', async () => {
+  const draft=completeDraft('legacy-receipt');
+  draft.step='complete'; draft.savedMealId=draft.id;
+  draft.foods=[{...draft.foods[0],source:'ai'}];
+  await saveMealDraft(draft);
+  assert.deepEqual((await readMealDraft(draft.childId)).foods,draft.foods);
 });

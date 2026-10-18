@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; place unset acceptance beside its label
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; restore separate saved-suggestion record linking
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match missing-photo card and removal feedback
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
@@ -137,18 +138,12 @@ export function MealFoodsStepView({ p }: { p: Props }) {
             </View>
             <View style={styles.acceptanceRow}>
               <Text style={styles.sectionLabel}>{a.acceptance}</Text>
-              <View style={styles.acceptanceTrack}>
-                {food.acceptance != null && (
-                  <View
-                    style={[
-                      styles.acceptanceFill,
-                      { width: `${(food.acceptance / 3) * 100}%` },
-                    ]}
-                  />
-                )}
-              </View>
-              {food.acceptance == null && (
+              {food.acceptance == null ? (
                 <Text style={styles.sectionLabel}>{s.common.notEntered}</Text>
+              ) : (
+                <View style={styles.acceptanceTrack}>
+                  <View style={[styles.acceptanceFill, { width: `${(food.acceptance / 3) * 100}%` }]} />
+                </View>
               )}
             </View>
             <View style={styles.actions}>

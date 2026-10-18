@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify inline unset acceptance -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; distinguish record linking from draft suggestion linking -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; require ongoing meal entry before draft continuation -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify source sheet missing-photo spacing and removal state -->
@@ -123,3 +124,5 @@
 - 사진 없는 카드 `815:3432`는 화면 좌우 24px, 카드 안쪽 좌우 10px·상하 13px, 요소 간격 10px이다. Add는 64×29px 파란 버튼이며 긴 문구가 버튼을 밀어내지 않는다.
 - Add and edit foods yourself. Photos are optional. 안내는 중앙 정렬한다.
 - 삭제 직후 `815:3554`는 Add Food 아래에 높이 41px 이상·남색 배경·모서리 10px·안쪽 12px 알림을 표시한다. 삭제 이름은 흰색 12px, Undo는 파란색 11px이다. 남은 음식 카드와 이전 제안 진입점을 유지하고 제안 진입점은 아래쪽에 배치한다. 이 상태에서는 일반 직접 입력 안내를 생략하며 Undo로 원래 ID·순서·연결을 복원한다.
+
+- 음식 카드의 Acceptance가 미입력이면 진행 막대를 표시하지 않고 제목 바로 오른쪽에 10px 간격으로 Not entered를 표시한다. 값이 있으면 기존 수용도 막대를 표시한다.

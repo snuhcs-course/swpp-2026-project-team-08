@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify explicit draft linking after separating saved-record flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; update caregiver greeting expectation
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; update shared navigation expectations
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify direct review saving
@@ -95,9 +96,18 @@ test('save failure has a dedicated retry screen with the same meal and no extra 
   assert.match(html,/We couldn’t save your meal/);assert.match(html,/Caregiver soup/);assert.match(html,/Retry/);assert.match(html,/same meal, not a new record/);
   assert.doesNotMatch(html,/Rolled omelet/);
 });
-test('linked suggestion cards show actual source meal metadata', () => {
-  const html=renderToStaticMarkup(React.createElement(MealFoodsStepView,{p:{draft:{...newDraft('test'),step:'foods',foods:[{...newFood(),name:'Soup'}]},language:'en',initialSuggestionId:'real-id',suggestions:[{id:'real-id',title:'Actual idea',description:'Try it small',mealDate:'2026-10-11',mealType:'lunch'}],onEdit:noop}}));
-  assert.match(html,/Step 1 of 2/);assert.match(html,/Oct 11, 2026/);assert.match(html,/Lunch/);assert.match(html,/Actual idea/);
+test('draft suggestion linking opens explicitly and shows actual source meal metadata', () => {
+  const p={draft:{...newDraft('test'),step:'foods',foods:[{...newFood(),name:'Soup'}]},language:'en',suggestions:[{id:'real-id',title:'Actual idea',description:'Try it small',mealDate:'2026-10-11',mealType:'lunch'}],onEdit:noop};
+  const closed=renderToStaticMarkup(React.createElement(MealFoodsStepView,{p}));
+  assert.match(closed,/Are you trying a previous suggestion/);
+  assert.doesNotMatch(closed,/Step 1 of 2|Actual idea/);
+  const useState=React.useState;
+  let stateIndex=0;
+  React.useState=(initial)=>useState(++stateIndex===2 ? 1 : initial);
+  try {
+    const html=renderToStaticMarkup(React.createElement(MealFoodsStepView,{p}));
+    assert.match(html,/Step 1 of 2/);assert.match(html,/Oct 11, 2026/);assert.match(html,/Lunch/);assert.match(html,/Actual idea/);
+  } finally { React.useState=useState; }
 });
 
 test('onboarding review has the five Figma cards without discarding sensory answers', () => {

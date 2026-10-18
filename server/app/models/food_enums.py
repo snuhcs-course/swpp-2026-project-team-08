@@ -1,6 +1,9 @@
-from enum import Enum
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+from enum import StrEnum
 
-class FoodPreparation(str, Enum):
+
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+class FoodPreparation(StrEnum):
     RAW_UNHEATED = "raw"
     BOILED = "boiled"
     STEAMED = "steamed"

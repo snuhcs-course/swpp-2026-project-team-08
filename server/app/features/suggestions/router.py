@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 """Suggestion API and error mapping. Child scope follows the existing meal-log API."""
 
 from datetime import date, datetime
@@ -126,6 +126,21 @@ class BatchResponse(BaseModel):
     items: list[SuggestionResponse]
 
 
+class EligibleTargetResponse(BaseModel):
+    id: str
+    name: str
+    food_id: str
+
+
+class EligibleMealResponse(BaseModel):
+    id: str
+    meal_date: date
+    meal_type: Literal["breakfast", "lunch", "dinner", "snack"]
+    reviewed: bool
+    foods: list[str]
+    targets: list[EligibleTargetResponse]
+
+
 async def try_response(
     service: SuggestionService, child_id: str, tried: SuggestionTry
 ) -> TryResponse:
@@ -211,19 +226,21 @@ async def set_saved(child_id: str, suggestion_id: str, payload: SavedRequest, se
     return await response(service, await service.set_saved(child_id, suggestion_id, payload.saved))
 
 
-@router.get("/{suggestion_id}/eligible-meals")
-@error_specs(ERRORS)
-async def eligible(child_id: str, suggestion_id: str, service: Service):
+@router.get("/{suggestion_id}/eligible-meals", response_model=list[EligibleMealResponse])
+@error_specs({SuggestionNotFoundError: ERRORS[SuggestionNotFoundError]})
+async def eligible(
+    child_id: str, suggestion_id: str, service: Service
+) -> list[EligibleMealResponse]:
     meals = await service.eligible(child_id, suggestion_id)
     return [
-        {
-            "id": m.id,
-            "meal_date": m.meal_date,
-            "meal_type": m.meal_type,
-            "reviewed": m.review is not None,
-            "foods": [f.name for f in m.foods],
-            "targets": targets_for(m),
-        }
+        EligibleMealResponse(
+            id=m.id,
+            meal_date=m.meal_date,
+            meal_type=m.meal_type,
+            reviewed=m.review is not None,
+            foods=[f.name for f in m.foods],
+            targets=[EligibleTargetResponse(**target) for target in targets_for(m)],
+        )
         for m in meals
     ]
 

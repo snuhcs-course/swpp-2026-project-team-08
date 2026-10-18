@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 """Exercise the real router/service/database, replacing only the slow generator."""
 
 from unittest.mock import AsyncMock
@@ -250,3 +250,57 @@ async def test_all_six_design_dismissal_reasons_round_trip_and_undo(client):
     assert result.json()["dismiss_reasons"] == reasons
     restored = await client.post(f"{url}/undo", json={"action_id": "all-design-reasons"})
     assert restored.json()["dismiss_reasons"] == []
+
+
+async def test_eligible_meals_document_nested_response_and_only_lookup_errors(client):
+    schema = (await client.get("/openapi.json")).json()
+    responses = schema["paths"][
+        "/api/v1/children/{child_id}/suggestions/{suggestion_id}/eligible-meals"
+    ]["get"]["responses"]
+    assert responses["200"]["content"]["application/json"]["schema"]["items"] == {
+        "$ref": "#/components/schemas/EligibleMealResponse"
+    }
+    meal_schema = schema["components"]["schemas"]["EligibleMealResponse"]
+    assert meal_schema["properties"]["targets"]["items"] == {
+        "$ref": "#/components/schemas/EligibleTargetResponse"
+    }
+    assert set(responses) == {"200", "404", "422"}
+    assert responses["404"]["description"] == "SUGGESTION_NOT_FOUND"
+
+    item = await setup(client)
+    url = f"{ROOT}/{item['id']}/eligible-meals"
+    # An existing but unsaved suggestion cannot accept a linked meal.
+    unsaved = await client.get(url)
+    assert unsaved.status_code == 404
+    assert unsaved.json() == {"error_code": "SUGGESTION_NOT_FOUND", "details": {}}
+    await decision(client, item)
+    await put_meal(client, meal_id="eligible-reviewed")
+    await client.put(
+        f"/api/v1/children/{CHILD}/meals/eligible-reviewed/review", json=review_payload()
+    )
+    await put_meal(client, meal_id="eligible-unreviewed")
+    result = await client.get(url)
+    assert result.status_code == 200, result.text
+    by_id = {meal["id"]: meal for meal in result.json()}
+    assert set(by_id) == {"eligible-reviewed", "eligible-unreviewed"}
+    assert by_id["eligible-unreviewed"] == {
+        "id": "eligible-unreviewed",
+        "meal_date": "2026-10-09",
+        "meal_type": "dinner",
+        "reviewed": False,
+        "foods": ["Rolled Omelet"],
+        "targets": [{"id": f"food:{FOOD_ID}", "name": "Rolled Omelet", "food_id": FOOD_ID}],
+    }
+    assert by_id["eligible-reviewed"]["reviewed"] is True
+    assert by_id["eligible-reviewed"]["targets"][1] == {
+        "id": f"ingredient:{FOOD_ID}:ing-egg",
+        "name": "Egg",
+        "food_id": FOOD_ID,
+    }
+    for invalid_url in (
+        f"{ROOT}/missing/eligible-meals",
+        f"/api/v1/children/other/suggestions/{item['id']}/eligible-meals",
+    ):
+        missing = await client.get(invalid_url)
+        assert missing.status_code == 404
+        assert missing.json() == {"error_code": "SUGGESTION_NOT_FOUND", "details": {}}

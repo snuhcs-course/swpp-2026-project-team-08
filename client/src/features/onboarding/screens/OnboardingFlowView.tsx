@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import type { ReactNode } from 'react';
@@ -14,7 +15,7 @@ import { styles } from './onboardingFlowStyles';
 
 export function OnboardingFlowView({
   language, step, stepIndex, stepCount, childName, saveStatus, submitting, canContinue,
-  content, onPrevious, onContinue, onRetrySave,
+  content, onPrevious, onContinue, onRetrySave, onSaveExit,
 }: {
   language: Language;
   step: OnboardingStep;
@@ -70,6 +71,7 @@ export function OnboardingFlowView({
             style={styles.next}
           />
         </View>
+        {step === 'safe-foods' && <AppButton secondary label={s.common.saveExit} disabled={submitting} onPress={onSaveExit} />}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

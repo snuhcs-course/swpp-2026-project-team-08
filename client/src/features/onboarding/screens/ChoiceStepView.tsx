@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { useState } from 'react';
@@ -56,10 +57,10 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
       presentation: [values.presentation, 'presentation'],
     } as const;
     const config = groups[step as keyof typeof groups];
-    if (!config) return step === 'family' || step === 'approaches';
+    if (!config) return false;
     const [selectedValues, group] = config;
     const baseIds = optionsFor(group, language).map((option) => option.id);
-    return step === 'family' || step === 'approaches' || selectedValues.some((value) => value !== 'none' && !baseIds.includes(value));
+    return selectedValues.some((value) => value !== 'none' && !baseIds.includes(value));
   });
   const s = copyFor(language);
   const labels = {

@@ -1,13 +1,16 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppButton } from '../../../components/AppButton';
 import { useFontReady } from '../../../components/FontReadyContext';
 import { useAuth } from '../../../providers/AuthProvider';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
-import { copyFor } from '../../../util/strings';
+import { abcCopyFor, copyFor } from '../../../util/strings';
 import { useOnboarding } from '../hooks/useOnboarding';
 import { canAddSafeFood, matchingSafeFoods, validEmail, validPassword } from '../rules';
 import { isStep, nextStep, previousStep, steps, type OnboardingStep } from '../types';
@@ -29,6 +32,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
   const auth = useAuth();
   const { language } = useProfile();
   const fontReady = useFontReady();
+  const [completed, setCompleted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [authError, setAuthError] = useState<string | undefined>();
   const step = typeof routeStep === 'string' && isStep(routeStep) ? routeStep : model.draft.step;
@@ -66,7 +70,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
       setSubmitting(true);
       const saved = await model.finish();
       setSubmitting(false);
-      if (saved) router.replace('/home');
+      if (saved) { if (model.editing) router.replace('/home'); else setCompleted(true); }
     } else if (from === 'review') navigate('review');
     else navigate(nextStep(step));
   };
@@ -134,6 +138,8 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
   };
 
   if (!fontReady || !model.ready) return <View style={{ flex: 1, backgroundColor: colors.onboardingBackground }} />;
+
+  if (completed) return <SafeAreaView style={{ flex: 1, backgroundColor: colors.onboardingBackground, padding: 24, justifyContent: 'center', gap: 24 }}><Text style={{ color: colors.onboardingText, fontSize: 24 }}>{abcCopyFor(language).ready}</Text><Text style={{ color: colors.onboardingText }}>{abcCopyFor(language).readyFor(model.draft.childName)}</Text><AppButton label={abcCopyFor(language).next} onPress={() => router.replace('/home')} /></SafeAreaView>;
 
   return (
     <OnboardingFlowView

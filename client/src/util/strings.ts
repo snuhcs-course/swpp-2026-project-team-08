@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import type { Language } from '../types/profile';
@@ -325,7 +326,7 @@ const ko = {
       account: '환영합니다! 한 단계씩 진행해 볼게요.', consent: '맞춤 경험을 위한 동의가 필요합니다.',
       child: '정확한 생년월일 대신 연령대만 입력합니다.',
       allergies: '알고 있는 알레르기를 모두 선택해 주세요. 아이에게 추천하면 안 되는 음식을 피하는 데 사용합니다.', restrictions: '필수 제한을 선택하거나 해당 없음을 선택하세요.',
-      family: '가족 식단에 포함하는 식품을 선택하세요. 건너뛸 수 있습니다.',
+      family: '가족 식단에 포함하는 식품을 하나 이상 선택하세요.',
       approaches: '가족의 식이 방식을 선택하거나 해당 없음을 선택하세요.',
       texture: '어려워하는 식감이 있나요?', smell: '강한 음식 냄새가 어려운가요?',
       taste: '어려워하는 맛이 있나요? 이 답변은 진단이 아닙니다.',
@@ -787,3 +788,49 @@ const suggestionCopy = {
   },
 };
 export const suggestionCopyFor = (language: Language) => suggestionCopy[language];
+
+
+// Final ABC screens share these labels; persistent values remain language independent.
+const abcCopy = {
+  en: {
+    ready: 'You’re ready to begin', readyFor: (name: string) => `Learn what food ${name} can explore`, next: 'Next step',
+    required: 'Required step', confirmed: 'Confirmed food', suggested: 'Suggested food', acceptance: 'Acceptance',
+    cooking: 'Cooking method', detail: 'Additional detail', selectCooking: 'Select method',
+    cookingOptions: ['Steamed', 'Boiled', 'Pan-fried', 'Baked', 'Roasted', 'Grilled', 'Raw', 'Other'],
+    missingPhoto: 'No Before-meal photo added', removed: (name: string) => `${name} removed`, undo: 'Undo',
+    previousSuggestion: 'Are you trying a previous suggestion?', chooseSuggestion: 'Choose from recommendations you saved earlier.',
+    selectFood: 'Which food does this apply to?', link: 'Link suggestion', linked: 'Linked · pending after-meal review',
+    linkHint: 'Choose a suggestion, then its actual served food. Nothing is added to the food list. Use is confirmed only in a saved after-meal review.',
+    noSuggestions: 'No saved suggestions available.', suggestionsFailed: 'Could not load saved suggestions.',
+    replaceTitle: 'Replace this photo?', replaceBody: 'A valid new photo clears foods, food details, goals and suggestion links. Meal details stay. Cancel or an invalid image keeps everything.',
+    savingMeal: 'Saving check-in…', savingReview: 'Saving this review…', draftKept: 'Your draft stays until saving is confirmed.',
+    selectIngredients: 'Select ingredients to log outcome', ingredientIn: (ingredient: string, food: string) => `${ingredient} in ${food}`,
+    skipPhoto: 'Skip photo · Enter outcomes manually', saveExit: 'Save as Draft & Exit', compare: 'Compare Eaten Portions',
+    textureQuestion: 'Select texture characteristic', textureCause: 'may have caused the refusal, especially', textureTrait: 'trait of the food.',
+    subcategories: { hardness: 'How hard it feels', breaking: 'How it breaks when bitten', chewing: 'How much chewing it needs', stickiness: 'How much it sticks', springiness: 'How springy it feels', thickness: 'How thick a liquid feels', moisture: 'How moist it feels', oiliness: 'How oily it feels', graininess: 'How grainy it feels', density: 'How dense it feels', surface: 'How the surface feels', structure: 'What the inside feels like' },
+    difficultyCategories: { texture: 'Texture', tasteType: 'Tastes', smell: 'Food Smells', color: 'Colors', pieceSize: 'Ingredient Piece Size', arrangement: 'Food Arrangement', temperature: 'Serving Temperature', notSure: 'Not sure' },
+    values: { soft: 'Soft', firm: 'Firm', hard: 'Hard', crumbly: 'Crumbly', crunchy: 'Crunchy', brittle: 'Brittle', tender: 'Tender', chewy: 'Chewy', tough: 'Tough', nonSticky: 'Non-sticky', sticky: 'Sticky', gummy: 'Gummy', springy: 'Springy', rubbery: 'Rubbery', fluid: 'Fluid', thin: 'Thin', thick: 'Thick', viscous: 'Viscous', dry: 'Dry', moist: 'Moist', juicy: 'Juicy', wet: 'Wet', nonFatty: 'Non-fatty', oily: 'Oily', greasy: 'Greasy', grainy: 'Grainy', gritty: 'Gritty', sandy: 'Sandy', mealy: 'Mealy', powdery: 'Powdery', dense: 'Dense', airy: 'Airy', smooth: 'Smooth', rough: 'Rough', bumpy: 'Bumpy', crusty: 'Crusty', fuzzy: 'Fuzzy', fibrous: 'Fibrous', fleshy: 'Fleshy', layered: 'Layered', spongy: 'Spongy', savory: 'Savory · rich taste', fine: 'Fine', small: 'Small', large: 'Large', even: 'Evenly distributed', uneven: 'Unevenly distributed', clustered: 'Clustered', hot: 'Hot', fruit: 'Fruit-like', herb: 'Fresh herb or leafy smell', mushroom: 'Mushroom-like', toasted: 'Toasted or browned smell', vanilla: 'Sweet-smelling, like vanilla or caramel', dairy: 'Milk, butter, or cheese-like', meaty: 'Meaty or broth-like', sulfur: 'Egg- or cabbage-like smell', sea: 'Sea or seafood-like', fermented: 'Aged or fermented-food smell', spice: 'Warm or sharp spice smell', mint: 'Cool mint-like smell', smoke: 'Smoke- or char-like smell' },
+    examples: { sweet: 'Honey, candy, banana', salty: 'Potato chips, pretzels, salted crackers', sour: 'Lemon, vinegar, plain yogurt', bitter: 'Coffee, dark chocolate, grapefruit', savory: 'Meat broth, mushrooms, tomatoes', fruit: 'Apple, strawberry, grape', herb: 'Basil, rosemary, parsley', mushroom: 'Mushroom, truffle, shiitake', toasted: 'Coffee, toast, roasted nuts', vanilla: 'Vanilla, caramel, honey', dairy: 'Milk, butter, cheese', meaty: 'Meat broth, roasted meat, soy sauce', sulfur: 'Boiled egg, cabbage, onion', sea: 'Seaweed, oyster, fish', fermented: 'Kimchi, cheese, doenjang', spice: 'Cinnamon, black pepper, clove', mint: 'Peppermint, spearmint, mint tea', smoke: 'Smoked bacon, smoked cheese, grilled corn' },
+  },
+  ko: {
+    ready: '시작할 준비가 되었어요', readyFor: (name: string) => `${name}이(가) 탐색할 수 있는 음식을 알아보세요`, next: '다음 단계',
+    required: '필수 단계', confirmed: '확인한 음식', suggested: '제안된 음식', acceptance: '수용 정도',
+    cooking: '조리 방법', detail: '추가 설명', selectCooking: '조리 방법 선택',
+    cookingOptions: ['찜', '삶기', '팬에 굽기', '오븐에 굽기', '로스팅', '직화 구이', '생식', '기타'],
+    missingPhoto: '식전 사진이 없습니다', removed: (name: string) => `${name} 삭제됨`, undo: '되돌리기',
+    previousSuggestion: '이전 제안을 시도하고 있나요?', chooseSuggestion: '이전에 저장한 제안에서 선택하세요.',
+    selectFood: '어느 음식에 적용하나요?', link: '제안 연결', linked: '연결됨 · 식후 확인 대기',
+    linkHint: '제안을 고른 뒤 실제 제공한 음식을 선택하세요. 음식을 자동 추가하지 않습니다. 식후 검토를 저장해야 사용 여부가 확정됩니다.',
+    noSuggestions: '사용 가능한 저장 제안이 없습니다.', suggestionsFailed: '저장한 제안을 불러오지 못했습니다.',
+    replaceTitle: '사진을 교체할까요?', replaceBody: '유효한 새 사진을 고르면 음식과 상세 정보, 목표와 제안 연결이 초기화됩니다. 식사 정보는 유지합니다. 취소하거나 잘못된 이미지를 고르면 기존 입력이 유지됩니다.',
+    savingMeal: '식사를 저장하고 있어요…', savingReview: '식후 검토를 저장하고 있어요…', draftKept: '저장이 확인될 때까지 초안을 유지합니다.',
+    selectIngredients: '결과를 기록할 재료를 선택하세요', ingredientIn: (ingredient: string, food: string) => `${food}의 ${ingredient}`,
+    skipPhoto: '사진 건너뛰고 결과 직접 입력', saveExit: '초안 저장 후 나가기', compare: '먹은 부분 비교',
+    textureQuestion: '식감 특성 선택', textureCause: '때문에 어려웠을 수 있어요. 특히', textureTrait: '특성을 살펴보세요.',
+    subcategories: { hardness: '단단한 정도', breaking: '씹을 때 부서지는 느낌', chewing: '씹는 정도', stickiness: '달라붙는 정도', springiness: '탄력', thickness: '액체의 걸쭉한 정도', moisture: '촉촉한 정도', oiliness: '기름기', graininess: '입자감', density: '촘촘하고 묵직한 정도', surface: '표면 촉감', structure: '속의 구조와 식감' },
+    difficultyCategories: { texture: '식감', tasteType: '맛', smell: '음식 냄새', color: '색', pieceSize: '재료 조각 크기', arrangement: '음식 배치', temperature: '제공 온도', notSure: '잘 모르겠음' },
+    values: { soft: '부드러운', firm: '단단한', hard: '딱딱한', crumbly: '잘 부서지는', crunchy: '바삭한', brittle: '잘 깨지는', tender: '부드럽게 씹히는', chewy: '쫄깃한', tough: '질긴', nonSticky: '달라붙지 않는', sticky: '끈적한', gummy: '쫀득하고 끈끈한', springy: '탄력 있는', rubbery: '고무처럼 질긴', fluid: '잘 흐르는', thin: '묽은', thick: '걸쭉한', viscous: '끈끈한', dry: '마른', moist: '촉촉한', juicy: '즙이 많은', wet: '물기가 많은', nonFatty: '기름기 적은', oily: '기름진', greasy: '기름지고 느끼한', grainy: '알갱이가 느껴지는', gritty: '거칠고 알갱이가 느껴지는', sandy: '모래처럼 까슬한', mealy: '푸석하고 가루 같은', powdery: '가루 같은', dense: '촘촘하고 묵직한', airy: '가볍고 공기감 있는', smooth: '매끄러운', rough: '거친', bumpy: '울퉁불퉁한', crusty: '겉이 딱딱한', fuzzy: '솜털 같은', fibrous: '섬유질이 느껴지는', fleshy: '살이 두툼한', layered: '층이 있는', spongy: '스펀지처럼 폭신한', savory: '감칠맛 · 진한 맛', fine: '잘게 다짐', small: '작은 조각', large: '큰 조각', even: '고르게 배치', uneven: '고르지 않게 배치', clustered: '모아서 배치', hot: '뜨거움', fruit: '과일 같은 냄새', herb: '신선한 허브·잎 냄새', mushroom: '버섯 같은 냄새', toasted: '볶거나 구운 냄새', vanilla: '바닐라·캐러멜처럼 달콤한 냄새', dairy: '우유·버터·치즈 같은 냄새', meaty: '고기·육수 같은 냄새', sulfur: '달걀·양배추 같은 냄새', sea: '바다·해산물 같은 냄새', fermented: '숙성·발효 음식 냄새', spice: '따뜻하거나 톡 쏘는 향신료 냄새', mint: '시원한 민트 냄새', smoke: '훈제·그을린 냄새' },
+    examples: { sweet: '꿀, 사탕, 바나나', salty: '감자칩, 프레첼, 짭짤한 크래커', sour: '레몬, 식초, 플레인 요구르트', bitter: '커피, 다크 초콜릿, 자몽', savory: '육수, 버섯, 토마토', fruit: '사과, 딸기, 포도', herb: '바질, 로즈마리, 파슬리', mushroom: '버섯, 트러플, 표고', toasted: '커피, 토스트, 구운 견과류', vanilla: '바닐라, 캐러멜, 꿀', dairy: '우유, 버터, 치즈', meaty: '육수, 구운 고기, 간장', sulfur: '삶은 달걀, 양배추, 양파', sea: '김, 굴, 생선', fermented: '김치, 치즈, 된장', spice: '계피, 후추, 정향', mint: '페퍼민트, 스피어민트, 민트차', smoke: '훈제 베이컨, 훈제 치즈, 구운 옥수수' },
+  },
+};
+export const abcCopyFor = (language: Language) => abcCopy[language];

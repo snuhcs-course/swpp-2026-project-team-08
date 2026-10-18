@@ -15,7 +15,8 @@ flowchart LR
   EC2 -- "이미지 pull" --> ECR
   EC2 -- "환경변수 읽기" --> SSM["SSM Parameter Store"]
   EC2 -- "5432" --> RDS[("RDS PostgreSQL")]
-  App["RN 앱"] -. "HTTPS (CloudFront, 예정)" .-> EC2
+  App["RN 앱"] -- "HTTPS" --> CF["CloudFront"]
+  CF -- "HTTP 8000" --> EC2
 ```
 
 ### 구성 요소
@@ -27,9 +28,10 @@ flowchart LR
 | RDS | `nurturebites-postgres` | PostgreSQL 16. 퍼블릭 접근을 막아 두었고 EC2의 보안그룹에서 오는 5432번만 허용합니다. |
 | ECR | `nurturebites-server` | 서버 Docker 이미지 저장소. 이미지 태그는 커밋 SHA입니다. 최근 10개만 유지합니다. |
 | SSM Parameter Store | `/nurturebites/prod/*` | 운영 환경변수. 비밀 값은 SecureString으로 암호화해 저장합니다. |
+| CloudFront | `https://d22rvdcyrf0azy.cloudfront.net` | 앱이 접속하는 HTTPS 주소입니다. EC2의 8000번 포트로 요청을 전달합니다. 캐시는 끄고(`CachingDisabled`), `Authorization` 헤더를 포함한 요청 헤더를 그대로 전달하며, PUT·DELETE 등 모든 메서드를 허용합니다. |
 | GitHub Actions | `server-ci.yml`, `server-deploy.yml` | 검사와 배포를 자동화합니다. |
 
-> CloudFront(HTTPS 주소)는 아직 구성하지 않았습니다.
+EC2의 8000번 포트는 CloudFront에서 오는 요청만 받도록 보안그룹을 설정해 두었습니다. 그래서 EC2의 IP로 직접 접속하는 것은 막혀 있고, 앱의 API 주소는 항상 위 CloudFront 주소입니다 (예: `https://d22rvdcyrf0azy.cloudfront.net/api/v1/auth/login`).
 
 ## 2. 배포 흐름
 
@@ -169,7 +171,7 @@ sudo docker logs --tail 100 nurturebites-server  # 최근 로그 (-f 를 붙이�
 curl -s localhost:8000/health                    # 서버가 응답하는지
 ```
 
-보안그룹이 CloudFront의 접속만 허용하도록 설계되어 있어, EC2 밖에서는 8000번 포트로 직접 접속할 수 없습니다. 헬스체크는 서버 안에서 확인합니다.
+EC2 밖에서는 8000번 포트로 직접 접속할 수 없습니다(CloudFront만 허용). 서버 안에서는 위처럼 확인하고, 밖에서는 `curl https://d22rvdcyrf0azy.cloudfront.net/health`로 확인합니다.
 
 컨테이너는 `--restart unless-stopped`로 실행하고 Docker 서비스도 부팅 때 자동으로 시작하므로, 인스턴스를 재부팅하면 서버도 저절로 다시 뜹니다. 수동으로 재시작하려면 `sudo docker restart nurturebites-server`를 실행합니다.
 
@@ -206,7 +208,7 @@ psql -h <RDS 엔드포인트> -U <사용자> -d <DB 이름>   # 비밀번호는 
 
 | 항목 | 내용 |
 | --- | --- |
-| HTTPS 주소 없음 | CloudFront를 아직 구성하지 않아서 앱이 접속할 HTTPS 주소가 없습니다. 구성할 때는 EC2의 8000번 포트를 CloudFront에서 오는 요청만 받도록 열어 둡니다. |
+| CloudFront → EC2 구간은 HTTP | 앱과 CloudFront 사이는 HTTPS이지만, CloudFront에서 EC2까지는 HTTP(8000번)로 전달됩니다. 이 구간까지 암호화하려면 EC2에 nginx와 인증서가 필요합니다. 도메인이 생기면 CloudFront에 대체 도메인과 인증서를 붙일 수 있습니다. |
 | 배포 중 짧은 중단 | 서버가 1대라서 컨테이너를 교체하는 몇 초 동안 요청이 실패할 수 있습니다. |
 | 단일 장애 지점 | EC2와 RDS가 각각 1대(단일 AZ)입니다. 장애가 나면 수동으로 복구해야 합니다. |
 | Dockerfile 검증 시점 | CI는 이미지를 빌드하지 않습니다. `Dockerfile`을 고친 PR의 빌드 오류는 머지 후 배포 단계에서야 드러나므로, 고쳤다면 로컬에서 `docker build server`로 먼저 확인하세요. |

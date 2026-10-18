@@ -317,9 +317,7 @@ async def confirm_email_change(
     current_user: CurrentUser,
     service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> UserResponse:
-    user = await service.confirm_email_change(
-        current_user, email=payload.email, code=payload.code
-    )
+    user = await service.confirm_email_change(current_user, email=payload.email, code=payload.code)
     return UserResponse.model_validate(user)
 
 

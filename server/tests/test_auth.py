@@ -268,10 +268,12 @@ async def test_email_change_rejects_same_and_taken_email(client: AsyncClient) ->
 async def test_delete_me_removes_user_and_child_meals(client: AsyncClient) -> None:
     signup = await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
     user_id = signup.json()["id"]
-    tokens = (await client.post(
-        "/api/v1/auth/login",
-        json={"email": SIGNUP_PAYLOAD["email"], "password": SIGNUP_PAYLOAD["password"]},
-    )).json()
+    tokens = (
+        await client.post(
+            "/api/v1/auth/login",
+            json={"email": SIGNUP_PAYLOAD["email"], "password": SIGNUP_PAYLOAD["password"]},
+        )
+    ).json()
 
     meal = await put_meal(client, child_id=user_id, meal_id="meal-to-wipe")
     assert meal.status_code == 200

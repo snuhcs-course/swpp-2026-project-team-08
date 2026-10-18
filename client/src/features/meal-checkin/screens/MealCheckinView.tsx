@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
@@ -8,7 +8,7 @@ import { AppIcon } from '../../../components/AppIcon';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import { FoodEditor } from '../../../components/FoodEditor';
 import { formStyles as ui } from '../../../components/formStyles';
-import { copyFor } from '../../../util/strings';
+import { copyFor, suggestionCopyFor } from '../../../util/strings';
 import { MealCompleteStepView } from './MealCompleteStepView';
 import { MealDetailsStepView } from './MealDetailsStepView';
 import { MealFoodsStepView } from './MealFoodsStepView';
@@ -54,6 +54,9 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             {d.step === 'method' && <Text style={styles.headerNote}>{m.photoReady}</Text>}
           </View>
         </View>
+        {p.tryingSuggestion && d.step !== 'complete' && <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: p.tryingSuggestion.checked }} disabled={p.saving} onPress={p.tryingSuggestion.onToggle} style={styles.header}>
+          <Text style={ui.text}>{p.tryingSuggestion.checked ? '☑' : '☐'} {suggestionCopyFor(p.language).trying}</Text>
+        </Pressable>}
         {review && <View style={styles.reviewIntro}>
           <View style={{ flex: 1 }}>
             <Text style={styles.reviewIntroTitle}>{d.foods.some((food) => food.source === 'ai') ? m.aiCount(d.foods.filter((food) => food.source === 'ai').length) : m.reviewCount(d.foods.length)}</Text>

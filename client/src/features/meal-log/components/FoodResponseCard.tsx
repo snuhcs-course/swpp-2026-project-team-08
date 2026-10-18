@@ -2,7 +2,7 @@
 
 import { Feather } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
@@ -11,16 +11,19 @@ import { acceptanceFill } from '../rules';
 import type { FoodResponseCard as Card } from '../types';
 import { styles } from '../screens/mealLogStyles';
 
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 export function FoodResponseCard({
   card,
   language,
   saved = false,
+  disabled = false,
   defaultOpen = false,
   onToggleSaved,
 }: {
   card: Card;
   language: Language;
   saved?: boolean;
+  disabled?: boolean;
   defaultOpen?: boolean;
   onToggleSaved?: (nextSaved: boolean) => void;
 }) {
@@ -36,17 +39,7 @@ export function FoodResponseCard({
   const eaten = card.outcome === 'eaten';
   const [open, setOpen] = useState(defaultOpen);
   const [showingSuggestion, setShowingSuggestion] = useState(false);
-  const [savedOverride, setSavedOverride] = useState<boolean | null>(null);
-  const toggled = useRef(false);
-  const isSaved = savedOverride ?? saved;
-
-  useEffect(() => {
-    if (!toggled.current) setSavedOverride(null);
-    else if (savedOverride === saved) {
-      toggled.current = false;
-      setSavedOverride(null);
-    }
-  }, [saved, savedOverride]);
+  const isSaved = saved;
 
   if (showingSuggestion && card.suggestion) {
     return (
@@ -61,10 +54,9 @@ export function FoodResponseCard({
             accessibilityLabel={isSaved ? m.unsaveSuggestion : m.saveSuggestion}
             accessibilityState={{ selected: isSaved }}
             hitSlop={8}
+            disabled={disabled || !onToggleSaved}
             onPress={() => {
               const next = !isSaved;
-              toggled.current = true;
-              setSavedOverride(next);
               onToggleSaved?.(next);
             }}
             style={styles.bookmarkButton}

@@ -143,6 +143,10 @@ class MealLogService:
         await self._session.refresh(suggestion)
         return suggestion
 
+    # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    async def linked_suggestions(self, meal: MealLog) -> list[queries.LinkedSuggestion]:
+        return await queries.linked_suggestions(self._session, meal)
+
     async def delete(self, *, child_id: str, meal_id: str) -> None:
         meal = await self.get_owned(child_id, meal_id)
         await self._session.delete(meal)

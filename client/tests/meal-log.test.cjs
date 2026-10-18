@@ -201,3 +201,25 @@ test('bookmarking a linked suggestion toggles the saved flag without dropping it
   assert.equal(applySuggestionSaved(records, 'child-1', draft, true, 'v1'), true);
   assert.equal(records.suggestions[0].id, 'sug-2026-10-16-dinner');
 });
+
+
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+test('meal history food and ingredient cards preserve managed suggestion routing', () => {
+  const food = {
+    id: 'food-managed', name: 'Omelet', ingredients: ['Egg'], preparation: 'pan-fried',
+    servingNote: '', traits: emptyTraits(), history: 'usually', source: 'parent',
+  };
+  const cards = foodResponseCards([food], {
+    outcomes: [{ foodId: food.id, decision: { confirmed: 'tasted', suggested: null },
+      ingredients: [{ id: 'ingredient-egg', name: 'Egg', decision: { confirmed: 'eaten', suggested: null } }],
+    }], difficulties: {},
+  }, [
+    { managed: true, id: 'managed-food', foodId: food.id, title: 'Try a slice', description: 'Familiar form', servingTip: null },
+    { managed: true, id: 'managed-ingredient', foodId: 'ingredient-egg', title: 'Try egg', description: 'Keep familiar', servingTip: 'Small piece' },
+  ]);
+  assert.deepEqual(cards.map((card) => [card.kind, card.foodId, card.suggestion.managed]), [
+    ['food', 'food-managed', true], ['ingredient', 'ingredient-egg', true],
+  ]);
+  assert.equal(cards[1].parentName, 'Omelet');
+  assert.equal(cards[1].outcome, 'eaten');
+});

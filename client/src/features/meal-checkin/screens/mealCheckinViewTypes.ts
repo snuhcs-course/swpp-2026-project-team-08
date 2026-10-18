@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import type { FoodItem, FoodTraits, MealDraft, MealStep, PhotoSource, TraitGroup } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
@@ -25,6 +25,7 @@ type FoodInput = {
 
 export type MealCheckinViewProps = {
   draft: MealDraft;
+  tryingSuggestion?: { checked: boolean; onToggle: () => void };
   language: Language;
   saveStatus: 'saving' | 'saved' | 'error';
   error: 'permission' | 'image' | 'save' | null;

@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
@@ -28,7 +28,7 @@ import {
   newDraft,
 } from '../rules';
 
-export function useMealCheckin(childId: string, startAfterMealId?: string) {
+export function useMealCheckin(childId: string, startAfterMealId?: string, freshAfterComplete = false) {
   const [draft, setDraft] = useState<MealDraft | null>(null);
   const current = useRef<MealDraft | null>(null);
   const [loadError, setLoadError] = useState(false);
@@ -55,7 +55,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string) {
     try {
       const stored = await readMealDraft(childId);
       const value =
-        stored?.step === 'complete' && stored.savedMealId === startAfterMealId
+        stored?.step === 'complete' && (freshAfterComplete || stored.savedMealId === startAfterMealId)
           ? newDraft(childId)
           : (stored ?? newDraft(childId));
       if (mounted.current) {
@@ -73,7 +73,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string) {
       .then((value) => {
         if (active) {
           const restored =
-            value?.step === 'complete' && value.savedMealId === startAfterMealId
+            value?.step === 'complete' && (freshAfterComplete || value.savedMealId === startAfterMealId)
               ? newDraft(childId)
               : (value ?? newDraft(childId));
           current.current = restored;
@@ -88,7 +88,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string) {
       mounted.current = false;
       controller.current?.abort();
     };
-  }, [childId, startAfterMealId]);
+  }, [childId, startAfterMealId, freshAfterComplete]);
   const persist = async (value: MealDraft) => {
     const revision = ++version.current;
     setSaveStatus('saving');
@@ -250,7 +250,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string) {
         setDraft(complete);
         setSaveStatus('saved');
       }
-      return result.id;
+      return mounted.current ? result.id : null;
     } catch {
       if (mounted.current) setError('save');
       return null;

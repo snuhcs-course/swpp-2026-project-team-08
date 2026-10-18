@@ -208,8 +208,7 @@ async def test_email_change_requires_server_code(
         json={"email": "new@example.com"},
     )
     assert sent.status_code == 200
-    assert sent.json() == {"sent": True}
-    assert "482190" not in sent.text
+    assert sent.json() == {"sent": True, "dev_code": "482190"}
 
     wrong = await client.post(
         "/api/v1/auth/email-change/confirm",
@@ -237,6 +236,36 @@ async def test_email_change_requires_server_code(
         json={"email": "new@example.com", "password": SIGNUP_PAYLOAD["password"]},
     )
     assert new_login.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_email_change_omits_code_outside_local(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("app.features.auth.service.issue_email_code", lambda: "482190")
+    monkeypatch.setattr(
+        "app.features.auth.router.get_settings",
+        lambda: type("Settings", (), {"ENVIRONMENT": "production"})(),
+    )
+    tokens = await _sign_up_and_login(client)
+
+    sent = await client.post(
+        "/api/v1/auth/email-change",
+        headers=_auth_header(tokens),
+        json={"email": "new@example.com"},
+    )
+    assert sent.status_code == 200
+    assert sent.json() == {"sent": True}
+    assert "482190" not in sent.text
+
+    confirmed = await client.post(
+        "/api/v1/auth/email-change/confirm",
+        headers=_auth_header(tokens),
+        json={"email": "new@example.com", "code": "482190"},
+    )
+    assert confirmed.status_code == 200
+    assert confirmed.json()["email"] == "new@example.com"
 
 
 @pytest.mark.asyncio

@@ -41,7 +41,7 @@ Module._load = function (name, ...args) {
 };
 
 const { readSession, saveSession, clearSession } = require('../src/data/storage/authStorage.ts');
-const { authFailure } = require('../src/data/api/authApi.ts');
+const { authFailure, issuedEmailCode } = require('../src/data/api/authApi.ts');
 const { ApiError, apiBaseUrl } = require('../src/data/network/apiClient.ts');
 
 const session = {
@@ -95,7 +95,14 @@ test('auth session falls back to AsyncStorage when SecureStore is unavailable', 
 test('auth failures map server codes and network errors', () => {
   assert.equal(authFailure(new ApiError(401, 'INVALID_CREDENTIALS')), 'invalid-credentials');
   assert.equal(authFailure(new ApiError(409, 'EMAIL_ALREADY_EXISTS')), 'email-taken');
+  assert.equal(authFailure(new ApiError(400, 'INVALID_EMAIL_CODE')), 'invalid-email-code');
   assert.equal(authFailure(new Error('fetch failed')), 'network');
+});
+
+test('email-change uses a server-issued code instead of a local 123456', () => {
+  assert.equal(issuedEmailCode({ sent: true, dev_code: '482190' }), '482190');
+  assert.equal(issuedEmailCode({ sent: true }), undefined);
+  assert.equal(issuedEmailCode({ sent: true, dev_code: '12345' }), undefined);
 });
 
 test('Expo Go uses the Metro LAN host when no API URL is set', () => {

@@ -22,6 +22,7 @@ from pydantic import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.errors import ErrorMappedRoute, ErrorSpec, error_specs
+from app.core.config import get_settings
 from app.core.database import get_session
 from app.core.errors import AppError
 from app.features.auth.dependencies import CurrentUser
@@ -161,6 +162,8 @@ class ConfirmEmailChangeRequest(EmailChangeRequest):
 
 class EmailChangeSentResponse(BaseModel):
     sent: bool = True
+    # local 에서만 채워진다. 운영 응답에는 코드를 넣지 않는다.
+    dev_code: str | None = None
 
 
 # ── 의존성 ──────────────────────────────────────────
@@ -294,6 +297,7 @@ async def update_me(
 @router.post(
     "/email-change",
     response_model=EmailChangeSentResponse,
+    response_model_exclude_none=True,
     summary="이메일 변경 코드 발급",
 )
 @error_specs(EMAIL_CHANGE_ERRORS)
@@ -302,7 +306,10 @@ async def request_email_change(
     current_user: CurrentUser,
     service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> EmailChangeSentResponse:
-    await service.request_email_change(current_user, email=payload.email)
+    # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+    code = await service.request_email_change(current_user, email=payload.email)
+    if get_settings().ENVIRONMENT == "local":
+        return EmailChangeSentResponse(dev_code=code)
     return EmailChangeSentResponse()
 
 

@@ -34,6 +34,7 @@ def _as_kst(value: datetime) -> datetime:
         return value.replace(tzinfo=KST)
     return value.astimezone(KST)
 
+
 # ── 에러 ────────────────────────────────────────────
 
 
@@ -106,7 +107,8 @@ class AuthService:
         await self._session.refresh(user)
         return user
 
-    async def request_email_change(self, user: User, *, email: str) -> None:
+    # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+    async def request_email_change(self, user: User, *, email: str) -> str:
         if email.lower() == user.email.lower():
             raise SameEmailError(email)
         existing = await self._find_by_email(email)
@@ -117,6 +119,7 @@ class AuthService:
         user.email_change_code_hash = hash_password(code)
         user.email_change_expires_at = now_kst() + _EMAIL_CODE_TTL
         await self._session.flush()
+        return code
 
     async def confirm_email_change(self, user: User, *, email: str, code: str) -> User:
         pending = user.pending_email

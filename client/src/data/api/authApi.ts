@@ -59,11 +59,19 @@ export async function updateCurrentName(fullName: string): Promise<AuthUser> {
   }));
 }
 
-export async function requestEmailChange(email: string): Promise<void> {
-  await apiRequest<unknown>('/api/v1/auth/email-change', {
+export function issuedEmailCode(value: unknown): string | undefined {
+  if (record(value) && typeof value.dev_code === 'string' && /^\d{6}$/.test(value.dev_code)) {
+    return value.dev_code;
+  }
+  return undefined;
+}
+
+export async function requestEmailChange(email: string): Promise<string | undefined> {
+  const value = await apiRequest<unknown>('/api/v1/auth/email-change', {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
+  return issuedEmailCode(value);
 }
 
 export async function confirmEmailChange(email: string, code: string): Promise<AuthUser> {

@@ -58,8 +58,8 @@ export function CaregiverAccountScreen() {
     setSendError(false);
     setMismatch(false);
     try {
-      await requestEmailChange(newEmail.trim());
-      setCode('');
+      const issued = await requestEmailChange(newEmail.trim());
+      setCode(issued ?? '');
       setMode('verify');
     } catch {
       setSendError(true);

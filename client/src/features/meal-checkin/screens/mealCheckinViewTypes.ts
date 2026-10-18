@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; restore separate saved-suggestion record linking
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; expose source meal metadata
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
@@ -36,7 +37,7 @@ export type MealCheckinViewProps = {
   suggestionsLoading: boolean;
   suggestionsError: boolean;
   onRetrySuggestions: () => void;
-  initialSuggestionId?: string;
+  tryingSuggestion?: { checked: boolean; onToggle: () => void };
   language: Language;
   saveStatus: 'saving' | 'saved' | 'error';
   error: 'permission' | 'image' | 'save' | null;

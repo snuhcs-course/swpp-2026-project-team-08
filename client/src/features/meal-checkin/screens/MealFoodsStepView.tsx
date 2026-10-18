@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; restore separate saved-suggestion record linking
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match missing-photo card and removal feedback
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; aligned ABC button typography
@@ -29,7 +30,6 @@ import type { MealCheckinViewProps } from "./mealCheckinViewTypes";
 type Props = Pick<
   MealCheckinViewProps,
   | "draft"
-  | "initialSuggestionId"
   | "childName"
   | "language"
   | "onEdit"
@@ -48,10 +48,8 @@ type Props = Pick<
 
 export function MealFoodsStepView({ p }: { p: Props }) {
   const [expanded, setExpanded] = useState<string | null>(p.draft.foods[0]?.id ?? null);
-  const [linkStep, setLinkStep] = useState<0 | 1 | 2>(
-    p.initialSuggestionId ? 1 : 0,
-  );
-  const [suggestionId, setSuggestionId] = useState(p.initialSuggestionId ?? "");
+  const [linkStep, setLinkStep] = useState<0 | 1 | 2>(0);
+  const [suggestionId, setSuggestionId] = useState("");
   const resumeLink = useRef(false);
   useEffect(() => {
     if (!p.draft.editingFood && resumeLink.current) {

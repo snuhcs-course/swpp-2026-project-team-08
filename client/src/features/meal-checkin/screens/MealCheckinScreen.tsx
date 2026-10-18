@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; restore separate saved-suggestion record linking
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; show ongoing meal before resuming a stored draft
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
@@ -36,6 +37,7 @@ export function MealCheckinScreen({
   const profile = useProfile().profile;
   const saved = useMealSuggestions(childId, profile);
   const model = useMealCheckin(childId, startAfterMealId, !!tryingSuggestionId);
+  const [trying, setTrying] = useState(true);
   const [languageError, setLanguageError] = useState(false);
   const inputs = useMealCheckinInputs({
     draft: model.draft,
@@ -67,6 +69,14 @@ export function MealCheckinScreen({
   });
   const afterMeal = (mealId: string) =>
     router.replace({ pathname: '/after-meal-review', params: { mealId } });
+  const saveCheckin = (skip: boolean) => {
+    void model.save(skip).then((id) => {
+      if (!id) return;
+      if (trying && tryingSuggestionId) {
+        router.replace({ pathname: '/suggestion/[id]', params: { id: tryingSuggestionId, tryMealId: id } });
+      } else if (afterMealIntent) afterMeal(id);
+    });
+  };
   if (!model.draft)
     return (
       <SafeAreaView
@@ -115,7 +125,7 @@ export function MealCheckinScreen({
       suggestionsLoading={saved.loading}
       suggestionsError={saved.error}
       onRetrySuggestions={saved.retry}
-      initialSuggestionId={tryingSuggestionId}
+      tryingSuggestion={tryingSuggestionId ? { checked: trying, onToggle: () => setTrying(value => !value) } : undefined}
       language={language}
       saveStatus={model.saveStatus}
       error={model.error}
@@ -147,12 +157,8 @@ export function MealCheckinScreen({
       onRemovePhoto={model.removePhoto}
       onChangeFood={model.changeFood}
       onSaveFood={model.saveFood}
-      onConfirm={() => { model.confirm(); void model.save(true).then((id) => { if (id && afterMealIntent) afterMeal(id); }); }}
-      onSave={(skip) => {
-        void model.save(skip).then((id) => {
-          if (id && afterMealIntent) afterMeal(id);
-        });
-      }}
+      onConfirm={() => { model.confirm(); saveCheckin(true); }}
+      onSave={saveCheckin}
       onAfterMeal={() => {
         if (model.draft?.savedMealId) afterMeal(model.draft.savedMealId);
       }}

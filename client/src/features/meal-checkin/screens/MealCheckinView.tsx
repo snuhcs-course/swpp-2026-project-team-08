@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; restore separate saved-suggestion record linking
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; close replacement source sheet without changing entries
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
@@ -22,7 +23,7 @@ import { AppIcon } from "../../../components/AppIcon";
 import { UiAssetIcon } from "../../../components/UiAssetIcon";
 import { FoodEditor } from "../../../components/FoodEditor";
 import { formStyles as ui } from "../../../components/formStyles";
-import { abcCopyFor, copyFor } from "../../../util/strings";
+import { abcCopyFor, copyFor, suggestionCopyFor } from "../../../util/strings";
 import { MealCompleteStepView } from "./MealCompleteStepView";
 import { MealDetailsStepView } from "./MealDetailsStepView";
 import { MealFoodsStepView } from "./MealFoodsStepView";
@@ -93,6 +94,11 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             )}
           </View>
         </View>
+        {p.tryingSuggestion && d.step !== 'complete' && <Pressable
+          accessibilityRole="checkbox" accessibilityState={{ checked: p.tryingSuggestion.checked }}
+          disabled={p.saving} onPress={p.tryingSuggestion.onToggle} style={styles.header}>
+          <Text style={ui.text}>{p.tryingSuggestion.checked ? '☑' : '☐'} {suggestionCopyFor(p.language).trying}</Text>
+        </Pressable>}
         <View
           accessibilityRole="progressbar"
           accessibilityValue={{ min: 1, max: 5, now: segment + 1 }}
@@ -179,7 +185,6 @@ export function MealCheckinView(p: MealCheckinViewProps) {
               <MealFoodsStepView
                 p={{
                   draft: d,
-                  initialSuggestionId: p.initialSuggestionId,
                   childName: p.childName,
                   language: p.language,
                   onEdit: p.onEdit,

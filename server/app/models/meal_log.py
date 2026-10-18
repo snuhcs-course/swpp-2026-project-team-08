@@ -1,10 +1,11 @@
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 # AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 """저장된 식사 기록 (meal_logs)."""
 
 from datetime import date, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import Date, DateTime, String, Text
+from sqlalchemy import JSON, Date, DateTime, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -26,6 +27,10 @@ class MealLog(Base):
     setting: Mapped[str] = mapped_column(String(20), nullable=False)
     before_photo_uri: Mapped[str | None] = mapped_column(Text, nullable=True)
     exposure_food_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    suggestion_links: Mapped[list[dict[str, Any]]] = mapped_column(
+        JSON, default=list, nullable=False
+    )
     saved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False

@@ -212,3 +212,51 @@ async def test_invalid_date_and_month_are_422(client: AsyncClient) -> None:
     assert bad_month.json()["error_code"] == "INVALID_MONTH"
     assert empty_foods.status_code == 422
     assert empty_foods.json()["error_code"] == "EMPTY_FOODS"
+
+
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+async def test_final_abc_fields_and_photo_free_review_roundtrip(client: AsyncClient) -> None:
+    food = {**meal_payload()["foods"][0], "acceptance": 0, "origin": "ai"}
+    link = {
+        "suggestion_id": "local-saved",
+        "food_id": FOOD_ID,
+        "title": "A small portion",
+        "description": "Keep the familiar form",
+    }
+    saved = await put_meal(client, foods=[food], suggestion_links=[link])
+    assert saved.status_code == 200, saved.text
+    assert saved.json()["foods"][0]["acceptance"] == 0
+    assert saved.json()["foods"][0]["origin"] == "ai"
+    assert saved.json()["suggestion_links"][0]["suggestion_id"] == "local-saved"
+    review = review_payload()
+    review["after_photo_uri"] = ""
+    review["outcomes"][0]["ingredients"] = []
+    review["suggestion_feedback"] = {"local-saved": "notTried"}
+    review["difficulties"] = {
+        FOOD_ID: [
+            {"id": "hardness", "category": "texture", "subcategory": "hardness", "value": "firm"}
+        ]
+    }
+    result = await client.put(f"/api/v1/children/{CHILD}/meals/{MEAL_ID}/review", json=review)
+    assert result.status_code == 200, result.text
+    loaded = (await client.get(f"/api/v1/children/{CHILD}/meals/{MEAL_ID}")).json()
+    assert loaded["review"]["after_photo_uri"] == ""
+    assert loaded["review"]["outcomes"][0]["ingredients"] == []
+    assert loaded["review"]["suggestion_feedback"] == {"local-saved": "notTried"}
+    assert loaded["review"]["difficulties"][FOOD_ID][0]["subcategory"] == "hardness"
+    assert loaded["suggestion_links"][0]["food_id"] == FOOD_ID
+
+
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+async def test_abc_rejects_invalid_acceptance_dangling_links_and_unlinked_feedback(
+    client: AsyncClient,
+) -> None:
+    food = {**meal_payload()["foods"][0], "acceptance": 4}
+    assert (await put_meal(client, foods=[food])).status_code == 422
+    link = {"suggestion_id": "saved", "food_id": "missing", "title": "Try", "description": "Idea"}
+    assert (await put_meal(client, suggestion_links=[link])).status_code == 422
+    await put_meal(client)
+    review = {**review_payload(), "suggestion_feedback": {"not-linked": "tried"}}
+    assert (
+        await client.put(f"/api/v1/children/{CHILD}/meals/{MEAL_ID}/review", json=review)
+    ).status_code == 422

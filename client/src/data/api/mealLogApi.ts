@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
@@ -30,7 +31,7 @@ export type MealLogSuggestion = {
   ingredients: string[];
 };
 export type MealLogReview = {
-  afterPhotoUri: string;
+  afterPhotoUri: string | null;
   outcomes: FoodOutcome[];
   difficulties: AfterMealReview['difficulties'];
   goalFeedback: AfterMealReview['goalFeedback'];
@@ -117,6 +118,8 @@ function parseFood(value: unknown): FoodItem {
     traits: value.traits as FoodItem['traits'],
     history: (value.history as FoodItem['history']) ?? null,
     source: value.source,
+    origin: value.origin === 'ai' || value.origin === 'parent' ? value.origin : undefined,
+    acceptance: typeof value.acceptance === 'number' ? value.acceptance : null,
   };
 }
 
@@ -134,7 +137,7 @@ function parseDetail(value: unknown): MealDetail {
       throw new Error('Invalid meal review');
     }
     review = {
-      afterPhotoUri: value.review.after_photo_uri,
+      afterPhotoUri: value.review.after_photo_uri || null,
       outcomes: value.review.outcomes.map(parseOutcome),
       difficulties: value.review.difficulties as AfterMealReview['difficulties'],
       goalFeedback: (value.review.goal_feedback as AfterMealReview['goalFeedback']) ?? null,
@@ -175,6 +178,7 @@ export function mealToUpsertBody(meal: Meal) {
     before_photo_uri: meal.photo?.uri ?? null,
     exposure_food_id: meal.exposureFoodId,
     saved_at: meal.savedAt,
+    suggestion_links: (meal.suggestionLinks ?? []).map((link) => ({ suggestion_id: link.suggestionId, food_id: link.foodId, title: link.title, description: link.description, serving_tip: link.servingTip ?? null })),
     foods: meal.foods.map((food) => ({
       id: food.id,
       name: food.name,
@@ -184,6 +188,8 @@ export function mealToUpsertBody(meal: Meal) {
       traits: food.traits,
       history: food.history,
       source: food.source,
+      acceptance: food.acceptance ?? null,
+      origin: food.origin ?? food.source,
     })),
   };
 }
@@ -197,6 +203,7 @@ export function reviewToBody(review: AfterMealReview) {
       ingredients: food.ingredients,
     })),
     difficulties: review.difficulties,
+    suggestion_feedback: review.suggestionFeedback,
     goal_feedback: review.goalFeedback,
     saved_at: review.savedAt,
   };

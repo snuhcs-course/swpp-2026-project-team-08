@@ -109,7 +109,10 @@ async def test_replacing_before_photo_keeps_one_meal(client: AsyncClient) -> Non
     assert len(listed.json()) == 1
 
 
-async def test_after_photo_is_required_for_review(client: AsyncClient) -> None:
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+async def test_photo_free_review_preserves_before_photo_and_rejects_wrong_types(
+    client: AsyncClient,
+) -> None:
     await put_meal(client, before_photo_uri=BEFORE_URI)
     empty = await client.put(
         f"/api/v1/children/{CHILD}/meals/{MEAL_ID}/review",
@@ -120,10 +123,16 @@ async def test_after_photo_is_required_for_review(client: AsyncClient) -> None:
         json={k: v for k, v in review_payload().items() if k != "after_photo_uri"},
     )
 
-    assert empty.status_code == 422
-    assert missing.status_code == 422
-    assert empty.json()["error_code"] == "VALIDATION_ERROR"
-    assert missing.json()["error_code"] == "VALIDATION_ERROR"
+    assert empty.status_code == 200
+    assert missing.status_code == 200
+    assert empty.json()["before_photo_uri"] == BEFORE_URI
+    assert missing.json()["review"]["after_photo_uri"] == ""
+    invalid = await client.put(
+        f"/api/v1/children/{CHILD}/meals/{MEAL_ID}/review",
+        json={**review_payload(), "after_photo_uri": {}},
+    )
+    assert invalid.status_code == 422
+    assert invalid.json()["error_code"] == "VALIDATION_ERROR"
 
 
 async def test_after_photo_cannot_be_saved_before_the_meal(client: AsyncClient) -> None:

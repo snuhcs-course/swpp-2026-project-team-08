@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 # AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 """식후 리뷰 (meal_reviews). 식사당 하나."""
 
@@ -25,6 +26,8 @@ class MealReview(Base):
     after_photo_uri: Mapped[str] = mapped_column(Text, nullable=False)
     outcomes: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
     difficulties: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    suggestion_feedback: Mapped[dict[str, str]] = mapped_column(JSON, default=dict, nullable=False)
     goal_feedback: Mapped[str | None] = mapped_column(String(20), nullable=True)
     saved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[datetime] = mapped_column(

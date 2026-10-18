@@ -345,3 +345,33 @@ async def test_linked_snapshot_maps_source_and_ingredient_trial_without_changing
     assert (await client.get(f"{meals}/ingredient-trial")).json()["suggestions"] == [
         {**expected, "food_id": trial_food}
     ]
+
+
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+async def test_pending_link_records_try_only_after_confirmed_review_and_once(client):
+    item = await setup(client)
+    await decision(client, item)
+    link = {
+        "suggestion_id": item["id"],
+        "food_id": FOOD_ID,
+        "title": item["content"]["food_name"],
+        "description": item["content"]["what_to_try"],
+    }
+    trial = await put_meal(client, meal_id="abc-trial", suggestion_links=[link])
+    assert trial.status_code == 200, trial.text
+    assert (await client.get(f"{ROOT}/{item['id']}")).json()["tries"] == []
+    review = {
+        **review_payload(),
+        "after_photo_uri": "",
+        "suggestion_feedback": {item["id"]: "notTried"},
+    }
+    path = f"/api/v1/children/{CHILD}/meals/abc-trial/review"
+    assert (await client.put(path, json=review)).status_code == 200
+    assert (await client.get(f"{ROOT}/{item['id']}")).json()["tries"] == []
+    review["suggestion_feedback"] = {item["id"]: "tried"}
+    assert (await client.put(path, json=review)).status_code == 200
+    assert (await client.put(path, json=review)).status_code == 200
+    tries = (await client.get(f"{ROOT}/{item['id']}")).json()["tries"]
+    assert len(tries) == 1
+    assert tries[0]["meal_id"] == "abc-trial"
+    assert tries[0]["target_id"] == f"food:{FOOD_ID}"

@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 # AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 """식사 기록 요청/응답 DTO."""
 
@@ -50,6 +51,18 @@ class MealFoodRequest(BaseModel):
     traits: dict[str, Any]
     history: str | None = None
     source: FoodSource
+    # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    acceptance: int | None = Field(default=None, ge=0, le=3, strict=True)
+    origin: FoodSource | None = None
+
+
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+class SuggestionLinkRequest(BaseModel):
+    suggestion_id: str = Field(min_length=1, max_length=80)
+    food_id: str = Field(min_length=1, max_length=80)
+    title: str
+    description: str
+    serving_tip: str | None = None
 
 
 class MealUpsertRequest(BaseModel):
@@ -58,6 +71,7 @@ class MealUpsertRequest(BaseModel):
     setting: str
     before_photo_uri: str | None = None
     exposure_food_id: str | None = None
+    suggestion_links: list[SuggestionLinkRequest] = Field(default_factory=list)
     foods: list[MealFoodRequest]
     saved_at: datetime
 
@@ -106,9 +120,11 @@ class FoodOutcomeRequest(BaseModel):
 
 
 class MealReviewRequest(BaseModel):
-    after_photo_uri: str = Field(min_length=1)
+    # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    after_photo_uri: str = ""
     outcomes: list[FoodOutcomeRequest]
     difficulties: dict[str, Any]
+    suggestion_feedback: dict[str, Literal["tried", "notTried"]] = Field(default_factory=dict)
     goal_feedback: GoalFeedback | None = None
     saved_at: datetime
 
@@ -156,6 +172,8 @@ class MealFoodResponse(BaseModel):
     traits: dict[str, Any]
     history: str | None
     source: str
+    acceptance: int | None = None
+    origin: FoodSource | None = None
     position: int
 
 
@@ -165,6 +183,7 @@ class MealReviewResponse(BaseModel):
     after_photo_uri: str
     outcomes: list[dict[str, Any]]
     difficulties: dict[str, Any]
+    suggestion_feedback: dict[str, str] = Field(default_factory=dict)
     goal_feedback: str | None
     saved_at: datetime
 
@@ -190,6 +209,7 @@ class MealDetailResponse(BaseModel):
     before_photo_uri: str | None
     exposure_food_id: str | None
     saved_at: datetime
+    suggestion_links: list[SuggestionLinkRequest] = Field(default_factory=list)
     foods: list[MealFoodResponse]
     review: MealReviewResponse | None
     suggestions: list[MealSuggestionResponse]

@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; close replacement source sheet without changing entries
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
@@ -156,6 +157,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                 }}
                 replace={replace}
                 imageError={imageError}
+                onCloseReplace={() => setReplace(false)}
                 onReplace={() => {
                   if (d.photo && (d.foods.length || d.suggestionLinks?.length))
                     setReplaceConfirm(true);

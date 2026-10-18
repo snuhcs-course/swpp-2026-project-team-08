@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; add replacement source sheet title
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; synced before-meal photo copy from Figma 455:7879
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
@@ -131,7 +132,7 @@ const en = {
     previewBadge: 'Preview', draftSaved: 'Your draft is saved as you go.', draftLabel: 'Draft', photoReady: 'photo ready',
     camera: 'Take a photo', gallery: 'Choose from gallery', files: 'Choose from files', fileHint: 'Supported images only',
     skipPhoto: 'Skip photo', skipPhotoHint: 'Add foods yourself without a photo.',
-    replace: 'Replace photo', removePhoto: 'Remove photo', usePhoto: 'Use this photo', fullPhoto: 'Tap to view full photo',
+    replaceSourceTitle: 'Replace meal check-in photo', replace: 'Replace photo', removePhoto: 'Remove photo', usePhoto: 'Use this photo', fullPhoto: 'Tap to view full photo',
     localPhoto: 'Optional photo for your meal record. Add the foods yourself.',
     analyze: 'Analyze photo', manual: 'Enter food items manually', noPhoto: 'Continue without a photo',
     consent: 'By tapping Analyze photo, you consent to sending this meal photo to our analysis provider for this meal. It will not be used to train AI without separate consent.',
@@ -429,7 +430,7 @@ const ko = {
     skipPhoto: '사진 건너뛰기', skipPhotoHint: '사진 없이 음식을 직접 추가하세요.',
     previewBadge: '미리보기', draftSaved: '초안은 진행하면서 자동 저장됩니다.', draftLabel: '초안', photoReady: '사진 준비됨',
     camera: '사진 촬영', gallery: '사진 보관함에서 선택', files: '파일에서 선택', fileHint: 'JPEG, PNG, WebP, HEIC, HEIF, AVIF 이미지만 지원',
-    replace: '사진 교체', removePhoto: '사진 삭제', usePhoto: '이 사진 사용', fullPhoto: '사진 전체 화면 보기',
+    replaceSourceTitle: '식사 체크인 사진 교체', replace: '사진 교체', removePhoto: '사진 삭제', usePhoto: '이 사진 사용', fullPhoto: '사진 전체 화면 보기',
     localPhoto: '사진은 선택 기록입니다. 음식은 직접 추가하세요.',
     analyze: '사진 분석', manual: '음식 정보 직접 입력', noPhoto: '사진 없이 계속',
     consent: '사진 분석을 누르면 이 식사의 사진을 분석 제공자에게 전송하는 데 동의합니다. 별도의 동의 없이 AI 학습에 사용하지 않습니다.',

@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match missing-photo card and removal feedback
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; aligned ABC button typography
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
@@ -205,7 +206,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
         {p.childName} · {displayDate(d.mealDate, p.language)} · {d.mealType ? m.types[d.mealType] : ""}
         {d.setting ? ` · ${m.settings[d.setting]}` : ""}
       </Text>
-      <View style={styles.photoCard}>
+      <View style={[styles.photoCard, !d.photo && styles.missingPhotoCard]}>
         {d.photo ? (
           <Pressable
             accessibilityRole="button"
@@ -221,15 +222,14 @@ export function MealFoodsStepView({ p }: { p: Props }) {
             <Text style={styles.photoTitle}>{m.beforePhoto}</Text>
           </Pressable>
         ) : (
-          <Text style={styles.photoTitle}>{a.missingPhoto}</Text>
+          <Text style={[styles.photoTitle, { flex: 1, minWidth: 0 }]}>{a.missingPhoto}</Text>
         )}
         {!d.photo && <Pressable
           accessibilityRole="button"
-          onPress={() => p.onGo(d.photo ? "preview" : "photo")}
+          onPress={() => p.onGo("photo")}
+          style={styles.addPhotoButton}
         >
-          <Text style={styles.link}>
-            {d.photo ? s.common.edit : s.common.add}
-          </Text>
+          <Text style={styles.addPhotoLabel}>{s.common.add}</Text>
         </Pressable>}
       </View>
       <View style={styles.addRow}>
@@ -245,9 +245,9 @@ export function MealFoodsStepView({ p }: { p: Props }) {
       </View>
       {p.removedName && (
         <View style={styles.removed}>
-          <Text style={styles.muted}>{a.removed(p.removedName)}</Text>
+          <Text style={styles.removedText}>{a.removed(p.removedName)}</Text>
           <Pressable accessibilityRole="button" onPress={p.onUndoRemove}>
-            <Text style={styles.link}>{a.undo}</Text>
+            <Text style={styles.undoText}>{a.undo}</Text>
           </Pressable>
         </View>
       )}
@@ -258,12 +258,12 @@ export function MealFoodsStepView({ p }: { p: Props }) {
       <Pressable
         accessibilityRole="button"
         onPress={() => setLinkStep(1)}
-        style={styles.suggestionEntry}
+        style={[styles.suggestionEntry, !!p.removedName && { marginTop: "auto", paddingTop: 20 }]}
       >
         <Text style={styles.suggestionTitle}>{a.previousSuggestion}</Text>
         <UiAssetIcon name="abc-open" />
       </Pressable>
-      <Text style={[styles.muted, { fontSize: 13, opacity: 0.44, marginTop: "auto", paddingTop: 32 }]}>{m.reviewAiReminder}</Text>
+      {!p.removedName && <Text style={[styles.muted, { fontSize: 13, opacity: 0.44, marginTop: "auto", paddingTop: 32, textAlign: 'center' }]}>{m.reviewAiReminder}</Text>}
       <Modal
         visible={linkStep !== 0}
         animationType="slide"
@@ -418,6 +418,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 8,
   },
+  missingPhotoCard: { minHeight: 57, paddingHorizontal: 10, paddingVertical: 13, gap: 10 },
+  addPhotoButton: { width: 64, height: 29, flexShrink: 0, borderRadius: 10, backgroundColor: colors.onboardingPrimary, alignItems: 'center', justifyContent: 'center' },
+  addPhotoLabel: { color: colors.surface, fontFamily: fonts.poppinsSemiBold, fontSize: 13 },
+  removedText: { flex: 1, color: colors.surface, fontFamily: fonts.poppinsMedium, fontSize: 12, lineHeight: 17.4 },
+  undoText: { color: colors.homePrimary, fontFamily: fonts.poppinsSemiBold, fontSize: 11 },
   photoOpen: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
   photoThumbnail: { width: 50, height: 46, borderRadius: 8 },
   photoTitle: {
@@ -525,11 +530,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.poppinsRegular,
   },
   linked: { color: colors.success, fontSize: 11 },
-  removed: {
-    padding: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
+  removed: { minHeight: 41, padding: 12, backgroundColor: colors.navy, borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
   suggestionEntry: {
     flexDirection: "row",
     gap: 6,

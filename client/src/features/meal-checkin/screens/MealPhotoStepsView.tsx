@@ -1,9 +1,12 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; show replacement sources in a bottom sheet
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { Image } from 'expo-image';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { fonts } from '../../../util/fonts';
 import { AppButton } from '../../../components/AppButton';
 import { AppIcon } from '../../../components/AppIcon';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
@@ -23,6 +26,7 @@ export function MealPhotoStepsView({
   replace,
   imageError,
   onReplace,
+  onCloseReplace,
   onImageError,
   onPick,
   onRemovePhoto,
@@ -31,6 +35,7 @@ export function MealPhotoStepsView({
   replace: boolean;
   imageError: boolean;
   onReplace: () => void;
+  onCloseReplace: () => void;
   onImageError: () => void;
   onPick: (source: PhotoSource) => void;
   onRemovePhoto: () => void;
@@ -39,7 +44,7 @@ export function MealPhotoStepsView({
   const s = copyFor(p.language);
   const m = s.mealCheckin;
   const sources = (
-    <View style={styles.sourceList}>
+    <View style={[styles.sourceList, replace && sheetStyles.sources]}>
       {(['camera', 'gallery', 'files'] as const).map((source) => (
         <Pressable
           key={source}
@@ -123,7 +128,17 @@ export function MealPhotoStepsView({
           <Text style={styles.removePhotoText}>{m.removePhoto}</Text>
         </Pressable>
       </View>
-      {replace && sources}
+      {replace && <Modal transparent animationType="slide" onRequestClose={onCloseReplace}>
+        <View style={sheetStyles.overlay}>
+          <Pressable accessibilityRole="button" accessibilityLabel={s.common.close} style={{ flex: 1 }} onPress={onCloseReplace} />
+          <SafeAreaView edges={['bottom']} style={sheetStyles.sheet}>
+            <View style={sheetStyles.handle} />
+            <Text accessibilityRole="header" style={sheetStyles.title}>{m.replaceSourceTitle}</Text>
+            {sources}
+            <AppButton secondary label={m.cancel} onPress={onCloseReplace} style={sheetStyles.cancel} labelStyle={sheetStyles.cancelLabel} />
+          </SafeAreaView>
+        </View>
+      </Modal>}
       <View style={styles.localPhotoInfo}>
         <UiAssetIcon name="meal-lock" />
         <Text style={[ui.text, { flex: 1 }]}>{m.localPhoto}</Text>
@@ -133,3 +148,13 @@ export function MealPhotoStepsView({
 
   return null;
 }
+
+const sheetStyles = StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: colors.photoSourceOverlay, justifyContent: 'flex-end' },
+  sheet: { paddingTop: 10, paddingHorizontal: 16, paddingBottom: 8, gap: 12, backgroundColor: colors.surface, borderTopLeftRadius: 28, borderTopRightRadius: 28 },
+  handle: { width: 36, height: 4, borderRadius: 999, backgroundColor: colors.homeBorder, alignSelf: 'center' },
+  title: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 16, lineHeight: 24 },
+  sources: { gap: 12 },
+  cancel: { height: 44, minHeight: 44, borderRadius: 10, borderColor: colors.mealReviewBorder },
+  cancelLabel: { color: colors.photoSourceCancel, fontFamily: fonts.poppinsSemiBold, fontSize: 13 },
+});

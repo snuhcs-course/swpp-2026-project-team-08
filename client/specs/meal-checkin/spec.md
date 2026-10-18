@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify source sheet missing-photo spacing and removal state -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify full-photo back button geometry -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; synced before-meal photo text from Figma 455:7879 -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify anchored date dropdown pickers -->
@@ -108,3 +109,10 @@
 - 제안 선택 `455:8856`·연결 `455:7013`: 뒤로가기·식사 요약·진행 바·Step 1/2 표시·라디오 선택·하단 Continue/Link suggestion을 표시한다. 카드의 날짜·식사 종류는 실제 제안의 원본 식사 정보를 사용하며 임의 날짜를 만들지 않는다.
 - 저장 `455:9936`·실패 `455:10158`·완료 `455:9843`: 버튼 문구만 바꾸지 않고 해당 전용 화면과 실제 식사 요약을 표시한다. 저장 중 편집 복귀는 요청을 취소하거나 중복 저장하지 않으며 입력은 잠근다. 오류 후 Retry는 동일 기록을 저장한다. 성공 뒤에만 식후 리뷰를 연다.
 - 비교 기준은 390px 콘텐츠 너비다. iOS 상태 표시줄과 예시 식사 데이터는 콘텐츠·실제 사용자 데이터와 구분한다.
+
+## 사진 교체·음식 목록 보완 — 2026-10-18
+
+- Check your photo의 Replace photo는 사진 소스 바텀시트 `455:10796`을 연다. 기존 음식·연결이 있으면 중앙 교체 확인 Dialog를 거친 다음 연다. 제목 Replace meal check-in photo, 카메라·갤러리·파일의 60px 선택 행, Cancel을 표시한다. 화면 안에 소스 행을 펼치지 않는다. 취소·바깥 영역·뒤로가기는 시트만 닫고 기존 사진과 입력을 보존한다.
+- 사진 없는 카드 `815:3432`는 화면 좌우 24px, 카드 안쪽 좌우 10px·상하 13px, 요소 간격 10px이다. Add는 64×29px 파란 버튼이며 긴 문구가 버튼을 밀어내지 않는다.
+- Add and edit foods yourself. Photos are optional. 안내는 중앙 정렬한다.
+- 삭제 직후 `815:3554`는 Add Food 아래에 높이 41px 이상·남색 배경·모서리 10px·안쪽 12px 알림을 표시한다. 삭제 이름은 흰색 12px, Undo는 파란색 11px이다. 남은 음식 카드와 이전 제안 진입점을 유지하고 제안 진입점은 아래쪽에 배치한다. 이 상태에서는 일반 직접 입력 안내를 생략하며 Undo로 원래 ID·순서·연결을 복원한다.

@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; add replacement source sheet palette
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; add full-photo back button colors
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; aligned ABC button typography
@@ -5,6 +6,8 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 export const colors = {
+  photoSourceOverlay: 'rgba(23,36,59,0.6)',
+  photoSourceCancel: '#334766',
   photoBackSurface: '#EEF7FF',
   photoBackShadow: '#392D45',
   onboardingBackground: '#F7FAFF',

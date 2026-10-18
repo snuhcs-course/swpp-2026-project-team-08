@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; update shared navigation expectations
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify direct review saving
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify final ABC home states
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; cover ongoing meal entry summary
@@ -162,12 +163,14 @@ test('home record read errors show retry instead of declaring a fresh account', 
  assert.match(html,/Could not load your records/);assert.match(html,/Retry/);assert.doesNotMatch(html,/No saved suggestions yet|Meal Log Calendar/);
 });
 
-test('home navigation matches the four-tab fresh and six-tab saved designs', () => {
+test('Home and every other tab share the existing six-tab navigation', () => {
  const { BottomNavigation }=require('../src/components/BottomNavigation.tsx');
- const saved=renderToStaticMarkup(React.createElement(BottomNavigation,{language:'en',selected:'today',homeAppearance:true,onSelect:noop}));
- const fresh=renderToStaticMarkup(React.createElement(BottomNavigation,{language:'en',selected:'today',homeAppearance:true,compactHome:true,onSelect:noop}));
- assert.equal((saved.match(/role="tab"/g)||[]).length,6);assert.equal((fresh.match(/role="tab"/g)||[]).length,4);
- assert.match(saved,/SOS/);assert.doesNotMatch(fresh,/SOS|Insight/);assert.match(fresh,/Ideas/);
+ for (const selected of ['today','mealLog','sos','ideas','insight','profile']) {
+  const html=renderToStaticMarkup(React.createElement(BottomNavigation,{language:'en',selected,onSelect:noop}));
+  assert.equal((html.match(/role="tab"/g)||[]).length,6);
+  assert.match(html,/SOS/);assert.match(html,/Insight/);
+  assert.match(html,/height:72px/);assert.match(html,/padding-left:22px|padding-horizontal:22px/);
+ }
 });
 test('pressing a pending home card passes the existing meal ID without creating a new meal', () => {
  const { HomeView }=require('../src/features/home/screens/HomeView.tsx');

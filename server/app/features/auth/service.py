@@ -8,13 +8,13 @@ features/auth/security.py 를 사용한다. HTTP 와 DTO 는 모른다: 실패�
 """
 
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
-from app.core.timezone import now_kst
+from app.core.timezone import KST, now_kst
 from app.features.auth.codes import issue_email_code
 from app.features.auth.queries import delete_child_owned_rows
 from app.features.auth.security import (
@@ -26,6 +26,13 @@ from app.features.auth.security import (
 from app.models import User
 
 _EMAIL_CODE_TTL = timedelta(minutes=10)
+
+
+# AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+def _as_kst(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value.replace(tzinfo=KST)
+    return value.astimezone(KST)
 
 # ── 에러 ────────────────────────────────────────────
 
@@ -120,7 +127,7 @@ class AuthService:
             or hashed is None
             or expires is None
             or pending.lower() != email.lower()
-            or now_kst() > expires
+            or now_kst() > _as_kst(expires)
             or not verify_password(code, hashed)
         ):
             raise InvalidEmailCodeError()

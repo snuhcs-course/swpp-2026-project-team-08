@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; close anchored date picker with its date card
 
 import { useState } from 'react';
 import type { FoodItem, FoodTraits, MealDraft, TraitGroup } from '../../../types/meal';
@@ -36,6 +36,7 @@ export function useMealCheckinInputs({
     onEditFood(food);
   };
   const toggleDate = () => {
+    setDateField(null);
     if (draft) setDateParts(draft.mealDate.split('-').map(Number) as DateParts);
     setDateOpen((value) => !value);
   };
@@ -51,6 +52,7 @@ export function useMealCheckinInputs({
     const [year, month, day] = dateParts;
     const dayCount = new Date(year, month, 0).getDate();
     onUpdate({ mealDate: localDate(new Date(year, month - 1, Math.min(day, dayCount))) });
+    setDateField(null);
     setDateOpen(false);
   };
   const addIngredient = () => {

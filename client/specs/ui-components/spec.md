@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify anchored date dropdown pickers -->
 <!-- This Code is generated with AI -->
 
 # Shared UI Components — Design Specification
@@ -81,7 +82,7 @@ Two sizes are present; select by feature family. The 40 px onboarding input is a
 - The Figma file shows a blue focus/active outline on the child age/name form and typing frames for catalog search. Use the current family accent for focus. Typing frames show suggestions below the field, attached to the input width.
 - Do not constrain text vertically below the selected variant height. A text input's internal padding and scaled text may exceed the Figma compact height; adjust its padding or minimum height so the value, cursor, and placeholder stay fully visible. Height is a target, clipping is never acceptable.
 - 두 기능의 입력값은 밝은 입력 배경 위에 진한 글자색으로 표시한다. 비밀번호 8글자 미만의 오류 테두리와 안내 문구는 Figma의 붉은색 상태를 따른다.
-- Meal Details의 월·일·연도 필드는 날짜 카드 안에 펼쳐진다. 각 선택 목록은 카드의 자식 레이아웃이 아닌 별도 오버레이로 표시해 목록을 열고 닫아도 카드 높이가 바뀌지 않게 한다. 목록은 앱의 밝은 화면 팔레트를 사용해 숫자와 선택 상태를 구분한다.
+- Meal Details의 월·일·연도 필드는 날짜 카드 안에 펼쳐진다. 각 선택창 바로 아래에 최대 180px 높이의 스크롤 picker를 띄운다. 바텀시트를 사용하지 않는다. 목록은 레이아웃 공간을 차지하지 않는 오버레이여서 카드 높이와 아래 콘텐츠 위치가 바뀌지 않는다. 한 번에 하나만 열리고 같은 선택창을 다시 누르거나 값을 선택하면 닫힌다. 현재 선택값 주변부터 보여주며 선택값을 강조한다. 날짜 확정·카드 닫기에도 목록을 닫는다.
 - 화면 키보드가 열리면 입력 필드와 하단 동작 버튼이 키보드 위로 이동하고, 긴 양식은 스크롤해서 현재 입력을 볼 수 있어야 한다.
 - 화면 아이콘과 Meal Check-in의 예시 식사 사진은 각 Figma 프레임에서 내려받은 자산을 사용한다.
 - Disabled, read-only, and counter states are not defined in these frames. Do not invent colors; add their tokens to this document when product behavior requires them.

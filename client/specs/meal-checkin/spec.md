@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify anchored date dropdown pickers -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated compact meal choice tiles -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected requirements after screen-by-screen comparison -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated after manual-entry design review -->
@@ -29,7 +30,7 @@
 
 - 식사 유형·장소 카드는 아이콘 배경 28px·아이콘 16px·체크 원 18px, 안쪽 여백 10px·요소 간격 6px로 표시한다. 글자는 남은 너비에서 줄바꿈하며 체크 원은 줄어들거나 카드 밖으로 밀려나지 않는다. 기본·선택·날짜 변경 화면에 동일하게 적용한다.
 
-- 날짜는 현재 현지 날짜로 시작하며 실제 날짜 선택 UI에서 변경한다. 월·일·연도 목록은 오버레이로 표시하고 Confirm date로 확정한다.
+- 날짜는 현재 현지 날짜로 시작한다. 월·일·연도 선택창을 누르면 해당 창 바로 아래에 최대 180px 높이의 스크롤 picker를 오버레이로 표시한다. 바텀시트를 사용하지 않고 카드 높이와 아래 콘텐츠 위치를 유지한다. 한 번에 하나만 열리고 현재 선택값 주변을 표시한다. 값을 선택하거나 같은 창을 다시 누르면 닫히고 Confirm date로 날짜를 확정한다. 날짜 확정·카드 닫기에도 목록을 닫는다.
 - 유형은 Breakfast/Lunch/Dinner/Snack, 장소는 Home/Restaurant/School/Others 중 하나를 고른다. 날짜·유형·장소를 보존하며 5분할 진행 표시를 제공한다.
 - 입력을 로컬에 자동 저장한다. 저장 중·성공·실패를 구분하고 Save as Draft & Exit는 저장 성공 후 홈으로 이동한다. 실패하면 입력을 유지한다.
 - 저장된 Meal에는 안정적인 ID를 사용한다. 재시도는 같은 ID로 저장하며 중복 Meal을 생성하지 않는다.

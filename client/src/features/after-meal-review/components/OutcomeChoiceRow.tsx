@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma audit details
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
@@ -45,10 +46,10 @@ const styles = StyleSheet.create({
   label: { color: colors.homeText, fontFamily: fonts.interBold, fontSize: 12 },
   ingredientLabel: { width: 64, fontSize: 9, fontFamily: fonts.interMedium },
   options: { flexDirection: 'row', flex: 1, gap: 4 },
-  option: { flex: 1, minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: colors.mealReviewBorder, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2 },
+  option: { flex: 1, minHeight: 34, borderRadius: 8, borderWidth: 1, borderColor: colors.mealReviewBorder, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2 },
   confirmed: { backgroundColor: colors.successSurface, borderColor: colors.success },
   suggested: { borderColor: colors.suggestionBorder, backgroundColor: colors.suggestionSurface },
-  optionText: { color: colors.homeText, fontFamily: fonts.interMedium, fontSize: 10, textAlign: 'center' },
+  optionText: { color: colors.homeText, fontFamily: fonts.poppinsMedium, fontSize: 9, textAlign: 'center' },
   confirmedText: { color: colors.homeText, fontFamily: fonts.interBold },
   suggestedText: { color: colors.suggestionText, fontFamily: fonts.interBold, fontSize: 6, textTransform: 'uppercase' },
 });

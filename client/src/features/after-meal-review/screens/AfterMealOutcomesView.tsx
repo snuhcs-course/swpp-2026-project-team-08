@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma audit details
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
@@ -36,14 +37,15 @@ export function AfterMealOutcomesView({ p }: { p: Props }) {
     <View style={styles.root}>
       <View style={styles.countRow}>
         <Text style={styles.count}>
-          {m.itemCount(p.meal.foods.length).toLocaleUpperCase()}
+          {m.itemCount(p.meal.foods.length)}
         </Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={m.definitions}
+          style={{ position: "absolute", right: 0, top: 0 }}
           onPress={() => setDefinitionsOpen(true)}
         >
-          <Text style={styles.help}>ⓘ</Text>
+          <UiAssetIcon name="outcome-help" />
         </Pressable>
       </View>
       {p.meal.foods.map((food) => {
@@ -54,7 +56,7 @@ export function AfterMealOutcomesView({ p }: { p: Props }) {
         return (
           <View key={food.id} style={{ gap: 12 }}>
             <View style={styles.card}>
-              <View style={styles.heading}>
+              <View style={{ gap: 4 }}><View style={styles.heading}>
                 <Text style={styles.foodName}>{food.name}</Text>
                 <Pressable
                   accessibilityRole="button"
@@ -79,8 +81,9 @@ export function AfterMealOutcomesView({ p }: { p: Props }) {
                 labels={m.outcomes}
                 onSelect={(value) => p.onSelectOutcome(food.id, value)}
               />
+              </View>
               {!!outcome.ingredients.length && (
-                <>
+                <View style={{ gap: 5 }}>
                   <Text style={styles.intro}>{a.selectIngredients}</Text>
                   <View style={styles.tokens}>
                     {outcome.ingredients.map((ingredient) => (
@@ -110,7 +113,7 @@ export function AfterMealOutcomesView({ p }: { p: Props }) {
                       </Pressable>
                     ))}
                   </View>
-                </>
+                </View>
               )}
             </View>
             {outcome.ingredients
@@ -133,7 +136,9 @@ export function AfterMealOutcomesView({ p }: { p: Props }) {
       <AppButton
         variant="meal"
         secondary
-        label={s.mealCheckin.addFood}
+        label={a.addOutcomeFood}
+        labelStyle={{ fontSize: 12, color: colors.homePrimary }}
+        style={{ minHeight: 48 }}
         onPress={() => p.onEditFood()}
       />
       {p.showUnanswered && !p.canContinueOutcomes && (
@@ -159,12 +164,12 @@ const styles = StyleSheet.create({
   tokens: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   token: {
     borderRadius: 999,
-    backgroundColor: colors.calendarEmpty,
-    paddingHorizontal: 9,
-    paddingVertical: 6,
+    backgroundColor: colors.ingredientChip,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
   },
   selectedToken: { backgroundColor: colors.navy },
-  tokenText: { color: colors.homeText, fontSize: 13 },
+  tokenText: { color: colors.homeText, fontSize: 13, fontFamily: fonts.poppinsMedium },
   selectedTokenText: { color: colors.surface },
   heading: {
     flexDirection: "row",
@@ -174,7 +179,7 @@ const styles = StyleSheet.create({
   foodName: {
     color: colors.homeText,
     fontSize: 14,
-    fontFamily: fonts.interBold,
+    fontFamily: fonts.poppinsSemiBold,
   },
   root: { gap: 11 },
   title: {
@@ -187,42 +192,44 @@ const styles = StyleSheet.create({
     color: colors.mealReviewMuted,
     fontSize: 12,
     lineHeight: 17,
-    fontFamily: fonts.interRegular,
+    fontFamily: fonts.poppinsMedium,
   },
   demo: {
     color: colors.suggestionText,
     backgroundColor: colors.suggestionSurface,
     borderRadius: 9,
     padding: 8,
-    fontSize: 9,
-    fontFamily: fonts.interMedium,
+    fontSize: 12,
+    fontFamily: fonts.poppinsSemiBold,
   },
   countRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: 4,
+    paddingTop: 32,
   },
-  count: { color: colors.homeText, fontSize: 10, fontFamily: fonts.interBold },
+  count: { color: colors.homeText, fontSize: 11, fontFamily: fonts.poppinsSemiBold },
   help: { color: colors.homePrimary, fontSize: 17, paddingHorizontal: 5 },
   card: {
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.mealReviewBorder,
-    borderRadius: 15,
-    padding: 10,
-    gap: 9,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    gap: 14,
   },
   edit: { alignSelf: "flex-end" },
   editText: {
     color: colors.homePrimary,
-    fontSize: 9,
-    fontFamily: fonts.interMedium,
+    fontSize: 12,
+    fontFamily: fonts.poppinsSemiBold,
   },
   removeText: {
     color: colors.error,
-    fontSize: 9,
-    fontFamily: fonts.interMedium,
+    fontSize: 12,
+    fontFamily: fonts.poppinsSemiBold,
   },
   error: { color: colors.error, fontSize: 10, fontFamily: fonts.interMedium },
 });

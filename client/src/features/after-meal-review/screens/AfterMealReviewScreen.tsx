@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; wire final save screen state
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
@@ -19,7 +20,7 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
   const profile = useProfile();
   const review = useAfterMealReview(profile.profile, mealId ?? '');
   const s = copyFor(profile.language);
-  const back = () => { if (!review.back()) router.back(); };
+  const back = () => { if (review.saving) return; if (!review.back()) router.back(); };
   useEffect(() => {
     const listener = BackHandler.addEventListener('hardwareBackPress', () => { back(); return true; });
     return () => listener.remove();
@@ -70,6 +71,7 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
       savedSuggestions={review.savedSuggestions}
       suggestionsLoading={review.suggestionsLoading}
       saveStatus={review.saveStatus}
+      finalSaveState={review.finalSaveState}
       photoError={review.photoError}
       picking={review.picking}
       saving={review.saving}

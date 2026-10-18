@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; distinguish final save errors from draft autosave errors
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
@@ -32,6 +33,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [loadVersion, setLoadVersion] = useState(0);
+  const [finalSaveState, setFinalSaveState] = useState<'idle' | 'saving' | 'error'>('idle');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   const [photoError, setPhotoError] = useState<'permission' | 'image' | null>(null);
   const [picking, setPicking] = useState(false);
@@ -62,6 +64,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     Promise.all([readAfterMealDraft(childId, mealId), readAfterMealReview(childId, mealId)]).then(
       ([stored, saved]) => {
         if (!active) return;
+        setFinalSaveState('idle');
         const base = stored ?? (saved ? { ...saved, step: 'complete' as const, difficultyInputs: {} } : newReviewDraft(meal));
         const next: AfterMealReviewDraft = {
           ...base,
@@ -243,14 +246,21 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     const value = current.current;
     if (!value || !meal || finishing.current || !allOutcomesConfirmed(value.outcomes)) return false;
     finishing.current = true;
+    setFinalSaveState('saving');
     try {
       await persist(value);
       await saveChain.current;
       const review = reviewFromDraft(value, meal);
       await saveMutation.mutateAsync(review);
-      update({ step: 'complete' });
+      if (mounted.current && current.current?.mealId === value.mealId) {
+        update({ step: 'complete' });
+        setFinalSaveState('idle');
+      }
       return true;
-    } catch { setSaveStatus('error'); return false; }
+    } catch {
+      if (mounted.current && current.current?.mealId === value.mealId) { setSaveStatus('error'); setFinalSaveState('error'); }
+      return false;
+    }
     finally { finishing.current = false; }
   };
 
@@ -262,9 +272,9 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     missingMeal: !mealId || (mealQuery.isSuccess && !meal),
     loadError: mealQuery.isError || loadError,
     retryLoad: () => { void mealQuery.refetch(); setLoadError(false); setLoadedKey(null); setLoadVersion((value) => value + 1); },
-    saveStatus, photoError, picking,
+    saveStatus, finalSaveState, photoError, picking,
     markImageError: () => setPhotoError('image'),
-    saving: saveMutation.isPending,
+    saving: finalSaveState === 'saving',
     editingFood, editingTraits, ingredient, customTrait, editorSaving: updateMealMutation.isPending,
     savedSuggestions: (meal?.suggestionLinks ?? []).map((link) => savedSuggestions.find((item) => item.id === link.suggestionId) ?? { id: link.suggestionId, childId, title: link.title, description: link.description, servingTip: link.servingTip, ingredients: [], isSaved: true, safetyVerifiedForProfileAt: '' }), suggestionsLoading: homeQuery.isPending || mealsQuery.isPending,
     canContinueOutcomes: !!draft && allOutcomesConfirmed(draft.outcomes),

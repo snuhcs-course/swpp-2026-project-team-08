@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma audit details
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
@@ -59,7 +60,7 @@ export function AfterMealDifficultiesView({ p }: { p: Props }) {
 }
 
 const styles = StyleSheet.create({
-  root: { gap: 12 },
+  root: { gap: 5 },
   title: { color: colors.homeText, fontSize: 18, fontFamily: fonts.poppinsSemiBold },
-  subtitle: { color: colors.mealReviewMuted, fontSize: 9, fontFamily: fonts.interRegular, marginTop: -8 },
+  subtitle: { color: colors.mealReviewMuted, fontSize: 10, lineHeight: 12, fontFamily: fonts.interRegular, marginTop: -8, marginBottom: 7 },
 });

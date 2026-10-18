@@ -1,7 +1,10 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match review saved panel
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { MealSavedPanel } from '../../../components/MealSavedPanel';
+import { displayDate } from '../../../util/date';
 import { AppButton } from '../../../components/AppButton';
 import { SuggestionCard } from '../../../components/SuggestionCard';
 import { colors } from '../../../util/colors';
@@ -63,19 +66,15 @@ export function AfterMealFollowUpView({ p }: { p: Props }) {
       </View>
     );
   }
-  return (
-    <View style={styles.root}>
-      <Text style={styles.title}>{m.titles.complete}</Text>
-      <Text style={styles.muted}>{m.saved}</Text>
-      <Text style={styles.muted}>{p.meal.mealDate} · {s.mealCheckin.types[p.meal.mealType]}</Text>
-      {p.meal.foods.map((food) => <Text key={food.id} style={styles.goalText}>{food.name}</Text>)}
-      <AppButton variant="meal" label={a.viewMealSuggestions} onPress={p.onRecommend} />
-      {p.savedSuggestions[0] && (
-        <AppButton variant="meal" secondary label={m.nextSuggestion} onPress={() => p.onNextSuggestion(p.savedSuggestions[0].id)} />
-      )}
-      <AppButton variant="meal" label={s.common.home} onPress={p.onHome} />
-    </View>
-  );
+  return <MealSavedPanel title={a.reviewSavedTitle} message={m.saved}
+    photos={[p.meal.photo?.uri, p.draft.afterPhoto?.uri].filter((uri): uri is string => !!uri)}
+    date={`${s.mealCheckin.types[p.meal.mealType]}, ${displayDate(p.meal.mealDate, p.language)}`}
+    foodNames={p.meal.foods.map((food) => food.name).join(', ')}
+    note={p.meal.suggestionLinks?.length ? a.reviewPendingHint : undefined}
+    actions={<>
+      <AppButton variant="meal" label={a.viewMealSuggestions} onPress={p.onRecommend} style={{ minHeight: 48 }} labelStyle={{ fontSize: 16 }} />
+      <AppButton variant="meal" secondary label={a.returnHome} onPress={p.onHome} style={{ minHeight: 48, borderWidth: 0, backgroundColor: colors.transparent }} labelStyle={{ fontSize: 16, color: colors.homePrimary }} />
+    </>} />;
 }
 
 const styles = StyleSheet.create({

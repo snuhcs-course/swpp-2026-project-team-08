@@ -1,12 +1,11 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match inline difficulty menus
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 
-import { UiAssetIcon } from "../../../components/UiAssetIcon";
+import { UiAssetIcon, type UiAssetIconName } from "../../../components/UiAssetIcon";
 import { useState } from "react";
 import {
-  Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -33,6 +32,10 @@ type Labels = {
   textureTrait: string;
   examples: Record<string, string>;
   close: string;
+};
+const categoryIcons: Partial<Record<DifficultyCategory, UiAssetIconName>> = {
+  texture: 'difficulty-texture', tasteType: 'difficulty-taste', smell: 'difficulty-smell', color: 'difficulty-color',
+  pieceSize: 'difficulty-piece', arrangement: 'difficulty-arrangement', temperature: 'difficulty-temperature', notSure: 'difficulty-unsure',
 };
 export function DifficultyEditor({
   foodName,
@@ -94,7 +97,7 @@ export function DifficultyEditor({
         disabled: !category || (isTexture && !subcategory),
       }}
       disabled={!category || (isTexture && !subcategory)}
-      onPress={() => setMenu("value")}
+      onPress={() => setMenu(menu === "value" ? null : "value")}
       style={[styles.select, !isTexture && styles.valueSelect]}
     >
       <Text style={styles.selectText}>
@@ -110,7 +113,7 @@ export function DifficultyEditor({
         <Pressable
           accessibilityRole="button"
           accessibilityState={{ expanded: menu === "category" }}
-          onPress={() => setMenu("category")}
+          onPress={() => setMenu(menu === "category" ? null : "category")}
           style={[styles.select, styles.categorySelect]}
         >
           <Text style={styles.selectText}>
@@ -127,7 +130,7 @@ export function DifficultyEditor({
           accessibilityState={{ disabled: !canAdd }}
           disabled={!canAdd}
           onPress={onAdd}
-          style={[styles.addButton, !canAdd && styles.disabled]}
+          style={styles.addButton}
         >
           <Text style={styles.addText}>{labels.add}</Text>
         </Pressable>
@@ -138,7 +141,7 @@ export function DifficultyEditor({
             <Pressable
               accessibilityRole="button"
               accessibilityState={{ expanded: menu === "question" }}
-              onPress={() => setMenu("question")}
+              onPress={() => setMenu(menu === "question" ? null : "question")}
               style={styles.select}
             >
               <Text style={styles.selectText}>
@@ -201,21 +204,7 @@ export function DifficultyEditor({
           ))}
         </View>
       )}
-      <Modal
-        visible={menu !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setMenu(null)}
-      >
-        <View style={styles.backdrop}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={labels.close}
-            onPress={() => setMenu(null)}
-            style={StyleSheet.absoluteFill}
-          />
-          <View style={styles.menu}>
-            <ScrollView keyboardShouldPersistTaps="handled">
+      {menu !== null && <View style={[styles.menu, menu === 'category' ? { width: 170 } : { alignSelf: 'stretch' }]}>
               {menuOptions.map((item) => (
                 <Pressable
                   key={item}
@@ -229,6 +218,7 @@ export function DifficultyEditor({
                   }}
                   style={styles.menuItem}
                 >
+                  {menu === "category" && categoryIcons[item as DifficultyCategory] && <UiAssetIcon name={categoryIcons[item as DifficultyCategory]!} />}
                   {menu === "value" &&
                     category === "color" &&
                     item in difficultyColorDots && (
@@ -254,22 +244,13 @@ export function DifficultyEditor({
                   </View>
                 </Pressable>
               ))}
-            </ScrollView>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setMenu(null)}
-              style={styles.menuItem}
-            >
-              <Text style={styles.menuText}>{labels.close}</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+      </View>}
+
     </View>
   );
 }
 const styles = StyleSheet.create({
-  root: { gap: 7, marginBottom: 15 },
+  root: { gap: 7, marginBottom: 10 },
   foodName: {
     color: colors.homeText,
     fontFamily: fonts.interBold,
@@ -279,8 +260,8 @@ const styles = StyleSheet.create({
   spacer: { flex: 1 },
   select: {
     minHeight: 36,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderWidth: 1,
     borderColor: colors.mealReviewBorder,
     borderRadius: 12,
@@ -290,7 +271,7 @@ const styles = StyleSheet.create({
     gap: 5,
     maxWidth: "100%",
   },
-  categorySelect: { flex: 1.7 },
+  categorySelect: { width: 170, flexShrink: 1 },
   valueSelect: { flex: 1 },
   selectText: {
     flexShrink: 1,
@@ -333,7 +314,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.overlay,
   },
   menu: {
-    maxHeight: "70%",
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.mealReviewBorder,
@@ -341,8 +321,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   menuItem: {
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    minHeight: 27,
     borderBottomWidth: 1,
     borderBottomColor: colors.mealReviewBorder,
     flexDirection: "row",
@@ -353,7 +334,7 @@ const styles = StyleSheet.create({
   menuText: {
     color: colors.homeText,
     fontFamily: fonts.interRegular,
-    fontSize: 13,
+    fontSize: 9,
   },
   example: { color: colors.homeMuted, fontSize: 11 },
   colorDot: {

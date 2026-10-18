@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; expose final save state
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
@@ -15,6 +16,7 @@ export type ReviewViewProps = {
   language: Language;
   savedSuggestions: SavedSuggestion[];
   suggestionsLoading: boolean;
+  finalSaveState?: 'idle' | 'saving' | 'error';
   saveStatus: 'saving' | 'saved' | 'error';
   photoError: 'permission' | 'image' | null;
   picking: boolean;

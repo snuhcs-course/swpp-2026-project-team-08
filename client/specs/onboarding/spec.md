@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated after manual-entry design review -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing specification -->
 
 # Onboarding
@@ -169,7 +170,7 @@ Given 보호자가 동의 화면에 있고<br>
 When 필수 동의 항목을 선택하지 않으면<br>
 Then Continue 버튼이 비활성화된다.
 
-Given 보호자가 계정 정보와 사진 분석의 필수 동의 항목을 선택했고 AI 학습 선택 동의 항목은 선택하지 않았으며<br>
+Given 보호자가 계정 정보와 식사 기록·개인화의 필수 동의 항목을 선택했고 AI 학습 선택 동의 항목은 선택하지 않았으며<br>
 When Continue를 누르면<br>
 Then 아동 정보 입력 화면으로 이동한다.
 
@@ -258,5 +259,13 @@ Then 검토 화면과 입력값이 유지되고 다시 시도할 수 있다.
 - 알레르기·제한·가족 식품군·식이 방식의 검색·직접 입력·제거 가능한 토큰, None 배타 선택을 유지한다.
 - 가족 식품군은 필수 입력으로 바꾸고 검토 완료 조건에도 반영한다. 선택과 미선택은 테두리·체크·문구로 구분한다.
 - Safe foods의 Save & exit로 초안을 저장하고 홈으로 나갈 수 있어야 한다. 실패하면 화면과 입력을 유지한다.
-- 검토 뒤 `You’re ready to begin` 완료 화면에서 실제 아동 이름과 Next step을 보여주고 홈으로 이동한다.
+- 검토 뒤 `You’re ready to begin` 완료 화면에서 실제 아동 이름과 Go to home을 보여주고 홈으로 이동한다.
 - 기존의 지원되지 않는 제한 안내와 실제 추천 안전성 검사는 유지한다. 임의 제한이 검증된 것처럼 안내하지 않는다.
+
+## 2026-10-18 최신 A 변경 범위
+
+- 완료 화면(455:1729)은 중앙에 40px Poppins Bold 제목, 실제 아동 이름이 포함된 안내, 너비 230px의 `Go to home` 버튼을 표시한다. 기존 Next step 버튼을 교체한다.
+- 기타 식이 제한의 기본 목록(455:5060)은 No additional dietary restrictions, Gluten-free, Lactose-free, Casein-free, Other restrictions다. Low fructose는 기본 제한에서 빼되 기존 선택은 Other 토큰으로 보존하고 식이 방식 선택지에서는 유지한다.
+- 검토 화면(455:1748)은 Child basics, Safety restrictions, Family practices, Dietary approaches, Safe foods 순서로 핵심 카드를 배치한다. 기타 제한·감각 답변도 계속 확인·수정할 수 있다.
+- 동의 화면(455:3095·455:3160)의 사진 분석 문구는 Figma에 아직 남은 이전 문구다. 사용자의 분석 기능 제거 결정이 우선한다. 필수 동의는 계정 개인정보와 식사 기록·프로필을 활용한 개인화이며 사진 분석 동의를 요구하지 않는다. 호환을 위해 기존 저장 키 photoAnalysis는 개인화 동의 값으로만 읽고 쓴다. 별도 AI 학습 동의는 선택 사항이며 이 버전은 사진을 분석·학습에 전송하지 않는다.
+- 이미 작성된 프로필·초안·알레르기 및 추천 안전성 검사는 보존한다.

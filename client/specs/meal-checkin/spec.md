@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; distinguish record linking from draft suggestion linking -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; require ongoing meal entry before draft continuation -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify source sheet missing-photo spacing and removal state -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify full-photo back button geometry -->
@@ -71,6 +72,8 @@
 - 이번 화면에서는 이전 Food traits selector와 Exposure goal 입력을 표시하지 않는다. 기존 저장 데이터는 읽을 수 있어야 한다.
 
 ### R5 — 이전 제안을 실제 음식에 연결
+
+- Saved Suggestions의 Log a meal 진입은 별도 흐름이다. Trying this suggestion을 기본 선택하고, 저장 성공 후 새 Meal ID로 S.07 Link record (`622:422`)를 연다. 이 흐름은 아래 B의 Link suggestion 화면을 자동으로 열지 않는다. S.07은 저장된 식사의 음식·추적 재료를 왼쪽 라디오가 있는 간단한 목록으로 표시하며 B의 펼침 음식 카드를 재사용하지 않는다. 선택 해제 시 일반 식사 저장 흐름을 따른다.
 
 - `Are you trying a previous suggestion?`은 저장된 실제 제안을 선택하는 1단계 화면을 연다. 로딩·오류·빈 목록을 구분하고 재시도를 제공한다.
 - 2단계에서는 선택한 제안과 이번 Meal의 음식 카드를 표시한다. 실제 제공 음식 하나를 고른 뒤 Link suggestion으로 연결한다. 제안의 음식을 목록에 자동 추가하지 않는다.

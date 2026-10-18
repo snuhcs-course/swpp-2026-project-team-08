@@ -1,3 +1,5 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing specification -->
+
 # Onboarding
 
 ## Goal
@@ -5,7 +7,11 @@
 보호자가 계정을 만들고 아동 프로필을 설정한다. 프로필은 안전하지 않거나 적합하지 않은 음식을 추천에서 제외하고, 아이의 식사 패턴과 감각적 선호를 파악하며, 이후 식사 추천과 음식 경험 추적의 시작점으로 활용한다. 보호자는 설정 후에도 Profile Settings에서 프로필을 수정할 수 있다.
 
 ## Design Document
-https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=0-1&p=f&t=fuXx8U3J6aPHAmKj-0
+
+[최종 ABC 디자인 — A Onboarding](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/ABC?node-id=815-4315)
+
+근거: 가족 식품군 `455:2525`, 알레르기 `455:1278`·`455:4672`, 제한 `455:5060`, 식이 방식 `455:5143`, 검토 `455:1748`, 완료 `455:1729`.
+디자인의 빠진 번호를 빈 화면으로 만들지 않고 실제 입력 단계 수로 진행률을 계산한다. 이 페이지에 없는 감각 질문은 기존 R9를 유지한다. `xxxxxxx` 같은 임시 설명·예시 이름은 실제 문구로 사용하지 않는다.
 
 ## User Flow
 
@@ -25,7 +31,7 @@ https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%25
 ## Requirements
 
 ### R1 - 화면 공통 제약사항
-1. 12개의 화면 모두 하단에 Previous, Continue 버튼을 가져야 한다.
+1. 입력·검토 화면 모두 하단에 Previous, Continue 버튼을 가져야 한다.
 2. 화면에 따라 Continue 버튼은 화면의 조건을 만족시키기 전까지엔 비활성화될 수도 있다.
 3. 화면 최상단에는 온보딩이 얼마나 완료되었는지를 나타내는 진행 바가 현재 진행도를 기준으로 표시되어야 한다.
 4. 모든 화면에서 사용자의 입력이 자동으로 로컬 저장소에 저장되어야 하며, 저장이 성공한 경우에 progress bar의 우측 상단에 auto-saved 표시가 떠야 한다.
@@ -77,8 +83,8 @@ https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%25
 3. 선택된 식품군은 화면에서 구분되어 표시되어야 하며, 보호자는 선택을 변경할 수 있어야 한다.
 4. Other를 클릭하는 경우 검색 입력창이 활성화되며, food catalog를 검색하고 검색 결과를 눌러 항목을 추가할 수 있어야 한다.
 5. 추가된 식품은 보호자가 x를 눌러 제거 가능한 토큰 형태로 Other 검색 필드 아래에 표시되어야 한다. 기본 체크박스 목록에는 추가하지 않는다.
-6. `All`을 누르면 화면의 모든 기본 식품군이 한 번에 선택되어야 한다. 이후 개별 항목을 다시 눌러 선택을 변경할 수 있어야 한다.
-7. 아무 것도 입력하지 않아도 Continue 버튼이 활성화되어 있어야 한다.
+6. 기본 식품군은 Dairy, Eggs, Seafood, Poultry, Red meat, Legumes/soy, Nuts/seeds로 구성한다. All 선택은 제공하지 않고 개별 항목을 선택한다.
+7. 기본 식품군 또는 직접 추가한 식품을 하나 이상 선택해야 Continue를 사용할 수 있다. Required step과 선호가 추천에 항상 반영되지는 않는다는 안내를 표시한다.
 
 ### R8 — Dietary approaches
 
@@ -137,7 +143,7 @@ https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%25
 - `None` 또는 식이 접근 방식의 ‘해당 없음’을 다른 항목과 함께 선택하려 함
 - catalog 검색 결과가 없거나 이미 추가한 항목을 다시 선택함
 - `Other` 입력창에 내용을 입력했지만 Add를 누르지 않고 다음 화면으로 이동함
-- 가족 식단에 포함하는 식품군을 아무것도 선택하지 않음
+- 가족 식품군 필수 선택을 비운 상태로 다음 단계·완료를 시도함
 - 식감·맛·제공 형태의 ‘해당 없음’ 항목을 다른 항목과 함께 선택하려 함
 - 직접 추가한 감각 항목을 제거하거나, 이전 화면으로 돌아가 선택을 변경함
 - 냄새·온도·새로운 음식에 대한 친숙도 화면에서 다른 선택지를 눌러 기존 단일 선택을 변경함
@@ -168,8 +174,8 @@ When Continue를 누르면<br>
 Then 아동 정보 입력 화면으로 이동한다.
 
 Given 보호자가 가족 식품군 화면에 있고<br>
-When All을 누르면<br>
-Then 모든 기본 식품군이 선택된다.
+When 아무 항목도 선택하지 않으면<br>
+Then Continue가 비활성화되고 하나 이상 선택하면 활성화된다.
 
 Given 보호자가 Other를 선택해 catalog 항목을 추가했고<br>
 When 추가 결과를 확인하면<br>
@@ -196,8 +202,8 @@ When 해당 항목의 x를 누르면<br>
 Then 항목이 선택 목록에서 제거된다.
 
 Given 보호자가 가족 식단에 포함하는 식품군을 선택하지 않았고<br>
-When Continue를 누르면<br>
-Then 다음 화면으로 이동한다.
+When 화면을 확인하면<br>
+Then Continue가 비활성화되어 선택을 기다린다.
 
 Given 보호자가 Dietary approaches 화면에 있고<br>
 When 식이 접근 방식 또는 ‘해당 없음’을 선택하면<br>
@@ -246,3 +252,11 @@ Then 온보딩이 완료되고 메인 화면으로 이동한다.
 Given 보호자가 검토 화면에서 `Looks good`을 눌렀고<br>
 When 프로필 저장에 실패하면<br>
 Then 검토 화면과 입력값이 유지되고 다시 시도할 수 있다.
+
+## 2026-10-18 구현 범위
+
+- 알레르기·제한·가족 식품군·식이 방식의 검색·직접 입력·제거 가능한 토큰, None 배타 선택을 유지한다.
+- 가족 식품군은 필수 입력으로 바꾸고 검토 완료 조건에도 반영한다. 선택과 미선택은 테두리·체크·문구로 구분한다.
+- Safe foods의 Save & exit로 초안을 저장하고 홈으로 나갈 수 있어야 한다. 실패하면 화면과 입력을 유지한다.
+- 검토 뒤 `You’re ready to begin` 완료 화면에서 실제 아동 이름과 Next step을 보여주고 홈으로 이동한다.
+- 기존의 지원되지 않는 제한 안내와 실제 추천 안전성 검사는 유지한다. 임의 제한이 검증된 것처럼 안내하지 않는다.

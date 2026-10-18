@@ -195,7 +195,10 @@ async def test_patch_me_updates_full_name(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_email_change_requires_server_code(client: AsyncClient, monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_email_change_requires_server_code(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr("app.features.auth.service.issue_email_code", lambda: "482190")
     tokens = await _sign_up_and_login(client)
 

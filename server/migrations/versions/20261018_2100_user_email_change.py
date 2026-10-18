@@ -11,8 +11,14 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column("users", sa.Column("pending_email", sa.String(length=255), nullable=True))
-    op.add_column("users", sa.Column("email_change_code_hash", sa.String(length=255), nullable=True))
+    op.add_column(
+        "users",
+        sa.Column("pending_email", sa.String(length=255), nullable=True),
+    )
+    op.add_column(
+        "users",
+        sa.Column("email_change_code_hash", sa.String(length=255), nullable=True),
+    )
     op.add_column(
         "users",
         sa.Column("email_change_expires_at", sa.DateTime(timezone=True), nullable=True),

@@ -3,12 +3,13 @@
 // This Code is generated with AI
 
 import { Image } from 'expo-image';
-import { Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
 import { AppIcon } from '../../../components/AppIcon';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import { formStyles as ui } from '../../../components/formStyles';
 import type { PhotoSource } from '../../../types/meal';
+import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import type { MealCheckinViewProps } from './mealCheckinViewTypes';
 import { styles } from './mealCheckinStyles';

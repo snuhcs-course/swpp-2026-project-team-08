@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; aligned ABC button typography
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
@@ -17,6 +18,8 @@ export const colors = {
   homeSelected: '#EAF2FF',
   navy: '#13233A',
   navyDecoration: '#364660',
+  foodAddBackground: '#2C2C2C',
+  foodIngredientBackground: '#F0F5FA',
   surface: '#FFFFFF',
   progressTrack: '#D5E3F1',
   infoSurface: '#E6F1FF',

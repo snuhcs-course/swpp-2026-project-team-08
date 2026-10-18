@@ -46,10 +46,10 @@
 3. 비밀번호가 8글자 미만인 경우 입력 필드 테두리와 안내 문구가 붉은색으로 표시되며 최소 8글자라는 hint를 준다.
 4. 비밀번호가 8글자 미만인 경우 Continue 버튼이 비활성화된다. 8글자부터 사용할 수 있다.
 
-### R3 — Data and photo consent
+### R3 — Data and personalization consent
 
 1. 보호자는 아동 정보를 입력하기 전에 개인정보 수집 및 이용 안내를 확인하고 동의할 수 있어야 한다.
-2. `Account and care privacy`와 `Photo analysis and personalization`은 Required이다. 둘 중 하나라도 동의하지 않으면 Continue 버튼이 비활성화된다.
+2. `Account and core privacy`와 `Meal records and personalization`은 Required이다. 둘 중 하나라도 동의하지 않으면 Continue 버튼이 비활성화된다.
 3. `AI training and model research`는 Optional이며, 동의하지 않아도 Continue가 가능하다.
 4. View Detail을 눌러 해당 약관의 자세한 내용을 확인할 수 있다 ( TODO: 프로토타입 단계에서는 View Detail을 눌러도 아무 일도 일어나지 않는다. )
 5. 약관을 클릭하면 약관들이 포함된 Consent to Collection and Use of Personal Information 카드의 색이 바뀌어 light up된다.

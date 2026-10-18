@@ -1,9 +1,11 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; added original Add Food icon
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { Image } from 'expo-image';
 
 const iconAssets = {
+  'abc-add-food': require('../../assets/ui/abc-add-food.svg'),
   'abc-select': require('../../assets/ui/abc-select.svg'),
   'abc-utensils': require('../../assets/ui/abc-utensils.svg'),
   'abc-chevron': require('../../assets/ui/abc-chevron.svg'),
@@ -59,7 +61,7 @@ const iconAssets = {
 export type UiAssetIconName = keyof typeof iconAssets;
 
 const size: Record<UiAssetIconName, number> = {
-  'abc-select': 14, 'abc-utensils': 13,
+  'abc-add-food': 12.3333, 'abc-select': 14, 'abc-utensils': 13,
   'abc-chevron': 16, 'abc-trash': 16, 'abc-edit': 16, 'abc-open': 16,
   'suggestion-close': 20,
   'suggestion-checked': 15,

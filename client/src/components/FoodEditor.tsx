@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed food source badge
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
@@ -134,7 +135,6 @@ export function FoodEditor({
           <Text style={editorStyles.subtitle}>{food.name ? m.reviewItemHint : m.addFoodHint}</Text>
           <View style={editorStyles.badges}>
             <Text style={editorStyles.neutralBadge}>{food.history ? m.histories[food.history] : s.common.notEntered}</Text>
-            <Text style={editorStyles.parentBadge}>{food.source === 'ai' ? m.ai : m.parent}</Text>
           </View>
           <FormField
             variant="editor"

@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; aligned ABC button typography
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -225,9 +226,10 @@ export function MealFoodsStepView({ p }: { p: Props }) {
         <AppButton
           variant="meal"
           compact
-          secondary
-          icon={<UiAssetIcon name="meal-plus" />}
-          label={m.addFood}
+          style={styles.addFoodButton}
+          labelStyle={styles.addFoodLabel}
+          icon={<UiAssetIcon name="abc-add-food" />}
+          label={a.addFoodLabel}
           onPress={() => p.onEdit()}
         />
       </View>
@@ -403,6 +405,8 @@ const styles = StyleSheet.create({
     padding: 6,
     fontSize: 11,
   },
+  addFoodButton: { backgroundColor: colors.foodAddBackground, borderRadius: 10, minHeight: 32 },
+  addFoodLabel: { color: colors.surface, fontSize: 13 },
   addRow: { alignItems: "flex-end" },
   foodCard: {
     backgroundColor: colors.surface,
@@ -446,7 +450,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     fontSize: 12,
   },
-  confirmedTag: { backgroundColor: colors.homeBackground },
+  confirmedTag: { backgroundColor: colors.foodIngredientBackground },
   twoColumns: { flexDirection: "row", gap: 10 },
   column: { flex: 1, gap: 3 },
   fieldValue: {

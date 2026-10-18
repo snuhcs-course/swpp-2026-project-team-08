@@ -1,0 +1,56 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppButton } from '../../../components/AppButton';
+import { AppIcon } from '../../../components/AppIcon';
+import type { MealDraft } from '../../../types/meal';
+import type { Language } from '../../../types/profile';
+import { colors } from '../../../util/colors';
+import { fonts } from '../../../util/fonts';
+import { displayDate } from '../../../util/date';
+import { copyFor } from '../../../util/strings';
+
+export function MealDraftResumeView({ draft, childName, language, onContinue, onBack }: {
+  draft: MealDraft; childName: string; language: Language; onContinue: () => void; onBack: () => void;
+}) {
+  const s = copyFor(language);
+  const m = s.mealCheckin;
+  return <SafeAreaView style={styles.root}>
+    <View style={styles.header}>
+      <Pressable accessibilityRole="button" accessibilityLabel={s.common.back} onPress={onBack} style={styles.back}><AppIcon name="back" size={18} /></Pressable>
+      <View style={{ flex: 1, gap: 1 }}>
+        <Text style={styles.headerTitle}>{m.ongoingHeader}</Text>
+        <Text style={styles.subtitle}>{m.childMeals(childName)}</Text>
+      </View>
+    </View>
+    <ScrollView contentContainerStyle={styles.content}>
+      <Text style={styles.title}>{m.ongoingTitle}</Text>
+      <Text style={styles.intro}>{m.ongoingIntro}</Text>
+      <View style={styles.card}>
+        <Text style={styles.badge}>{m.autoSavedDraft}</Text>
+        <Text style={styles.meal}>{childName}{draft.mealType ? ` · ${m.types[draft.mealType]}` : ''}</Text>
+        <Text style={styles.date}>{displayDate(draft.mealDate, language)}</Text>
+        <Text style={styles.summary}>{draft.photo ? m.draftPhotoSaved : m.draftNoPhoto} · {m.draftFoodCount(draft.foods.length)}</Text>
+        <AppButton secondary variant="meal" label={m.continueDraft} onPress={onContinue} style={styles.continue} labelStyle={styles.continueLabel} />
+      </View>
+    </ScrollView>
+  </SafeAreaView>;
+}
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.afterMealBackground },
+  header: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 12, flexDirection: 'row', gap: 10, alignItems: 'center' },
+  back: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center' },
+  headerTitle: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 17, lineHeight: 25.5 },
+  subtitle: { color: colors.mealReviewMuted, fontFamily: fonts.poppinsRegular, fontSize: 10, lineHeight: 15 },
+  content: { paddingHorizontal: 24, paddingTop: 6, paddingBottom: 16, gap: 16 },
+  title: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 22, lineHeight: 31.9 },
+  intro: { color: colors.homeText, fontFamily: fonts.poppinsRegular, fontSize: 12, lineHeight: 17.4 },
+  card: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.mealReviewBorder, borderRadius: 14, padding: 12, gap: 6 },
+  badge: { color: colors.homePrimary, fontFamily: fonts.poppinsSemiBold, fontSize: 9, lineHeight: 13.5 },
+  meal: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 15, lineHeight: 22.5 },
+  date: { color: colors.mealReviewMuted, fontFamily: fonts.poppinsRegular, fontSize: 11, lineHeight: 15.95 },
+  summary: { color: colors.homeText, fontFamily: fonts.poppinsRegular, fontSize: 11, lineHeight: 15.95 },
+  continue: { height: 50, minHeight: 50, padding: 12, borderRadius: 14, borderColor: colors.mealReviewBorder },
+  continueLabel: { color: colors.homePrimary, fontFamily: fonts.poppinsSemiBold, fontSize: 13, lineHeight: 18.2 },
+});

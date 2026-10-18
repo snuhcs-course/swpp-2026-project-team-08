@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; show ongoing meal before resuming a stored draft
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -10,6 +11,7 @@ import { AppButton } from '../../../components/AppButton';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
+import { MealDraftResumeView } from './MealDraftResumeView';
 import { MealCheckinView } from './MealCheckinView';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { useMealSuggestions } from '../hooks/useMealSuggestions';
@@ -51,7 +53,7 @@ export function MealCheckinScreen({
   };
   const back = () => {
     if (model.saving) return;
-    if (!model.back()) void exit();
+    if (model.resumeRequired || !model.back()) void exit();
   };
   useEffect(() => {
     const subscription = BackHandler.addEventListener(
@@ -101,6 +103,7 @@ export function MealCheckinScreen({
         )}
       </SafeAreaView>
     );
+  if (model.resumeRequired) return <MealDraftResumeView draft={model.draft} childName={profile?.childName ?? ''} language={language} onContinue={model.continueDraft} onBack={() => { void exit(); }} />;
   return (
     <MealCheckinView
       draft={model.draft}

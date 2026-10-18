@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; add ongoing meal entry screen copy
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; add replacement source sheet title
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; synced before-meal photo copy from Figma 455:7879
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
@@ -139,6 +140,7 @@ const en = {
     privacy: 'How photo data is used', privacyBody: 'Analysis is optional. Photos and meal records are saved on this device. No photo is sent for AI training.',
     analyzing: 'Analyzing photo…', cancelAnalysis: 'Cancel analysis', analysisFailed: 'Analysis failed. Your photo is still saved locally.',
     permission: 'Photo access was denied. Allow access in device settings or choose another source.', imageError: 'Could not open this image. Choose another supported image.',
+    ongoingHeader: 'Meal Check-in', ongoingTitle: 'Ongoing Meal', ongoingIntro: 'Finish your draft before starting a new check-in.', childMeals: (name: string) => `${name}’s meals`, autoSavedDraft: 'AUTO-SAVED DRAFT', continueDraft: 'Continue draft', draftPhotoSaved: 'Photo saved', draftNoPhoto: 'No photo', draftFoodCount: (count: number) => `${count} ${count === 1 ? 'food' : 'foods'}`,
     loadFailed: 'Could not restore your meal draft. Retry before continuing.', saveFailed: 'Could not save the meal. Your food items and goal selection are preserved.',
     reviewRequired: 'Parent review required before confirmation', ai: 'AI suggestion', parent: 'Parent input',
     addFoodsTitle: 'Add food items', addFoodPrompt: 'Add the foods you served, with or without a photo.', parentReviewBadge: 'PARENT REVIEW',
@@ -437,6 +439,7 @@ const ko = {
     privacy: '사진 사용 안내 자세히 보기', privacyBody: '사진 분석은 선택 사항입니다. 사진과 식사 기록을 기기에 저장합니다. AI 학습을 위해 사진을 전송하지 않습니다.',
     analyzing: '음식 제안을 준비하고 있어요…', cancelAnalysis: '분석 취소', analysisFailed: '사진을 분석하지 못했습니다. 사진과 초안은 유지됩니다.',
     permission: '사진 접근 권한이 없습니다. 기기 설정에서 권한을 허용하거나 다른 방법을 선택해 주세요.', imageError: '이미지를 열지 못했습니다. 지원되는 다른 사진을 선택해 주세요.',
+    ongoingHeader: '식사 체크인', ongoingTitle: '작성 중인 식사', ongoingIntro: '새 식사 체크인을 시작하기 전에 초안을 마무리해 주세요.', childMeals: (name: string) => `${name}의 식사`, autoSavedDraft: '자동 저장된 초안', continueDraft: '초안 이어하기', draftPhotoSaved: '사진 저장됨', draftNoPhoto: '사진 없음', draftFoodCount: (count: number) => `음식 ${count}개`,
     loadFailed: '식사 초안을 불러오지 못했습니다. 계속하기 전에 다시 시도해 주세요.', saveFailed: '식사를 저장하지 못했습니다. 확인한 음식과 목표 선택은 유지됩니다.',
     reviewRequired: '확정하기 전에 보호자 확인이 필요합니다', ai: 'AI 제안', parent: '보호자 입력',
     addFoodsTitle: '음식 추가', addFoodPrompt: '사진 유무와 관계없이 제공한 음식을 직접 추가하세요.', parentReviewBadge: '보호자 확인',

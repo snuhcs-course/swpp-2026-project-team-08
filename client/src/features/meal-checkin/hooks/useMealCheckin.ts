@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; require continuing a restored draft before editing
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -31,6 +32,7 @@ import {
 
 export function useMealCheckin(childId: string, startAfterMealId?: string, freshAfterComplete = false) {
   const [draft, setDraft] = useState<MealDraft | null>(null);
+  const [resumeRequired, setResumeRequired] = useState(false);
   const current = useRef<MealDraft | null>(null);
   const [removed, setRemoved] = useState<{ food: FoodItem; index: number; links: NonNullable<MealDraft['suggestionLinks']> } | null>(null);
   const [loadError, setLoadError] = useState(false);
@@ -60,6 +62,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
           : (stored ?? newDraft(childId));
       if (mounted.current) {
         current.current = value;
+        setResumeRequired(!!stored && stored.step !== 'complete');
         setDraft(value);
       }
     } catch {
@@ -77,6 +80,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
               ? newDraft(childId)
               : (value ?? newDraft(childId));
           current.current = restored;
+          setResumeRequired(!!value && value.step !== 'complete');
           setDraft(restored);
         }
       })
@@ -246,6 +250,8 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
   };
   return {
     draft,
+    resumeRequired,
+    continueDraft: () => setResumeRequired(false),
     loadError,
     removed,
     undoRemove: () => {

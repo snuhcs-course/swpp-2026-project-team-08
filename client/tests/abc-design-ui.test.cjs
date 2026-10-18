@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; cover ongoing meal entry summary
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -119,4 +120,19 @@ test('Figma other-food catalog examples are searchable in both supported languag
   assert.deepEqual(optionsFor('familyCatalog','en').filter(o=>o.label.toLowerCase().includes('plant')).map(o=>o.label),['Plant-based milk','Plant-based yogurt','Plant-based cheese']);
   assert.equal(optionsFor('allergyCatalog','ko').find(o=>o.id==='lupin').label,'루핀');
   assert.equal(optionsFor('approachCatalog','en').some(o=>o.id==='low-histamine'),true);
+});
+
+test('ongoing meal entry shows real draft metadata and only an explicit continue action', () => {
+  const { MealDraftResumeView } = require('../src/features/meal-checkin/screens/MealDraftResumeView.tsx');
+  const draft={...newDraft('child'),mealDate:'2026-10-11',mealType:'dinner',step:'foods',foods:[{...newFood(),name:'Soup'}],photo:{id:'photo',uri:'saved-photo'}};
+  const before=JSON.stringify(draft);
+  const html=renderToStaticMarkup(React.createElement(MealDraftResumeView,{draft,childName:'Alex',language:'en',onContinue:noop,onBack:noop}));
+  assert.match(html,/Ongoing Meal/);assert.match(html,/Finish your draft before starting a new check-in/);
+  assert.match(html,/Alex · Dinner/);assert.match(html,/11 October 2026/);assert.match(html,/Photo saved/);assert.match(html,/1 food/);assert.match(html,/Continue draft/);
+  assert.doesNotMatch(html,/Add food item|Food name|Replace photo/);assert.equal(JSON.stringify(draft),before);
+});
+test('ongoing meal entry handles a photo-free empty draft without fake meal information', () => {
+  const { MealDraftResumeView } = require('../src/features/meal-checkin/screens/MealDraftResumeView.tsx');
+  const html=renderToStaticMarkup(React.createElement(MealDraftResumeView,{draft:newDraft('child'),childName:'Alex',language:'en',onContinue:noop,onBack:noop}));
+  assert.match(html,/No photo/);assert.match(html,/0 foods/);assert.doesNotMatch(html,/Lunch|Photo saved|Rolled omelet/);
 });

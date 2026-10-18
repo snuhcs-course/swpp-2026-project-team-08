@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; require ongoing meal entry before draft continuation -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify source sheet missing-photo spacing and removal state -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify full-photo back button geometry -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; synced before-meal photo text from Figma 455:7879 -->
@@ -21,7 +22,7 @@
 
 ## User Flow
 
-1. 기존 미완료 초안이 있으면 이어서 작성하고, 완료된 기록 뒤에는 새 식사를 시작한다.
+1. 기존 미완료 초안이 있으면 Ongoing Meal 안내를 먼저 표시한다. Continue draft를 누른 뒤에만 마지막 작성 단계로 진입한다. 완료된 기록은 미완료 초안 안내로 표시하지 않는다.
 2. 날짜·유형·장소를 확인한다. 사진을 추가하거나 건너뛰고 음식만 입력한다.
 3. 사진 미리보기에서 확대·교체·제거를 선택한다. 사진 사용 뒤에도 음식을 직접 추가한다. 사진 분석 단계는 없다.
 4. 음식 카드를 열어 확인하거나 편집한다. 필요하면 이전 저장 제안을 실제 제공 음식에 연결한다.
@@ -30,6 +31,9 @@
 ## Requirements
 
 ### R1 — 날짜·식사 정보와 초안
+
+- 저장된 미완료 초안으로 새로 진입하면 `455:9380`의 Ongoing Meal을 먼저 표시한다. Meal Check-in 헤더·아동 이름의 meals 부제·Finish your draft before starting a new check-in. 안내, AUTO-SAVED DRAFT 카드와 Continue draft 버튼을 제공한다. 카드에는 실제 아동·식사 종류·날짜·사진 저장 여부·음식 수를 표시한다. 임의 예시값을 넣지 않는다.
+- Continue draft 이전에는 마지막 단계·음식 편집창·사진 소스·제안 선택창을 자동으로 열지 않는다. 누르면 기존 초안 ID·단계·사진·음식·편집 중 값·연결을 그대로 이어간다. 안내에서 뒤로가면 초안을 보존하고 홈으로 이동한다. 완료 기록·새 초안에는 이 안내를 띄우지 않는다. 사진 확대 화면에서 돌아오는 등 이미 진행 중인 세션을 매번 가로막지 않는다.
 
 - 식사 유형·장소 카드는 아이콘 배경 28px·아이콘 16px·체크 원 18px, 안쪽 여백 10px·요소 간격 6px로 표시한다. 글자는 남은 너비에서 줄바꿈하며 체크 원은 줄어들거나 카드 밖으로 밀려나지 않는다. 기본·선택·날짜 변경 화면에 동일하게 적용한다.
 

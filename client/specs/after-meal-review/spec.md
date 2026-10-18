@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify right-aligned difficulty picker chevrons -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected requirements after screen-by-screen comparison -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated after manual-entry design review -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing specification -->
@@ -107,3 +108,5 @@
 - 어려움 `455:4206`·`455:4093` 및 카테고리별 화면: 진행 바·식사 요약을 추가하지 않는다. 제목·Optional·설명 다음에 음식별 분류/값/Add 행을 놓는다. 선택 목록은 해당 음식 아래에 펼치고 중앙 모달로 바꾸지 않는다. 분류는 원본 아이콘과 170px 너비 목록, 값에는 예시·색상 점을 표시한다. Continue·Skip은 각각 하단 파란 버튼·테두리 없는 버튼이다.
 - 최종 저장 `455:9982`·실패 `455:10206`·완료 `455:9892`: 초안 자동 저장 실패와 최종 저장 실패를 별도로 관리한다. 최종 저장의 식사 요약·초안 유지 안내·동일 기록 Retry·완료 후 View Meal Suggestions/홈을 표시한다. 참고용 전후 사진이 없으면 썸네일을 임의 생성하지 않는다.
 - Figma 완료 화면의 ‘아직 결과가 기록되지 않았다’는 문구는 결과 필수 입력과 충돌하므로 복사하지 않는다. 실제 리뷰 저장 성공과 제안 사용 확인의 대기 여부를 기준으로 표시한다.
+
+- 어려움 선택기 `455:4206`: 카테고리·값·Texture 세부 선택 버튼의 아래 화살표는 텍스트 바로 옆이 아니라 버튼 오른쪽 안쪽 여백 12px에 맞춘다. 텍스트와 아이콘 사이의 남는 공간을 배분하고 긴 텍스트는 아이콘을 밀어내지 않도록 줄어든다.

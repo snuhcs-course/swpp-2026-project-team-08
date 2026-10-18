@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; align picker chevrons with the right inset
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match inline difficulty menus
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -268,6 +269,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     gap: 5,
     maxWidth: "100%",
   },

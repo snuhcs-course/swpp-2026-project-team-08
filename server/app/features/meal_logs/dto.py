@@ -8,6 +8,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.errors import AppError
+from app.models.food_enums import FoodPreparation
 
 MealType = Literal["breakfast", "lunch", "dinner", "snack"]
 MealSetting = Literal["home", "restaurant", "school", "others"]
@@ -41,12 +42,11 @@ class DuplicateFoodIdError(AppError):
 
 # ── 요청 ────────────────────────────────────────────
 
-
 class MealFoodRequest(BaseModel):
     id: str = Field(min_length=1, max_length=80)
     name: str = Field(min_length=1, max_length=200)
     ingredients: list[str]
-    preparation: str = ""
+    cooking_method: FoodPreparation | None = None
     serving_note: str = ""
     traits: dict[str, Any]
     history: str | None = None
@@ -160,14 +160,13 @@ class CalendarDayResponse(BaseModel):
     date: date
     count: int
 
-
 class MealFoodResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
     name: str
     ingredients: list[str]
-    preparation: str
+    cooking_method: FoodPreparation | None = None
     serving_note: str
     traits: dict[str, Any]
     history: str | None

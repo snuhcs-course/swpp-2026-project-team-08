@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { localDate, validDate } from '../../util/date';
@@ -22,7 +23,7 @@ export const newDraft = (childId: string): MealDraft => ({
   savedMealId: null,
 });
 export const confirmFoods = (foods: FoodItem[]): FoodItem[] =>
-  foods.map((food) => ({ ...food, name: food.name.trim(), source: 'parent' }));
+  foods.map((food) => ({ ...food, name: food.name.trim(), origin: food.origin ?? food.source, confirmed: true, source: 'parent' }));
 export function mealFromDraft(draft: MealDraft): Meal {
   if (
     !validDate(draft.mealDate) ||
@@ -42,6 +43,7 @@ export function mealFromDraft(draft: MealDraft): Meal {
     setting: draft.setting,
     photo: draft.photo,
     foods: draft.foods,
+    suggestionLinks: draft.suggestionLinks ?? [],
     exposureFoodId: draft.exposureFoodId,
     savedAt: new Date().toISOString(),
   };

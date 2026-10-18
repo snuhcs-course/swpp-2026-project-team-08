@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -29,7 +30,7 @@ export async function readMealDraft(
   const value: unknown = JSON.parse(raw);
   if (!isDraft(value, childId)) throw new Error('Invalid meal draft');
   // Completion can be restored, but must not appear as a new Home draft.
-  return { ...value, step: value.step === 'analyzing' ? 'method' : value.step };
+  return { ...value, step: value.step === 'analyzing' ? 'method' : value.step === 'goal' ? 'foods' : value.step };
 }
 export const saveMealDraft = (draft: MealDraft) =>
   queued(draft.childId, async () => {
@@ -55,6 +56,7 @@ export function updateMealFoods(childId: string, mealId: string, foods: FoodItem
     const next: Meal = {
       ...current,
       foods,
+      suggestionLinks: current.suggestionLinks?.filter((link) => foods.some((food) => food.id === link.foodId)),
       exposureFoodId: current.exposureFoodId && foods.some((food) => food.id === current.exposureFoodId)
         ? current.exposureFoodId : null,
     };
@@ -65,7 +67,7 @@ export function updateMealFoods(childId: string, mealId: string, foods: FoodItem
     if (rawDraft) {
       const stored: unknown = JSON.parse(rawDraft);
       if (isDraft(stored, childId) && stored.step === 'complete' && stored.savedMealId === mealId) {
-        await AsyncStorage.setItem(draftKey(childId), JSON.stringify({ ...stored, foods, exposureFoodId: next.exposureFoodId }));
+        await AsyncStorage.setItem(draftKey(childId), JSON.stringify({ ...stored, foods, suggestionLinks: next.suggestionLinks, exposureFoodId: next.exposureFoodId }));
       }
     }
     return next;

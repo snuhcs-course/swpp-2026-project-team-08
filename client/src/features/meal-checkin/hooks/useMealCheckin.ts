@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { useQueryClient } from '@tanstack/react-query';
@@ -31,6 +32,7 @@ import {
 export function useMealCheckin(childId: string, startAfterMealId?: string, freshAfterComplete = false) {
   const [draft, setDraft] = useState<MealDraft | null>(null);
   const current = useRef<MealDraft | null>(null);
+  const [removed, setRemoved] = useState<{ food: FoodItem; index: number; links: NonNullable<MealDraft['suggestionLinks']> } | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saving' | 'saved' | 'error'>(
     'saved',
@@ -161,12 +163,13 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       const photo = await pickMealPhoto(source);
       if (photo && mounted.current && request === photoRequest.current) {
         controller.current?.abort();
+        setRemoved(null);
         update({
           photo,
           step: 'preview',
-          foods:
-            current.current?.foods.filter((food) => food.source === 'parent') ??
-            [],
+          foods: current.current?.photo ? [] : current.current?.foods ?? [],
+          suggestionLinks: current.current?.photo ? [] : current.current?.suggestionLinks ?? [],
+          exposureFoodId: null,
         });
       }
     } catch (err) {
@@ -284,6 +287,8 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       ...food,
       name: food.name.trim(),
       source: 'parent',
+      origin: food.origin ?? food.source,
+      confirmed: true,
     };
     const foods = current.current?.foods ?? [];
     update({
@@ -296,6 +301,18 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
   return {
     draft,
     loadError,
+    removed,
+    undoRemove: () => {
+      const value = current.current;
+      if (!value || !removed || busy.current) return;
+      const foods = [...value.foods];
+      foods.splice(Math.min(removed.index, foods.length), 0, removed.food);
+      update({ foods, suggestionLinks: [...(value.suggestionLinks ?? []).filter((link) => !removed.links.some((old) => old.suggestionId === link.suggestionId)), ...removed.links] });
+      setRemoved(null);
+    },
+    confirmFood: (id: string) => {
+      if (current.current) update({ foods: current.current.foods.map((food) => food.id === id ? { ...food, confirmed: true } : food) });
+    },
     reload: load,
     saveStatus,
     error,
@@ -318,27 +335,33 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       controller.current?.abort();
       go('method');
     },
-    removeFood: (id: string) =>
+    removeFood: (id: string) => {
+      const value = current.current;
+      const food = value?.foods.find((item) => item.id === id);
+      if (!value || !food || busy.current) return;
+      setRemoved({ food, index: value.foods.indexOf(food), links: (value.suggestionLinks ?? []).filter((link) => link.foodId === id) });
       update({
+        suggestionLinks: (value.suggestionLinks ?? []).filter((link) => link.foodId !== id),
         foods: current.current?.foods.filter((f) => f.id !== id) ?? [],
         exposureFoodId:
           current.current?.exposureFoodId === id
             ? null
             : (current.current?.exposureFoodId ?? null),
-      }),
+      });
+    },
     removePhoto: () => {
       const value = current.current;
       if (!value) return;
       update({
         photo: null,
         step: 'photo',
-        foods: value.foods.filter((food) => food.source === 'parent'),
-        exposureFoodId: null,
+        foods: value.foods,
+        exposureFoodId: value.exposureFoodId,
       });
     },
     confirm: () => {
       if (current.current?.foods.length)
-        update({ foods: confirmFoods(current.current.foods), step: 'goal' });
+        update({ foods: confirmFoods(current.current.foods), step: 'foods', exposureFoodId: null });
     },
     toggleTrait: (group: TraitGroup, value: string) => {
       setTraits((current) =>

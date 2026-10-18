@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { useState } from 'react';
@@ -8,10 +9,11 @@ import { AppIcon } from '../../../components/AppIcon';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import { FoodEditor } from '../../../components/FoodEditor';
 import { formStyles as ui } from '../../../components/formStyles';
-import { copyFor, suggestionCopyFor } from '../../../util/strings';
+import { abcCopyFor, copyFor, suggestionCopyFor } from '../../../util/strings';
 import { MealCompleteStepView } from './MealCompleteStepView';
 import { MealDetailsStepView } from './MealDetailsStepView';
 import { MealFoodsStepView } from './MealFoodsStepView';
+import { BottomSheet } from '../../../components/BottomSheet';
 import { MealGoalSheetsView } from './MealGoalSheetsView';
 import { MealPhotoStepsView } from './MealPhotoStepsView';
 import type { MealCheckinViewProps } from './mealCheckinViewTypes';
@@ -21,6 +23,8 @@ export function MealCheckinView(p: MealCheckinViewProps) {
   const d = p.draft;
   const s = copyFor(p.language);
   const m = s.mealCheckin;
+  const [replaceConfirm, setReplaceConfirm] = useState(false);
+  const a = abcCopyFor(p.language);
   const [replace, setReplace] = useState(false);
   const [imageError, setImageError] = useState(false);
   const review = d.step === 'foods' || d.step === 'goal';
@@ -86,11 +90,11 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                 p={{
                   draft: d, language: p.language, picking: p.picking,
                   onFullPhoto: p.onFullPhoto, onGo: p.onGo, onSheet: p.onSheet,
-                  onAnalyze: p.onAnalyze, onCancelAnalysis: p.onCancelAnalysis,
+                  onAnalyze: p.onAnalyze, onCancelAnalysis: p.onCancelAnalysis, onSaveExit: p.onSaveExit,
                 }}
                 replace={replace}
                 imageError={imageError}
-                onReplace={() => setReplace((value) => !value)}
+                onReplace={() => { if (d.photo && (d.foods.length || d.suggestionLinks?.length)) setReplaceConfirm(true); else setReplace((value) => !value); }}
                 onImageError={() => setImageError(true)}
                 onPick={(source) => {
                   setImageError(false);
@@ -104,7 +108,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
               />
             )}
             {review && (
-              <MealFoodsStepView p={{ draft: d, language: p.language, onEdit: p.onEdit, onRemove: p.onRemove, onGo: p.onGo, onFullPhoto: p.onFullPhoto }} />
+              <MealFoodsStepView p={{ draft: d, language: p.language, onEdit: p.onEdit, onRemove: p.onRemove, onGo: p.onGo, onFullPhoto: p.onFullPhoto, onUpdate: p.onUpdate, onConfirmFood: p.onConfirmFood, removedName: p.removedName, onUndoRemove: p.onUndoRemove, suggestions: p.suggestions, suggestionsLoading: p.suggestionsLoading, suggestionsError: p.suggestionsError, onRetrySuggestions: p.onRetrySuggestions }} />
             )}
             {d.step === 'complete' && (
               <MealCompleteStepView p={{ draft: d, language: p.language, onAfterMeal: p.onAfterMeal, onHome: p.onHome }} />
@@ -125,8 +129,8 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             )}
             {d.step === 'foods' && (
               <>
-                <AppButton variant="meal" label={m.confirmFoods} icon={<UiAssetIcon name="meal-check" />} disabled={!d.foods.length || p.saving} onPress={p.onConfirm} />
-                <Text style={styles.confirmHint}>{m.confirmFoodsHint}</Text>
+                <AppButton variant="meal" label={p.saving ? a.savingMeal : p.error === 'save' ? s.common.retry : m.confirmFoods} icon={<UiAssetIcon name="meal-check" />} disabled={!d.foods.length || p.saving} onPress={p.onConfirm} />
+                {p.saving && <Text style={styles.confirmHint}>{a.draftKept}</Text>}
                 <AppButton variant="meal" secondary label={s.common.saveExit} onPress={p.onSaveExit} />
               </>
             )}
@@ -148,14 +152,10 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             onToggleTrait={p.onToggleTrait}
             onSaveTraits={p.onSaveTraits}
             onCancelTraits={() => p.onTraits(null)}
-            goal={{
-              label: m.goalLabel,
-              value: d.exposureFoodId === d.editingFood.id ? d.editingFood.name || m.goalNotSet : m.goalNotSet,
-              actionLabel: s.common.add,
-              onPress: () => p.onUpdate({ exposureFoodId: d.editingFood!.id }),
-            }}
+            finalLabels={a}
           />
         )}
+        {replaceConfirm && <BottomSheet title={a.replaceTitle} closeLabel={s.common.close} onClose={() => setReplaceConfirm(false)}><Text style={ui.text}>{a.replaceBody}</Text><AppButton label={m.replace} onPress={() => { setReplaceConfirm(false); setReplace(true); }} /><AppButton secondary label={m.cancel} onPress={() => setReplaceConfirm(false)} /></BottomSheet>}
         <MealGoalSheetsView p={{
           draft: d, language: p.language, sheet: p.sheet, saving: p.saving, error: p.error,
           onSheet: p.onSheet, onGo: p.onGo, onUpdate: p.onUpdate, onSave: p.onSave,

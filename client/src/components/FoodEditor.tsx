@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { useState } from 'react';
@@ -13,6 +14,7 @@ import {
   type TraitGroup,
 } from '../types/meal';
 import type { copyFor } from '../util/strings';
+import { DropdownChoice } from './DropdownChoice';
 import { SelectionChoice } from './SelectionChoice';
 import { BottomSheet } from './BottomSheet';
 import { FoodTraitsTags } from './FoodTraitsTags';
@@ -50,6 +52,7 @@ export function FoodEditor({
   onSaveTraits,
   onCancelTraits,
   goal,
+  finalLabels,
 }: {
   food: FoodItem;
   labels: { meal: ReturnType<typeof copyFor>['mealCheckin']; common: Pick<ReturnType<typeof copyFor>['common'], 'add' | 'remove' | 'notEntered' | 'close'> };
@@ -68,6 +71,7 @@ export function FoodEditor({
   onToggleTrait: (group: TraitGroup, value: string) => void;
   onSaveTraits: () => void;
   onCancelTraits: () => void;
+  finalLabels?: { cooking: string; detail: string; acceptance: string; selectCooking: string; cookingOptions: readonly string[] };
   goal?: { label: string; value: string; actionLabel: string; onPress: () => void };
 }) {
   const s = labels;
@@ -159,6 +163,13 @@ export function FoodEditor({
             <View style={{ flex: 1 }}><FormField variant="editor" label={m.addIngredient} value={ingredient} onChangeText={onIngredientChange} /></View>
             <AppButton label={s.common.add} secondary compact disabled={!ingredient.trim()} onPress={() => { onAddIngredient(); setIngredientOpen(false); }} />
           </View>}
+          {finalLabels ? <>
+            <Text style={styles.label}>{finalLabels.cooking}</Text>
+            <DropdownChoice value={food.preparation} placeholder={finalLabels.selectCooking} displayFallback={food.preparation || undefined} options={finalLabels.cookingOptions.map((label) => ({ id: label, label }))} onChange={(preparation) => onChange({ preparation })} />
+            <FormField variant="editor" label={finalLabels.detail} value={food.servingNote} onChangeText={(servingNote) => onChange({ servingNote })} />
+            <Text style={styles.label}>{finalLabels.acceptance} · {m.optional}</Text>
+            <View accessibilityRole="radiogroup" style={editorStyles.acceptanceRow}>{[0, 1, 2, 3].map((value) => <Pressable key={value} accessibilityRole="radio" accessibilityLabel={`${finalLabels.acceptance}: ${value}`} accessibilityState={{ checked: food.acceptance === value }} onPress={() => onChange({ acceptance: food.acceptance === value ? null : value })} style={[editorStyles.acceptanceValue, food.acceptance === value && editorStyles.acceptanceSelected]}><Text style={styles.text}>{value}</Text></Pressable>)}</View>
+          </> : <>
           <View style={editorStyles.twoFields}>
             <View style={{ flex: 1 }}><FormField variant="editor" label={m.preparation} value={food.preparation} onChangeText={(preparation) => onChange({ preparation })} /></View>
             <View style={{ flex: 1 }}><FormField variant="editor" label={m.servingNote} value={food.servingNote} onChangeText={(servingNote) => onChange({ servingNote })} /></View>
@@ -197,6 +208,7 @@ export function FoodEditor({
               ))}
             </View>
           )}
+          </>}
           {goal && <View style={editorStyles.goalRow}>
             <Feather name="target" size={18} color={colors.homePrimary} />
             <View style={{ flex: 1 }}><Text style={editorStyles.goalLabel}>{goal.label}</Text><Text style={editorStyles.goalValue}>{goal.value}</Text></View>
@@ -209,6 +221,9 @@ export function FoodEditor({
 }
 
 const editorStyles = StyleSheet.create({
+  acceptanceRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
+  acceptanceValue: { flex: 1, padding: 10, alignItems: 'center', borderBottomWidth: 3, borderBottomColor: colors.homeBorder },
+  acceptanceSelected: { borderBottomColor: colors.homePrimary, backgroundColor: colors.homeSelected },
   subtitle: { color: colors.homeMuted, fontSize: 10, fontFamily: fonts.poppinsRegular },
   badges: { flexDirection: 'row', gap: 5 },
   neutralBadge: { color: colors.homeMuted, borderWidth: 1, borderColor: colors.homeBorder, backgroundColor: colors.homeBackground, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4, fontSize: 9, fontFamily: fonts.poppinsRegular },

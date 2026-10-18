@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { router } from 'expo-router';
@@ -9,6 +10,8 @@ import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import { MealCheckinView } from './MealCheckinView';
+import { useProfile } from '../../../providers/ProfileProvider';
+import { useMealSuggestions } from '../hooks/useMealSuggestions';
 import { useMealCheckin } from '../hooks/useMealCheckin';
 import { useMealCheckinInputs } from '../hooks/useMealCheckinInputs';
 
@@ -27,6 +30,8 @@ export function MealCheckinScreen({
   startAfterMealId?: string;
   tryingSuggestionId?: string;
 }) {
+  const profile = useProfile().profile;
+  const saved = useMealSuggestions(childId, profile);
   const model = useMealCheckin(childId, startAfterMealId, !!tryingSuggestionId);
   const [trying, setTrying] = useState(!!tryingSuggestionId);
   const [languageError, setLanguageError] = useState(false);
@@ -99,6 +104,13 @@ export function MealCheckinScreen({
   return (
     <MealCheckinView
       draft={model.draft}
+      onConfirmFood={model.confirmFood}
+      removedName={model.removed?.food.name}
+      onUndoRemove={model.undoRemove}
+      suggestions={saved.suggestions}
+      suggestionsLoading={saved.loading}
+      suggestionsError={saved.error}
+      onRetrySuggestions={saved.retry}
       tryingSuggestion={tryingSuggestionId ? { checked: trying, onToggle: () => setTrying(old => !old) } : undefined}
       language={language}
       saveStatus={model.saveStatus}
@@ -135,7 +147,7 @@ export function MealCheckinScreen({
       onRemovePhoto={model.removePhoto}
       onChangeFood={model.changeFood}
       onSaveFood={model.saveFood}
-      onConfirm={model.confirm}
+      onConfirm={() => { model.confirm(); void model.save(true).then((id) => { if (id && afterMealIntent) afterMeal(id); }); }}
       onSave={(skip) => {
         void model.save(skip).then((id) => {
           if (id && trying && tryingSuggestionId) {

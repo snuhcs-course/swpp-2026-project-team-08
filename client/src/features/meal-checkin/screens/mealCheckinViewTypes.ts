@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import type { FoodItem, FoodTraits, MealDraft, MealStep, PhotoSource, TraitGroup } from '../../../types/meal';
@@ -25,6 +26,13 @@ type FoodInput = {
 
 export type MealCheckinViewProps = {
   draft: MealDraft;
+  onConfirmFood: (id: string) => void;
+  removedName?: string;
+  onUndoRemove: () => void;
+  suggestions: { id: string; title: string; description: string; servingTip?: string }[];
+  suggestionsLoading: boolean;
+  suggestionsError: boolean;
+  onRetrySuggestions: () => void;
   tryingSuggestion?: { checked: boolean; onToggle: () => void };
   language: Language;
   saveStatus: 'saving' | 'saved' | 'error';

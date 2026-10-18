@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { Image } from 'expo-image';
@@ -15,7 +16,7 @@ import { styles } from './mealCheckinStyles';
 
 type PhotoStepProps = Pick<MealCheckinViewProps,
   'draft' | 'language' | 'picking' | 'onFullPhoto' | 'onGo' |
-  'onSheet' | 'onAnalyze' | 'onCancelAnalysis'>;
+  'onSheet' | 'onAnalyze' | 'onCancelAnalysis' | 'onSaveExit'>;
 
 export function MealPhotoStepsView({
   p,
@@ -169,6 +170,7 @@ export function MealPhotoStepsView({
       <View style={styles.consentSurface}><Text accessibilityRole="alert" style={ui.error}>{m.analysisFailed}</Text></View>
       <AppButton variant="meal" label={s.common.retry} onPress={p.onAnalyze} />
       <AppButton variant="meal" secondary label={m.manual} onPress={() => p.onGo('foods')} />
+      <AppButton variant="meal" secondary label={s.common.saveExit} onPress={p.onSaveExit} />
     </>
   );
 }

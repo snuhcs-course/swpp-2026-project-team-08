@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import {
@@ -24,6 +25,9 @@ export function isFood(v: unknown): v is FoodItem {
     typeof v.preparation !== 'string' ||
     typeof v.servingNote !== 'string' ||
     !record(v.traits) ||
+    !(v.confirmed === undefined || typeof v.confirmed === 'boolean') ||
+    !(v.origin === undefined || v.origin === 'ai' || v.origin === 'parent') ||
+    !(v.acceptance === undefined || v.acceptance === null || (typeof v.acceptance === 'number' && Number.isInteger(v.acceptance) && v.acceptance >= 0 && v.acceptance <= 3)) ||
     (v.source !== 'ai' && v.source !== 'parent') ||
     (v.history !== null && !histories.includes(v.history as never))
   )
@@ -57,6 +61,7 @@ export function isDraft(v: unknown, childId: string): v is MealDraft {
     (v.exposureFoodId === null ||
       (typeof v.exposureFoodId === 'string' &&
         v.foods.some((food) => food.id === v.exposureFoodId))) &&
+    (v.suggestionLinks === undefined || (Array.isArray(v.suggestionLinks) && v.suggestionLinks.every((link) => record(link) && typeof link.suggestionId === 'string' && typeof link.foodId === 'string' && typeof link.title === 'string' && typeof link.description === 'string' && (link.servingTip === undefined || typeof link.servingTip === 'string') && v.foods instanceof Array && v.foods.some((food: FoodItem) => food.id === link.foodId)) && new Set(v.suggestionLinks.map((link) => link.suggestionId)).size === v.suggestionLinks.length)) &&
     (v.savedMealId === null || v.savedMealId === v.id)
   );
 }

@@ -166,7 +166,10 @@ async def get_meal(
     meal = await service.get_owned(child_id, meal_id)
     detail = _detail(meal)
     snapshots = await service.linked_suggestions(meal)
-    detail.suggestions = [MealSuggestionResponse(**s) for s in snapshots] + detail.suggestions
+    # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    detail.suggestions = [
+        MealSuggestionResponse.model_validate(snapshot) for snapshot in snapshots
+    ] + detail.suggestions
     return detail
 
 

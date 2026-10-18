@@ -304,3 +304,44 @@ async def test_eligible_meals_document_nested_response_and_only_lookup_errors(cl
         missing = await client.get(invalid_url)
         assert missing.status_code == 404
         assert missing.json() == {"error_code": "SUGGESTION_NOT_FOUND", "details": {}}
+
+
+async def test_linked_snapshot_maps_source_and_ingredient_trial_without_changing_response(client):
+    item = await setup(client)
+    await decision(client, item)
+    meals = f"/api/v1/children/{CHILD}/meals"
+    expected = {
+        "id": item["id"],
+        "food_id": FOOD_ID,
+        "title": "Rolled Omelet",
+        "description": "A familiar portion",
+        "serving_tip": "No pressure",
+        "ingredients": ["Egg", "Carrot"],
+        "managed": True,
+    }
+    assert (await client.get(f"{meals}/{MEAL_ID}")).json()["suggestions"] == [expected]
+    trial_food = "ingredient-trial-food"
+    await put_meal(
+        client,
+        meal_id="ingredient-trial",
+        foods=[{**meal_payload()["foods"][0], "id": trial_food}],
+        exposure_food_id=trial_food,
+    )
+    review = review_payload()
+    review["outcomes"][0]["food_id"] = trial_food
+    review["difficulties"] = {trial_food: []}
+    await client.put(f"{meals}/ingredient-trial/review", json=review)
+    tried = await client.post(
+        f"{ROOT}/{item['id']}/tries",
+        json={"meal_id": "ingredient-trial", "target_id": f"ingredient:{trial_food}:ing-egg"},
+    )
+    assert tried.status_code == 200, tried.text
+    assert (await client.get(f"{meals}/ingredient-trial")).json()["suggestions"] == [
+        {**expected, "food_id": trial_food}
+    ]
+    # Unsave hides the source bookmark but preserves the trial's historical snapshot.
+    await client.put(f"{ROOT}/{item['id']}/saved", json={"saved": False})
+    assert (await client.get(f"{meals}/{MEAL_ID}")).json()["suggestions"] == []
+    assert (await client.get(f"{meals}/ingredient-trial")).json()["suggestions"] == [
+        {**expected, "food_id": trial_food}
+    ]

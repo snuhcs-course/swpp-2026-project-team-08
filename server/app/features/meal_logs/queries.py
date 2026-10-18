@@ -1,6 +1,7 @@
-# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 """식사 기록 조회 함수."""
 
+from dataclasses import dataclass
 from datetime import date
 
 from sqlalchemy import Select, func, select
@@ -8,6 +9,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models import MealLog, MealSuggestion
+
+
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+@dataclass(frozen=True)
+class LinkedSuggestion:
+    """Suggestion snapshot attached to a source or trial food, independent of HTTP DTOs."""
+
+    id: str
+    food_id: str
+    title: str
+    description: str
+    serving_tip: str | None
+    ingredients: list[str]
+    managed: bool = True
 
 
 def meal_with_children() -> Select[tuple[MealLog]]:
@@ -64,8 +79,8 @@ async def get_suggestion(session: AsyncSession, suggestion_id: str) -> MealSugge
     return result.scalar_one_or_none()
 
 
-# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-async def linked_suggestions(session: AsyncSession, meal: MealLog) -> list[dict]:
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+async def linked_suggestions(session: AsyncSession, meal: MealLog) -> list[LinkedSuggestion]:
     """Read suggestion snapshots without calling another feature's service."""
     from app.models import Suggestion, SuggestionTry
 
@@ -104,14 +119,13 @@ async def linked_suggestions(session: AsyncSession, meal: MealLog) -> list[dict]
         if food_id:
             pairs.append((suggestion, food_id))
     return [
-        {
-            "id": s.id,
-            "food_id": food_id,
-            "title": s.content["what_to_try"],
-            "description": s.content["why_this_may_help"],
-            "serving_tip": s.content["serving_tip"],
-            "ingredients": s.content["ingredients"],
-            "managed": True,
-        }
+        LinkedSuggestion(
+            id=s.id,
+            food_id=food_id,
+            title=s.content["what_to_try"],
+            description=s.content["why_this_may_help"],
+            serving_tip=s.content["serving_tip"],
+            ingredients=list(s.content["ingredients"]),
+        )
         for s, food_id in pairs
     ]

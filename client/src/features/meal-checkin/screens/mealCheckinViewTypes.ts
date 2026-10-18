@@ -6,6 +6,8 @@
 
 import type { FoodItem, FoodTraits, MealDraft, MealStep, PhotoSource, TraitGroup } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+import type { MealSuggestionLinking, MealSuggestionOption } from '../types';
 
 type DateInput = {
   parts: [number, number, number];
@@ -33,7 +35,9 @@ export type MealCheckinViewProps = {
   onConfirmFood: (id: string) => void;
   removedName?: string;
   onUndoRemove: () => void;
-  suggestions: { id: string; title: string; description: string; servingTip?: string; mealDate?: string; mealType?: string }[];
+  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+  suggestions: MealSuggestionOption[];
+  suggestionLinking: MealSuggestionLinking;
   suggestionsLoading: boolean;
   suggestionsError: boolean;
   onRetrySuggestions: () => void;

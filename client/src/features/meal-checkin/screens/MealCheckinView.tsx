@@ -191,11 +191,12 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                   onRemove: p.onRemove,
                   onGo: p.onGo,
                   onFullPhoto: p.onFullPhoto,
-                  onUpdate: p.onUpdate,
                   onConfirmFood: p.onConfirmFood,
                   removedName: p.removedName,
                   onUndoRemove: p.onUndoRemove,
                   suggestions: p.suggestions,
+                  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+                  suggestionLinking: p.suggestionLinking,
                   suggestionsLoading: p.suggestionsLoading,
                   suggestionsError: p.suggestionsError,
                   onRetrySuggestions: p.onRetrySuggestions,

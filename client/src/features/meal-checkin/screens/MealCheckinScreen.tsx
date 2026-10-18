@@ -36,7 +36,8 @@ export function MealCheckinScreen({
 }) {
   const profile = useProfile().profile;
   const saved = useMealSuggestions(childId, profile);
-  const model = useMealCheckin(childId, startAfterMealId, !!tryingSuggestionId);
+  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+  const model = useMealCheckin(childId, startAfterMealId, !!tryingSuggestionId, saved.suggestions);
   const [trying, setTrying] = useState(true);
   const [languageError, setLanguageError] = useState(false);
   const inputs = useMealCheckinInputs({
@@ -114,6 +115,7 @@ export function MealCheckinScreen({
       </SafeAreaView>
     );
   if (model.resumeRequired) return <MealDraftResumeView draft={model.draft} childName={profile?.childName ?? ''} language={language} onContinue={model.continueDraft} onBack={() => { void exit(); }} />;
+  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
   return (
     <MealCheckinView
       draft={model.draft}
@@ -122,6 +124,7 @@ export function MealCheckinScreen({
       removedName={model.removed?.food.name}
       onUndoRemove={model.undoRemove}
       suggestions={saved.suggestions}
+      suggestionLinking={model.suggestionLinking}
       suggestionsLoading={saved.loading}
       suggestionsError={saved.error}
       onRetrySuggestions={saved.retry}

@@ -2,7 +2,6 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; distinguish final save errors from draft autosave errors
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// This Code is generated with AI
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -110,7 +109,16 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     current.current = next;
     setDraft(next);
   };
-  const go = (step: ReviewStep) => update({ step: normalizeReviewStep(step) });
+  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+  const cancelPhotoPick = () => {
+    ++pickVersion.current;
+    pickBusy.current = false;
+    setPicking(false);
+  };
+  const go = (step: ReviewStep) => {
+    cancelPhotoPick();
+    update({ step: normalizeReviewStep(step) });
+  };
   const back = (): boolean => {
     const step = current.current?.step;
     if (!step || step === 'photo' || step === 'complete') return false;
@@ -133,19 +141,25 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     setPhotoError(null);
     try {
       const photo = await pickMealPhoto(source);
-      if (request !== pickVersion.current || !photo) return;
+      // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+      if (!mounted.current || request !== pickVersion.current || !photo) return;
       const value = current.current;
       if (!value) return;
       update({ afterPhoto: photo, step: 'preview', outcomes: clearOutcomeSuggestions(value.outcomes) });
     } catch (error) {
-      if (request === pickVersion.current) setPhotoError(error instanceof PhotoError ? error.code : 'image');
+      // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+      if (mounted.current && request === pickVersion.current) setPhotoError(error instanceof PhotoError ? error.code : 'image');
     } finally {
-      pickBusy.current = false;
-      if (mounted.current) setPicking(false);
+      // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+      if (request === pickVersion.current) {
+        pickBusy.current = false;
+        if (mounted.current) setPicking(false);
+      }
     }
   };
   const removePhoto = () => {
-    ++pickVersion.current;
+    // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    cancelPhotoPick();
     const value = current.current;
     if (!value) return;
     setPhotoError(null);
@@ -153,6 +167,8 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   };
 
   const manual = () => {
+    // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    cancelPhotoPick();
     const value = current.current;
     if (!value) return;
     update({ outcomes: clearOutcomeSuggestions(value.outcomes), comparisonMethod: 'manual', step: 'outcomes' });

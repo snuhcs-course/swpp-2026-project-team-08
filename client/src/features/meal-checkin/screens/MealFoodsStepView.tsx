@@ -7,7 +7,8 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 
-import { useEffect, useRef, useState } from "react";
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+import { useState } from "react";
 import { Image } from "expo-image";
 import {
   Modal,
@@ -37,11 +38,11 @@ type Props = Pick<
   | "onRemove"
   | "onGo"
   | "onFullPhoto"
-  | "onUpdate"
   | "onConfirmFood"
   | "removedName"
   | "onUndoRemove"
   | "suggestions"
+  | "suggestionLinking"
   | "suggestionsLoading"
   | "suggestionsError"
   | "onRetrySuggestions"
@@ -49,33 +50,17 @@ type Props = Pick<
 
 export function MealFoodsStepView({ p }: { p: Props }) {
   const [expanded, setExpanded] = useState<string | null>(p.draft.foods[0]?.id ?? null);
-  const [linkStep, setLinkStep] = useState<0 | 1 | 2>(0);
-  const [suggestionId, setSuggestionId] = useState("");
-  const resumeLink = useRef(false);
-  useEffect(() => {
-    if (!p.draft.editingFood && resumeLink.current) {
-      resumeLink.current = false;
-      setLinkStep(2);
-    }
-  }, [p.draft.editingFood]);
-  const [targetId, setTargetId] = useState("");
+  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+  const { step: linkStep, selectedSuggestion: suggestion, selectedFoodId: targetId } = p.suggestionLinking;
   const s = copyFor(p.language);
   const m = s.mealCheckin;
   const a = abcCopyFor(p.language);
   const d = p.draft;
   const emptyManual = !d.photo && !d.foods.length && !p.removedName;
-  const suggestion = p.suggestions.find((item) => item.id === suggestionId);
   const sourceMeal = (item: Props['suggestions'][number]) => item.mealDate
     ? `${displayDate(item.mealDate, p.language, true)}${item.mealType && item.mealType in m.types ? ` · ${m.types[item.mealType as keyof typeof m.types]}` : ''}` : null;
   const openFood = (food: FoodItem) => {
     setExpanded(expanded === food.id ? null : food.id);
-  };
-  const editFood = (food: FoodItem) => {
-    if (linkStep === 2) {
-      resumeLink.current = true;
-      setLinkStep(0);
-    }
-    p.onEdit(food);
   };
   const card = (food: FoodItem, selecting = false) => {
     const open = selecting ? targetId === food.id : expanded === food.id;
@@ -93,7 +78,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
             expanded: open,
             selected: selecting && targetId === food.id,
           }}
-          onPress={() => (selecting ? setTargetId(food.id) : openFood(food))}
+          onPress={() => (selecting ? p.suggestionLinking.onSelectFood(food.id) : openFood(food))}
           style={styles.foodHeading}
         >
           <View
@@ -157,7 +142,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
               </Pressable>
               <Pressable
                 accessibilityRole="button"
-                onPress={() => editFood(food)}
+                onPress={() => p.onEdit(food)}
                 style={styles.action}
               >
                 <UiAssetIcon name="abc-edit" />
@@ -173,13 +158,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
               key={item.suggestionId}
               accessibilityRole="button"
               accessibilityLabel={`${s.common.remove}: ${item.title}`}
-              onPress={() =>
-                p.onUpdate({
-                  suggestionLinks: d.suggestionLinks?.filter(
-                    (link) => link.suggestionId !== item.suggestionId,
-                  ),
-                })
-              }
+              onPress={() => p.suggestionLinking.onUnlink(item.suggestionId)}
             >
               <Text style={styles.linked}>
                 {item.title} · {a.linked} ×
@@ -250,7 +229,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
       <View style={[styles.foodList, !d.foods.length && { flex: 1 }]}>{d.foods.map((food) => card(food))}</View>
       <Pressable
         accessibilityRole="button"
-        onPress={() => setLinkStep(1)}
+        onPress={p.suggestionLinking.onOpen}
         style={[styles.suggestionEntry, !!p.removedName && { marginTop: "auto", paddingTop: 20 }]}
       >
         <Text style={styles.suggestionTitle}>{a.previousSuggestion}</Text>
@@ -260,11 +239,11 @@ export function MealFoodsStepView({ p }: { p: Props }) {
       <Modal
         visible={linkStep !== 0}
         animationType="slide"
-        onRequestClose={() => setLinkStep(linkStep === 2 ? 1 : 0)}
+        onRequestClose={p.suggestionLinking.onBack}
       >
         <SafeAreaView style={styles.modal}>
           <View style={styles.linkHeader}>
-            <Pressable accessibilityRole="button" accessibilityLabel={s.common.back} onPress={() => setLinkStep(linkStep === 2 ? 1 : 0)} style={styles.linkBack}><AppIcon name="back" size={18} /></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel={s.common.back} onPress={p.suggestionLinking.onBack} style={styles.linkBack}><AppIcon name="back" size={18} /></Pressable>
             <Text style={styles.modalTitle}>{linkStep === 1 ? a.previousSuggestion : a.selectFood}</Text>
             <Text style={[styles.muted, { fontSize: linkStep === 1 ? 14 : 10 }]}>{p.childName} · {displayDate(d.mealDate, p.language)} · {d.mealType ? m.types[d.mealType] : ""} · {d.setting ? m.settings[d.setting] : ""}</Text>
             <View style={styles.linkProgress}>{[0,1,2,3,4].map(i => <View key={i} style={[styles.linkSegment, i < 4 && { backgroundColor: colors.homePrimary }]} />)}</View>
@@ -288,17 +267,14 @@ export function MealFoodsStepView({ p }: { p: Props }) {
                   <Pressable
                     key={item.id}
                     accessibilityRole="radio"
-                    accessibilityState={{ checked: item.id === suggestionId }}
-                    onPress={() => {
-                      setSuggestionId(item.id);
-                      setTargetId("");
-                    }}
+                    accessibilityState={{ checked: item.id === suggestion?.id }}
+                    onPress={() => p.suggestionLinking.onSelectSuggestion(item.id)}
                     style={[
                       styles.foodCard, styles.suggestionCard,
-                      item.id === suggestionId && styles.selectedCard,
+                      item.id === suggestion?.id && styles.selectedCard,
                     ]}
                   >
-                    <View style={styles.linkCardHeading}><Text style={styles.suggestionName}>{item.title}</Text><View style={[styles.linkRadio, item.id === suggestionId && styles.linkRadioSelected]}>{item.id === suggestionId && <View style={styles.linkRadioDot} />}</View></View>
+                    <View style={styles.linkCardHeading}><Text style={styles.suggestionName}>{item.title}</Text><View style={[styles.linkRadio, item.id === suggestion?.id && styles.linkRadioSelected]}>{item.id === suggestion?.id && <View style={styles.linkRadioDot} />}</View></View>
                     <Text style={styles.suggestionBody}>{item.description}</Text>
                     {sourceMeal(item) && <Text style={styles.suggestionDate}>{sourceMeal(item)}</Text>}
                   </Pressable>
@@ -328,38 +304,15 @@ export function MealFoodsStepView({ p }: { p: Props }) {
               variant="meal"
               label={linkStep === 1 ? s.common.continue : a.link}
               labelStyle={{ fontSize: 16 }}
-              disabled={
-                !suggestion ||
-                (linkStep === 2 &&
-                  !d.foods.some((food) => food.id === targetId))
-              }
-              onPress={() => {
-                if (linkStep === 1) setLinkStep(2);
-                else if (suggestion) {
-                  p.onUpdate({
-                    suggestionLinks: [
-                      ...(d.suggestionLinks ?? []).filter(
-                        (item) => item.suggestionId !== suggestion.id,
-                      ),
-                      {
-                        suggestionId: suggestion.id,
-                        foodId: targetId,
-                        title: suggestion.title,
-                        description: suggestion.description,
-                        servingTip: suggestion.servingTip,
-                      },
-                    ],
-                  });
-                  setLinkStep(0);
-                }
-              }}
+              disabled={!p.suggestionLinking.canContinue}
+              onPress={p.suggestionLinking.onContinue}
             />
             <AppButton
               secondary
               label={linkStep === 1 ? m.cancel : s.common.back}
               labelStyle={{ fontSize: 16, color: colors.homePrimary }}
               style={{ backgroundColor: colors.transparent, borderWidth: 0, minHeight: 48 }}
-              onPress={() => setLinkStep(linkStep === 1 ? 0 : 1)}
+              onPress={p.suggestionLinking.onBack}
             />
           </View>
         </SafeAreaView>

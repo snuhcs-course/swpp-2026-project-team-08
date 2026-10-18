@@ -255,7 +255,8 @@ async def test_abc_rejects_invalid_acceptance_dangling_links_and_unlinked_feedba
     assert (await put_meal(client, foods=[food])).status_code == 422
     link = {"suggestion_id": "saved", "food_id": "missing", "title": "Try", "description": "Idea"}
     assert (await put_meal(client, suggestion_links=[link])).status_code == 422
-    await put_meal(client)
+    # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    await put_meal(client, suggestion_links=[{**link, "food_id": FOOD_ID}])
     review = {**review_payload(), "suggestion_feedback": {"not-linked": "tried"}}
     assert (
         await client.put(f"/api/v1/children/{CHILD}/meals/{MEAL_ID}/review", json=review)

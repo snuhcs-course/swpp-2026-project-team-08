@@ -125,7 +125,12 @@ class MealLogService:
         )
         meal = await self.get_owned(child_id, meal_id)
         feedback = suggestion_feedback or {}
-        if set(feedback) - {link["suggestion_id"] for link in meal.suggestion_links}:
+        # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+        # Legacy reviews predate meal links. Preserve their answers as feedback only;
+        # confirm_linked_tries still creates attempts solely for explicit meal links.
+        if meal.suggestion_links and set(feedback) - {
+            link["suggestion_id"] for link in meal.suggestion_links
+        }:
             raise InvalidMealLinkError()
         review = await self._session.get(MealReview, meal_id)
         if review is None:

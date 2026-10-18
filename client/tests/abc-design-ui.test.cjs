@@ -17,7 +17,8 @@ for (const ext of ['.ts', '.tsx']) require.extensions[ext] = (m, file) => m._com
 }).outputText, file);
 for (const ext of ['.svg', '.png']) require.extensions[ext] = (m, file) => { m.exports = file; };
 const flatten = (value) => Object.assign({}, ...[value].flat(Infinity).filter(Boolean));
-function primitive(tag) { return ({ children, style, accessibilityLabel, accessibilityState, accessibilityRole, testID, onPress, onChangeText, value, placeholder, ...props }) => {
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+function primitive(tag) { return function Primitive({ children, style, accessibilityLabel, accessibilityState, accessibilityRole, testID, onPress, onChangeText, value, placeholder, ...props }) {
   const css = flatten(typeof style === 'function' ? style({ pressed: false }) : style);
   const safeProps = { style: css, role: accessibilityRole, 'aria-label': accessibilityLabel, 'data-testid': testID };
   if (accessibilityState) for (const [key, v] of Object.entries(accessibilityState)) safeProps[`aria-${key}`] = v;
@@ -42,6 +43,9 @@ const { Dialog } = require('../src/components/Dialog.tsx');
 const { AfterMealPhotoStepsView } = require('../src/features/after-meal-review/screens/AfterMealPhotoStepsView.tsx');
 const { HeightFitPhoto } = require('../src/components/HeightFitPhoto.tsx');
 const s=copyFor('en'), a=abcCopyFor('en'), noop=()=>{};
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+const closedLinking = { step: 0, selectedFoodId: '', canContinue: false, onOpen: noop, onBack: noop,
+  onSelectSuggestion: noop, onSelectFood: noop, onContinue: noop, onUnlink: noop };
 function editor(food=newFood(), mode='add') {
   return renderToStaticMarkup(React.createElement(MealFoodEditorDialog, { food, mode, meal:s.mealCheckin, common:s.common, labels:a, ingredient:'', onIngredientChange:noop,onAddIngredient:noop,onRemoveIngredient:noop,onChange:noop,onSave:noop,onCancel:noop }));
 }
@@ -64,12 +68,12 @@ test('replacement dialog is centered and exposes body and small gray hint separa
   assert.match(html,/font-size:11px;color:#65758B/);assert.doesNotMatch(html,/×/);
 });
 test('photo-free empty list has only entry guidance and the full-width add action', () => {
-  const html=renderToStaticMarkup(React.createElement(MealFoodsStepView,{p:{draft:{...newDraft('test'),step:'foods'},language:'en',suggestions:[],onEdit:noop}}));
+  const html=renderToStaticMarkup(React.createElement(MealFoodsStepView,{p:{draft:{...newDraft('test'),step:'foods'},language:'en',suggestions:[],suggestionLinking:closedLinking,onEdit:noop}}));
   assert.match(html,/Add the foods you served, with or without a photo/);assert.match(html,/Add food item/);
   assert.doesNotMatch(html,/No foods added yet|No Before-meal photo|previous suggestion/);
 });
 test('photo empty list has plain guidance and preserves the suggestion entry', () => {
-  const html=renderToStaticMarkup(React.createElement(MealFoodsStepView,{p:{draft:{...newDraft('test'),step:'foods',photo:{uri:'test-photo'}},language:'en',childName:'Max',suggestions:[],onEdit:noop}}));
+  const html=renderToStaticMarkup(React.createElement(MealFoodsStepView,{p:{draft:{...newDraft('test'),step:'foods',photo:{uri:'test-photo'}},language:'en',childName:'Max',suggestions:[],suggestionLinking:closedLinking,onEdit:noop}}));
   assert.match(html,/No foods added yet/);assert.match(html,/Are you trying a previous suggestion/);
 });
 test('after-meal photo choice has no example photo, analysis action, or inferred results', () => {
@@ -97,17 +101,13 @@ test('save failure has a dedicated retry screen with the same meal and no extra 
   assert.doesNotMatch(html,/Rolled omelet/);
 });
 test('draft suggestion linking opens explicitly and shows actual source meal metadata', () => {
-  const p={draft:{...newDraft('test'),step:'foods',foods:[{...newFood(),name:'Soup'}]},language:'en',suggestions:[{id:'real-id',title:'Actual idea',description:'Try it small',mealDate:'2026-10-11',mealType:'lunch'}],onEdit:noop};
+  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+  const p={draft:{...newDraft('test'),step:'foods',foods:[{...newFood(),name:'Soup'}]},language:'en',suggestions:[{id:'real-id',title:'Actual idea',description:'Try it small',mealDate:'2026-10-11',mealType:'lunch'}],suggestionLinking:closedLinking,onEdit:noop};
   const closed=renderToStaticMarkup(React.createElement(MealFoodsStepView,{p}));
   assert.match(closed,/Are you trying a previous suggestion/);
   assert.doesNotMatch(closed,/Step 1 of 2|Actual idea/);
-  const useState=React.useState;
-  let stateIndex=0;
-  React.useState=(initial)=>useState(++stateIndex===2 ? 1 : initial);
-  try {
-    const html=renderToStaticMarkup(React.createElement(MealFoodsStepView,{p}));
-    assert.match(html,/Step 1 of 2/);assert.match(html,/Oct 11, 2026/);assert.match(html,/Lunch/);assert.match(html,/Actual idea/);
-  } finally { React.useState=useState; }
+  const html=renderToStaticMarkup(React.createElement(MealFoodsStepView,{p:{...p,suggestionLinking:{...closedLinking,step:1}}}));
+  assert.match(html,/Step 1 of 2/);assert.match(html,/Oct 11, 2026/);assert.match(html,/Lunch/);assert.match(html,/Actual idea/);
 });
 
 test('onboarding review has the five Figma cards without discarding sensory answers', () => {

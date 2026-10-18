@@ -27,9 +27,10 @@ export function useSaveAfterMealReview() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: async (review: Parameters<typeof saveAfterMealReview>[0]) => {
-      const saved = await saveAfterMealReview(review);
-      await saveMealReview(saved);
-      return saved;
+      // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+      // A failed API call must leave the editable draft and Home's pending state intact.
+      await saveMealReview(review);
+      return saveAfterMealReview(review);
     },
     retry: false,
     onSuccess: (review) => {

@@ -375,3 +375,20 @@ async def test_pending_link_records_try_only_after_confirmed_review_and_once(cli
     assert len(tries) == 1
     assert tries[0]["meal_id"] == "abc-trial"
     assert tries[0]["target_id"] == f"food:{FOOD_ID}"
+
+
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+async def test_legacy_unlinked_review_feedback_is_preserved_without_creating_tries(client):
+    item = await setup(client)
+    await decision(client, item)
+    await put_meal(client, meal_id="legacy-review")
+    path = f"/api/v1/children/{CHILD}/meals/legacy-review"
+    feedback = {item["id"]: "tried", "legacy-local-card": "notTried"}
+    result = await client.put(
+        f"{path}/review", json={**review_payload(), "suggestion_feedback": feedback}
+    )
+    assert result.status_code == 200, result.text
+    loaded = (await client.get(path)).json()
+    assert loaded["suggestion_links"] == []
+    assert loaded["review"]["suggestion_feedback"] == feedback
+    assert (await client.get(f"{ROOT}/{item['id']}")).json()["tries"] == []

@@ -24,14 +24,28 @@ import type {
 } from '../../../types/meal';
 import { toggleFoodTrait } from '../../../rules/foodTraits';
 import { newFood } from '../../../rules/foodDraft';
+import type { MealSuggestionLinking, MealSuggestionOption } from '../types';
 import {
   confirmFoods,
   mealFromDraft,
   newDraft,
 } from '../rules';
 
-export function useMealCheckin(childId: string, startAfterMealId?: string, freshAfterComplete = false) {
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+export function useMealCheckin(childId: string, startAfterMealId?: string, freshAfterComplete = false, suggestions: readonly MealSuggestionOption[] = []) {
   const [draft, setDraft] = useState<MealDraft | null>(null);
+  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+  const [linkStep, setLinkStep] = useState<0 | 1 | 2>(0);
+  const [suggestionId, setSuggestionId] = useState('');
+  const [targetId, setTargetId] = useState('');
+  const resumeLink = useRef(false);
+  const selectedSuggestion = suggestions.find((item) => item.id === suggestionId);
+  useEffect(() => {
+    if (!draft?.editingFood && resumeLink.current) {
+      resumeLink.current = false;
+      setLinkStep(2);
+    }
+  }, [draft?.editingFood]);
   const [resumeRequired, setResumeRequired] = useState(false);
   const current = useRef<MealDraft | null>(null);
   const [removed, setRemoved] = useState<{ food: FoodItem; index: number; links: NonNullable<MealDraft['suggestionLinks']> } | null>(null);
@@ -211,7 +225,13 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       busy.current = false;
     }
   };
-  const edit = (food?: FoodItem) =>
+  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+  const edit = (food?: FoodItem) => {
+    if (!current.current || busy.current) return;
+    if (linkStep === 2) {
+      resumeLink.current = true;
+      setLinkStep(0);
+    }
     update({
       editingFood: food
         ? {
@@ -226,6 +246,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
           }
         : newFood(),
     });
+  };
   const changeFood = (patch: Partial<FoodItem>) => {
     if (current.current?.editingFood)
       update({ editingFood: { ...current.current.editingFood, ...patch } });
@@ -250,6 +271,32 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
   };
   return {
     draft,
+    // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    suggestionLinking: {
+      step: linkStep,
+      selectedSuggestion,
+      selectedFoodId: targetId,
+      canContinue: !!selectedSuggestion && (linkStep === 1 || !!draft?.foods.some((food) => food.id === targetId)),
+      onOpen: () => setLinkStep(1),
+      onBack: () => setLinkStep(linkStep === 2 ? 1 : 0),
+      onSelectSuggestion: (id) => { setSuggestionId(id); setTargetId(''); },
+      onSelectFood: setTargetId,
+      onContinue: () => {
+        const value = current.current;
+        if (!value || busy.current || !selectedSuggestion) return;
+        if (linkStep === 1) { setLinkStep(2); return; }
+        if (linkStep !== 2 || !value.foods.some((food) => food.id === targetId)) return;
+        update({ suggestionLinks: [
+          ...(value.suggestionLinks ?? []).filter((link) => link.suggestionId !== selectedSuggestion.id),
+          { suggestionId: selectedSuggestion.id, foodId: targetId, title: selectedSuggestion.title,
+            description: selectedSuggestion.description, servingTip: selectedSuggestion.servingTip },
+        ] });
+        setLinkStep(0);
+      },
+      onUnlink: (id) => {
+        if (current.current) update({ suggestionLinks: current.current.suggestionLinks?.filter((link) => link.suggestionId !== id) });
+      },
+    } satisfies MealSuggestionLinking,
     resumeRequired,
     continueDraft: () => setResumeRequired(false),
     loadError,

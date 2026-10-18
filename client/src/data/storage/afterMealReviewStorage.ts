@@ -14,6 +14,12 @@ function normalizeStoredReview(value: unknown): unknown {
   if (!record(value)) return value;
   const next = { ...value };
   delete next.goalFeedback;
+  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+  if (record(next.suggestionFeedback)) {
+    next.suggestionFeedback = Object.fromEntries(Object.entries(next.suggestionFeedback).map(([id, choice]) => [
+      id, choice === 'tried' ? { tried: true } : choice === 'notTried' ? { tried: false } : choice,
+    ]));
+  }
   if (next.step === 'goal') next.step = 'difficulties';
   return next;
 }
@@ -40,7 +46,7 @@ function validReview(value: unknown, childId: string, mealId: string): value is 
   if (!Object.values(value.difficultyInputs).every((input) => record(input)
     && (input.category === null || difficultyCategories.includes(input.category as never))
     && typeof input.value === 'string' && typeof input.note === 'string' && (input.subcategory === undefined || typeof input.subcategory === 'string'))) return false;
-  return Object.values(value.suggestionFeedback).every((choice) => choice === 'tried' || choice === 'notTried');
+  return Object.values(value.suggestionFeedback).every((choice) => record(choice) && typeof choice.tried === 'boolean');
 }
 
 function validFinal(value: unknown, childId: string, mealId: string): value is AfterMealReview {

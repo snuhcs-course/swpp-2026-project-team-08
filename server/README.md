@@ -45,6 +45,11 @@ those values; downgrading restores nullable columns without recovering the data.
 The migration must be applied explicitly to each database before deploying this
 schema change. Historical creation migrations are retained.
 
+Migration `0006_boolean_feedback` converts each `suggestion_feedback` value from
+`"tried"` / `"notTried"` to `{ "tried": true }` / `{ "tried": false }`. The current
+API requires the object format with a strict boolean; omitted keys stay unanswered.
+The downgrade converts those objects back to strings.
+
 ## 코드 품질 기준
 
 코드 품질은 아래 두 가지를 순서대로 우선한다.

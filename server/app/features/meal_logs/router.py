@@ -25,7 +25,11 @@ from app.features.meal_logs.dto import (
     MealSuggestionResponse,
     MealUpsertRequest,
 )
-from app.features.meal_logs.link_data import InvalidMealLinkError, SuggestionLinkData
+from app.features.meal_logs.link_data import (
+    InvalidMealLinkError,
+    SuggestionFeedbackData,
+    SuggestionLinkData,
+)
 from app.features.meal_logs.service import InvalidMonthError, MealLogService, MealNotFoundError
 from app.models import MealLog
 
@@ -192,7 +196,11 @@ async def save_review(
         after_photo_uri=payload.after_photo_uri,
         outcomes=[outcome.model_dump() for outcome in payload.outcomes],
         difficulties=payload.difficulties,
-        suggestion_feedback=payload.suggestion_feedback,
+        # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+        suggestion_feedback={
+            key: SuggestionFeedbackData(tried=value.tried)
+            for key, value in payload.suggestion_feedback.items()
+        },
         saved_at=payload.saved_at,
     )
     return _detail(meal)

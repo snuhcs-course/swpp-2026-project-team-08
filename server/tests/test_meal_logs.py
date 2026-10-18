@@ -211,7 +211,7 @@ async def test_invalid_date_and_month_are_422(client: AsyncClient) -> None:
     assert empty_foods.json()["error_code"] == "EMPTY_FOODS"
 
 
-# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 async def test_final_abc_fields_and_photo_free_review_roundtrip(client: AsyncClient) -> None:
     food = {**meal_payload()["foods"][0], "acceptance": 0, "origin": "ai"}
     link = {
@@ -228,7 +228,7 @@ async def test_final_abc_fields_and_photo_free_review_roundtrip(client: AsyncCli
     review = review_payload()
     review["after_photo_uri"] = ""
     review["outcomes"][0]["ingredients"] = []
-    review["suggestion_feedback"] = {"local-saved": "notTried"}
+    review["suggestion_feedback"] = {"local-saved": {"tried": False}}
     review["difficulties"] = {
         FOOD_ID: [
             {"id": "hardness", "category": "texture", "subcategory": "hardness", "value": "firm"}
@@ -239,12 +239,12 @@ async def test_final_abc_fields_and_photo_free_review_roundtrip(client: AsyncCli
     loaded = (await client.get(f"/api/v1/children/{CHILD}/meals/{MEAL_ID}")).json()
     assert loaded["review"]["after_photo_uri"] == ""
     assert loaded["review"]["outcomes"][0]["ingredients"] == []
-    assert loaded["review"]["suggestion_feedback"] == {"local-saved": "notTried"}
+    assert loaded["review"]["suggestion_feedback"] == {"local-saved": {"tried": False}}
     assert loaded["review"]["difficulties"][FOOD_ID][0]["subcategory"] == "hardness"
     assert loaded["suggestion_links"][0]["food_id"] == FOOD_ID
 
 
-# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 async def test_abc_rejects_invalid_acceptance_dangling_links_and_unlinked_feedback(
     client: AsyncClient,
 ) -> None:
@@ -254,7 +254,32 @@ async def test_abc_rejects_invalid_acceptance_dangling_links_and_unlinked_feedba
     assert (await put_meal(client, suggestion_links=[link])).status_code == 422
     # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
     await put_meal(client, suggestion_links=[{**link, "food_id": FOOD_ID}])
-    review = {**review_payload(), "suggestion_feedback": {"not-linked": "tried"}}
+    review = {**review_payload(), "suggestion_feedback": {"not-linked": {"tried": True}}}
     assert (
         await client.put(f"/api/v1/children/{CHILD}/meals/{MEAL_ID}/review", json=review)
     ).status_code == 422
+
+
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+async def test_suggestion_feedback_requires_a_boolean_tried_property(client: AsyncClient):
+    await put_meal(client)
+    path = f"/api/v1/children/{CHILD}/meals/{MEAL_ID}/review"
+    for invalid in (
+        "tried",
+        "notTried",
+        True,
+        {},
+        {"tried": "false"},
+        {"tried": 0},
+        {"tried": None},
+    ):
+        payload = {**review_payload(), "suggestion_feedback": {"legacy-card": invalid}}
+        assert (await client.put(path, json=payload)).status_code == 422
+    for choice in (True, False):
+        feedback = {"legacy-card": {"tried": choice}}
+        result = await client.put(path, json={**review_payload(), "suggestion_feedback": feedback})
+        assert result.status_code == 200, result.text
+        assert result.json()["review"]["suggestion_feedback"] == feedback
+    result = await client.put(path, json=review_payload())
+    assert result.status_code == 200, result.text
+    assert result.json()["review"]["suggestion_feedback"] == {}

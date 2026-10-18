@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """Persist confirmed meal-linked attempts in the review transaction."""
 
 from uuid import uuid4
@@ -6,14 +6,17 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.features.meal_logs.link_data import SuggestionFeedbackData
 from app.models import MealLog, Suggestion, SuggestionTry
 
 
 async def confirm_linked_tries(
-    session: AsyncSession, meal: MealLog, feedback: dict[str, str]
+    session: AsyncSession, meal: MealLog, feedback: dict[str, SuggestionFeedbackData]
 ) -> None:
     for link in meal.suggestion_links:
-        if feedback.get(link["suggestion_id"]) != "tried":
+        # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+        choice = feedback.get(link["suggestion_id"])
+        if choice is None or not choice.tried:
             continue
         suggestion = await session.get(Suggestion, link["suggestion_id"])
         # Legacy local cards have no server suggestion. Keep their review feedback only.

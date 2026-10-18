@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """Pending meal links are independent of recorded suggestion attempts."""
 
 from dataclasses import dataclass
@@ -17,3 +17,9 @@ class SuggestionLinkData:
     title: str
     description: str
     serving_tip: str | None = None
+
+
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+@dataclass(frozen=True)
+class SuggestionFeedbackData:
+    tried: bool

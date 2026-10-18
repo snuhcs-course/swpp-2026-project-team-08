@@ -149,10 +149,11 @@ test('upsert, review, and suggestion bodies use the server field names', () => {
   const review = reviewToBody({
     mealId: 'meal-1', childId: 'child-1',
     afterPhoto: { id: 'p2', uri: 'file:///after.png', mimeType: 'image/png' },
-    comparisonMethod: 'manual', outcomes: [], difficulties: {}, suggestionFeedback: {},
+    comparisonMethod: 'manual', outcomes: [], difficulties: {}, suggestionFeedback: { yes: { tried: true }, no: { tried: false } },
     savedAt: '2026-10-12T13:00:00.000Z',
   });
   assert.equal(review.after_photo_uri, 'file:///after.png');
+  assert.deepEqual(review.suggestion_feedback, { yes: { tried: true }, no: { tried: false } });
   const suggestion = suggestionToBody({
     id: 's1', childId: 'child-1', title: 'Try rice', description: 'Small separate portion',
     servingTip: 'Keep the form', ingredients: ['rice'], isSaved: true, safetyVerifiedForProfileAt: 'v1',
@@ -222,4 +223,34 @@ test('meal history food and ingredient cards preserve managed suggestion routing
   ]);
   assert.equal(cards[1].parentName, 'Omelet');
   assert.equal(cards[1].outcome, 'eaten');
+});
+
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+test('meal detail responses preserve boolean feedback and reject invalid values', async () => {
+  const api = require('../src/data/network/apiClient.ts');
+  const { getMealDetail } = require('../src/data/api/mealLogApi.ts');
+  const original = api.apiRequest;
+  const response = {
+    id: 'boolean-feedback-meal', child_id: 'boolean-feedback-child', meal_date: '2026-10-19',
+    meal_type: 'lunch', setting: 'home', before_photo_uri: null, saved_at: '2026-10-19T12:00:00Z',
+    foods: [], suggestions: [], review: {
+      after_photo_uri: '', outcomes: [], difficulties: {}, saved_at: '2026-10-19T13:00:00Z',
+      suggestion_feedback: { yes: { tried: true }, no: { tried: false } },
+    },
+  };
+  api.apiRequest = async () => response;
+  try {
+    const detail = await getMealDetail(response.child_id, response.id);
+    assert.deepEqual(detail.review.suggestionFeedback, response.review.suggestion_feedback);
+    for (const invalid of ['tried', 'notTried', true, {}, { tried: 'false' }, { tried: 0 }, { tried: null }]) {
+      response.review.suggestion_feedback = { invalid };
+      await assert.rejects(getMealDetail(response.child_id, response.id), /Invalid suggestion feedback/);
+    }
+    response.review.suggestion_feedback = null;
+    await assert.rejects(getMealDetail(response.child_id, response.id), /Invalid suggestion feedback/);
+    delete response.review.suggestion_feedback;
+    assert.deepEqual((await getMealDetail(response.child_id, response.id)).review.suggestionFeedback, {});
+  } finally {
+    api.apiRequest = original;
+  }
 });

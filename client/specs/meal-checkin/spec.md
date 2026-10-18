@@ -90,7 +90,7 @@
 
 `features/meal-checkin`, 공유 FoodEditor, Meal 타입·저장 검증, 한글·영어 문구를 변경한다. 기존 로컬 Meal 저장 경로에서 연결 스냅샷까지 보존하고, 서버 tries 생성은 보호자의 식후 확인 전 실행하지 않는다. 홈의 전체 위젯 개편은 세 기능 구현에 포함하지 않는다.
 
-서버 연동: 식사 API는 acceptance·origin·suggestion_links, 식후 API는 사진 없는 입력과 suggestion_feedback을 보존한다. 식후 검토 저장 트랜잭션에서 연결 제안의 tried 응답만 서버 시도로 확정하며 같은 Meal·음식·제안의 재시도는 중복을 만들지 않는다. 새 저장 필드의 마이그레이션은 작성만 하고 적용은 별도 확인 후 진행한다.
+서버 연동: 식사 API는 acceptance·origin·suggestion_links, 식후 API는 사진 없는 입력과 suggestion_feedback을 보존한다. 식후 검토 저장 트랜잭션에서 연결 제안의 `{ tried: true }` 응답만 서버 시도로 확정하며 같은 Meal·음식·제안의 재시도는 중복을 만들지 않는다. 새 저장 필드의 마이그레이션은 작성만 하고 적용은 별도 확인 후 진행한다.
 
 ## 변경 범위와 호환
 
@@ -116,3 +116,5 @@
 - 삭제 직후 `815:3554`는 Add Food 아래에 높이 41px 이상·남색 배경·모서리 10px·안쪽 12px 알림을 표시한다. 삭제 이름은 흰색 12px, Undo는 파란색 11px이다. 남은 음식 카드와 이전 제안 진입점을 유지하고 제안 진입점은 아래쪽에 배치한다. 이 상태에서는 일반 직접 입력 안내를 생략하며 Undo로 원래 ID·순서·연결을 복원한다.
 
 - 음식 카드의 Acceptance가 미입력이면 진행 막대를 표시하지 않고 제목 바로 오른쪽에 10px 간격으로 Not entered를 표시한다. 값이 있으면 기존 수용도 막대를 표시한다.
+
+`suggestion_feedback`은 제안 ID별 `{ "tried": true | false }` 객체를 저장한다. 미응답은 키를 생략하며 `false`로 자동 채우지 않는다.

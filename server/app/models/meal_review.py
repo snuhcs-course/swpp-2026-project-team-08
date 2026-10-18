@@ -25,8 +25,10 @@ class MealReview(Base):
     after_photo_uri: Mapped[str] = mapped_column(Text, nullable=False)
     outcomes: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
     difficulties: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
-    # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
-    suggestion_feedback: Mapped[dict[str, str]] = mapped_column(JSON, default=dict, nullable=False)
+    # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    suggestion_feedback: Mapped[dict[str, dict[str, bool]]] = mapped_column(
+        JSON, default=dict, nullable=False
+    )
     saved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False

@@ -346,7 +346,7 @@ async def test_linked_snapshot_maps_source_and_ingredient_trial_without_changing
     ]
 
 
-# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 async def test_pending_link_records_try_only_after_confirmed_review_and_once(client):
     item = await setup(client)
     await decision(client, item)
@@ -362,12 +362,12 @@ async def test_pending_link_records_try_only_after_confirmed_review_and_once(cli
     review = {
         **review_payload(),
         "after_photo_uri": "",
-        "suggestion_feedback": {item["id"]: "notTried"},
+        "suggestion_feedback": {item["id"]: {"tried": False}},
     }
     path = f"/api/v1/children/{CHILD}/meals/abc-trial/review"
     assert (await client.put(path, json=review)).status_code == 200
     assert (await client.get(f"{ROOT}/{item['id']}")).json()["tries"] == []
-    review["suggestion_feedback"] = {item["id"]: "tried"}
+    review["suggestion_feedback"] = {item["id"]: {"tried": True}}
     assert (await client.put(path, json=review)).status_code == 200
     assert (await client.put(path, json=review)).status_code == 200
     tries = (await client.get(f"{ROOT}/{item['id']}")).json()["tries"]
@@ -376,13 +376,13 @@ async def test_pending_link_records_try_only_after_confirmed_review_and_once(cli
     assert tries[0]["target_id"] == f"food:{FOOD_ID}"
 
 
-# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 async def test_legacy_unlinked_review_feedback_is_preserved_without_creating_tries(client):
     item = await setup(client)
     await decision(client, item)
     await put_meal(client, meal_id="legacy-review")
     path = f"/api/v1/children/{CHILD}/meals/legacy-review"
-    feedback = {item["id"]: "tried", "legacy-local-card": "notTried"}
+    feedback = {item["id"]: {"tried": True}, "legacy-local-card": {"tried": False}}
     result = await client.put(
         f"{path}/review", json={**review_payload(), "suggestion_feedback": feedback}
     )

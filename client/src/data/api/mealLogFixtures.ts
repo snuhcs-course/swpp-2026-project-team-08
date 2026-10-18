@@ -74,6 +74,7 @@ function reviewed(mealDate: string, foodId: string, ingredients: { id: string; n
   return {
     afterPhotoUri: `file:///demo-after-${mealDate}.png`,
     outcomes: [eaten(foodId, ingredients)],
+    suggestionFeedback: {},
     difficulties: { [foodId]: [] },
     savedAt: `${mealDate}T13:00:00.000Z`,
   };

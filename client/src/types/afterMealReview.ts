@@ -29,7 +29,7 @@ export const reviewSteps = [
   'outcomes', 'difficulties', 'suggestions', 'complete',
 ] as const;
 export type ReviewStep = (typeof reviewSteps)[number];
-export type SuggestionFeedback = 'tried' | 'notTried';
+export type SuggestionFeedback = { tried: boolean };
 
 export type AfterMealReviewDraft = {
   mealId: string;

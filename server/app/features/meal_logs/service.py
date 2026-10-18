@@ -10,7 +10,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
 from app.features.meal_logs import queries
-from app.features.meal_logs.link_data import InvalidMealLinkError, SuggestionLinkData
+from app.features.meal_logs.link_data import (
+    InvalidMealLinkError,
+    SuggestionFeedbackData,
+    SuggestionLinkData,
+)
 from app.features.suggestions.try_queries import confirm_linked_tries
 from app.models import MealFood, MealLog, MealReview, MealSuggestion, Suggestion
 
@@ -113,7 +117,7 @@ class MealLogService:
         outcomes: list[dict[str, Any]],
         difficulties: dict[str, Any],
         saved_at: datetime,
-        suggestion_feedback: dict[str, str] | None = None,
+        suggestion_feedback: dict[str, SuggestionFeedbackData] | None = None,
     ) -> MealLog:
         # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
         await self._session.execute(
@@ -135,7 +139,8 @@ class MealLogService:
         review.after_photo_uri = after_photo_uri
         review.outcomes = outcomes
         review.difficulties = difficulties
-        review.suggestion_feedback = feedback
+        # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+        review.suggestion_feedback = {key: asdict(value) for key, value in feedback.items()}
         review.saved_at = saved_at
         await self._session.flush()
         await confirm_linked_tries(self._session, meal, feedback)

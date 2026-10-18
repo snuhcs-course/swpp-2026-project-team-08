@@ -4,7 +4,8 @@
 from datetime import date, datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator
 
 from app.core.errors import AppError
 from app.models.food_enums import FoodPreparation
@@ -48,7 +49,6 @@ class MealFoodRequest(BaseModel):
     cooking_method: FoodPreparation | None = None
     serving_note: str = ""
     traits: dict[str, Any]
-    history: str | None = None
     source: FoodSource
     # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
     acceptance: int | None = Field(default=None, ge=0, le=3, strict=True)
@@ -117,12 +117,17 @@ class FoodOutcomeRequest(BaseModel):
     ingredients: list[IngredientOutcomeRequest]
 
 
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+class SuggestionFeedback(BaseModel):
+    tried: StrictBool
+
+
 class MealReviewRequest(BaseModel):
     # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
     after_photo_uri: str = ""
     outcomes: list[FoodOutcomeRequest]
     difficulties: dict[str, Any]
-    suggestion_feedback: dict[str, Literal["tried", "notTried"]] = Field(default_factory=dict)
+    suggestion_feedback: dict[str, SuggestionFeedback] = Field(default_factory=dict)
     saved_at: datetime
 
 
@@ -180,7 +185,7 @@ class MealReviewResponse(BaseModel):
     after_photo_uri: str
     outcomes: list[dict[str, Any]]
     difficulties: dict[str, Any]
-    suggestion_feedback: dict[str, str] = Field(default_factory=dict)
+    suggestion_feedback: dict[str, SuggestionFeedback] = Field(default_factory=dict)
     saved_at: datetime
 
 

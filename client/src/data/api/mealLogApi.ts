@@ -32,6 +32,7 @@ export type MealLogReview = {
   afterPhotoUri: string | null;
   outcomes: FoodOutcome[];
   difficulties: AfterMealReview['difficulties'];
+  suggestionFeedback: AfterMealReview['suggestionFeedback'];
   savedAt: string;
 };
 export type MealDetail = {
@@ -131,10 +132,16 @@ function parseDetail(value: unknown): MealDetail {
       || !record(value.review.difficulties) || typeof value.review.saved_at !== 'string') {
       throw new Error('Invalid meal review');
     }
+    // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    const feedback = value.review.suggestion_feedback === undefined ? {} : value.review.suggestion_feedback;
+    if (!record(feedback) || !Object.values(feedback).every((choice) => record(choice) && typeof choice.tried === 'boolean')) {
+      throw new Error('Invalid suggestion feedback');
+    }
     review = {
       afterPhotoUri: value.review.after_photo_uri || null,
       outcomes: value.review.outcomes.map(parseOutcome),
       difficulties: value.review.difficulties as AfterMealReview['difficulties'],
+      suggestionFeedback: feedback as AfterMealReview['suggestionFeedback'],
       savedAt: value.review.saved_at,
     };
   }

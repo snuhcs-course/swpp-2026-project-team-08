@@ -195,3 +195,26 @@ test('legacy reviews resume safely and omit retired feedback from saved results'
   values.set(`nurturebites.after-meal.${meal.childId}.${meal.id}.result.v1`, JSON.stringify({ ...review, goalFeedback: 'tried' }));
   assert.deepEqual(await readAfterMealReview(meal.childId, meal.id), review);
 });
+
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+test('feedback uses a strict boolean property and migrates both legacy answers', async () => {
+  const meal = savedMeal('boolean-feedback');
+  const draft = newReviewDraft(meal);
+  draft.suggestionFeedback = { yes: { tried: true }, no: { tried: false } };
+  await saveAfterMealDraft(draft);
+  assert.deepEqual((await readAfterMealDraft(meal.childId, meal.id)).suggestionFeedback, draft.suggestionFeedback);
+  for (const invalid of ['tried', 'notTried', true, {}, { tried: 'false' }, { tried: 0 }, { tried: null }]) {
+    await assert.rejects(saveAfterMealDraft({ ...draft, suggestionFeedback: { invalid } }));
+  }
+  values.set(`nurturebites.after-meal.${meal.childId}.${meal.id}.draft.v1`, JSON.stringify({
+    ...draft, suggestionFeedback: { yes: 'tried', no: 'notTried' },
+  }));
+  const restored = await readAfterMealDraft(meal.childId, meal.id);
+  assert.deepEqual(restored.suggestionFeedback, draft.suggestionFeedback);
+  const complete = { ...restored, outcomes: setOutcome(restored.outcomes, meal.foods[0].id, 'eaten') };
+  const review = reviewFromDraft(complete, meal);
+  values.set(`nurturebites.after-meal.${meal.childId}.${meal.id}.result.v1`, JSON.stringify({
+    ...review, suggestionFeedback: { yes: 'tried', no: 'notTried' },
+  }));
+  assert.deepEqual((await readAfterMealReview(meal.childId, meal.id)).suggestionFeedback, draft.suggestionFeedback);
+});

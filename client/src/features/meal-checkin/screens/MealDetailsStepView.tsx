@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; reduce meal and setting icons
 
 import { Text, View } from 'react-native';
 import { AppIcon } from '../../../components/AppIcon';
@@ -41,7 +41,7 @@ export function MealDetailsStepView({ p }: { p: Props }) {
             key={value}
             label={m.types[value]}
             tile
-            icon={<AppIcon name={value} size={21} />}
+            icon={<AppIcon name={value} size={16} />}
             selected={d.mealType === value}
             onPress={() => p.onUpdate({ mealType: value })}
           />
@@ -54,7 +54,7 @@ export function MealDetailsStepView({ p }: { p: Props }) {
             key={value}
             label={m.settings[value]}
             tile
-            icon={<AppIcon name={value} size={21} />}
+            icon={<AppIcon name={value} size={16} />}
             selected={d.setting === value}
             onPress={() => p.onUpdate({ setting: value })}
           />

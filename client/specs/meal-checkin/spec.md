@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated compact meal choice tiles -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected requirements after screen-by-screen comparison -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated after manual-entry design review -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing specification -->
@@ -25,6 +26,8 @@
 ## Requirements
 
 ### R1 — 날짜·식사 정보와 초안
+
+- 식사 유형·장소 카드는 아이콘 배경 28px·아이콘 16px·체크 원 18px, 안쪽 여백 10px·요소 간격 6px로 표시한다. 글자는 남은 너비에서 줄바꿈하며 체크 원은 줄어들거나 카드 밖으로 밀려나지 않는다. 기본·선택·날짜 변경 화면에 동일하게 적용한다.
 
 - 날짜는 현재 현지 날짜로 시작하며 실제 날짜 선택 UI에서 변경한다. 월·일·연도 목록은 오버레이로 표시하고 Confirm date로 확정한다.
 - 유형은 Breakfast/Lunch/Dinner/Snack, 장소는 Home/Restaurant/School/Others 중 하나를 고른다. 날짜·유형·장소를 보존하며 5분할 진행 표시를 제공한다.

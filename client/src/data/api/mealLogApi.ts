@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { SavedSuggestion } from '../../types/home';
@@ -15,6 +15,7 @@ export type MealListItem = {
   mealType: Meal['mealType'];
   setting: Meal['setting'];
   beforePhotoUri: string | null;
+  afterPhotoUri: string | null;
   foods: { name: string; ingredients: string[] }[];
   reviewStatus: MealReviewStatus;
 };
@@ -76,6 +77,7 @@ function parseListItem(value: unknown): MealListItem {
     mealType: asMealType(value.meal_type),
     setting: asSetting(value.setting),
     beforePhotoUri: value.before_photo_uri,
+    afterPhotoUri: typeof value.after_photo_uri === 'string' ? value.after_photo_uri : null,
     reviewStatus: value.review_status,
     foods: value.foods.map((food) => {
       if (!record(food) || typeof food.name !== 'string' || !strings(food.ingredients)) {

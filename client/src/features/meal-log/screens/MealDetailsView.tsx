@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -48,6 +48,7 @@ function PhotoTile({ uri, label }: { uri: string | null; label: string }) {
   );
 }
 
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 export function MealDetailsView(p: Props) {
   const s = copyFor(p.language);
   const m = s.mealLog;
@@ -57,7 +58,7 @@ export function MealDetailsView(p: Props) {
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <Pressable accessibilityRole="button" accessibilityLabel={s.common.back} onPress={p.onBack} style={styles.iconButton}>
-          <Feather name="chevron-left" size={20} color={colors.homeText} />
+          <Feather name="chevron-left" size={22} color={colors.homeText} />
         </Pressable>
         <Text accessibilityRole="header" style={styles.headerTitle}>{m.mealDetails}</Text>
         <Pressable accessibilityRole="button" accessibilityLabel={m.more} onPress={() => setMenuOpen(true)} style={styles.iconButton}>
@@ -89,18 +90,19 @@ export function MealDetailsView(p: Props) {
               </Pressable>
             ) : null}
           </View>
-          <View style={p.awaitingReview ? styles.photosSingle : styles.photos}>
+          <View style={styles.photos}>
             <PhotoTile uri={p.beforeUri} label={m.beforeImage} />
-            {p.awaitingReview ? null : <PhotoTile uri={p.afterUri} label={m.afterImage} />}
+            <PhotoTile uri={p.afterUri} label={m.afterImage} />
           </View>
-          <Text style={styles.sectionLabel}>{m.foodsAndResponses}</Text>
+          <Text style={styles.foodsLabel}>{m.foodsAndResponses}</Text>
           {p.suggestionSaveError && <Text accessibilityRole="alert" style={styles.deleteBody}>{s.common.saveFailed}</Text>}
-          {p.cards.map((card) => (
+          {p.cards.map((card, index) => (
             <FoodResponseCard
               key={card.foodId}
               card={card}
               language={p.language}
               disabled={p.savingSuggestion}
+              defaultOpen={index === 0}
               saved={!!card.suggestion && p.savedSuggestionIds.includes(card.suggestion.id)}
               onToggleSaved={card.suggestion ? (saved) => p.onToggleSaved(card, saved) : undefined}
             />

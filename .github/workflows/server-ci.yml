@@ -1,0 +1,43 @@
+# AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
+# server/ 가 바뀐 PR 에서 린트와 테스트를 실행한다.
+name: Server CI
+
+on:
+  pull_request:
+    paths:
+      - "server/**"
+      - ".github/workflows/server-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: server-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: server/uv.lock
+
+      - name: 의존성 설치
+        run: uv sync --frozen
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Format
+        run: uv run ruff format --check .
+
+      # 테스트는 인메모리 SQLite 를 쓰므로 Postgres 서비스가 필요 없다.
+      - name: Test
+        run: uv run pytest

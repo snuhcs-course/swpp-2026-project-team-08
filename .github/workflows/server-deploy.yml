@@ -1,0 +1,88 @@
+# AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
+# main 에 server/ 변경이 머지되면 이미지를 ECR 에 올리고 EC2 에 배포한다.
+# AWS 인증은 OIDC 로 하며, 비밀 값은 GitHub 에 두지 않는다 (DB/JWT 값은 EC2 가 SSM 에서 읽는다).
+name: Server Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "server/**"
+      - ".github/workflows/server-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # OIDC 토큰 발급에 필요
+
+# 배포가 겹치지 않게 한 번에 하나만 실행하고, 진행 중인 배포는 끊지 않는다.
+concurrency:
+  group: server-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: ECR 로그인
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 이미지 빌드 및 푸시
+        id: image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+        run: |
+          IMAGE="$REGISTRY/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}"
+          docker build -t "$IMAGE" server
+          docker push "$IMAGE"
+          echo "name=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: EC2 에 배포 (SSM)
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REGION: ${{ vars.AWS_REGION }}
+          INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+        run: |
+          # SSM 명령 본문을 만든다. 셸뱅이 첫 줄에 있어야 AWS-RunShellScript 가 bash 로 실행하므로
+          # 셸뱅 → 변수 설정 → deploy.sh 순서로 붙인다 (deploy.sh 안의 셸뱅은 그냥 주석이 된다).
+          jq -n --rawfile script server/deploy/deploy.sh \
+            --arg vars "export IMAGE='$IMAGE' REGISTRY='$REGISTRY' REGION='$REGION'" \
+            '{commands: ["#!/bin/bash", $vars, $script]}' > ssm-params.json
+
+          COMMAND_ID="$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "deploy ${GITHUB_SHA::7}" \
+            --timeout-seconds 600 \
+            --parameters file://ssm-params.json \
+            --query Command.CommandId --output text)"
+          echo "SSM command: $COMMAND_ID"
+
+          # 끝날 때까지 최대 10분 기다린다.
+          STATUS=Pending
+          for _ in $(seq 1 60); do
+            sleep 10
+            STATUS="$(aws ssm get-command-invocation \
+              --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" \
+              --query Status --output text 2>/dev/null || echo Pending)"
+            case "$STATUS" in Pending | InProgress | Delayed) ;; *) break ;; esac
+          done
+
+          echo "::group::deploy 출력"
+          aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" \
+            --query StandardOutputContent --output text
+          aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" \
+            --query StandardErrorContent --output text
+          echo "::endgroup::"
+
+          echo "최종 상태: $STATUS"
+          [ "$STATUS" = Success ]

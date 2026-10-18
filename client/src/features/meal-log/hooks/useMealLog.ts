@@ -1,16 +1,18 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import { useCallback, useMemo, useState } from 'react';
 import { useMealList } from '../../../data/queries/mealLogQueries';
 import { useMealDraft } from '../../../data/queries/mealQueries';
-import { filterMeals, isoDate, monthKey, shiftMonth } from '../rules';
+import { filterMeals, monthKey, shiftMonth, sortMealsLatestFirst } from '../rules';
 
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 export function useMealLog(childId: string) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [query, setQuery] = useState('');
   const [unreviewedOnly, setUnreviewedOnly] = useState(false);
 
   const monthValue = monthKey(year, month);
@@ -26,12 +28,12 @@ export function useMealLog(childId: string) {
     return next;
   }, [list.data, monthValue]);
   const meals = useMemo(
-    () => filterMeals(
+    () => sortMealsLatestFirst(filterMeals(
       (list.data ?? []).filter((meal) => !selectedDate || meal.mealDate === selectedDate),
-      search,
+      query,
       unreviewedOnly,
-    ),
-    [list.data, search, selectedDate, unreviewedOnly],
+    )),
+    [list.data, query, selectedDate, unreviewedOnly],
   );
 
   const refetchList = list.refetch;
@@ -43,10 +45,25 @@ export function useMealLog(childId: string) {
     setMonth(next.month);
   }, [year, month, setYear, setMonth]);
 
-  const toggleDate = useCallback((day: number) => {
-    const value = isoDate(year, month, day);
-    setSelectedDate((current) => (current === value ? null : value));
-  }, [year, month]);
+  const setMonthYear = useCallback((nextYear: number, nextMonth: number) => {
+    setYear(nextYear);
+    setMonth(nextMonth);
+  }, [setYear, setMonth]);
+
+  const toggleDate = useCallback((value: string) => {
+    setSelectedDate((current) => {
+      if (current === value) return null;
+      const [nextYear, nextMonth] = value.split('-').map(Number);
+      setYear(nextYear);
+      setMonth(nextMonth - 1);
+      return value;
+    });
+  }, [setYear, setMonth]);
+
+  const setSearchValue = useCallback((value: string) => {
+    setSearch(value);
+    if (!value.trim()) setQuery('');
+  }, []);
 
   const refresh = useCallback(
     () => Promise.all([refetchList(), refetchDraft()]),
@@ -58,16 +75,20 @@ export function useMealLog(childId: string) {
     month,
     selectedDate,
     search,
-    setSearch,
+    query,
+    setSearch: setSearchValue,
+    submitSearch: () => setQuery(search.trim()),
     unreviewedOnly,
     setUnreviewedOnly,
     counts,
     meals,
+    hasMeals: (list.data ?? []).length > 0,
     draft: draftQuery.data?.step !== 'complete' ? (draftQuery.data ?? null) : null,
     loading: list.isPending && !list.data,
     error: list.isError && !(list.data && list.data.length),
     refreshing: list.isFetching && !list.isPending,
     goMonth,
+    setMonthYear,
     toggleDate,
     clearDate: () => setSelectedDate(null),
     retry: refresh,

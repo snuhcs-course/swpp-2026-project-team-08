@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 """식사 기록 조회 함수."""
 
 from dataclasses import dataclass

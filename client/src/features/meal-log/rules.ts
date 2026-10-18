@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { FoodItem } from '../../types/meal';
@@ -17,14 +17,34 @@ export function shiftMonth(year: number, monthIndex: number, delta: number) {
   return { year: date.getFullYear(), month: date.getMonth() };
 }
 
-export function calendarCells(year: number, month: number): (number | null)[] {
-  const days = new Date(year, month + 1, 0).getDate();
+export type CalendarCell = { day: number; inMonth: boolean; date: string };
+
+export function calendarCells(year: number, month: number): CalendarCell[] {
   const leading = new Date(year, month, 1).getDay();
+  const days = new Date(year, month + 1, 0).getDate();
   const count = Math.ceil((leading + days) / 7) * 7;
   return Array.from({ length: count }, (_, index) => {
-    const day = index - leading + 1;
-    return day >= 1 && day <= days ? day : null;
+    const date = new Date(year, month, 1 - leading + index);
+    return {
+      day: date.getDate(),
+      inMonth: date.getMonth() === month && date.getFullYear() === year,
+      date: isoDate(date.getFullYear(), date.getMonth(), date.getDate()),
+    };
   });
+}
+
+const mealTypeRank = { breakfast: 0, lunch: 1, dinner: 2, snack: 3 } as const;
+
+export function sortMealsLatestFirst(meals: MealRecord[]): MealRecord[] {
+  return [...meals].sort((a, b) => {
+    const byDate = b.mealDate.localeCompare(a.mealDate);
+    if (byDate) return byDate;
+    return mealTypeRank[b.mealType] - mealTypeRank[a.mealType];
+  });
+}
+
+export function mealThumbnail(meal: Pick<MealRecord, 'beforePhotoUri' | 'afterPhotoUri'>): string | null {
+  return meal.beforePhotoUri || meal.afterPhotoUri || null;
 }
 
 export function densityLevel(count: number): 0 | 1 | 2 | 3 {
@@ -74,17 +94,35 @@ export function acceptanceFill(outcome: FoodResponseCard['outcome']): number {
   return 0;
 }
 
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+function asSuggestion(
+  suggestion: { managed?: boolean; id: string; title: string; description: string; servingTip: string | null } | null,
+): FoodResponseCard['suggestion'] {
+  return suggestion
+    ? {
+      ...(suggestion.managed ? { managed: true } : {}),
+      id: suggestion.id,
+      title: suggestion.title,
+      description: suggestion.description,
+      servingTip: suggestion.servingTip,
+    }
+    : null;
+}
+
 export function foodResponseCards(
   foods: FoodItem[],
   review: { outcomes: FoodOutcome[]; difficulties: AfterMealReview['difficulties'] } | null,
   suggestions: { managed?: boolean; id: string; foodId: string; title: string; description: string; servingTip: string | null }[],
 ): FoodResponseCard[] {
-  return foods.map((food) => {
+  const cards: FoodResponseCard[] = [];
+  for (const food of foods) {
     const outcome = review?.outcomes.find((item) => item.foodId === food.id);
     const tags = review?.difficulties[food.id] ?? [];
     const suggestion = suggestions.find((item) => item.foodId === food.id) ?? null;
-    return {
+    cards.push({
       foodId: food.id,
+      kind: 'food',
+      parentName: null,
       name: food.name,
       ingredients: food.ingredients,
       traits: food.traits,
@@ -93,15 +131,28 @@ export function foodResponseCards(
       servingNote: food.servingNote,
       outcome: outcome?.decision.confirmed ?? null,
       reasons: tags.map((tag) => ({ category: tag.category, value: tag.value, note: tag.note })),
-      suggestion: suggestion
-        ? {
-          ...(suggestion.managed ? { managed: true } : {}),
-          id: suggestion.id,
-          title: suggestion.title,
-          description: suggestion.description,
-          servingTip: suggestion.servingTip,
-        }
-        : null,
-    };
-  });
+      suggestion: asSuggestion(suggestion),
+    });
+    for (const ingredient of outcome?.ingredients ?? []) {
+      if (ingredient.name.trim().toLowerCase() === food.name.trim().toLowerCase()) continue;
+      const linked = suggestions.find((item) => item.foodId === ingredient.id) ?? null;
+      cards.push({
+        foodId: ingredient.id,
+        kind: 'ingredient',
+        parentName: food.name,
+        name: ingredient.name,
+        ingredients: [],
+        traits: food.traits,
+        history: food.history,
+        preparation: '',
+        servingNote: '',
+        outcome: ingredient.decision.confirmed,
+        reasons: (review?.difficulties[ingredient.id] ?? []).map((tag) => ({
+          category: tag.category, value: tag.value, note: tag.note,
+        })),
+        suggestion: asSuggestion(linked),
+      });
+    }
+  }
+  return cards;
 }

@@ -1,5 +1,6 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
+import { Feather } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
@@ -10,17 +11,20 @@ import { acceptanceFill } from '../rules';
 import type { FoodResponseCard as Card } from '../types';
 import { styles } from '../screens/mealLogStyles';
 
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 export function FoodResponseCard({
   card,
   language,
   saved = false,
   disabled = false,
+  defaultOpen = false,
   onToggleSaved,
 }: {
   card: Card;
   language: Language;
   saved?: boolean;
   disabled?: boolean;
+  defaultOpen?: boolean;
   onToggleSaved?: (nextSaved: boolean) => void;
 }) {
   const s = copyFor(language);
@@ -28,9 +32,12 @@ export function FoodResponseCard({
   const review = s.afterMealReview;
   const linked = !!card.suggestion;
   const fill = acceptanceFill(card.outcome);
-  const meta = [card.preparation, card.servingNote].filter((value) => value.trim()).join(' · ');
+  const meta = card.kind === 'ingredient' && card.parentName
+    ? m.inDish(card.parentName)
+    : [card.preparation, card.servingNote].filter((value) => value.trim()).join(' · ');
   const badgeLabel = card.outcome ? review.outcomes[card.outcome] : m.noRecord;
   const eaten = card.outcome === 'eaten';
+  const [open, setOpen] = useState(defaultOpen);
   const [showingSuggestion, setShowingSuggestion] = useState(false);
   const isSaved = saved;
 
@@ -38,7 +45,10 @@ export function FoodResponseCard({
     return (
       <View style={[styles.foodCard, styles.suggestionBack]}>
         <View style={styles.suggestionHeader}>
-          <Text style={styles.suggestionTitle}>{card.name}</Text>
+          <View style={styles.foodHeader}>
+            <Feather name="chevron-down" size={16} color={colors.homeMuted} />
+            <Text style={styles.suggestionTitle}>{card.name}</Text>
+          </View>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={isSaved ? m.unsaveSuggestion : m.saveSuggestion}
@@ -83,42 +93,51 @@ export function FoodResponseCard({
     );
   }
 
-  const body = (
-    <>
-      <View style={styles.foodHeader}>
+  const reasonText = card.reasons
+    .map((reason) => reason.note || review.values[reason.value as keyof typeof review.values] || reason.value)
+    .filter(Boolean)
+    .join('\n');
+
+  return (
+    <View style={styles.foodCard}>
+      <Pressable accessibilityRole="button" onPress={() => setOpen((value) => !value)} style={styles.foodHeader}>
+        <Feather name={open ? 'chevron-down' : 'chevron-right'} size={16} color={colors.homeMuted} />
         <Text style={styles.foodName}>{card.name}</Text>
         <View style={[styles.foodBadge, eaten ? styles.reviewed : styles.awaiting]}>
           <Text style={eaten ? styles.reviewedText : styles.awaitingText}>{badgeLabel}</Text>
         </View>
-      </View>
-      {meta ? <Text style={styles.foodMeta}>{meta}</Text> : null}
-      {card.ingredients.length ? (
-        <View style={styles.chipWrap}>
-          {card.ingredients.map((ingredient) => (
-            <View key={ingredient} style={styles.ingredientChip}>
-              <Text style={styles.ingredientChipText}>{ingredient}</Text>
-            </View>
-          ))}
-        </View>
-      ) : null}
-      <Text style={styles.outcomeLabel}>{m.acceptance}</Text>
-      <View style={styles.acceptanceTrack}>
-        <View style={[styles.acceptanceFill, { width: `${Math.round(fill * 100)}%` }]} />
-      </View>
-      {linked ? <Text style={styles.flipHint}>{m.linkedSuggestion}</Text> : null}
-    </>
-  );
-  if (linked) {
-    return (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={m.linkedSuggestion}
-        onPress={() => setShowingSuggestion(true)}
-        style={styles.foodCard}
-      >
-        {body}
       </Pressable>
-    );
-  }
-  return <View style={styles.foodCard}>{body}</View>;
+      {meta ? <Text style={styles.foodMeta}>{meta}</Text> : null}
+      {open ? (
+        <>
+          {card.ingredients.length ? (
+            <View style={styles.chipWrap}>
+              {card.ingredients.map((ingredient) => (
+                <View key={ingredient} style={styles.ingredientChip}>
+                  <Text style={styles.ingredientChipText}>{ingredient}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          <View style={styles.outcomeRow}>
+            <Text style={styles.outcomeLabel}>{m.acceptance}</Text>
+            <View style={styles.acceptanceTrack}>
+              <View style={[styles.acceptanceFill, { width: `${Math.round(fill * 100)}%` }]} />
+            </View>
+            {reasonText ? (
+              <>
+                <Text style={styles.outcomeLabel}>{m.reason}</Text>
+                <Text style={styles.outcomeValue}>{reasonText}</Text>
+              </>
+            ) : null}
+          </View>
+          {linked ? (
+            <Pressable accessibilityRole="button" accessibilityLabel={m.linkedSuggestion} onPress={() => setShowingSuggestion(true)}>
+              <Text style={styles.flipHint}>{m.linkedSuggestion} →</Text>
+            </Pressable>
+          ) : null}
+        </>
+      ) : null}
+    </View>
+  );
 }

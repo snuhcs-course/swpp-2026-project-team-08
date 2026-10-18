@@ -5,6 +5,7 @@ import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingD
 import { useAuth } from '../../providers/AuthProvider';
 import { useProfile } from '../../providers/ProfileProvider';
 import type { ChildProfile, SafeFood } from '../../types/profile';
+import { createDraftSaveGate } from './draftSaveGate';
 import { addUnique, canAddSafeFood, canContinue, canFinish, isDraft, toggleExclusive, validEmail } from './rules';
 import { emptyDraft, type OnboardingDraft, type OnboardingStep } from './types';
 import { OnboardingContext, type ConsentField, type DraftField, type ListField, type SaveStatus } from './onboardingContext';
@@ -23,8 +24,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   const [editing, setEditing] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
-  const saveChain = useRef<Promise<void>>(Promise.resolve());
-  const saveVersion = useRef(0);
+  const saveGate = useRef(createDraftSaveGate());
   const skipFirstSave = useRef(true);
   const finishing = useRef(false);
 
@@ -46,15 +46,14 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [status, profile, ready]);
 
   const persist = useCallback((value: OnboardingDraft) => {
-    const version = ++saveVersion.current;
     setSaveStatus('saving');
     setHasDraft(true);
-    saveChain.current = saveChain.current.catch(() => undefined).then(() => saveDraft(value));
-    saveChain.current.then(
-      () => { if (version === saveVersion.current) setSaveStatus('saved'); },
-      () => { if (version === saveVersion.current) setSaveStatus('error'); },
+    const pending = saveGate.current.persist(() => saveDraft(value));
+    pending.then(
+      () => { if (!finishing.current) setSaveStatus('saved'); },
+      () => { if (!finishing.current) setSaveStatus('error'); },
     );
-    return saveChain.current;
+    return pending;
   }, []);
 
   useEffect(() => {
@@ -134,20 +133,18 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setEditing(true);
   }, [draftFromProfile]);
   const cancelEdit = useCallback(async () => {
-    saveVersion.current += 1;
     finishing.current = true;
     const next = draftFromProfile('review');
     if (next) setDraft(next);
     setEditing(false);
     setHasDraft(false);
-    try { await clearDraft(); } finally { finishing.current = false; }
+    try { await saveGate.current.discard(clearDraft); } finally { finishing.current = false; }
   }, [draftFromProfile]);
   const applyEdit = useCallback(async () => {
     if (finishing.current) return false;
     finishing.current = true;
     try {
       await persist(draft);
-      await saveChain.current;
       const { step: _step, safeFoodInput: _safeFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,
@@ -167,13 +164,12 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     }
   }, [draft, profile, persist, commitProfile, auth.session]);
   const resetLocal = useCallback(async () => {
-    saveVersion.current += 1;
     finishing.current = true;
     setDraft(emptyDraft());
     setPassword('');
     setEditing(false);
     setHasDraft(false);
-    try { await clearDraft(); } finally { finishing.current = false; }
+    try { await saveGate.current.discard(clearDraft); } finally { finishing.current = false; }
   }, []);
   const retrySave = useCallback(() => persist(draft), [draft, persist]);
   const retryLoad = useCallback(() => {
@@ -186,7 +182,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     finishing.current = true;
     try {
       await persist(draft);
-      await saveChain.current;
       const { step: _step, safeFoodInput: _safeFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,

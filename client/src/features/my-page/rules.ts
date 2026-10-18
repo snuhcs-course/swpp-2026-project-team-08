@@ -4,8 +4,6 @@ import type { Language, SafeFood } from '../../types/profile';
 import { copyFor, labelFor, type OptionGroup } from '../../util/strings';
 import { validEmail } from '../onboarding/rules';
 
-export const LOCAL_EMAIL_CODE = '123456';
-
 export function optionSummary(ids: string[], group: OptionGroup, language: Language): string {
   const labels = ids
     .filter((id) => id && id !== 'none')
@@ -41,8 +39,4 @@ export function caregiverLine(name: string, email: string): string {
 export function canSendEmailCode(current: string, next: string): boolean {
   const email = next.trim();
   return validEmail(email) && email.toLocaleLowerCase() !== current.trim().toLocaleLowerCase();
-}
-
-export function localEmailCodeMatches(code: string, expected = LOCAL_EMAIL_CODE): boolean {
-  return code === expected;
 }

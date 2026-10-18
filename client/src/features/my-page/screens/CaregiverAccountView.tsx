@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+// AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 
 import Feather from '@expo/vector-icons/Feather';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
@@ -9,8 +9,9 @@ import type { Language } from '../../../types/profile';
 import { styles } from './myPageStyles';
 
 export function CaregiverAccountView({
-  language, mode, name, email, newEmail, code, mismatch, updated, canSend, canVerify, onBack,
-  onName, onSaveName, onChange, onNewEmail, onSend, onCode, onVerify, onResend,
+  language, mode, name, email, newEmail, code, mismatch, updated, busy, saveError, sendError,
+  saveFailedLabel, canSend, canVerify, onBack, onName, onSaveName, onChange, onNewEmail, onSend,
+  onCode, onVerify, onResend,
 }: {
   language: Language;
   mode: 'account' | 'change-email' | 'verify';
@@ -20,6 +21,10 @@ export function CaregiverAccountView({
   code: string;
   mismatch: boolean;
   updated: boolean;
+  busy: boolean;
+  saveError: boolean;
+  sendError: boolean;
+  saveFailedLabel: string;
   canSend: boolean;
   canVerify: boolean;
   onBack: () => void;
@@ -60,10 +65,12 @@ export function CaregiverAccountView({
                 value={name}
                 onChangeText={onName}
                 onEndEditing={onSaveName}
+                editable={!busy}
                 placeholder={m.namePlaceholder}
                 placeholderTextColor={colors.homeMuted}
                 style={styles.input}
               />
+              {saveError ? <Text style={styles.errorText}>{saveFailedLabel}</Text> : null}
             </View>
             <View>
               <Text style={styles.fieldLabel}>{m.email}</Text>
@@ -95,11 +102,12 @@ export function CaregiverAccountView({
                 style={styles.input}
               />
             </View>
+            {sendError ? <Text style={styles.errorText}>{saveFailedLabel}</Text> : null}
             <Pressable
               accessibilityRole="button"
-              disabled={!canSend}
+              disabled={!canSend || busy}
               onPress={onSend}
-              style={[styles.verify, !canSend && styles.verifyOff]}
+              style={[styles.verify, (!canSend || busy) && styles.verifyOff]}
             >
               <Text style={styles.verifyLabel}>{m.sendCode}</Text>
             </Pressable>
@@ -128,14 +136,15 @@ export function CaregiverAccountView({
               />
             </View>
             {mismatch ? <Text style={styles.errorText}>{m.codeMismatch}</Text> : null}
-            <Pressable accessibilityRole="button" onPress={onResend}>
+            {sendError ? <Text style={styles.errorText}>{saveFailedLabel}</Text> : null}
+            <Pressable accessibilityRole="button" onPress={onResend} disabled={busy}>
               <Text style={styles.resend}>{m.resend}</Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              disabled={!canVerify}
+              disabled={!canVerify || busy}
               onPress={onVerify}
-              style={[styles.verify, !canVerify && styles.verifyOff]}
+              style={[styles.verify, (!canVerify || busy) && styles.verifyOff]}
             >
               <Text style={styles.verifyLabel}>{m.verify}</Text>
             </Pressable>

@@ -1,14 +1,18 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+// AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
+import { authFailure, confirmEmailChange, requestEmailChange, updateCurrentName } from '../../../data/api/authApi';
+import { useAuth } from '../../../providers/AuthProvider';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
-import { canSendEmailCode, localEmailCodeMatches } from '../rules';
+import { copyFor } from '../../../util/strings';
+import { canSendEmailCode } from '../rules';
 import { CaregiverAccountView } from './CaregiverAccountView';
 
 export function CaregiverAccountScreen() {
+  const auth = useAuth();
   const appProfile = useProfile();
   const profile = appProfile.profile;
   const [mode, setMode] = useState<'account' | 'change-email' | 'verify'>('account');
@@ -17,41 +21,76 @@ export function CaregiverAccountScreen() {
   const [code, setCode] = useState('');
   const [mismatch, setMismatch] = useState(false);
   const [updated, setUpdated] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const [sendError, setSendError] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   if (appProfile.status === 'loading') {
     return <View style={{ flex: 1, backgroundColor: colors.homeBackground }} />;
   }
   if (appProfile.status === 'error' || !profile) return <Redirect href="/" />;
 
+  const copy = copyFor(appProfile.language);
   const saveName = async () => {
     const next = name.trim();
-    if (!next || next === profile.caregiverName) return;
-    await appProfile.commitProfile({ ...profile, caregiverName: next, updatedAt: new Date().toISOString() });
+    if (!next || next === profile.caregiverName) return true;
+    setBusy(true);
+    setSaveError(false);
+    try {
+      const user = await updateCurrentName(next);
+      await auth.replaceUser(user);
+      await appProfile.commitProfile({
+        ...profile,
+        caregiverName: user.fullName,
+        updatedAt: new Date().toISOString(),
+      });
+      return true;
+    } catch {
+      setSaveError(true);
+      return false;
+    } finally {
+      setBusy(false);
+    }
   };
-  const sendCode = () => {
-    if (!canSendEmailCode(profile.caregiverEmail, newEmail)) return;
-    setCode('');
+  const sendCode = async () => {
+    if (busy || !canSendEmailCode(profile.caregiverEmail, newEmail)) return;
+    setBusy(true);
+    setSendError(false);
     setMismatch(false);
-    setMode('verify');
+    try {
+      await requestEmailChange(newEmail.trim());
+      setCode('');
+      setMode('verify');
+    } catch {
+      setSendError(true);
+    } finally {
+      setBusy(false);
+    }
   };
   const verify = async () => {
-    if (code.length !== 6) return;
-    if (!localEmailCodeMatches(code)) {
-      setMismatch(true);
-      return;
-    }
-    await appProfile.commitProfile({
-      ...profile,
-      caregiverName: name.trim() || profile.caregiverName,
-      caregiverEmail: newEmail.trim(),
-      updatedAt: new Date().toISOString(),
-    });
-    setUpdated(true);
-    setMode('account');
-    setCode('');
+    if (busy || code.length !== 6) return;
+    setBusy(true);
     setMismatch(false);
+    try {
+      const user = await confirmEmailChange(newEmail.trim(), code);
+      await auth.replaceUser(user);
+      await appProfile.commitProfile({
+        ...profile,
+        caregiverName: name.trim() || user.fullName,
+        caregiverEmail: user.email,
+        updatedAt: new Date().toISOString(),
+      });
+      setUpdated(true);
+      setMode('account');
+      setCode('');
+    } catch (error) {
+      setMismatch(authFailure(error) === 'invalid-email-code');
+      if (authFailure(error) !== 'invalid-email-code') setSendError(true);
+    } finally {
+      setBusy(false);
+    }
   };
-  const goBack = () => {
+  const goBack = async () => {
     if (mode === 'verify') {
       setMode('change-email');
       return;
@@ -60,7 +99,7 @@ export function CaregiverAccountScreen() {
       setMode('account');
       return;
     }
-    void saveName().then(() => router.back());
+    if (await saveName()) router.back();
   };
 
   return (
@@ -73,17 +112,21 @@ export function CaregiverAccountScreen() {
       code={code}
       mismatch={mismatch}
       updated={updated}
+      busy={busy}
+      saveError={saveError}
+      sendError={sendError}
+      saveFailedLabel={copy.common.saveFailed}
       canSend={canSendEmailCode(profile.caregiverEmail, newEmail)}
       canVerify={code.length === 6}
-      onBack={goBack}
-      onName={setName}
+      onBack={() => { void goBack(); }}
+      onName={(value) => { setSaveError(false); setName(value); }}
       onSaveName={() => { void saveName(); }}
-      onChange={() => { setUpdated(false); setNewEmail(''); setMode('change-email'); }}
+      onChange={() => { setUpdated(false); setSendError(false); setNewEmail(''); setMode('change-email'); }}
       onNewEmail={setNewEmail}
-      onSend={sendCode}
+      onSend={() => { void sendCode(); }}
       onCode={(value) => { setMismatch(false); setCode(value); }}
       onVerify={() => { void verify(); }}
-      onResend={sendCode}
+      onResend={() => { void sendCode(); }}
     />
   );
 }

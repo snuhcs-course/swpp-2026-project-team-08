@@ -9,6 +9,7 @@ import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import { useOnboarding } from '../hooks/useOnboarding';
+import { onboardingRouteParams } from '../navigation';
 import { canAddSafeFood, matchingSafeFoods, validEmail, validPassword } from '../rules';
 import { isStep, nextStep, previousStep, steps, type OnboardingStep } from '../types';
 import { AccountStepView } from './AccountStepView';
@@ -40,7 +41,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
     model.setStep(target);
     router.replace({
       pathname: '/onboarding/[step]',
-      params: { step: target, ...(returnTo ? { from: returnTo } : {}) },
+      params: onboardingRouteParams(target, returnTo),
     });
   };
   const handlePrevious = () => {

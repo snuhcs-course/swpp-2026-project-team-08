@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -13,7 +14,7 @@ import { savedSuggestionsForProfile } from '../../../rules/savedSuggestions';
 import type { AfterMealReviewDraft, DifficultyCategory, GoalFeedback, Outcome, ReviewStep, SuggestionFeedback } from '../../../types/afterMealReview';
 import type { FoodItem, FoodTraits, PhotoSource, TraitGroup } from '../../../types/meal';
 import type { ChildProfile } from '../../../types/profile';
-import { addDifficulty, allOutcomesConfirmed, applySuggestions, canAddDifficulty, newReviewDraft, reconcileOutcomes, reviewFromDraft, setOutcome } from '../rules';
+import { addDifficulty, allOutcomesConfirmed, applySuggestions, canAddDifficulty, newReviewDraft, reconcileOutcomes, reviewFromDraft, setOutcome, toggleIngredient } from '../rules';
 
 type SaveStatus = 'saving' | 'saved' | 'error';
 
@@ -68,7 +69,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
         const base = stored ?? (saved ? { ...saved, step: 'complete' as const, difficultyInputs: {} } : newReviewDraft(meal));
         const next: AfterMealReviewDraft = {
           ...base,
-          step: saved ? 'complete' : base.step === 'comparing' ? 'compare' : base.step,
+          step: saved ? 'complete' : base.step === 'comparing' ? 'compare' : base.step === 'goal' ? 'difficulties' : base.step,
           outcomes: reconcileOutcomes(base.outcomes, meal.foods),
         };
         skipFirstSave.current = true;
@@ -127,7 +128,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     const previous: Partial<Record<ReviewStep, ReviewStep>> = {
       preview: 'photo', compare: 'preview', 'comparison-error': 'compare',
       outcomes: current.current?.comparisonMethod === 'manual' && !current.current.afterPhoto ? 'photo' : 'compare',
-      difficulties: 'outcomes', goal: 'difficulties', suggestions: meal?.exposureFoodId ? 'goal' : 'difficulties',
+      difficulties: 'outcomes', goal: 'difficulties', suggestions: 'difficulties',
     };
     const target = previous[step];
     if (!target) return false;
@@ -206,7 +207,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     if (value) update({ outcomes: setOutcome(value.outcomes, foodId, outcome, ingredientKey) });
   };
 
-  const setDifficultyInput = (foodId: string, patch: Partial<{ category: DifficultyCategory | null; value: string; note: string }>) => {
+  const setDifficultyInput = (foodId: string, patch: Partial<{ category: DifficultyCategory | null; value: string; note: string; subcategory?: string }>) => {
     const value = current.current;
     if (!value) return;
     const old = value.difficultyInputs[foodId] ?? { category: null, value: '', note: '' };
@@ -215,11 +216,11 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const addDifficultyTag = (foodId: string) => {
     const value = current.current;
     const input = value?.difficultyInputs[foodId];
-    if (!value || !input || !canAddDifficulty(input.category, input.value, input.note)) return;
+    if (!value || !input || !canAddDifficulty(input.category, input.value, input.note, input.subcategory)) return;
     const currentTags = value.difficulties[foodId] ?? [];
     update({
-      difficulties: { ...value.difficulties, [foodId]: addDifficulty(currentTags, input.category!, input.value, input.note) },
-      difficultyInputs: { ...value.difficultyInputs, [foodId]: { category: input.category, value: '', note: '' } },
+      difficulties: { ...value.difficulties, [foodId]: addDifficulty(currentTags, input.category!, input.value, input.note, input.subcategory) },
+      difficultyInputs: { ...value.difficultyInputs, [foodId]: { category: input.category, value: '', note: '', subcategory: '' } },
     });
   };
   const removeDifficultyTag = (foodId: string, tagId: string) => {
@@ -310,8 +311,9 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     markImageError: () => setPhotoError('image'),
     comparing: compareMutation.isPending, saving: saveMutation.isPending,
     editingFood, editingTraits, ingredient, customTrait, editorSaving: updateMealMutation.isPending,
-    savedSuggestions, suggestionsLoading: homeQuery.isPending || mealsQuery.isPending,
+    savedSuggestions: (meal?.suggestionLinks ?? []).map((link) => savedSuggestions.find((item) => item.id === link.suggestionId) ?? { id: link.suggestionId, childId, title: link.title, description: link.description, servingTip: link.servingTip, ingredients: [], isSaved: true, safetyVerifiedForProfileAt: '' }), suggestionsLoading: homeQuery.isPending || mealsQuery.isPending,
     canContinueOutcomes: !!draft && allOutcomesConfirmed(draft.outcomes),
+    toggleIngredient: (foodId: string, ingredientId: string) => { if (current.current) update({ outcomes: toggleIngredient(current.current.outcomes, foodId, ingredientId) }); },
     update, go, back, pick, removePhoto, compare, cancelComparison, manual, chooseOutcome,
     setDifficultyInput, addDifficultyTag, removeDifficultyTag,
     setGoalFeedback: (result: GoalFeedback) => update({ goalFeedback: result }),

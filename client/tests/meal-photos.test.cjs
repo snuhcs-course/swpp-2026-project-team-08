@@ -98,7 +98,8 @@ test('after-meal comparison needs both photos and does not invent consumption', 
   }));
 });
 
-test('saving a meal keeps the before photo; the after-meal review requires an after photo', () => {
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+test('saving a meal keeps the before photo; manual after-meal review may omit its photo', () => {
   const meal = mealWithBeforePhoto();
   assert.equal(meal.photo.uri, PNG);
   assert.equal(mealToUpsertBody(meal).before_photo_uri, PNG);
@@ -109,7 +110,7 @@ test('saving a meal keeps the before photo; the after-meal review requires an af
   for (const ingredient of draft.outcomes[0].ingredients) {
     draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'tasted', ingredient.id);
   }
-  assert.throws(() => reviewFromDraft(draft, meal), /photo/);
+  assert.equal(reviewFromDraft(draft, meal).afterPhoto, null);
   draft.afterPhoto = afterPhoto;
   const review = reviewFromDraft(draft, meal);
   assert.equal(review.afterPhoto.id, afterPhoto.id);

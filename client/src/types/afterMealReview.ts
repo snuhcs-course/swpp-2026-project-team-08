@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import type { MealPhoto } from './meal';
@@ -5,7 +6,7 @@ import type { MealPhoto } from './meal';
 export const outcomeValues = ['eaten', 'tasted', 'untouched', 'unclear'] as const;
 export type Outcome = (typeof outcomeValues)[number];
 export type OutcomeDecision = { confirmed: Outcome | null; suggested: Outcome | null };
-export type IngredientOutcome = { id: string; name: string; decision: OutcomeDecision };
+export type IngredientOutcome = { id: string; name: string; decision: OutcomeDecision; selected?: boolean };
 export type FoodOutcome = {
   foodId: string;
   decision: OutcomeDecision;
@@ -14,7 +15,7 @@ export type FoodOutcome = {
 
 export const difficultyCategories = [
   'texture', 'tasteType', 'tasteIntensity', 'smell', 'color',
-  'shape', 'visibility', 'temperature', 'notSure',
+  'shape', 'visibility', 'temperature', 'notSure', 'pieceSize', 'arrangement',
 ] as const;
 export type DifficultyCategory = (typeof difficultyCategories)[number];
 export type DifficultyTag = {
@@ -22,6 +23,7 @@ export type DifficultyTag = {
   category: DifficultyCategory;
   value: string;
   note?: string;
+  subcategory?: string;
 };
 
 export const reviewSteps = [
@@ -40,7 +42,7 @@ export type AfterMealReviewDraft = {
   comparisonMethod: 'ai' | 'manual' | null;
   outcomes: FoodOutcome[];
   difficulties: Record<string, DifficultyTag[]>;
-  difficultyInputs: Record<string, { category: DifficultyCategory | null; value: string; note: string }>;
+  difficultyInputs: Record<string, { category: DifficultyCategory | null; value: string; note: string; subcategory?: string }>;
   goalFeedback: GoalFeedback;
   suggestionFeedback: Record<string, SuggestionFeedback>;
 };

@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome } from '../../types/afterMealReview';
@@ -6,14 +7,16 @@ import { ingredientId } from '../../rules/ingredientIds';
 import { foodFormKey } from '../../rules/recommendationSafety';
 
 export const difficultyOptions: Record<DifficultyCategory, readonly string[]> = {
-  texture: ['smooth', 'soft', 'lumpy', 'crunchy', 'chewy', 'wet', 'mixed', 'other'],
-  tasteType: ['sweet', 'salty', 'sour', 'bitter', 'spicy', 'other'],
+  texture: ['soft', 'firm', 'hard'],
+  tasteType: ['sweet', 'salty', 'sour', 'bitter', 'savory', 'other'],
   tasteIntensity: ['mild', 'strong'],
-  smell: ['strong', 'mild', 'none', 'notSure'],
-  color: ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'brown', 'black', 'white', 'gray', 'other'],
+  smell: ['fruit', 'herb', 'mushroom', 'toasted', 'vanilla', 'dairy', 'meaty', 'sulfur', 'sea', 'fermented', 'spice', 'mint', 'smoke'],
+  color: ['red', 'yellow', 'green', 'brown', 'white', 'other'],
   shape: ['consistent', 'varied', 'notSure', 'note'],
   visibility: ['visible', 'hidden', 'mixed'],
-  temperature: ['warm', 'cool', 'room'],
+  temperature: ['hot', 'warm', 'cool', 'room'],
+  pieceSize: ['fine', 'small', 'large'],
+  arrangement: ['even', 'uneven', 'clustered', 'other'],
   notSure: ['notSure'],
 };
 
@@ -30,7 +33,7 @@ export function reconcileOutcomes(previous: FoodOutcome[], foods: FoodItem[]): F
         occurrences.set(normalized, occurrence + 1);
         const id = ingredientId(food.id, name, occurrence);
         const old = existing?.ingredients.find((item) => item.id === id);
-        return { id, name, decision: old?.decision ?? { confirmed: null, suggested: null } };
+        return { id, name, selected: old ? old.selected !== false : false, decision: old?.decision ?? { confirmed: null, suggested: null } };
       }),
     };
   });
@@ -53,7 +56,7 @@ export function newReviewDraft(meal: Meal): AfterMealReviewDraft {
 
 export function allOutcomesConfirmed(outcomes: FoodOutcome[]): boolean {
   return outcomes.length > 0 && outcomes.every((food) =>
-    food.decision.confirmed !== null && food.ingredients.every((ingredient) => ingredient.decision.confirmed !== null),
+    food.decision.confirmed !== null && food.ingredients.every((ingredient) => ingredient.selected === false || ingredient.decision.confirmed !== null),
   );
 }
 
@@ -64,7 +67,7 @@ export function setOutcome(
     ? {
       ...food,
       ingredients: food.ingredients.map((ingredient) => ingredient.id === ingredientKey
-        ? { ...ingredient, decision: { ...ingredient.decision, confirmed: value } }
+        ? { ...ingredient, selected: true, decision: { ...ingredient.decision, confirmed: value } }
         : ingredient),
     }
     : { ...food, decision: { ...food.decision, confirmed: value } });
@@ -90,18 +93,19 @@ export function applySuggestions(
 }
 
 export function addDifficulty(
-  tags: DifficultyTag[], category: DifficultyCategory, value: string, note?: string,
+  tags: DifficultyTag[], category: DifficultyCategory, value: string, note?: string, subcategory?: string,
 ): DifficultyTag[] {
   const normalized = value.trim();
   const normalizedNote = note?.trim();
   if (!normalized && !normalizedNote) return tags;
   const tag: DifficultyTag = {
-    id: `${category}:${encodeURIComponent(normalized.toLocaleLowerCase())}:${encodeURIComponent(normalizedNote?.toLocaleLowerCase() ?? '')}`,
+    id: `${category}:${subcategory ?? ''}:${encodeURIComponent(normalized.toLocaleLowerCase())}:${encodeURIComponent(normalizedNote?.toLocaleLowerCase() ?? '')}`,
     category,
+    ...(subcategory ? { subcategory } : {}),
     value: normalized,
     ...(normalizedNote ? { note: normalizedNote } : {}),
   };
-  const single = category === 'smell' || category === 'tasteIntensity' || category === 'visibility' || category === 'temperature' || category === 'notSure';
+  const single = category === 'smell' || category === 'tasteIntensity' || category === 'visibility' || category === 'temperature' || category === 'notSure' || category === 'pieceSize' || category === 'arrangement';
   const retained = single ? tags.filter((item) => item.category !== category) : tags;
   return retained.some((item) => item.id === tag.id) ? retained : [...retained, tag];
 }
@@ -110,13 +114,13 @@ export function difficultyNeedsNote(category: DifficultyCategory | null, value: 
   return value === 'other' || value === 'note' || (category === 'shape' && value === 'notSure');
 }
 
-export function canAddDifficulty(category: DifficultyCategory | null, value: string, note: string): boolean {
+export function canAddDifficulty(category: DifficultyCategory | null, value: string, note: string, subcategory?: string): boolean {
+  if (category === 'texture' && subcategory !== undefined && (!subcategory || !textureQuestions[subcategory]?.includes(value))) return false;
   return !!category && !!value && (!difficultyNeedsNote(category, value) || !!note.trim());
 }
 
 export function reviewFromDraft(draft: AfterMealReviewDraft, meal: Meal): AfterMealReview {
   if (draft.mealId !== meal.id || draft.childId !== meal.childId) throw new Error('Review does not match meal');
-  if (!draft.afterPhoto) throw new Error('After-meal photo is required');
   const outcomes = reconcileOutcomes(draft.outcomes, meal.foods);
   if (!allOutcomesConfirmed(outcomes)) throw new Error('Unanswered outcomes');
   return {
@@ -124,11 +128,24 @@ export function reviewFromDraft(draft: AfterMealReviewDraft, meal: Meal): AfterM
     childId: meal.childId,
     afterPhoto: draft.afterPhoto,
     comparisonMethod: draft.comparisonMethod,
-    outcomes,
+    outcomes: outcomes.map((food) => ({ ...food, ingredients: food.ingredients.filter((ingredient) => ingredient.selected !== false) })),
     difficulties: Object.fromEntries(meal.foods.map((food) => [food.id, draft.difficulties[food.id] ?? []])),
     goalFeedback: meal.exposureFoodId ? draft.goalFeedback : null,
     suggestionFeedback: draft.suggestionFeedback,
     savedAt: new Date().toISOString(),
     foodFormKeys: Object.fromEntries(meal.foods.map((food) => [food.id, foodFormKey(food)])),
   };
+}
+
+
+export const textureQuestions: Record<string, readonly string[]> = {
+  hardness: ['soft', 'firm', 'hard'], breaking: ['crumbly', 'crunchy', 'brittle'],
+  chewing: ['tender', 'chewy', 'tough'], stickiness: ['nonSticky', 'sticky', 'gummy'],
+  springiness: ['springy', 'rubbery'], thickness: ['fluid', 'thin', 'thick', 'viscous'],
+  moisture: ['dry', 'moist', 'juicy', 'wet'], oiliness: ['nonFatty', 'oily', 'greasy'],
+  graininess: ['grainy', 'gritty', 'sandy', 'mealy', 'powdery'], density: ['dense', 'airy'],
+  surface: ['smooth', 'rough', 'bumpy', 'crusty', 'fuzzy'], structure: ['fibrous', 'fleshy', 'layered', 'spongy'],
+};
+export function toggleIngredient(outcomes: FoodOutcome[], foodId: string, ingredientId: string): FoodOutcome[] {
+  return outcomes.map((food) => food.foodId === foodId ? { ...food, ingredients: food.ingredients.map((ingredient) => ingredient.id === ingredientId ? { ...ingredient, selected: ingredient.selected === false } : ingredient) } : food);
 }

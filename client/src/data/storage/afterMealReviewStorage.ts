@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -21,7 +22,7 @@ function validReview(value: unknown, childId: string, mealId: string): value is 
   if (!value.outcomes.every((food: unknown) => record(food) && typeof food.foodId === 'string'
     && validDecision(food.decision) && Array.isArray(food.ingredients)
     && food.ingredients.every((ingredient: unknown) => record(ingredient)
-      && typeof ingredient.id === 'string' && typeof ingredient.name === 'string' && validDecision(ingredient.decision)))) return false;
+      && typeof ingredient.id === 'string' && typeof ingredient.name === 'string' && (ingredient.selected === undefined || typeof ingredient.selected === 'boolean') && validDecision(ingredient.decision)))) return false;
   const foodIds = value.outcomes.map((food: { foodId: string }) => food.foodId);
   if (new Set(foodIds).size !== foodIds.length || value.outcomes.some((food: { ingredients: { id: string }[] }) => {
     const ids = food.ingredients.map((ingredient) => ingredient.id);
@@ -29,10 +30,10 @@ function validReview(value: unknown, childId: string, mealId: string): value is 
   })) return false;
   if (!Object.values(value.difficulties).every((tags) => Array.isArray(tags) && tags.every((tag: unknown) =>
     record(tag) && typeof tag.id === 'string' && difficultyCategories.includes(tag.category as never)
-      && typeof tag.value === 'string' && (tag.note === undefined || typeof tag.note === 'string')))) return false;
+      && typeof tag.value === 'string' && (tag.note === undefined || typeof tag.note === 'string') && (tag.subcategory === undefined || typeof tag.subcategory === 'string')))) return false;
   if (!Object.values(value.difficultyInputs).every((input) => record(input)
     && (input.category === null || difficultyCategories.includes(input.category as never))
-    && typeof input.value === 'string' && typeof input.note === 'string')) return false;
+    && typeof input.value === 'string' && typeof input.note === 'string' && (input.subcategory === undefined || typeof input.subcategory === 'string'))) return false;
   return Object.values(value.suggestionFeedback).every((choice) => choice === 'tried' || choice === 'notTried');
 }
 
@@ -42,10 +43,9 @@ function validFinal(value: unknown, childId: string, mealId: string): value is A
       && Object.values(value.foodFormKeys).every((key) => typeof key === 'string')))) return false;
   const draft = { ...value, step: 'complete', difficultyInputs: {} };
   return validReview(draft, childId, mealId)
-    && draft.afterPhoto !== null
     && draft.outcomes.length > 0
     && draft.outcomes.every((food) => food.decision.confirmed !== null
-      && food.ingredients.every((ingredient) => ingredient.decision.confirmed !== null));
+      && food.ingredients.every((ingredient) => ingredient.selected === false || ingredient.decision.confirmed !== null));
 }
 
 function queued<T>(key: string, work: () => Promise<T>): Promise<T> {

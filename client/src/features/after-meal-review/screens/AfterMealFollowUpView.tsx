@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -5,7 +6,7 @@ import { AppButton } from '../../../components/AppButton';
 import { SuggestionCard } from '../../../components/SuggestionCard';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
-import { copyFor } from '../../../util/strings';
+import { abcCopyFor, copyFor } from '../../../util/strings';
 import type { ReviewViewProps } from './reviewViewTypes';
 
 type Props = Pick<ReviewViewProps,
@@ -15,6 +16,7 @@ type Props = Pick<ReviewViewProps,
 export function AfterMealFollowUpView({ p }: { p: Props }) {
   const s = copyFor(p.language);
   const m = s.afterMealReview;
+  const a = abcCopyFor(p.language);
   if (p.draft.step === 'goal') {
     const goalFood = p.meal.foods.find((food) => food.id === p.meal.exposureFoodId);
     return (
@@ -42,6 +44,7 @@ export function AfterMealFollowUpView({ p }: { p: Props }) {
       <View style={styles.root}>
         <Text style={styles.title}>{m.titles.suggestions}</Text>
         <Text style={styles.muted}>{m.suggestionPrompt}</Text>
+        {current && <Text style={styles.muted}>{p.meal.foods.find((food) => food.id === p.meal.suggestionLinks?.find((link) => link.suggestionId === current.id)?.foodId)?.name}</Text>}
         {p.suggestionsLoading ? <Text style={styles.muted}>{s.common.loading}</Text> : current ? (
           <SuggestionCard
             badge={`${m.savedSuggestion} ${index + 1}`}
@@ -64,7 +67,9 @@ export function AfterMealFollowUpView({ p }: { p: Props }) {
     <View style={styles.root}>
       <Text style={styles.title}>{m.titles.complete}</Text>
       <Text style={styles.muted}>{m.saved}</Text>
-      <AppButton variant="meal" label={m.recommendedNext} onPress={p.onRecommend} />
+      <Text style={styles.muted}>{p.meal.mealDate} · {s.mealCheckin.types[p.meal.mealType]}</Text>
+      {p.meal.foods.map((food) => <Text key={food.id} style={styles.goalText}>{food.name}</Text>)}
+      <AppButton variant="meal" label={a.viewMealSuggestions} onPress={p.onRecommend} />
       {p.savedSuggestions[0] && (
         <AppButton variant="meal" secondary label={m.nextSuggestion} onPress={() => p.onNextSuggestion(p.savedSuggestions[0].id)} />
       )}

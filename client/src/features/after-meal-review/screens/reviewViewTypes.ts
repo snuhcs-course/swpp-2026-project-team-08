@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import type { AfterMealReviewDraft, DifficultyCategory, GoalFeedback, Outcome, ReviewStep, SuggestionFeedback } from '../../../types/afterMealReview';
@@ -32,6 +33,8 @@ export type ReviewViewProps = {
   onCompare: () => void;
   onCancelComparison: () => void;
   onManual: () => void;
+  onSaveExit: () => void;
+  onToggleIngredient: (foodId: string, ingredientId: string) => void;
   onSelectOutcome: (foodId: string, outcome: Outcome, ingredientId?: string) => void;
   onEditFood: (food?: FoodItem) => void;
   onRemoveFood: (foodId: string) => void;
@@ -46,7 +49,7 @@ export type ReviewViewProps = {
   onRemoveIngredient: (name: string) => void;
   onCustomTraitChange: (group: 'color' | 'shape', value: string) => void;
   onAddCustomTrait: (group: 'color' | 'shape') => void;
-  onDifficultyInput: (foodId: string, patch: Partial<{ category: DifficultyCategory | null; value: string; note: string }>) => void;
+  onDifficultyInput: (foodId: string, patch: Partial<{ category: DifficultyCategory | null; value: string; note: string; subcategory?: string }>) => void;
   onAddDifficulty: (foodId: string) => void;
   onRemoveDifficulty: (foodId: string, tagId: string) => void;
   difficultyForms: Record<string, { options: readonly string[]; canAdd: boolean; showNote: boolean }>;

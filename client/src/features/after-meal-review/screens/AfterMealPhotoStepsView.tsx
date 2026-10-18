@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { useState } from 'react';
@@ -9,7 +10,7 @@ import { AfterMealPhotoPicker } from '../components/AfterMealPhotoPicker';
 import { PhotoComparisonCard } from '../components/PhotoComparisonCard';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
-import { copyFor } from '../../../util/strings';
+import { abcCopyFor, copyFor } from '../../../util/strings';
 import type { ReviewViewProps } from './reviewViewTypes';
 
 type Props = Pick<ReviewViewProps,
@@ -20,6 +21,7 @@ type Props = Pick<ReviewViewProps,
 export function AfterMealPhotoStepsView({ p }: { p: Props }) {
   const s = copyFor(p.language);
   const m = s.afterMealReview;
+  const a = abcCopyFor(p.language);
   const [replaceOpen, setReplaceOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const photoLabels = { camera: s.mealCheckin.camera, gallery: s.mealCheckin.gallery, files: s.mealCheckin.files };
@@ -40,6 +42,7 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
       </View>
       {picker}
       {photoError}
+      <AppButton variant="meal" secondary label={a.skipPhoto} onPress={p.onManual} />
       <Text style={styles.autoSave}>{s.common.saved}</Text>
     </View>
   );
@@ -60,7 +63,7 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
       {replaceOpen && picker}
       <View style={styles.info}><Text style={styles.infoText}>{m.photoLocal}</Text></View>
       {photoError}
-      <View style={styles.bottom}><AppButton variant="meal" label={m.usePhoto} onPress={() => p.onGo('compare')} disabled={!p.draft.afterPhoto || !!p.photoError} /></View>
+      <View style={styles.bottom}><AppButton variant="meal" label={m.usePhoto} onPress={() => p.meal.photo ? p.onGo('compare') : p.onManual()} disabled={!p.draft.afterPhoto || !!p.photoError} /></View>
     </View>
   );
 
@@ -76,7 +79,7 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
         <Pressable accessibilityRole="link" onPress={() => setPrivacyOpen(true)}><Text style={styles.enlarge}>{m.privacy}</Text></Pressable>
       </View>
       <View style={styles.bottom}>
-        <AppButton variant="meal" label={m.compare} onPress={p.onCompare} disabled={!p.meal.photo || !p.draft.afterPhoto} />
+        <AppButton variant="meal" label={a.compare} onPress={p.onCompare} disabled={!p.meal.photo || !p.draft.afterPhoto} />
         <AppButton variant="meal" secondary label={m.manual} onPress={p.onManual} />
       </View>
       {privacyOpen && (

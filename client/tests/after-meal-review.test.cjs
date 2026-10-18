@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -30,7 +31,7 @@ const { newFood } = require('../src/rules/foodDraft.ts');
 const { saveMeal, readMeal, updateMealFoods } = require('../src/data/storage/mealStorage.ts');
 const { readAfterMealDraft, readAfterMealReview, saveAfterMealDraft, saveAfterMealReview } =
   require('../src/data/storage/afterMealReviewStorage.ts');
-const { newReviewDraft, reconcileOutcomes, setOutcome, applySuggestions, allOutcomesConfirmed, addDifficulty, reviewFromDraft } =
+const { newReviewDraft, reconcileOutcomes, setOutcome, applySuggestions, allOutcomesConfirmed, addDifficulty, reviewFromDraft, toggleIngredient, canAddDifficulty } =
   require('../src/features/after-meal-review/rules.ts');
 const { compareMealPhotos } = require('../src/data/api/afterMealComparisonApi.ts');
 
@@ -54,10 +55,12 @@ test('AI suggestions remain separate from independently confirmed food and ingre
   assert.equal(draft.outcomes[0].decision.confirmed, 'tasted');
   assert.equal(draft.outcomes[0].ingredients[0].decision.confirmed, 'untouched');
   assert.equal(draft.outcomes[0].ingredients[1].decision.confirmed, null);
+  assert.equal(allOutcomesConfirmed(draft.outcomes), true);
+  draft.outcomes = toggleIngredient(draft.outcomes, 'food-1', draft.outcomes[0].ingredients[1].id);
   assert.equal(allOutcomesConfirmed(draft.outcomes), false);
   draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'unclear', draft.outcomes[0].ingredients[1].id);
   assert.equal(allOutcomesConfirmed(draft.outcomes), true);
-  assert.throws(() => reviewFromDraft(draft, meal), /photo/);
+  assert.equal(reviewFromDraft(draft, meal).afterPhoto, null);
   draft.afterPhoto = { id: 'after', uri: 'file:///after.png', mimeType: 'image/png' };
   assert.equal(reviewFromDraft(draft, meal).outcomes[0].ingredients[1].decision.confirmed, 'unclear');
 });
@@ -140,4 +143,46 @@ test('final review follows pending autosaves and rejects unanswered results', as
   await Promise.all([saveAfterMealDraft({ ...draft, step: 'outcomes' }), saveAfterMealReview(result)]);
   assert.equal((await readAfterMealDraft(meal.childId, meal.id)).step, 'complete');
   assert.equal((await readAfterMealReview(meal.childId, meal.id)).outcomes[0].decision.confirmed, 'eaten');
+});
+
+
+test('photo-free review saves only opted-in ingredients and preserves answers when toggled', async () => {
+  const meal = savedMeal('photo-free');
+  const draft = newReviewDraft(meal);
+  draft.comparisonMethod = 'manual';
+  draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'unclear');
+  assert.equal(allOutcomesConfirmed(draft.outcomes), true);
+  const id = draft.outcomes[0].ingredients[0].id;
+  draft.outcomes = toggleIngredient(draft.outcomes, 'food-1', id);
+  assert.equal(allOutcomesConfirmed(draft.outcomes), false);
+  draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'tasted', id);
+  draft.outcomes = toggleIngredient(draft.outcomes, 'food-1', id);
+  assert.equal(draft.outcomes[0].ingredients[0].decision.confirmed, 'tasted');
+  assert.equal(reviewFromDraft(draft, meal).outcomes[0].ingredients.length, 0);
+  draft.outcomes = toggleIngredient(draft.outcomes, 'food-1', id);
+  const result = reviewFromDraft(draft, meal);
+  await saveAfterMealReview(result);
+  const loaded = await readAfterMealReview(meal.childId, meal.id);
+  assert.equal(loaded.afterPhoto, null);
+  assert.equal(loaded.outcomes[0].ingredients.length, 1);
+  assert.equal(loaded.outcomes[0].ingredients[0].decision.confirmed, 'tasted');
+});
+
+test('texture dimensions survive storage while smell and arrangement replace only their own tags', async () => {
+  assert.equal(canAddDifficulty('texture', 'firm', '', ''), false);
+  assert.equal(canAddDifficulty('texture', 'firm', '', 'hardness'), true);
+  assert.equal(canAddDifficulty('texture', 'firm', '', 'moisture'), false);
+  let tags = addDifficulty([], 'texture', 'firm', '', 'hardness');
+  tags = addDifficulty(tags, 'texture', 'dry', '', 'moisture');
+  tags = addDifficulty(tags, 'smell', 'fruit');
+  tags = addDifficulty(tags, 'smell', 'mint');
+  tags = addDifficulty(tags, 'arrangement', 'even');
+  tags = addDifficulty(tags, 'arrangement', 'clustered');
+  assert.deepEqual(tags.map(tag => tag.value), ['firm', 'dry', 'mint', 'clustered']);
+  const meal = savedMeal('texture');
+  const draft = newReviewDraft(meal);
+  draft.difficulties['food-1'] = tags;
+  await saveAfterMealDraft(draft);
+  const loaded = await readAfterMealDraft(meal.childId, meal.id);
+  assert.deepEqual(loaded.difficulties['food-1'].map(tag => tag.subcategory), ['hardness', 'moisture', undefined, undefined]);
 });

@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { router } from 'expo-router';
@@ -10,7 +11,7 @@ import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import { savedSuggestionText } from '../../../rules/recommendationPresentation';
 import { useAfterMealReview } from '../hooks/useAfterMealReview';
-import { canAddDifficulty, difficultyNeedsNote, difficultyOptions } from '../rules';
+import { canAddDifficulty, difficultyNeedsNote, difficultyOptions, textureQuestions } from '../rules';
 import { AfterMealReviewView } from './AfterMealReviewView';
 
 export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
@@ -50,8 +51,8 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
   const difficultyForms = Object.fromEntries(review.meal.foods.map((food) => {
     const input = draft.difficultyInputs[food.id] ?? { category: null, value: '', note: '' };
     return [food.id, {
-      options: input.category ? difficultyOptions[input.category] : [],
-      canAdd: canAddDifficulty(input.category, input.value, input.note),
+      options: input.category === 'texture' ? textureQuestions[input.subcategory ?? ''] ?? [] : input.category ? difficultyOptions[input.category] : [],
+      canAdd: canAddDifficulty(input.category, input.value, input.note, input.category === 'texture' ? input.subcategory ?? '' : undefined),
       showNote: difficultyNeedsNote(input.category, input.value),
     }];
   }));
@@ -92,6 +93,8 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
       onCompare={() => { void review.compare(); }}
       onCancelComparison={review.cancelComparison}
       onManual={review.manual}
+      onSaveExit={() => { void review.retrySave().then(() => router.replace('/(main)/home'), () => undefined); }}
+      onToggleIngredient={review.toggleIngredient}
       onSelectOutcome={review.chooseOutcome}
       onEditFood={review.editFood}
       onRemoveFood={(id) => { void review.removeFood(id); }}

@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify full-photo back button geometry -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; synced before-meal photo text from Figma 455:7879 -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify anchored date dropdown pickers -->
 <!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated compact meal choice tiles -->
@@ -37,6 +38,8 @@
 - 저장된 Meal에는 안정적인 ID를 사용한다. 재시도는 같은 ID로 저장하며 중복 Meal을 생성하지 않는다.
 
 ### R2 — 선택적 참고 사진
+
+- 확대 화면 `455:5332`의 Go back 버튼은 헤더 왼쪽 24px 위치의 내용 너비 pill이다. 높이 38px, 가로 여백 12px, 원본 왼쪽 화살표 18px·문구 간격 8px, Poppins SemiBold 14px를 사용한다. 배경 #EEF7FF·1px 테두리 #1667FF·글자 #13233A이며 전체 너비 버튼으로 표시하지 않는다.
 
 - 사진 추가 화면 `455:7879`의 상단 안내는 `Optional - keep a photo for your meal record.`, 사진 건너뛰기 버튼은 `Skip photo`, 보조 설명은 `Add foods yourself without a photo.`로 표시한다. 한국어는 각각 `선택 사항 - 식사 기록용 사진을 남길 수 있습니다.`, `사진 건너뛰기`, `사진 없이 음식을 직접 추가하세요.`로 표시한다.
 

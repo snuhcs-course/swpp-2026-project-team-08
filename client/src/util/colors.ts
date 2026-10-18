@@ -1,9 +1,12 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; add full-photo back button colors
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; aligned ABC button typography
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 export const colors = {
+  photoBackSurface: '#EEF7FF',
+  photoBackShadow: '#392D45',
   onboardingBackground: '#F7FAFF',
   onboardingBorder: '#C9DAED',
   onboardingText: '#10233F',

@@ -16,6 +16,8 @@ LLM이 작성한 코드에는 저장소 루트 [`AGENTS.md`](../AGENTS.md)의 **
 `AI-generated with <Model Name>, <Date>, reviewed by <User Name>` 주석을 단다.
 이 디렉터리에서 주석 문법은 Python · TOML · YAML · `.env.example` · `.ini`는 `#`, Markdown은 `<!-- -->`이며,
 Python 파일의 모듈 docstring이 있으면 그 앞(맨 위)에 둔다.
+다만, 이미 동작하고 있는 Python 파일의 일부를 수정하는 상황이라면 모듈 docstring의 AI 생성 코드 표기와 별개로
+해당 수정 부분에 주석을 단다.
 
 ## 하지 말 것
 
@@ -28,6 +30,8 @@ Python 파일의 모듈 docstring이 있으면 그 앞(맨 위)에 둔다.
 - 요청 범위를 넘어 리팩터링하지 않는다.
 - 에러 클래스에 자연어 메시지나 HTTP 상태 코드를 넣지 않는다. 에러는 클래스와 데이터(속성)만 갖고,
   응답 포장(상태 코드 · `error_code` · `details`)은 `router.py`의 `@error_specs`에서만 정한다.
+- 키가 여러 개인 복잡한 값을 반환하거나 주고받는 경우, `dict`를 사용하기보다는 `dataclass`를
+  쓴다. API 요청/응답 모양은 `dict`나 `dataclass`가 아니라 Pydantic DTO로 정의한다.
 - 다른 기능의 `service.py`를 호출하지 않는다. 로직을 재사용해야 하면 함수 모듈(`queries.py` 등)로 분리해
   양쪽 서비스가 import한다.
 

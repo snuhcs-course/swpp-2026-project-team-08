@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import type { ChildProfile } from '../../types/profile';
 
@@ -21,7 +21,7 @@ export function emptyDraft(): OnboardingDraft {
     consent: { accountPrivacy: false, photoAnalysis: false, aiTraining: false },
     allergies: [], restrictions: [], familyFoods: [], approaches: [], texture: [],
     smell: '', taste: [], presentation: [], temperature: '', familiarity: '',
-    safeFoods: [], noSafeFoods: false,
+    safeFoods: [], noSafeFoods: false, photoUri: null,
     safeFoodInput: { name: '', preparation: '', presentationNote: '' },
   };
 }

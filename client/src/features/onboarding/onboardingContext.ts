@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import { createContext } from 'react';
 import type { SafeFood } from '../../types/profile';
@@ -30,6 +30,10 @@ export type OnboardingContextValue = {
   setNoSafeFoods: (value: boolean) => void;
   setStep: (step: OnboardingStep) => void;
   startEdit: () => void;
+  startProfileEdit: () => void;
+  cancelEdit: () => Promise<void>;
+  applyEdit: () => Promise<boolean>;
+  resetLocal: () => Promise<void>;
   retrySave: () => Promise<void>;
   retryLoad: () => void;
   finish: () => Promise<boolean>;

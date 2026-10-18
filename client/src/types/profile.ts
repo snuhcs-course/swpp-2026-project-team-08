@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 export type Language = 'ko' | 'en';
 
@@ -32,5 +32,6 @@ export type ChildProfile = {
   familiarity: string;
   safeFoods: SafeFood[];
   noSafeFoods: boolean;
+  photoUri?: string | null;
   updatedAt: string;
 };

@@ -1,8 +1,8 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { authFailure, loginAccount, readCurrentUser, signUpAccount, type AuthFailure } from '../data/api/authApi';
-import { clearSession, readSession, saveSession, type AuthSession } from '../data/storage/authStorage';
+import { clearSession, readSession, saveSession, type AuthSession, type AuthUser } from '../data/storage/authStorage';
 
 type AuthResult = { ok: true } | { ok: false; error: AuthFailure };
 
@@ -11,6 +11,7 @@ type AuthContextValue = {
   session: AuthSession | null;
   signIn: (input: { email: string; password: string }) => Promise<AuthResult>;
   signUp: (input: { email: string; password: string; fullName: string }) => Promise<AuthResult>;
+  replaceUser: (user: AuthUser) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -67,13 +68,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [persistLogin]);
 
+  const replaceUser = useCallback(async (user: AuthUser) => {
+    const current = session ?? await readSession();
+    if (!current) throw new Error('Auth session is missing');
+    const next = { ...current, user };
+    await saveSession(next);
+    setSession(next);
+  }, [session]);
+
   const signOut = useCallback(async () => {
     await clearSession();
     setSession(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ status, session, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ status, session, signIn, signUp, replaceUser, signOut }}>
       {children}
     </AuthContext.Provider>
   );

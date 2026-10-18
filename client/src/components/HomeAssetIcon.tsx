@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { Image } from 'expo-image';
 const assets = {
   camera: [require('../../assets/ui/home-camera.svg'), 18, 18],
@@ -13,7 +13,6 @@ const assets = {
   density3: [require('../../assets/ui/home-density-3.svg'), 15, 15],
   today: [require('../../assets/ui/home-tab-0.svg'), 20, 20],
   mealLog: [require('../../assets/ui/home-tab-1.svg'), 5.55556, 13],
-  sos: [require('../../assets/ui/home-tab-2.svg'), 20, 20],
   ideas: [require('../../assets/ui/home-tab-3.svg'), 20, 20],
   insight: [require('../../assets/ui/home-tab-4.svg'), 21.7, 21.7],
   profile: [require('../../assets/ui/home-tab-5.svg'), 12.5, 11.1111],

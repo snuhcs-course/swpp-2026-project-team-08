@@ -1,8 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; remove non-Figma suggestion confirmation step
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome, ReviewStep } from '../../types/afterMealReview';
 import type { FoodItem, Meal } from '../../types/meal';
 import { ingredientId } from '../../rules/ingredientIds';
@@ -10,7 +6,7 @@ import { foodFormKey } from '../../rules/recommendationSafety';
 
 // Legacy draft steps resume at the final editable Figma screen without submitting.
 export function normalizeReviewStep(step: ReviewStep): ReviewStep {
-  return step === 'goal' || step === 'suggestions' ? 'difficulties' : step;
+  return step === 'suggestions' ? 'difficulties' : step;
 }
 
 export const difficultyOptions: Record<DifficultyCategory, readonly string[]> = {
@@ -56,7 +52,6 @@ export function newReviewDraft(meal: Meal): AfterMealReviewDraft {
     outcomes: reconcileOutcomes([], meal.foods),
     difficulties: {},
     difficultyInputs: {},
-    goalFeedback: null,
     suggestionFeedback: {},
   };
 }
@@ -149,7 +144,6 @@ export function reviewFromDraft(draft: AfterMealReviewDraft, meal: Meal): AfterM
     comparisonMethod: 'manual',
     outcomes: outcomes.map((food) => ({ ...food, ingredients: food.ingredients.filter((ingredient) => ingredient.selected !== false) })),
     difficulties: Object.fromEntries(meal.foods.map((food) => [food.id, draft.difficulties[food.id] ?? []])),
-    goalFeedback: meal.exposureFoodId ? draft.goalFeedback : null,
     suggestionFeedback: draft.suggestionFeedback,
     savedAt: new Date().toISOString(),
     foodFormKeys: Object.fromEntries(meal.foods.map((food) => [food.id, foodFormKey(food)])),

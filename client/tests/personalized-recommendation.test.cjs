@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -47,7 +48,7 @@ function fixtures(childId = 'child-d') {
     updatedAt: '2026-10-08T00:00:00.000Z',
   };
   const draft = newDraft(childId);
-  draft.mealType = 'lunch'; draft.setting = 'home'; draft.step = 'goal';
+  draft.mealType = 'lunch'; draft.setting = 'home'; draft.step = 'foods';
   draft.foods = [{ ...newFood(), id: 'food-d', name: 'Rice', ingredients: ['Rice'], preparation: 'boiled', servingNote: 'mixed on plate' }];
   const meal = mealFromDraft(draft);
   const reviewDraft = newReviewDraft(meal);

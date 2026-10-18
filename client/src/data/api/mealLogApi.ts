@@ -1,6 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { SavedSuggestion } from '../../types/home';
 import type { FoodItem, Meal } from '../../types/meal';
@@ -34,7 +32,6 @@ export type MealLogReview = {
   afterPhotoUri: string | null;
   outcomes: FoodOutcome[];
   difficulties: AfterMealReview['difficulties'];
-  goalFeedback: AfterMealReview['goalFeedback'];
   savedAt: string;
 };
 export type MealDetail = {
@@ -44,7 +41,6 @@ export type MealDetail = {
   mealType: Meal['mealType'];
   setting: Meal['setting'];
   beforePhotoUri: string | null;
-  exposureFoodId: string | null;
   savedAt: string;
   foods: FoodItem[];
   review: MealLogReview | null;
@@ -126,7 +122,6 @@ function parseFood(value: unknown): FoodItem {
 function parseDetail(value: unknown): MealDetail {
   if (!record(value) || typeof value.id !== 'string' || typeof value.child_id !== 'string' || !isoDate(value.meal_date)
     || (value.before_photo_uri !== null && typeof value.before_photo_uri !== 'string')
-    || (value.exposure_food_id !== null && typeof value.exposure_food_id !== 'string')
     || typeof value.saved_at !== 'string' || !Array.isArray(value.foods) || !Array.isArray(value.suggestions)) {
     throw new Error('Invalid meal detail');
   }
@@ -140,7 +135,6 @@ function parseDetail(value: unknown): MealDetail {
       afterPhotoUri: value.review.after_photo_uri || null,
       outcomes: value.review.outcomes.map(parseOutcome),
       difficulties: value.review.difficulties as AfterMealReview['difficulties'],
-      goalFeedback: (value.review.goal_feedback as AfterMealReview['goalFeedback']) ?? null,
       savedAt: value.review.saved_at,
     };
   }
@@ -151,7 +145,6 @@ function parseDetail(value: unknown): MealDetail {
     mealType: asMealType(value.meal_type),
     setting: asSetting(value.setting),
     beforePhotoUri: value.before_photo_uri,
-    exposureFoodId: value.exposure_food_id,
     savedAt: value.saved_at,
     foods: value.foods.map(parseFood),
     review,
@@ -176,7 +169,6 @@ export function mealToUpsertBody(meal: Meal) {
     meal_type: meal.mealType,
     setting: meal.setting,
     before_photo_uri: meal.photo?.uri ?? null,
-    exposure_food_id: meal.exposureFoodId,
     saved_at: meal.savedAt,
     suggestion_links: (meal.suggestionLinks ?? []).map((link) => ({ suggestion_id: link.suggestionId, food_id: link.foodId, title: link.title, description: link.description, serving_tip: link.servingTip ?? null })),
     foods: meal.foods.map((food) => ({
@@ -204,7 +196,6 @@ export function reviewToBody(review: AfterMealReview) {
     })),
     difficulties: review.difficulties,
     suggestion_feedback: review.suggestionFeedback,
-    goal_feedback: review.goalFeedback,
     saved_at: review.savedAt,
   };
 }

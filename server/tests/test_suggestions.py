@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """Exercise the real router/service/database, replacing only the slow generator."""
 
 from unittest.mock import AsyncMock
@@ -139,7 +139,7 @@ async def test_missing_review_and_old_try_are_rejected(client):
 
 async def test_added_selection_only_generates_missing_food_and_preserves_saved(client, generator):
     foods = [{**meal_payload()["foods"][0], "id": f"f{i}", "name": f"Food {i}"} for i in range(4)]
-    await put_meal(client, foods=foods, exposure_food_id="f0")
+    await put_meal(client, foods=foods)
     await client.put(f"/api/v1/children/{CHILD}/meals/{MEAL_ID}/review", json=review_payload())
     url = f"{ROOT}/meals/{MEAL_ID}/generate"
     first = (await client.post(url, json={})).json()
@@ -325,7 +325,6 @@ async def test_linked_snapshot_maps_source_and_ingredient_trial_without_changing
         client,
         meal_id="ingredient-trial",
         foods=[{**meal_payload()["foods"][0], "id": trial_food}],
-        exposure_food_id=trial_food,
     )
     review = review_payload()
     review["outcomes"][0]["food_id"] = trial_food

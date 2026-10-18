@@ -1,5 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { emptyTraits } from '../../rules/foodDraft';
 import type { FoodItem } from '../../types/meal';
 import type { MealDetail, MealListItem, MealLogSuggestion } from './mealLogApi';
@@ -64,7 +63,6 @@ function meal(
     mealType,
     setting,
     beforePhotoUri: null,
-    exposureFoodId: foods[0]?.id ?? null,
     savedAt: `${mealDate}T12:00:00.000Z`,
     foods,
     review,
@@ -77,7 +75,6 @@ function reviewed(mealDate: string, foodId: string, ingredients: { id: string; n
     afterPhotoUri: `file:///demo-after-${mealDate}.png`,
     outcomes: [eaten(foodId, ingredients)],
     difficulties: { [foodId]: [] },
-    goalFeedback: 'tried',
     savedAt: `${mealDate}T13:00:00.000Z`,
   };
 }

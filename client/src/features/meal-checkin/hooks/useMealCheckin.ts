@@ -1,8 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; require continuing a restored draft before editing
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -58,7 +54,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
   );
   const [picking, setPicking] = useState(false);
   const [traits, setTraits] = useState<FoodTraits | null>(null);
-  const [sheet, setSheet] = useState<'help' | 'privacy' | null>(null);
+  const [sheet, setSheet] = useState<'privacy' | null>(null);
   const client = useQueryClient();
   const saving = useSaveMeal();
   const busy = useRef(false);
@@ -157,7 +153,6 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       photo: 'details',
       preview: 'photo',
       foods: current.current.photo ? 'preview' : 'photo',
-      goal: 'foods',
     };
     go(previous[step] ?? 'details');
     return true;
@@ -187,13 +182,9 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       }
     }
   };
-  const save = async (skip: boolean) => {
+  const save = async () => {
     if (!current.current || busy.current) return null;
-    const value = {
-      ...current.current,
-      exposureFoodId: skip ? null : current.current.exposureFoodId,
-    };
-    if (!skip && !value.exposureFoodId) return null;
+    const value = current.current;
     let meal;
     try {
       meal = mealFromDraft(value);
@@ -337,10 +328,6 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       update({
         suggestionLinks: (value.suggestionLinks ?? []).filter((link) => link.foodId !== id),
         foods: current.current?.foods.filter((f) => f.id !== id) ?? [],
-        exposureFoodId:
-          current.current?.exposureFoodId === id
-            ? null
-            : (current.current?.exposureFoodId ?? null),
       });
     },
     removePhoto: () => {
@@ -350,12 +337,11 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
         photo: null,
         step: 'photo',
         foods: value.foods,
-        exposureFoodId: value.exposureFoodId,
       });
     },
     confirm: () => {
       if (current.current?.foods.length)
-        update({ foods: confirmFoods(current.current.foods), step: 'foods', exposureFoodId: null });
+        update({ foods: confirmFoods(current.current.foods), step: 'foods' });
     },
     toggleTrait: (group: TraitGroup, value: string) => {
       setTraits((current) =>

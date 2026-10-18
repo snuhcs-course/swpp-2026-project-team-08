@@ -1,4 +1,4 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """식사 기록 API 테스트."""
 
 from datetime import UTC, datetime
@@ -28,7 +28,6 @@ def meal_payload(**overrides: object) -> dict:
         "meal_type": "dinner",
         "setting": "home",
         "before_photo_uri": "file:///before.png",
-        "exposure_food_id": FOOD_ID,
         "saved_at": datetime(2026, 10, 9, 12, 0, tzinfo=UTC).isoformat(),
         "foods": [
             {
@@ -64,7 +63,6 @@ def review_payload() -> dict:
             }
         ],
         "difficulties": {FOOD_ID: []},
-        "goal_feedback": "tried",
         "saved_at": datetime(2026, 10, 9, 13, 0, tzinfo=UTC).isoformat(),
     }
 
@@ -112,7 +110,6 @@ async def test_list_all_versus_by_date(client: AsyncClient) -> None:
         meal_date="2026-10-10",
         meal_type="lunch",
         foods=[{**meal_payload()["foods"][0], "id": "food-soup", "name": "Soup"}],
-        exposure_food_id="food-soup",
     )
 
     all_meals = await client.get(f"/api/v1/children/{CHILD}/meals")
@@ -125,11 +122,11 @@ async def test_list_all_versus_by_date(client: AsyncClient) -> None:
 
 async def test_calendar_counts_by_density(client: AsyncClient) -> None:
     await put_meal(client, meal_date="2026-10-01")
-    await put_meal(client, meal_id="m2", meal_date="2026-10-02", exposure_food_id=None)
-    await put_meal(client, meal_id="m3", meal_date="2026-10-02", exposure_food_id=None)
-    await put_meal(client, meal_id="m4", meal_date="2026-10-03", exposure_food_id=None)
-    await put_meal(client, meal_id="m5", meal_date="2026-10-03", exposure_food_id=None)
-    await put_meal(client, meal_id="m6", meal_date="2026-10-03", exposure_food_id=None)
+    await put_meal(client, meal_id="m2", meal_date="2026-10-02")
+    await put_meal(client, meal_id="m3", meal_date="2026-10-02")
+    await put_meal(client, meal_id="m4", meal_date="2026-10-03")
+    await put_meal(client, meal_id="m5", meal_date="2026-10-03")
+    await put_meal(client, meal_id="m6", meal_date="2026-10-03")
 
     res = await client.get(f"/api/v1/children/{CHILD}/meals/calendar", params={"month": "2026-10"})
     by_date = {row["date"]: row["count"] for row in res.json()}

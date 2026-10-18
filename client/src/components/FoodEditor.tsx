@@ -1,10 +1,5 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed food source badge
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { useState } from 'react';
-import Feather from '@expo/vector-icons/Feather';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MealFoodEditorDialog } from './MealFoodEditorDialog';
 import { AppButton } from './AppButton';
@@ -53,7 +48,6 @@ export function FoodEditor({
   onToggleTrait,
   onSaveTraits,
   onCancelTraits,
-  goal,
   finalLabels,
   mode = 'add',
 }: {
@@ -76,7 +70,6 @@ export function FoodEditor({
   onSaveTraits: () => void;
   onCancelTraits: () => void;
   finalLabels?: { cooking: string; detail: string; acceptance: string; selectCooking: string; cookingOptions: readonly string[] };
-  goal?: { label: string; value: string; actionLabel: string; onPress: () => void };
 }) {
   const s = labels;
   const m = labels.meal;
@@ -205,11 +198,6 @@ export function FoodEditor({
               ))}
             </View>
           )}
-          {goal && <View style={editorStyles.goalRow}>
-            <Feather name="target" size={18} color={colors.homePrimary} />
-            <View style={{ flex: 1 }}><Text style={editorStyles.goalLabel}>{goal.label}</Text><Text style={editorStyles.goalValue}>{goal.value}</Text></View>
-            <AppButton variant="meal" secondary compact label={goal.actionLabel} onPress={goal.onPress} />
-          </View>}
         </>
       )}
     </BottomSheet>
@@ -232,9 +220,6 @@ const editorStyles = StyleSheet.create({
   addIngredient: { borderWidth: 1, borderColor: colors.homeBorder, backgroundColor: colors.homeBackground, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 5 },
   addIngredientText: { color: colors.homeMuted, fontSize: 10, fontFamily: fonts.poppinsRegular },
   twoFields: { flexDirection: 'row', gap: 8 },
-  goalRow: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.homeSelected, borderRadius: 10, padding: 10 },
-  goalLabel: { color: colors.homePrimary, fontSize: 9, fontFamily: fonts.poppinsSemiBold },
-  goalValue: { color: colors.homeText, fontSize: 11, fontFamily: fonts.poppinsSemiBold },
   actions: { flexDirection: 'row', gap: 8 },
   traitSection: { gap: 8, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.homeBorder },
   traitHeading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

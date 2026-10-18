@@ -1,4 +1,4 @@
-<!-- This Code is generated with AI -->
+<!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 
 # Meal Check-in implementation plan
 
@@ -8,7 +8,7 @@ Reference: `specs/meal-checkin/spec.md`, `specs/ui-components/spec.md`, `docs/ar
 
 1. Record this plan before implementation.
 2. Add shared Meal / Food models, pure validation rules, child-scoped durable drafts and meal records, Query mutations, cancellable prototype recognition, and SDK-compatible photo dependencies.
-3. Build five-segment meal flow: details/date overlay, photo input/preview/full view, analysis consent/progress/recovery, food review/editor/traits selector, exposure selection/help and completion. Centralize English/Korean copy and colors; keep UI props-based.
+3. Build five-segment meal flow: details/date overlay, photo input/preview/full view, analysis consent/progress/recovery, food review/editor/traits selector, completion. Centralize English/Korean copy and colors; keep UI props-based.
 4. Connect Home draft resume and review intent, saved Meal ID and After-meal Review entry. Validate and fix with lint, TypeScript, rule/storage regression checks and available runtime preview.
 
 ## State and persistence
@@ -16,7 +16,7 @@ Reference: `specs/meal-checkin/spec.md`, `specs/ui-components/spec.md`, `docs/ar
 - A feature hook owns the current draft, food editing draft and trait editing draft. Confirm/cancel are explicit.
 - Autosave writes are serialized; restore must finish before showing inputs. In-flight recognition resumes at the method selection screen after restart.
 - Final save is idempotent by draft/meal ID; retain input on failure. Invalidate child-specific Home/Meal queries only after persistence succeeds.
-- AI suggestions stay unconfirmed until Save food or Confirm food items; no exposure stage comes from onboarding.
+- AI suggestions stay unconfirmed until Save food or Confirm food items.
 - Persist copied native photo files outside picker caches. Web uses a durable data URL. Requests are mutations; late/cancelled recognition results cannot overwrite a changed draft.
 
 ## Prototype boundaries
@@ -30,11 +30,11 @@ Run `npm run lint` and `npx tsc --noEmit`. Cover date validation, food confirmat
 ## Implementation and validation results
 
 - Models, boundary validation, serialized child-scoped storage, idempotent meal save, recognition/save mutations and durable photo selection implemented.
-- Five-segment flow, date overlay, separate full-photo route, food editor and traits selector, history dropdown, exposure goal/help, completion receipt and bilingual copy implemented.
+- Five-segment flow, date overlay, separate full-photo route, food editor and traits selector, history dropdown, completion receipt and bilingual copy implemented.
 - Home resumes an incomplete draft and routes its review intent through food confirmation and successful save. New meals start after the previous completion ID; reopening a completed flow keeps its saved ID.
 - Node regression suite: date/traits validation, confirmation guards, malformed input, draft restore, failed autosave recovery, partial final-save retry/idempotency, queue ordering and aborted recognition.
-- RN web at 390 × 844: date overlay, local file photo, full photo, persisted preview, mock analysis, AI → Parent edit, traits multi/single selection, history dropdown, language switch, draft restoration, Home resume/review intent, goal/help selection preservation, saved ID handoff and Home logged calendar verified.
+- RN web at 390 × 844: date overlay, local file photo, full photo, persisted preview, mock analysis, AI → Parent edit, traits multi/single selection, history dropdown, language switch, draft restoration, Home resume/review intent, saved ID handoff and Home logged calendar verified.
 - Fixed an RN Web compatibility error in image validation by using the supported `Image.getSize` callback overload.
 - Native camera/gallery permissions and document copying require physical-device or simulator QA. No iOS simulator tooling is available in this environment. The recognition backend and After-meal Review form remain separate, unimplemented features; the prototype UI explicitly labels both boundaries.
-- Additional runtime checks: photo-free manual food entry, unsaved food editor restore, skipping the exposure goal, and reloading the completion screen with its saved Meal ID all passed.
+- Additional runtime checks: photo-free manual food entry, unsaved food editor restore, and reloading the completion screen with its saved Meal ID all passed.
 - Final checks: TypeScript and lint pass; all 7 regression tests pass. Run the suite with `npm run test:meal-checkin` from `client/`.

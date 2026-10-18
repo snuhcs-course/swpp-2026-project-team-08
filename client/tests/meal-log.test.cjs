@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -140,7 +141,7 @@ test('upsert, review, and suggestion bodies use the server field names', () => {
       id: 'food-1', name: 'Rice', ingredients: ['rice'], preparation: 'steamed', servingNote: 'small bowl',
       traits: emptyTraits(), history: 'usually', source: 'parent',
     }],
-    exposureFoodId: 'food-1', savedAt: '2026-10-12T12:00:00.000Z',
+    savedAt: '2026-10-12T12:00:00.000Z',
   });
   assert.equal(body.meal_date, '2026-10-12');
   assert.equal(body.before_photo_uri, 'file:///before.png');
@@ -148,11 +149,10 @@ test('upsert, review, and suggestion bodies use the server field names', () => {
   const review = reviewToBody({
     mealId: 'meal-1', childId: 'child-1',
     afterPhoto: { id: 'p2', uri: 'file:///after.png', mimeType: 'image/png' },
-    comparisonMethod: 'manual', outcomes: [], difficulties: {}, goalFeedback: null, suggestionFeedback: {},
+    comparisonMethod: 'manual', outcomes: [], difficulties: {}, suggestionFeedback: {},
     savedAt: '2026-10-12T13:00:00.000Z',
   });
   assert.equal(review.after_photo_uri, 'file:///after.png');
-  assert.equal(review.goal_feedback, null);
   const suggestion = suggestionToBody({
     id: 's1', childId: 'child-1', title: 'Try rice', description: 'Small separate portion',
     servingTip: 'Keep the form', ingredients: ['rice'], isSaved: true, safetyVerifiedForProfileAt: 'v1',
@@ -186,7 +186,7 @@ test('demo meals vary by day so the calendar can show different densities', () =
 
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 test('bookmarking a linked suggestion toggles the saved flag without dropping it on a later unsave', () => {
-  const records = { meals: [], exposures: [], suggestions: [] };
+  const records = { meals: [], suggestions: [] };
   const draft = {
     id: 'sug-2026-10-16-dinner',
     title: 'Offer a smaller piece beside a familiar food.',

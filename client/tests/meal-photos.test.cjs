@@ -1,5 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify manual food and outcome entry
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -52,7 +51,7 @@ function mealWithBeforePhoto(childId = 'child-photo') {
   draft.setting = 'home';
   draft.photo = beforePhoto;
   draft.foods = [{ ...newFood(), id: 'food-1', name: 'Rice', ingredients: ['Egg'], source: 'parent' }];
-  draft.step = 'goal';
+  draft.step = 'foods';
   return mealFromDraft(draft);
 }
 
@@ -114,7 +113,6 @@ test('live API stores a before-meal photo then an after-meal photo', async (t) =
       meal_type: 'lunch',
       setting: 'home',
       before_photo_uri: PNG,
-      exposure_food_id: 'food-1',
       saved_at: new Date().toISOString(),
       foods: [food],
     }),
@@ -132,7 +130,6 @@ test('live API stores a before-meal photo then an after-meal photo', async (t) =
       after_photo_uri: '',
       outcomes: [],
       difficulties: {},
-      goal_feedback: 'tried',
       saved_at: new Date().toISOString(),
     }),
   });
@@ -150,7 +147,6 @@ test('live API stores a before-meal photo then an after-meal photo', async (t) =
         ingredients: [{ id: 'ing-egg', name: 'Egg', decision: { confirmed: 'tasted', suggested: null } }],
       }],
       difficulties: { 'food-1': [] },
-      goal_feedback: 'tried',
       saved_at: new Date().toISOString(),
     }),
   });

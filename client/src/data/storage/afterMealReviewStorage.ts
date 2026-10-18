@@ -1,6 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { difficultyCategories, outcomeValues, reviewSteps, type AfterMealReview, type AfterMealReviewDraft } from '../../types/afterMealReview';
 
@@ -11,14 +9,22 @@ const record = (value: unknown): value is Record<string, unknown> => !!value && 
 const validOutcome = (value: unknown) => value === null || outcomeValues.includes(value as never);
 const validDecision = (value: unknown) => record(value) && validOutcome(value.confirmed) && validOutcome(value.suggested);
 
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+function normalizeStoredReview(value: unknown): unknown {
+  if (!record(value)) return value;
+  const next = { ...value };
+  delete next.goalFeedback;
+  if (next.step === 'goal') next.step = 'difficulties';
+  return next;
+}
+
 function validReview(value: unknown, childId: string, mealId: string): value is AfterMealReviewDraft {
   if (!record(value) || value.childId !== childId || value.mealId !== mealId
     || !reviewSteps.includes(value.step as never)
     || !(value.afterPhoto === null || (record(value.afterPhoto)
       && typeof value.afterPhoto.id === 'string' && typeof value.afterPhoto.uri === 'string' && typeof value.afterPhoto.mimeType === 'string'))
     || !Array.isArray(value.outcomes) || !record(value.difficulties) || !record(value.difficultyInputs) || !record(value.suggestionFeedback)
-    || !(value.comparisonMethod === null || value.comparisonMethod === 'ai' || value.comparisonMethod === 'manual')
-    || !(value.goalFeedback === null || ['achieved', 'tried', 'notYet'].includes(value.goalFeedback as string))) return false;
+    || !(value.comparisonMethod === null || value.comparisonMethod === 'ai' || value.comparisonMethod === 'manual')) return false;
   if (!value.outcomes.every((food: unknown) => record(food) && typeof food.foodId === 'string'
     && validDecision(food.decision) && Array.isArray(food.ingredients)
     && food.ingredients.every((ingredient: unknown) => record(ingredient)
@@ -60,7 +66,7 @@ export async function readAfterMealDraft(childId: string, mealId: string): Promi
   await queues.get(key)?.catch(() => undefined);
   const raw = await AsyncStorage.getItem(key);
   if (!raw) return null;
-  const value: unknown = JSON.parse(raw);
+  const value: unknown = normalizeStoredReview(JSON.parse(raw));
   if (!validReview(value, childId, mealId)) throw new Error('Invalid after-meal draft');
   return value;
 }
@@ -76,7 +82,7 @@ export function saveAfterMealDraft(draft: AfterMealReviewDraft): Promise<void> {
 export async function readAfterMealReview(childId: string, mealId: string): Promise<AfterMealReview | null> {
   const raw = await AsyncStorage.getItem(resultKey(childId, mealId));
   if (!raw) return null;
-  const value: unknown = JSON.parse(raw);
+  const value: unknown = normalizeStoredReview(JSON.parse(raw));
   if (!validFinal(value, childId, mealId)) throw new Error('Invalid after-meal review');
   return value;
 }

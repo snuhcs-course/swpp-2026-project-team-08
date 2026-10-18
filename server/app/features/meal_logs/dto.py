@@ -1,5 +1,4 @@
-# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """식사 기록 요청/응답 DTO."""
 
 from datetime import date, datetime
@@ -15,7 +14,6 @@ MealSetting = Literal["home", "restaurant", "school", "others"]
 ReviewStatus = Literal["awaiting_review", "reviewed"]
 FoodSource = Literal["ai", "parent"]
 OutcomeValue = Literal["eaten", "tasted", "untouched", "unclear"]
-GoalFeedback = Literal["achieved", "tried", "notYet"]
 
 
 class InvalidMealTypeError(AppError):
@@ -41,6 +39,7 @@ class DuplicateFoodIdError(AppError):
 
 
 # ── 요청 ────────────────────────────────────────────
+
 
 class MealFoodRequest(BaseModel):
     id: str = Field(min_length=1, max_length=80)
@@ -70,7 +69,6 @@ class MealUpsertRequest(BaseModel):
     meal_type: str
     setting: str
     before_photo_uri: str | None = None
-    exposure_food_id: str | None = None
     suggestion_links: list[SuggestionLinkRequest] = Field(default_factory=list)
     foods: list[MealFoodRequest]
     saved_at: datetime
@@ -125,7 +123,6 @@ class MealReviewRequest(BaseModel):
     outcomes: list[FoodOutcomeRequest]
     difficulties: dict[str, Any]
     suggestion_feedback: dict[str, Literal["tried", "notTried"]] = Field(default_factory=dict)
-    goal_feedback: GoalFeedback | None = None
     saved_at: datetime
 
 
@@ -160,6 +157,7 @@ class CalendarDayResponse(BaseModel):
     date: date
     count: int
 
+
 class MealFoodResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -183,7 +181,6 @@ class MealReviewResponse(BaseModel):
     outcomes: list[dict[str, Any]]
     difficulties: dict[str, Any]
     suggestion_feedback: dict[str, str] = Field(default_factory=dict)
-    goal_feedback: str | None
     saved_at: datetime
 
 
@@ -206,7 +203,6 @@ class MealDetailResponse(BaseModel):
     meal_type: str
     setting: str
     before_photo_uri: str | None
-    exposure_food_id: str | None
     saved_at: datetime
     suggestion_links: list[SuggestionLinkRequest] = Field(default_factory=list)
     foods: list[MealFoodResponse]

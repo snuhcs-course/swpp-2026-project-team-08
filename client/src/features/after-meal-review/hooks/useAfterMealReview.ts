@@ -1,8 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; remove non-Figma suggestion confirmation step
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; distinguish final save errors from draft autosave errors
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMeal, useUpdateMealFoods } from '../../../data/queries/mealQueries';
@@ -125,7 +121,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     const previous: Partial<Record<ReviewStep, ReviewStep>> = {
       preview: 'photo', compare: 'preview', 'comparison-error': 'compare',
       outcomes: current.current?.afterPhoto ? (meal?.photo ? 'compare' : 'preview') : 'photo',
-      difficulties: 'outcomes', goal: 'difficulties', suggestions: 'difficulties',
+      difficulties: 'outcomes', suggestions: 'difficulties',
     };
     const target = previous[step];
     if (!target) return false;

@@ -1,5 +1,4 @@
-# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """식사 기록 HTTP 라우터: /children/{child_id}/meals."""
 
 from datetime import date
@@ -94,7 +93,6 @@ def _detail(meal: MealLog) -> MealDetailResponse:
         meal_type=meal.meal_type,
         setting=meal.setting,
         before_photo_uri=meal.before_photo_uri,
-        exposure_food_id=meal.exposure_food_id,
         suggestion_links=meal.suggestion_links,
         saved_at=meal.saved_at,
         foods=[MealFoodResponse.model_validate(food) for food in meal.foods],
@@ -133,7 +131,6 @@ async def upsert_meal(
         meal_type=payload.meal_type,
         setting=payload.setting,
         before_photo_uri=payload.before_photo_uri,
-        exposure_food_id=payload.exposure_food_id,
         foods=[food.model_dump() for food in payload.foods],
         suggestion_links=[
             SuggestionLinkData(**link.model_dump()) for link in payload.suggestion_links
@@ -195,7 +192,6 @@ async def save_review(
         after_photo_uri=payload.after_photo_uri,
         outcomes=[outcome.model_dump() for outcome in payload.outcomes],
         difficulties=payload.difficulties,
-        goal_feedback=payload.goal_feedback,
         suggestion_feedback=payload.suggestion_feedback,
         saved_at=payload.saved_at,
     )

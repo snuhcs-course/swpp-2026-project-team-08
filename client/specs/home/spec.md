@@ -1,7 +1,4 @@
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify caregiver name in greetings -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; use existing shared bottom navigation by user request -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; replaced legacy home requirements with final ABC home states -->
-<!-- This Code is generated with AI -->
+<!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 
 # Home — Today
 
@@ -16,7 +13,7 @@
 - [체크인 저장 완료 — 455:9843](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/?node-id=455-9843)
 - [식후 리뷰 시작 — 455:6876](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/?node-id=455-6876)
 
-이전 37:3607의 SOS Progress·Recommended action goals 위젯은 이 홈의 기준에서 제외한다. 사용자 요청에 따라 바텀바는 Figma의 홈 전용 디자인 대신 기존 공통 탐색을 사용한다. 기록 유무와 현재 탭에 관계없이 Today·Meal Log·SOS·Ideas·Insight·Profile의 6개 탭을 같은 순서·아이콘·크기·간격으로 표시한다. 상태 표시줄·홈 인디케이터는 앱 콘텐츠로 복제하지 않는다.
+이전 37:3607의 Recommended action goals 위젯은 이 홈의 기준에서 제외한다. 사용자 요청에 따라 바텀바는 Figma의 홈 전용 디자인 대신 기존 공통 탐색을 사용한다. 기록 유무와 현재 탭에 관계없이 Today·Meal Log·Ideas·Insight·Profile의 5개 탭을 같은 순서·아이콘·크기·간격으로 표시한다. 상태 표시줄·홈 인디케이터는 앱 콘텐츠로 복제하지 않는다.
 
 ## User Flow
 
@@ -70,7 +67,7 @@
 ### R6 — 공통 배치·언어·탐색
 
 - 화면 배경 #F7FAFF, 콘텐츠 좌우 24px, 인사말 위 10px·아래 20px, 본문 섹션 간 18px, 하단 여백 24px이다.
-- 바텀바는 모든 탭이 MainLayout에서 공유하는 기존 BottomNavigation을 사용한다. 6개 탭·20px MaterialCommunityIcons·9px 라벨·72px 높이·좌우 22px 여백을 유지한다. 탭 전환 시 본문만 이동하며 바텀바의 위치·크기·구성은 바뀌지 않고 선택 표시만 갱신한다. 기록 유무에 따라 탭을 숨기지 않는다. 콘텐츠는 세로 스크롤한다.
+- 바텀바는 모든 탭이 MainLayout에서 공유하는 기존 BottomNavigation을 사용한다. 5개 탭·20px MaterialCommunityIcons·9px 라벨·72px 높이·좌우 22px 여백을 유지한다. 탭 전환 시 본문만 이동하며 바텀바의 위치·크기·구성은 바뀌지 않고 선택 표시만 갱신한다. 기록 유무에 따라 탭을 숨기지 않는다. 콘텐츠는 세로 스크롤한다.
 - 모든 문구는 strings.ts, 색은 colors.ts에 모은다. 한국어·영어 모두 지원하며 실제 이름·음식명은 유지한다.
 - View는 props만 받아 렌더링하고 Hook·Query·Storage가 데이터 조회와 상태를 담당한다.
 

@@ -1,9 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; restore separate saved-suggestion record linking
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; expose source meal metadata
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import type { FoodItem, FoodTraits, MealDraft, MealStep, PhotoSource, TraitGroup } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -48,7 +43,7 @@ export type MealCheckinViewProps = {
   picking: boolean;
   saving: boolean;
   traits: FoodTraits | null;
-  sheet: 'help' | 'privacy' | null;
+  sheet: 'privacy' | null;
   languageError: boolean;
   dateInput: DateInput;
   foodInput: FoodInput;
@@ -64,10 +59,9 @@ export type MealCheckinViewProps = {
   onChangeFood: (value: Partial<FoodItem>) => void;
   onSaveFood: () => void;
   onConfirm: () => void;
-  onSave: (skip: boolean) => void;
   onAfterMeal: () => void;
   onHome: () => void;
-  onSheet: (sheet: 'help' | 'privacy' | null) => void;
+  onSheet: (sheet: 'privacy' | null) => void;
   onTraits: (value: FoodTraits | null) => void;
   onSaveTraits: () => void;
   onToggleTrait: (group: TraitGroup, value: string) => void;

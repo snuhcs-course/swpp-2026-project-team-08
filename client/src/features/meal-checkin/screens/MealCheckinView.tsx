@@ -1,11 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; restore separate saved-suggestion record linking
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; close replacement source sheet without changing entries
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { fonts } from "../../../util/fonts";
 import { colors } from "../../../util/colors";
 import { useState } from "react";
@@ -29,7 +22,7 @@ import { MealDetailsStepView } from "./MealDetailsStepView";
 import { MealFoodsStepView } from "./MealFoodsStepView";
 import { MealSaveStatusView } from "../../../components/MealSaveStatusView";
 import { Dialog } from "../../../components/Dialog";
-import { MealGoalSheetsView } from "./MealGoalSheetsView";
+import { MealPrivacySheetView } from "./MealPrivacySheetView";
 import { MealPhotoStepsView } from "./MealPhotoStepsView";
 import type { MealCheckinViewProps } from "./mealCheckinViewTypes";
 import { styles } from "./mealCheckinStyles";
@@ -43,7 +36,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
   const a = abcCopyFor(p.language);
   const [replace, setReplace] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const review = d.step === "foods" || d.step === "goal";
+  const review = d.step === "foods";
   const emptyManual = review && !d.photo && !d.foods.length && !p.removedName;
   const photoStep = [
     "photo",
@@ -322,17 +315,11 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             <Text style={styles.replaceHint}>{a.replaceHint}</Text>
           </Dialog>
         )}
-        <MealGoalSheetsView
+        <MealPrivacySheetView
           p={{
-            draft: d,
             language: p.language,
             sheet: p.sheet,
-            saving: p.saving,
-            error: p.error,
             onSheet: p.onSheet,
-            onGo: p.onGo,
-            onUpdate: p.onUpdate,
-            onSave: p.onSave,
           }}
         />
       </KeyboardAvoidingView>

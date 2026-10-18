@@ -1,6 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; cover removed review steps
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify manual food and outcome entry
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -41,7 +39,7 @@ function savedMeal(childId) {
   draft.mealType = 'lunch'; draft.setting = 'home';
   draft.photo = { id: 'before', uri: 'file:///before.png', mimeType: 'image/png' };
   draft.foods = [{ ...newFood(), id: 'food-1', name: 'Rice', ingredients: ['Carrot', 'Egg'] }];
-  draft.step = 'goal';
+  draft.step = 'foods';
   return mealFromDraft(draft);
 }
 
@@ -178,6 +176,22 @@ test('texture dimensions survive storage while smell and arrangement replace onl
 test('legacy follow-up drafts resume at difficulties without changing current steps', () => {
   const { normalizeReviewStep } = require('../src/features/after-meal-review/rules.ts');
   assert.equal(normalizeReviewStep('suggestions'), 'difficulties');
-  assert.equal(normalizeReviewStep('goal'), 'difficulties');
   for (const step of ['photo', 'preview', 'compare', 'outcomes', 'difficulties', 'complete']) assert.equal(normalizeReviewStep(step), step);
+});
+
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+test('legacy reviews resume safely and omit retired feedback from saved results', async () => {
+  const meal = savedMeal('retired-feedback');
+  const draft = newReviewDraft(meal);
+  draft.outcomes = setOutcome(draft.outcomes, meal.foods[0].id, 'eaten');
+  values.set(`nurturebites.after-meal.${meal.childId}.${meal.id}.draft.v1`, JSON.stringify({
+    ...draft, step: 'goal', goalFeedback: 'achieved',
+  }));
+  const restored = await readAfterMealDraft(meal.childId, meal.id);
+  assert.equal(restored.step, 'difficulties');
+  assert.deepEqual(restored.outcomes, draft.outcomes);
+  assert.equal(Object.hasOwn(restored, 'goalFeedback'), false);
+  const review = reviewFromDraft(restored, meal);
+  values.set(`nurturebites.after-meal.${meal.childId}.${meal.id}.result.v1`, JSON.stringify({ ...review, goalFeedback: 'tried' }));
+  assert.deepEqual(await readAfterMealReview(meal.childId, meal.id), review);
 });

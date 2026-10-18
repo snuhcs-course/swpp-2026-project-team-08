@@ -1,4 +1,4 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """식전 · 식후 사진 URI 가 식사 기록에 저장되고 다시 읽히는지 검증한다."""
 
 from datetime import UTC, datetime
@@ -32,7 +32,6 @@ def meal_payload(**overrides: object) -> dict:
         "meal_type": "lunch",
         "setting": "home",
         "before_photo_uri": None,
-        "exposure_food_id": FOOD_ID,
         "saved_at": datetime(2026, 10, 15, 12, 0, tzinfo=UTC).isoformat(),
         "foods": [
             {
@@ -68,7 +67,6 @@ def review_payload() -> dict:
             }
         ],
         "difficulties": {FOOD_ID: []},
-        "goal_feedback": "tried",
         "saved_at": datetime(2026, 10, 15, 13, 0, tzinfo=UTC).isoformat(),
     }
 

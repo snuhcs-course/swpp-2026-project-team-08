@@ -1,4 +1,4 @@
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim -->
+<!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 
 # server
 
@@ -35,6 +35,15 @@ uv run uvicorn app.main:app --reload     # 서버 실행 → http://localhost:80
 | 의존성 추가 / 제거 | `uv add <package>` / `uv remove <package>` (dev 는 `--dev`) |
 | 마이그레이션 생성 | `uv run alembic revision --autogenerate -m "설명"` |
 | 마이그레이션 적용 / 되돌리기 | `uv run alembic upgrade head` / `uv run alembic downgrade -1` |
+
+## Removed meal fields
+
+The current API no longer stores exposure goals or goal feedback. Migration
+`0005_remove_exposure` joins the two existing migration heads and drops
+`meal_logs.exposure_food_id` and `meal_reviews.goal_feedback`. Applying it deletes
+those values; downgrading restores nullable columns without recovering the data.
+The migration must be applied explicitly to each database before deploying this
+schema change. Historical creation migrations are retained.
 
 ## 코드 품질 기준
 

@@ -1,8 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; discard only unconfirmed legacy AI draft suggestions
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { FoodItem, Meal, MealDraft } from '../../types/meal';
 import { isDraft, isMeal } from './mealValidation';
@@ -23,13 +19,23 @@ function queued<T>(childId: string, work: () => Promise<T>): Promise<T> {
     .catch(() => undefined);
   return next;
 }
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Compatibility for records written before the feature was removed.
+function normalizeStoredMeal(value: unknown): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  const next = { ...value } as Record<string, unknown>;
+  delete next.exposureFoodId;
+  if (next.step === 'goal') next.step = 'foods';
+  return next;
+}
+
 export async function readMealDraft(
   childId: string,
 ): Promise<MealDraft | null> {
   await queues.get(childId)?.catch(() => undefined);
   const raw = await AsyncStorage.getItem(draftKey(childId));
   if (!raw) return null;
-  const value: unknown = JSON.parse(raw);
+  const value: unknown = normalizeStoredMeal(JSON.parse(raw));
   if (!isDraft(value, childId)) throw new Error('Invalid meal draft');
   // Preserve saved receipts and all user-confirmed foods. Old photo fixtures must
   // never reappear as foods the caregiver entered.
@@ -41,8 +47,7 @@ export async function readMealDraft(
     foods,
     editingFood: value.editingFood && keepFood(value.editingFood) ? value.editingFood : null,
     suggestionLinks: value.suggestionLinks?.filter((link) => foods.some((food) => food.id === link.foodId)),
-    exposureFoodId: foods.some((food) => food.id === value.exposureFoodId) ? value.exposureFoodId : null,
-    step: ['method', 'analyzing', 'analysis-error', 'goal'].includes(value.step) ? 'foods' : value.step,
+    step: ['method', 'analyzing', 'analysis-error'].includes(value.step) ? 'foods' : value.step,
   };
 }
 export const saveMealDraft = (draft: MealDraft) =>
@@ -53,7 +58,8 @@ export const saveMealDraft = (draft: MealDraft) =>
 export async function readMeals(childId: string): Promise<Meal[]> {
   const raw = await AsyncStorage.getItem(mealsKey(childId));
   if (!raw) return [];
-  const value: unknown = JSON.parse(raw);
+  const parsed: unknown = JSON.parse(raw);
+  const value = Array.isArray(parsed) ? parsed.map(normalizeStoredMeal) : parsed;
   if (!Array.isArray(value) || !value.every((meal) => isMeal(meal, childId)))
     throw new Error('Invalid meals');
   return value;
@@ -70,17 +76,15 @@ export function updateMealFoods(childId: string, mealId: string, foods: FoodItem
       ...current,
       foods,
       suggestionLinks: current.suggestionLinks?.filter((link) => foods.some((food) => food.id === link.foodId)),
-      exposureFoodId: current.exposureFoodId && foods.some((food) => food.id === current.exposureFoodId)
-        ? current.exposureFoodId : null,
     };
     if (!isMeal(next, childId)) throw new Error('Invalid edited meal');
     meals[index] = next;
     await AsyncStorage.setItem(mealsKey(childId), JSON.stringify(meals));
     const rawDraft = await AsyncStorage.getItem(draftKey(childId));
     if (rawDraft) {
-      const stored: unknown = JSON.parse(rawDraft);
+      const stored: unknown = normalizeStoredMeal(JSON.parse(rawDraft));
       if (isDraft(stored, childId) && stored.step === 'complete' && stored.savedMealId === mealId) {
-        await AsyncStorage.setItem(draftKey(childId), JSON.stringify({ ...stored, foods, suggestionLinks: next.suggestionLinks, exposureFoodId: next.exposureFoodId }));
+        await AsyncStorage.setItem(draftKey(childId), JSON.stringify({ ...stored, foods, suggestionLinks: next.suggestionLinks }));
       }
     }
     return next;

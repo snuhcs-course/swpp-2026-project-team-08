@@ -1,6 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; query saved meal review states for home
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { readHomeMeals } from '../storage/homeMealStorage';
 import type { HomeRecords } from '../../types/home';
@@ -42,7 +40,7 @@ export function useSetSuggestionSaved() {
       client.setQueryData<HomeRecords>(homeKeys.byChild(vars.childId), (old) => {
         const records: HomeRecords = old
           ? { ...old, suggestions: old.suggestions.map((item) => ({ ...item })) }
-          : { meals: [], exposures: [], suggestions: [] };
+          : { meals: [], suggestions: [] };
         applySuggestionSaved(records, vars.childId, vars.suggestion, vars.saved, vars.profileUpdatedAt);
         return records;
       });

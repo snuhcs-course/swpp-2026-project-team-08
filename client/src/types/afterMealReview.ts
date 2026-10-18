@@ -1,6 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import type { MealPhoto } from './meal';
 
 export const outcomeValues = ['eaten', 'tasted', 'untouched', 'unclear'] as const;
@@ -28,10 +26,9 @@ export type DifficultyTag = {
 
 export const reviewSteps = [
   'photo', 'preview', 'compare', 'comparing', 'comparison-error',
-  'outcomes', 'difficulties', 'goal', 'suggestions', 'complete',
+  'outcomes', 'difficulties', 'suggestions', 'complete',
 ] as const;
 export type ReviewStep = (typeof reviewSteps)[number];
-export type GoalFeedback = 'achieved' | 'tried' | 'notYet' | null;
 export type SuggestionFeedback = 'tried' | 'notTried';
 
 export type AfterMealReviewDraft = {
@@ -43,7 +40,6 @@ export type AfterMealReviewDraft = {
   outcomes: FoodOutcome[];
   difficulties: Record<string, DifficultyTag[]>;
   difficultyInputs: Record<string, { category: DifficultyCategory | null; value: string; note: string; subcategory?: string }>;
-  goalFeedback: GoalFeedback;
   suggestionFeedback: Record<string, SuggestionFeedback>;
 };
 

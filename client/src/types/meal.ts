@@ -1,6 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 export const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 export const mealSettings = ['home', 'restaurant', 'school', 'others'] as const;
 export const histories = ['usually', 'sometimes', 'unsure'] as const;
@@ -46,7 +44,6 @@ export type Meal = {
   setting: (typeof mealSettings)[number];
   photo: MealPhoto | null;
   foods: FoodItem[];
-  exposureFoodId: string | null;
   suggestionLinks?: MealSuggestionLink[];
   savedAt: string;
 };
@@ -59,7 +56,6 @@ export const mealSteps = [
   'analyzing',
   'analysis-error',
   'foods',
-  'goal',
   'complete',
 ] as const;
 export type MealStep = (typeof mealSteps)[number];

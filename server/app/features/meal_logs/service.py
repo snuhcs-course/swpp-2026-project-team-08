@@ -1,5 +1,4 @@
-# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """식사 기록 유스케이스. HTTP/DTO 를 모른다."""
 
 from dataclasses import asdict
@@ -41,7 +40,6 @@ class MealLogService:
         meal_type: str,
         setting: str,
         before_photo_uri: str | None,
-        exposure_food_id: str | None,
         foods: list[dict[str, Any]],
         saved_at: datetime,
         suggestion_links: list[SuggestionLinkData] | None = None,
@@ -69,7 +67,6 @@ class MealLogService:
         meal.meal_type = meal_type
         meal.setting = setting
         meal.before_photo_uri = before_photo_uri
-        meal.exposure_food_id = exposure_food_id
         meal.saved_at = saved_at
         await self._session.flush()
         await self._session.execute(delete(MealFood).where(MealFood.meal_id == meal_id))
@@ -115,7 +112,6 @@ class MealLogService:
         after_photo_uri: str,
         outcomes: list[dict[str, Any]],
         difficulties: dict[str, Any],
-        goal_feedback: str | None,
         saved_at: datetime,
         suggestion_feedback: dict[str, str] | None = None,
     ) -> MealLog:
@@ -140,7 +136,6 @@ class MealLogService:
         review.outcomes = outcomes
         review.difficulties = difficulties
         review.suggestion_feedback = feedback
-        review.goal_feedback = goal_feedback
         review.saved_at = saved_at
         await self._session.flush()
         await confirm_linked_tries(self._session, meal, feedback)

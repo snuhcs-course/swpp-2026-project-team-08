@@ -1,9 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; restore separate saved-suggestion record linking
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; show ongoing meal before resuming a stored draft
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, BackHandler, Text } from 'react-native';
@@ -70,8 +65,8 @@ export function MealCheckinScreen({
   });
   const afterMeal = (mealId: string) =>
     router.replace({ pathname: '/after-meal-review', params: { mealId } });
-  const saveCheckin = (skip: boolean) => {
-    void model.save(skip).then((id) => {
+  const saveCheckin = () => {
+    void model.save().then((id) => {
       if (!id) return;
       if (trying && tryingSuggestionId) {
         router.replace({ pathname: '/suggestion/[id]', params: { id: tryingSuggestionId, tryMealId: id } });
@@ -160,8 +155,7 @@ export function MealCheckinScreen({
       onRemovePhoto={model.removePhoto}
       onChangeFood={model.changeFood}
       onSaveFood={model.saveFood}
-      onConfirm={() => { model.confirm(); saveCheckin(true); }}
-      onSave={saveCheckin}
+      onConfirm={() => { model.confirm(); saveCheckin(); }}
       onAfterMeal={() => {
         if (model.draft?.savedMealId) afterMeal(model.draft.savedMealId);
       }}

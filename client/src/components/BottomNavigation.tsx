@@ -1,7 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; restore shared navigation across all tabs
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match home navigation original Figma assets
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Language } from '../types/profile';
@@ -10,11 +7,10 @@ import { fonts } from '../util/fonts';
 import { copyFor } from '../util/strings';
 
 export type HomeTab =
-  'today' | 'mealLog' | 'sos' | 'ideas' | 'insight' | 'profile';
+  'today' | 'mealLog' | 'ideas' | 'insight' | 'profile';
 export const tabOrder: HomeTab[] = [
   'today',
   'mealLog',
-  'sos',
   'ideas',
   'insight',
   'profile',
@@ -25,7 +21,6 @@ const tabs: {
 }[] = [
   { key: 'today', icon: 'home-outline' },
   { key: 'mealLog', icon: 'silverware-fork-knife' },
-  { key: 'sos', icon: 'alert-outline' },
   { key: 'ideas', icon: 'bookmark-outline' },
   { key: 'insight', icon: 'chart-bar' },
   { key: 'profile', icon: 'account-outline' },
@@ -81,7 +76,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   tab: {
-    width: '16.666%',
+    flex: 1,
     flexShrink: 0,
     alignItems: 'center',
     justifyContent: 'center',

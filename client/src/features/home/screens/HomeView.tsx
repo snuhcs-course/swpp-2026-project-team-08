@@ -1,13 +1,10 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; address the caregiver in the home greeting
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; implement final ABC home
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
 import { HomeAssetIcon } from '../../../components/HomeAssetIcon';
 import type { Meal, MealDraft } from '../../../types/meal';
 import type { ChildProfile, Language } from '../../../types/profile';
-import type { ExposureSummary, SavedSuggestion } from '../../../types/home';
+import type { SavedSuggestion } from '../../../types/home';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import { displayDate } from '../../../util/date';
@@ -22,7 +19,7 @@ export type HomeViewProps = {
   profile: ChildProfile;
   language: Language;
   now: Date;
-  data: { loggedDates: Set<string>; exposures: ExposureSummary[]; suggestions: SavedSuggestion[] } | null;
+  data: { loggedDates: Set<string>; suggestions: SavedSuggestion[] } | null;
   meals: Meal[];
   pendingMeals: Meal[];
   loading: boolean;

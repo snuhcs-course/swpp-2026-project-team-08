@@ -1,12 +1,10 @@
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected requirements after screen-by-screen comparison -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated after manual-entry design review -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing specification -->
+<!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 
 # Onboarding
 
 ## Goal
 
-보호자가 계정을 만들고 아동 프로필을 설정한다. 프로필은 안전하지 않거나 적합하지 않은 음식을 추천에서 제외하고, 아이의 식사 패턴과 감각적 선호를 파악하며, 이후 식사 추천과 음식 경험 추적의 시작점으로 활용한다. 보호자는 설정 후에도 Profile Settings에서 프로필을 수정할 수 있다.
+보호자가 계정을 만들고 아동 프로필을 설정한다. 프로필은 안전하지 않거나 적합하지 않은 음식을 추천에서 제외하고, 아이의 식사 패턴과 감각적 선호를 파악하며, 이후 식사 추천의 시작점으로 활용한다. 보호자는 설정 후에도 Profile Settings에서 프로필을 수정할 수 있다.
 
 ## Design Document
 
@@ -114,7 +112,7 @@
 1. 보호자는 아동이 새로운 음식을 처음 보았을 때 보통 어떻게 반응하는지 입력할 수 있어야 한다.
 2. `Usually tastes a new food`, `Okay on the plate, may not taste`, `Prefers it nearby but separate`, `Wants it removed`, `Varies by food`, `Not sure` 중 하나만 선택할 수 있어야 한다.
 3. 선택된 답변은 화면에서 구분되어 표시되어야 하며, 보호자는 다른 답변을 선택해 변경할 수 있어야 한다.
-4. 이 답변은 일반적인 시작점으로 안내되어야 하며, 개별 음식의 Exposure 진행 단계로 자동 설정되어서는 안 된다. 음식별 진행 상황은 별도로 기록되어야 한다.
+4. 이 답변은 추천을 위한 일반적인 시작점으로 안내되어야 한다.
 
 ### R11 — Safe foods
 
@@ -226,10 +224,6 @@ Then 입력한 항목이 해당 질문의 답변에 추가된다.
 Given 보호자가 냄새·온도·새로운 음식에 대한 친숙도 화면에서 답변을 선택했고<br>
 When 다른 답변을 선택하면<br>
 Then 기존 답변이 해제되고 새 답변 하나만 선택된다.
-
-Given 보호자가 새로운 음식에 대한 친숙도를 입력했고<br>
-When 개별 음식의 Exposure 기록을 시작하면<br>
-Then 온보딩 답변이 그 음식의 Exposure 진행 단계로 자동 설정되지 않는다.
 
 Given 보호자가 Safe Foods 화면에서 Food name과 Preparation을 입력했고<br>
 When Add를 누르면<br>

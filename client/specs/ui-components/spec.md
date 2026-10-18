@@ -1,11 +1,10 @@
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify anchored date dropdown pickers -->
-<!-- This Code is generated with AI -->
+<!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 
 # Shared UI Components — Design Specification
 
 ## Purpose
 
-This document defines the reusable visual and interaction rules for NurtureBites components across onboarding, Home, Meal Check-in, After-meal Review, and Exposure Tracker. Feature screens compose these components; they should not independently redefine their geometry or visual states.
+This document defines the reusable visual and interaction rules for NurtureBites components across onboarding, Home, Meal Check-in, and After-meal Review. Feature screens compose these components; they should not independently redefine their geometry or visual states.
 
 The values below are read from the Figma frames linked in each section. Figma uses 390 px-wide mobile frames. Unless a screen states otherwise, use the Figma px values as initial numeric values for React Native layout and text styles, then check the result at different screen sizes and accessibility font settings. Operating-system safe areas are outside the screen content measurements.
 
@@ -17,13 +16,13 @@ The file contains more than one visual pass. The differences are visible in the 
 |---|---|---|---|---|---|
 | Onboarding | [Caregiver account](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=32-1183), [Food allergies](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=52-118) | `#EEF7FF` / `#C9DAED` | `#10233F` / `#667892` | `#1667FF` | Inter |
 | Home and meal setup | [Home](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=37-3369), [Meal details](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=94-191), [Meal Check-in](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=34-2779) | `#F7FAFF` / `#DCE6F3` | `#13233A` / `#66758A` | `#1769FF` | Poppins |
-| Food review and Tracker | [Food outcomes](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=72-110), [Review food](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=96-821), [Exposure Tracker](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=39-5093) | Food outcomes: `#F7FBFF` / `#CADDF0`; review/Tracker: `#F5F8FE` / `#D8E3F2` | Food outcomes: `#173B64` / `#71809A`; review/Tracker: `#13233A` / `#65758B` | `#1769FF` | Inter and Poppins as specified by the source screen |
+| Food review | [Food outcomes](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=72-110), [Review food](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=96-821) | Food outcomes: `#F7FBFF` / `#CADDF0`; review: `#F5F8FE` / `#D8E3F2` | Food outcomes: `#173B64` / `#71809A`; review: `#13233A` / `#65758B` | `#1769FF` | Inter and Poppins as specified by the source screen |
 
 The Figma file does not establish a single app-wide font or canvas color. Do not silently replace the feature-family values above with one global value. When a new feature has no corresponding source frame, use the Home and meal setup family as its starting point and add a feature-specific row here only after its Figma design is approved.
 
 ### Common color roles
 
-| Role | Onboarding | Home / meal setup | Food review / Tracker |
+| Role | Onboarding | Home / meal setup | Food review |
 |---|---|---|---|
 | Canvas | `#EEF7FF` | `#F7FAFF` | `#F7FBFF` or `#F5F8FE` by screen |
 | Primary text | `#10233F` | `#13233A` | `#173B64` or `#13233A` by screen |
@@ -40,7 +39,7 @@ The Figma file does not establish a single app-wide font or canvas color. Do not
 
 | Property | Specification |
 |---|---|
-| Reference size | 390 × 844 px for onboarding, Home, Meal Check-in and Tracker examples; some meal detail screens are 818–879 px tall. |
+| Reference size | 390 × 844 px for onboarding, Home, Meal Check-in examples; some meal detail screens are 818–879 px tall. |
 | Onboarding surface | Fill `#EEF7FF`, 1 px `#C9DAED` outline, 24 px outer corner radius. |
 | Home / meal surface | Fill `#F7FAFF`, 1 px `#DCE6F3` outline, 28 px outer corner radius. |
 | Review surface | Use the relevant food review family: outcomes uses 30 px corners; photo-review frames use 28 px corners. |
@@ -152,7 +151,7 @@ Onboarding footer: white surface with a 1 px top border, top corners 20 px, heig
 | Component | Geometry | Surface / shadow | Content spacing |
 |---|---|---|---|
 | Home “Next up” meal action | Full width inside 24 px gutter; radius 22 px | `#13233A`; shadow `0 12 28 0 rgba(57,45,69,0.13)` | 20 px padding; 15 px between card copy and action |
-| Home widget card (SOS Progress, Recommended goals, Calendar) | Full width; radius 20 px | White; shadow `0 8 24 0 rgba(57,45,69,0.07)` | 16 px padding; 14 px section spacing; home sections 18 px apart |
+| Home widget card (Recommended goals, Calendar) | Full width; radius 20 px | White; shadow `0 8 24 0 rgba(57,45,69,0.07)` | 16 px padding; 14 px section spacing; home sections 18 px apart |
 | Meal type / setting tile | 76 px high; radius 16 px | White; 1 px `#DCE6F3`; shadow `0 8 24 0 rgba(57,45,69,0.07)` | 14 px padding; icon tile 42 × 42 px, radius 10 px; icon-to-copy gap 12 px |
 | Review dish card | Width 342 px in 390 px frame; radius 14 px | White; 1 px `#D8E3F2` | 12 px padding; 10 px between card fields; dish cards 12 px apart |
 | Safety guidance card | Full width in the question column; radius 11 px | `#FFF0F2` | 8 px padding; 8 px icon-to-text gap |
@@ -162,7 +161,6 @@ Home screen content uses 24 px side gutters, 10 px top padding after the date he
 **Home card contents**
 
 - “Next up” meal action card: x=24 px, width 342 px, height 194 px. The inner copy is x=20, y=20, width 302 px. Primary action is x=20, y=120, 302 × 54 px; camera icon 18 px, 9 px icon-to-label gap. It is a dark navy card, not a generic white widget.
-- SOS Progress widget: x=24 px, width 342 px, height 211 px, using the standard white widget card. Inner content width 310 px at x=16. Header is 41 px high; item rows begin at y=71. Row icon is 40 × 40 px; icon-to-copy gap 12 px. Food title and stage align in one 21 px row; helper copy begins 4 px below. Between rows use a 1 px divider, then 14 px vertical separation.
 - Recommended action goals widget: x=24 px, width 342 px, height 140 px. One 53 px goal row begins at y=71. Icon is 40 × 40 px, radius 14 px; icon-to-copy gap 12 px. The “Try” action is a 37 × 27 px pill, `#F0F4FF`, 10 px horizontal and 6 px vertical padding.
 - Meal Log Calendar widget: see the separate calendar specification below.
 
@@ -205,27 +203,15 @@ These frames specify presentation only. Ask for camera/photo permission only aft
 
 ### 13. Bottom navigation
 
-Home has six destinations: Today, Meal log, SOS, Ideas, Insight, Profile.
+Home has five destinations: Today, Meal log, Ideas, Insight, Profile.
 
 - Bar height: 72 px in the Figma frame; white background; 1 px `#EDF3FB` top border. Reserve the device's bottom safe area outside this measured content height.
 - Content padding: 22 px horizontal, 10 px top, 12 px bottom.
-- Six items share the available width; Figma item width is 62 px at 390 px viewport.
+- Five items share the available width equally.
 - Icon: 20 px. Label: 8–9 px; icon-to-label gap 4 px.
 - Selected item uses the active blue; inactive items use secondary gray. Always keep a visible label; do not communicate selected state through color alone.
 
 Reference: [Home bottom navigation](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=37-3369).
-
-### 14. Bottom sheet and Exposure Tracker ladder
-
-The Exposure Tracker companion is a bottom sheet over a dimmed Review food screen.
-
-- Sheet bounds: full frame width 390 px; top at y=455 px in an 844 px frame; height 389 px; white fill; top corners 20 px (the screenshot shows a rounded sheet). Bottom aligns with the frame bottom.
-- Handle region: 390 × 22 px; handle 38 × 4 px, centered, 9 px from region top.
-- Panel content begins 22 px below the sheet top. Header x=18 px; header size 354 × 51 px. Close action is 36 × 36 px, 18 px from the right content edge.
-- Six-step ladder panel: x=18 px, width 354 px, height 100 px, y=121 px within panel content. Inner horizontal inset 12 px. Six equal steps are 51.67 × 52 px with 4 px gaps. Each marker is 36 × 36 px; labels sit beneath markers.
-- Keep “Open the Tracker” as a distinct action from the ladder display and retain a clear route back to food review.
-
-Reference: [Exposure Tracker companion](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=39-5093).
 
 ## Screen composition values
 
@@ -238,7 +224,7 @@ These screen-level values explain how the reusable pieces fit together. They are
 | Meal Details | 24 px | Meal/setting options 10 px; tile rows 10 px | 52 px primary action |
 | Meal Check-in | 24 px | Main content blocks 10 px; card inner top/bottom padding 14 px | 52 px primary and secondary actions |
 | After-meal food outcomes | 18 px | Page content blocks 12 px; outcome cards 5 px; row contents 7–8 px | 48 px primary and Skip buttons |
-| Review food / Exposure | 24 px review content; 18 px sheet inset | Dish card fields 5–10 px | Review confirm 50 px; sheet actions inside panel |
+| Review food | 24 px review content | Dish card fields 5–10 px | Review confirm 50 px |
 
 ## Interaction and state requirements
 
@@ -251,6 +237,6 @@ These screen-level values explain how the reusable pieces fit together. They are
 
 ## Unspecified states and design follow-up
 
-Figma provides examples for default and selected choice rows, active text fields, an account validation error, autocomplete results, photo preview, and the open Tracker sheet. It does not consistently define disabled/loading states, error banners outside the password example, pressed/focused button treatments, dark mode, or the tutorial screen visuals. Until design supplies them, use accessible focus, pressed, disabled, and loading behavior consistent with the existing app without inventing a new visual palette, and add the final state values here when approved.
+Figma provides examples for default and selected choice rows, active text fields, an account validation error, autocomplete results, and photo preview. It does not consistently define disabled/loading states, error banners outside the password example, pressed/focused button treatments, dark mode, or the tutorial screen visuals. Until design supplies them, use accessible focus, pressed, disabled, and loading behavior consistent with the existing app without inventing a new visual palette, and add the final state values here when approved.
 
 The file also has visible version differences in app background, typography, gutters, and button radius. This specification preserves those differences by screen family. If the team wants one unified design system, the designer should first designate replacement Figma frames; code should not choose a winner implicitly.

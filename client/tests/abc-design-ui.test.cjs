@@ -1,10 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify explicit draft linking after separating saved-record flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; update caregiver greeting expectation
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; update shared navigation expectations
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify direct review saving
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify final ABC home states
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; cover ongoing meal entry summary
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -152,12 +146,12 @@ test('ongoing meal entry handles a photo-free empty draft without fake meal info
 });
 
 function homeProps() {
- return {profile:{id:'home-child',childName:'Luna',caregiverName:'Alex'},language:'en',now:new Date(2026,9,8,9),draft:null,draftLoading:false,draftError:false,pendingMeals:[],meals:[],data:{loggedDates:new Set(),exposures:[],suggestions:[]},loading:false,error:false,refreshing:false,onRefresh:noop,onLogMeal:noop,onReviewDraft:noop,onReviewMeal:noop,onSavedSuggestions:noop,onMealHistory:noop,onTrySuggestion:noop,suggestionText:{}};
+ return {profile:{id:'home-child',childName:'Luna',caregiverName:'Alex'},language:'en',now:new Date(2026,9,8,9),draft:null,draftLoading:false,draftError:false,pendingMeals:[],meals:[],data:{loggedDates:new Set(),suggestions:[]},loading:false,error:false,refreshing:false,onRefresh:noop,onLogMeal:noop,onReviewDraft:noop,onReviewMeal:noop,onSavedSuggestions:noop,onMealHistory:noop,onTrySuggestion:noop,suggestionText:{}};
 }
 test('saved-meal home renders real pending-review metadata and current Figma sections', () => {
  const { HomeView }=require('../src/features/home/screens/HomeView.tsx');
  const meal={...newDraft('home-child'),id:'real-meal',mealType:'lunch',mealDate:'2026-10-08',foods:[{...newFood(),name:'Soup'},{...newFood(),name:'Rice'}]};
- const p={...homeProps(),meals:[meal],pendingMeals:[meal],data:{loggedDates:new Set(),exposures:[],suggestions:[{id:'idea',title:'Actual saved idea'}]}};
+ const p={...homeProps(),meals:[meal],pendingMeals:[meal],data:{loggedDates:new Set(),suggestions:[{id:'idea',title:'Actual saved idea'}]}};
  const html=renderToStaticMarkup(React.createElement(HomeView,p));
  for(const text of ['Good morning, Alex','THURSDAY','LOG THIS MEAL · FOR LUNA','Log new meal','After-meal Review','Luna · Lunch','Oct 8, 2026','2 foods','Awaiting review','Saved Suggestions','Actual saved idea','View saved suggestions']) assert.ok(html.includes(text),text);
  assert.doesNotMatch(html,/SOS Progress|Recommended action goals|Meal Log Calendar|Put carrot next to fish/);
@@ -174,12 +168,12 @@ test('home record read errors show retry instead of declaring a fresh account', 
  assert.match(html,/Could not load your records/);assert.match(html,/Retry/);assert.doesNotMatch(html,/No saved suggestions yet|Meal Log Calendar/);
 });
 
-test('Home and every other tab share the existing six-tab navigation', () => {
+test('Home and every other tab share the shared five-tab navigation', () => {
  const { BottomNavigation }=require('../src/components/BottomNavigation.tsx');
- for (const selected of ['today','mealLog','sos','ideas','insight','profile']) {
+ for (const selected of ['today','mealLog','ideas','insight','profile']) {
   const html=renderToStaticMarkup(React.createElement(BottomNavigation,{language:'en',selected,onSelect:noop}));
-  assert.equal((html.match(/role="tab"/g)||[]).length,6);
-  assert.match(html,/SOS/);assert.match(html,/Insight/);
+  assert.equal((html.match(/role="tab"/g)||[]).length,5);
+  assert.doesNotMatch(html,/SOS/);assert.match(html,/Insight/);
   assert.match(html,/height:72px/);assert.match(html,/padding-left:22px|padding-horizontal:22px/);
  }
 });

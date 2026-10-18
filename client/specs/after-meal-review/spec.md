@@ -1,8 +1,4 @@
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; remove non-Figma suggestion confirmation step -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify right-aligned difficulty picker chevrons -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected requirements after screen-by-screen comparison -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated after manual-entry design review -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing specification -->
+<!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 
 # After-meal Review
 
@@ -74,7 +70,7 @@
 - Food Arrangement는 Evenly distributed/Unevenly distributed/Clustered/Other, Ingredient Piece Size는 Fine/Small/Large, Serving Temperature는 Hot/Warm/Cool-chilled/Room temperature를 제공한다. 배치·크기·온도는 음식별 한 값이며 새 입력은 같은 카테고리의 이전 값만 교체한다.
 - Add 후 입력값·식감 질문을 비우고 태그는 유지한다. 태그 ×는 해당 태그만 제거한다. 입력 중 값은 저장된 태그가 아니다.
 - 긴 냄새 목록·식감 질문은 스크롤 가능한 오버레이에 표시한다. 내용·태그·키보드가 하단 Continue/Skip을 가리지 않는다.
-- Continue와 Skip 모두 이미 추가한 태그를 보존하고 바로 최종 저장한다. Exposure goal 및 Did you try a saved suggestion? 후속 화면은 표시하지 않는다.
+- Continue와 Skip 모두 이미 추가한 태그를 보존하고 바로 최종 저장한다. Did you try a saved suggestion? 후속 화면은 표시하지 않는다.
 
 ### R4 — 최종 저장과 기존 초안 호환
 
@@ -91,7 +87,7 @@
 - 재료 토큰을 선택하면 해당 재료와 음식 이름이 있는 별도 결과 카드가 생기고, 그 결과를 입력하기 전에는 진행할 수 없다.
 - 사진으로 결과가 미리 선택되지 않고 사용자가 고른 결과만 저장된다. 음식 편집 후 유지 가능한 답변과 재료 선택이 보존된다.
 - Texture의 질문·값을 Add하면 둘 다 태그에 저장되고 입력이 초기화된다. 냄새를 바꾸면 기존 냄새만 교체된다.
-- Exposure goal·제안 사용 확인 화면을 거치지 않는다. 어려움 Continue·Skip은 직접 저장하며 제안 사용 응답을 자동 생성하지 않는다.
+- 제안 사용 확인 화면을 거치지 않는다. 어려움 Continue·Skip은 직접 저장하며 제안 사용 응답을 자동 생성하지 않는다.
 - 저장 실패·초안 복원·사진 취소에서 기존 사진·답변·태그를 잃지 않는다.
 
 ## 구현 범위

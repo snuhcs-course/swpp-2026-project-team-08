@@ -1,14 +1,4 @@
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify inline unset acceptance -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; distinguish record linking from draft suggestion linking -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; require ongoing meal entry before draft continuation -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify source sheet missing-photo spacing and removal state -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify full-photo back button geometry -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; synced before-meal photo text from Figma 455:7879 -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; specify anchored date dropdown pickers -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated compact meal choice tiles -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected requirements after screen-by-screen comparison -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; updated after manual-entry design review -->
-<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing specification -->
+<!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 
 # Meal Check-in
 
@@ -70,7 +60,7 @@
 - 같은 음식 ID로 이름·재료·선택적 Cooking method·Additional detail·Acceptance를 편집한다. 재료는 개별 제거 가능한 토큰으로 표시하며 Add로 추가한다.
 - Cooking method는 선택 목록을 제공한다. Acceptance는 0–3의 네 단계로 입력하며 미입력은 0으로 자동 대체하지 않는다. 기존 Food history와 혼동하지 않는 별도 값이다.
 - 편집창은 흰색 대화상자와 어두운 배경, Cancel/Save food를 제공한다. 이름이 없으면 저장하지 않는다. Cancel은 편집 입력을 버리고 카드로 돌아온다.
-- 이번 화면에서는 이전 Food traits selector와 Exposure goal 입력을 표시하지 않는다. 기존 저장 데이터는 읽을 수 있어야 한다.
+- 이번 화면에서는 이전 Food traits selector를 표시하지 않는다. 기존 저장 데이터는 읽을 수 있어야 한다.
 
 ### R5 — 이전 제안을 실제 음식에 연결
 
@@ -83,7 +73,7 @@
 
 ### R6 — 최종 저장과 식후 검토
 
-- Save check-in 후 Exposure goal 선택 없이 Meal을 저장한다. 이전 버전의 goal 단계 초안은 음식 검토로 복원한다.
+- Save check-in 후 Meal을 바로 저장한다. 이전 버전의 중단된 초안은 음식 검토로 복원한다.
 - 저장 중 진행·식사 요약·초안 유지 안내를 표시한다. 저장 실패에는 Retry와 Save & exit를 제공하고 같은 Meal로 재시도한다.
 - 성공 화면에는 Check-in saved, Awaiting after-meal review, 실제 식사 정보와 음식, Add after-meal review, Back to Home을 표시한다.
 - 저장 성공 후에만 Meal ID로 식후 검토에 진입한다. 앱 재시작 뒤에도 완료 영수증으로 ID를 복원한다.

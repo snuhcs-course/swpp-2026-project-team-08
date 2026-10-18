@@ -1,4 +1,4 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """식후 리뷰 (meal_reviews). 식사당 하나."""
 
 from datetime import datetime
@@ -25,7 +25,10 @@ class MealReview(Base):
     after_photo_uri: Mapped[str] = mapped_column(Text, nullable=False)
     outcomes: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
     difficulties: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
-    goal_feedback: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    suggestion_feedback: Mapped[dict[str, dict[str, bool]]] = mapped_column(
+        JSON, default=dict, nullable=False
+    )
     saved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False

@@ -1,5 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { SavedSuggestion } from '../../types/home';
 import type { FoodItem, Meal } from '../../types/meal';
@@ -30,10 +29,10 @@ export type MealLogSuggestion = {
   ingredients: string[];
 };
 export type MealLogReview = {
-  afterPhotoUri: string;
+  afterPhotoUri: string | null;
   outcomes: FoodOutcome[];
   difficulties: AfterMealReview['difficulties'];
-  goalFeedback: AfterMealReview['goalFeedback'];
+  suggestionFeedback: AfterMealReview['suggestionFeedback'];
   savedAt: string;
 };
 export type MealDetail = {
@@ -43,7 +42,6 @@ export type MealDetail = {
   mealType: Meal['mealType'];
   setting: Meal['setting'];
   beforePhotoUri: string | null;
-  exposureFoodId: string | null;
   savedAt: string;
   foods: FoodItem[];
   review: MealLogReview | null;
@@ -106,7 +104,8 @@ function parseOutcome(value: unknown): FoodOutcome {
 
 function parseFood(value: unknown): FoodItem {
   if (!record(value) || typeof value.id !== 'string' || typeof value.name !== 'string' || !strings(value.ingredients)
-    || typeof value.preparation !== 'string' || typeof value.serving_note !== 'string' || !record(value.traits)
+    || typeof value.preparation !== 'string' || typeof value.serving_note !== 'string'
+    || typeof value.confirmed !== 'boolean'
     || (value.source !== 'ai' && value.source !== 'parent')) throw new Error('Invalid meal food');
   return {
     id: value.id,
@@ -114,16 +113,16 @@ function parseFood(value: unknown): FoodItem {
     ingredients: value.ingredients,
     preparation: value.preparation,
     servingNote: value.serving_note,
-    traits: value.traits as FoodItem['traits'],
-    history: (value.history as FoodItem['history']) ?? null,
     source: value.source,
+    // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    confirmed: value.confirmed,
+    acceptance: typeof value.acceptance === 'number' ? value.acceptance : null,
   };
 }
 
 function parseDetail(value: unknown): MealDetail {
   if (!record(value) || typeof value.id !== 'string' || typeof value.child_id !== 'string' || !isoDate(value.meal_date)
     || (value.before_photo_uri !== null && typeof value.before_photo_uri !== 'string')
-    || (value.exposure_food_id !== null && typeof value.exposure_food_id !== 'string')
     || typeof value.saved_at !== 'string' || !Array.isArray(value.foods) || !Array.isArray(value.suggestions)) {
     throw new Error('Invalid meal detail');
   }
@@ -133,11 +132,16 @@ function parseDetail(value: unknown): MealDetail {
       || !record(value.review.difficulties) || typeof value.review.saved_at !== 'string') {
       throw new Error('Invalid meal review');
     }
+    // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    const feedback = value.review.suggestion_feedback === undefined ? {} : value.review.suggestion_feedback;
+    if (!record(feedback) || !Object.values(feedback).every((choice) => record(choice) && typeof choice.tried === 'boolean')) {
+      throw new Error('Invalid suggestion feedback');
+    }
     review = {
-      afterPhotoUri: value.review.after_photo_uri,
+      afterPhotoUri: value.review.after_photo_uri || null,
       outcomes: value.review.outcomes.map(parseOutcome),
       difficulties: value.review.difficulties as AfterMealReview['difficulties'],
-      goalFeedback: (value.review.goal_feedback as AfterMealReview['goalFeedback']) ?? null,
+      suggestionFeedback: feedback as AfterMealReview['suggestionFeedback'],
       savedAt: value.review.saved_at,
     };
   }
@@ -148,7 +152,6 @@ function parseDetail(value: unknown): MealDetail {
     mealType: asMealType(value.meal_type),
     setting: asSetting(value.setting),
     beforePhotoUri: value.before_photo_uri,
-    exposureFoodId: value.exposure_food_id,
     savedAt: value.saved_at,
     foods: value.foods.map(parseFood),
     review,
@@ -173,17 +176,18 @@ export function mealToUpsertBody(meal: Meal) {
     meal_type: meal.mealType,
     setting: meal.setting,
     before_photo_uri: meal.photo?.uri ?? null,
-    exposure_food_id: meal.exposureFoodId,
     saved_at: meal.savedAt,
+    suggestion_links: (meal.suggestionLinks ?? []).map((link) => ({ suggestion_id: link.suggestionId, food_id: link.foodId, title: link.title, description: link.description, serving_tip: link.servingTip ?? null })),
     foods: meal.foods.map((food) => ({
       id: food.id,
       name: food.name,
       ingredients: food.ingredients,
       preparation: food.preparation,
       serving_note: food.servingNote,
-      traits: food.traits,
-      history: food.history,
       source: food.source,
+      acceptance: food.acceptance ?? null,
+      // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+      confirmed: food.confirmed,
     })),
   };
 }
@@ -197,7 +201,7 @@ export function reviewToBody(review: AfterMealReview) {
       ingredients: food.ingredients,
     })),
     difficulties: review.difficulties,
-    goal_feedback: review.goalFeedback,
+    suggestion_feedback: review.suggestionFeedback,
     saved_at: review.savedAt,
   };
 }

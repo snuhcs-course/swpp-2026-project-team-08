@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { isStep, type OnboardingDraft, type OnboardingStep } from './types';
@@ -31,6 +32,7 @@ export function canContinue(step: OnboardingStep, draft: OnboardingDraft, passwo
     case 'child': return !!draft.childName.trim() && !!draft.ageRange;
     case 'allergies': return draft.allergies.length > 0;
     case 'restrictions': return draft.restrictions.length > 0;
+    case 'family': return draft.familyFoods.length > 0;
     case 'approaches': return draft.approaches.length > 0;
     default: return true;
   }
@@ -42,7 +44,7 @@ export function canFinish(draft: OnboardingDraft): boolean {
     && draft.consent.accountPrivacy && draft.consent.photoAnalysis
     && !!draft.childName.trim() && !!draft.ageRange
     && draft.allergies.length > 0 && draft.restrictions.length > 0
-    && draft.approaches.length > 0;
+    && draft.familyFoods.length > 0 && draft.approaches.length > 0;
 }
 
 export function addUnique(values: string[], value: string): string[] {

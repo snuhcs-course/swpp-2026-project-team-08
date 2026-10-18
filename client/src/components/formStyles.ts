@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified meal choice spacing
 
 import { StyleSheet } from 'react-native';
 import { colors } from '../util/colors';
@@ -76,8 +76,8 @@ export const formStyles = StyleSheet.create({
     flexGrow: 1,
     minHeight: 76,
     borderRadius: 16,
-    padding: 14,
-    gap: 12,
+    padding: 10,
+    gap: 6,
     shadowColor: colors.navy,
     shadowOpacity: 0.07,
     shadowOffset: { width: 0, height: 8 },
@@ -85,7 +85,9 @@ export const formStyles = StyleSheet.create({
     elevation: 2,
   },
   choiceText: { flex: 1, fontSize: 12, fontFamily: fonts.poppinsSemiBold },
-  tileText: { fontSize: 14, lineHeight: 19 },
+  tileText: { minWidth: 0, flexShrink: 1, fontSize: 14, lineHeight: 19 },
+  tileIcon: { width: 28, height: 28, borderRadius: 8, flexShrink: 0 },
+  tileRadio: { width: 18, height: 18, borderRadius: 9, flexShrink: 0 },
   selected: {
     borderColor: colors.homePrimary,
     backgroundColor: colors.homeSelected,

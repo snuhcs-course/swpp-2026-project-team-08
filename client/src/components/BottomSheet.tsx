@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { useMemo, type ReactNode } from 'react';
@@ -62,7 +63,7 @@ export function BottomSheet({
           onPress={onClose}
         />}
         <SafeAreaView style={[styles.sheet, variant === 'dialog' && styles.dialog, appearance && design.sheet, height ? { height } : undefined]} edges={variant === 'dialog' ? [] : ['bottom']}>
-          <View {...dismissGesture.panHandlers} style={{ paddingVertical: 8, alignSelf: 'stretch', alignItems: 'center' }}><View style={styles.handle} /></View>
+          {variant === 'sheet' && <View {...dismissGesture.panHandlers} style={{ paddingVertical: 8, alignSelf: 'stretch', alignItems: 'center' }}><View style={styles.handle} /></View>}
           <View style={styles.row}>
             <Text
               accessibilityRole="header"

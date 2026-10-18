@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """Exercise the real router/service/database, replacing only the slow generator."""
 
 from unittest.mock import AsyncMock
@@ -139,7 +139,7 @@ async def test_missing_review_and_old_try_are_rejected(client):
 
 async def test_added_selection_only_generates_missing_food_and_preserves_saved(client, generator):
     foods = [{**meal_payload()["foods"][0], "id": f"f{i}", "name": f"Food {i}"} for i in range(4)]
-    await put_meal(client, foods=foods, exposure_food_id="f0")
+    await put_meal(client, foods=foods)
     await client.put(f"/api/v1/children/{CHILD}/meals/{MEAL_ID}/review", json=review_payload())
     url = f"{ROOT}/meals/{MEAL_ID}/generate"
     first = (await client.post(url, json={})).json()
@@ -325,7 +325,6 @@ async def test_linked_snapshot_maps_source_and_ingredient_trial_without_changing
         client,
         meal_id="ingredient-trial",
         foods=[{**meal_payload()["foods"][0], "id": trial_food}],
-        exposure_food_id=trial_food,
     )
     review = review_payload()
     review["outcomes"][0]["food_id"] = trial_food
@@ -345,3 +344,50 @@ async def test_linked_snapshot_maps_source_and_ingredient_trial_without_changing
     assert (await client.get(f"{meals}/ingredient-trial")).json()["suggestions"] == [
         {**expected, "food_id": trial_food}
     ]
+
+
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+async def test_pending_link_records_try_only_after_confirmed_review_and_once(client):
+    item = await setup(client)
+    await decision(client, item)
+    link = {
+        "suggestion_id": item["id"],
+        "food_id": FOOD_ID,
+        "title": item["content"]["food_name"],
+        "description": item["content"]["what_to_try"],
+    }
+    trial = await put_meal(client, meal_id="abc-trial", suggestion_links=[link])
+    assert trial.status_code == 200, trial.text
+    assert (await client.get(f"{ROOT}/{item['id']}")).json()["tries"] == []
+    review = {
+        **review_payload(),
+        "after_photo_uri": "",
+        "suggestion_feedback": {item["id"]: {"tried": False}},
+    }
+    path = f"/api/v1/children/{CHILD}/meals/abc-trial/review"
+    assert (await client.put(path, json=review)).status_code == 200
+    assert (await client.get(f"{ROOT}/{item['id']}")).json()["tries"] == []
+    review["suggestion_feedback"] = {item["id"]: {"tried": True}}
+    assert (await client.put(path, json=review)).status_code == 200
+    assert (await client.put(path, json=review)).status_code == 200
+    tries = (await client.get(f"{ROOT}/{item['id']}")).json()["tries"]
+    assert len(tries) == 1
+    assert tries[0]["meal_id"] == "abc-trial"
+    assert tries[0]["target_id"] == f"food:{FOOD_ID}"
+
+
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+async def test_legacy_unlinked_review_feedback_is_preserved_without_creating_tries(client):
+    item = await setup(client)
+    await decision(client, item)
+    await put_meal(client, meal_id="legacy-review")
+    path = f"/api/v1/children/{CHILD}/meals/legacy-review"
+    feedback = {item["id"]: {"tried": True}, "legacy-local-card": {"tried": False}}
+    result = await client.put(
+        f"{path}/review", json={**review_payload(), "suggestion_feedback": feedback}
+    )
+    assert result.status_code == 200, result.text
+    loaded = (await client.get(path)).json()
+    assert loaded["suggestion_links"] == []
+    assert loaded["review"]["suggestion_feedback"] == feedback
+    assert (await client.get(f"{ROOT}/{item['id']}")).json()["tries"] == []

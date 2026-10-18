@@ -1,5 +1,4 @@
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { localDate, validDate } from '../../util/date';
 import {
   type FoodItem,
@@ -16,22 +15,20 @@ export const newDraft = (childId: string): MealDraft => ({
   setting: null,
   photo: null,
   foods: [],
-  exposureFoodId: null,
   step: 'details',
   editingFood: null,
   savedMealId: null,
 });
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 export const confirmFoods = (foods: FoodItem[]): FoodItem[] =>
-  foods.map((food) => ({ ...food, name: food.name.trim(), source: 'parent' }));
+  foods.map((food) => ({ ...food, name: food.name.trim(), confirmed: true }));
 export function mealFromDraft(draft: MealDraft): Meal {
   if (
     !validDate(draft.mealDate) ||
     !draft.mealType ||
     !draft.setting ||
     !draft.foods.length ||
-    draft.foods.some((food) => !food.name.trim() || food.source !== 'parent') ||
-    (draft.exposureFoodId &&
-      !draft.foods.some((food) => food.id === draft.exposureFoodId))
+    draft.foods.some((food) => !food.name.trim() || food.confirmed !== true)
   )
     throw new Error('Invalid meal');
   return {
@@ -42,7 +39,7 @@ export function mealFromDraft(draft: MealDraft): Meal {
     setting: draft.setting,
     photo: draft.photo,
     foods: draft.foods,
-    exposureFoodId: draft.exposureFoodId,
+    suggestionLinks: draft.suggestionLinks ?? [],
     savedAt: new Date().toISOString(),
   };
 }

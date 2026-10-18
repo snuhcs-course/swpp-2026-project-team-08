@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; route home cards to their saved meal review
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { Redirect, router, useFocusEffect } from 'expo-router';
@@ -22,6 +23,11 @@ function HomeContent({ profile }: { profile: ChildProfile }) {
     <SafeAreaView style={styles.root} edges={[]}>
       <HomeView
         draft={home.draft}
+        pendingMeals={home.pendingMeals}
+        meals={home.storedMeals}
+        onReviewMeal={(mealId) => router.push({ pathname: '/after-meal-review', params: { mealId } })}
+        onSavedSuggestions={() => router.push({ pathname: '/section/[name]', params: { name: 'ideas' } })}
+        onMealHistory={(date) => router.push({ pathname: '/section/[name]', params: { name: 'mealLog', ...(date ? { date } : {}) } })}
         draftLoading={home.draftLoading}
         draftError={home.draftError}
         onReviewDraft={() =>

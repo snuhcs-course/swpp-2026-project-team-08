@@ -1,11 +1,10 @@
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import type { MealPhoto } from './meal';
 
 export const outcomeValues = ['eaten', 'tasted', 'untouched', 'unclear'] as const;
 export type Outcome = (typeof outcomeValues)[number];
 export type OutcomeDecision = { confirmed: Outcome | null; suggested: Outcome | null };
-export type IngredientOutcome = { id: string; name: string; decision: OutcomeDecision };
+export type IngredientOutcome = { id: string; name: string; decision: OutcomeDecision; selected?: boolean };
 export type FoodOutcome = {
   foodId: string;
   decision: OutcomeDecision;
@@ -14,7 +13,7 @@ export type FoodOutcome = {
 
 export const difficultyCategories = [
   'texture', 'tasteType', 'tasteIntensity', 'smell', 'color',
-  'shape', 'visibility', 'temperature', 'notSure',
+  'shape', 'visibility', 'temperature', 'notSure', 'pieceSize', 'arrangement',
 ] as const;
 export type DifficultyCategory = (typeof difficultyCategories)[number];
 export type DifficultyTag = {
@@ -22,15 +21,15 @@ export type DifficultyTag = {
   category: DifficultyCategory;
   value: string;
   note?: string;
+  subcategory?: string;
 };
 
 export const reviewSteps = [
   'photo', 'preview', 'compare', 'comparing', 'comparison-error',
-  'outcomes', 'difficulties', 'goal', 'suggestions', 'complete',
+  'outcomes', 'difficulties', 'suggestions', 'complete',
 ] as const;
 export type ReviewStep = (typeof reviewSteps)[number];
-export type GoalFeedback = 'achieved' | 'tried' | 'notYet' | null;
-export type SuggestionFeedback = 'tried' | 'notTried';
+export type SuggestionFeedback = { tried: boolean };
 
 export type AfterMealReviewDraft = {
   mealId: string;
@@ -40,8 +39,7 @@ export type AfterMealReviewDraft = {
   comparisonMethod: 'ai' | 'manual' | null;
   outcomes: FoodOutcome[];
   difficulties: Record<string, DifficultyTag[]>;
-  difficultyInputs: Record<string, { category: DifficultyCategory | null; value: string; note: string }>;
-  goalFeedback: GoalFeedback;
+  difficultyInputs: Record<string, { category: DifficultyCategory | null; value: string; note: string; subcategory?: string }>;
   suggestionFeedback: Record<string, SuggestionFeedback>;
 };
 

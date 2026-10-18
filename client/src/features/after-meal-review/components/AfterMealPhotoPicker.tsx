@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match photo source typography
 // This Code is generated with AI
 
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -34,6 +35,6 @@ const styles = StyleSheet.create({
   row: { minHeight: 59, paddingHorizontal: 13, flexDirection: 'row', alignItems: 'center', gap: 11, backgroundColor: colors.surface, borderColor: colors.mealReviewBorder, borderWidth: 1, borderRadius: 13 },
   icon: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 9, backgroundColor: colors.homeSelected },
   textWrap: { flex: 1 },
-  label: { color: colors.homeText, fontFamily: fonts.interBold, fontSize: 11 },
-  hint: { color: colors.mealReviewMuted, fontFamily: fonts.interRegular, fontSize: 8, marginTop: 3 },
+  label: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 12 },
+  hint: { color: colors.mealReviewMuted, fontFamily: fonts.poppinsRegular, fontSize: 9, marginTop: 3 },
 });

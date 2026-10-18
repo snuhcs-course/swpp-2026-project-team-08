@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match Other input typography
 // This Code is generated with AI
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -26,6 +27,7 @@ type MultiProps = {
   noneValue?: string;
   otherLabel?: string;
   optionSubtitles?: Record<string, string>;
+  inlineSubtitleIds?: readonly string[];
 };
 
 export function MultiChoice({
@@ -46,6 +48,7 @@ export function MultiChoice({
   noneValue = 'none',
   otherLabel,
   optionSubtitles,
+  inlineSubtitleIds,
 }: MultiProps) {
   const baseOptions = options;
   const otherOptions = catalogOptions;
@@ -87,6 +90,7 @@ export function MultiChoice({
           key={option.id}
           label={option.label}
           subtitle={optionSubtitles?.[option.id]}
+          inlineSubtitle={inlineSubtitleIds?.includes(option.id)}
           multiple
           selected={selected.includes(option.id)}
           onPress={() => onToggle(option.id)}
@@ -117,6 +121,7 @@ export function MultiChoice({
                 <AppButton
                   label={`+ ${labels.add}`}
                   compact
+                  labelStyle={{ fontSize: 13 }}
                   disabled={!search.trim()}
                   onPress={() => onAdd(search)}
                   style={styles.addButton}
@@ -126,17 +131,14 @@ export function MultiChoice({
                 !!search.trim() &&
                 (results.length ? (
                   results.map((option) => (
-                    <ChoiceRow
-                      key={option.id}
-                      label={option.label}
-                      selected={false}
-                      onPress={() => onAdd(option.id)}
-                    />
+                    <Pressable key={option.id} accessibilityRole="button" onPress={() => onAdd(option.id)} style={styles.catalogResult}>
+                      <Text style={styles.catalogResultText}>{option.label}</Text>
+                    </Pressable>
                   ))
                 ) : (
                   <Text style={styles.hint}>{labels.noMatches}</Text>
                 ))}
-              <Text style={styles.otherHint}>{labels.otherHint}</Text>
+              {!search.trim() && <Text style={styles.otherHint}>{labels.otherHint}</Text>}
             </View>
           )}
         </>
@@ -163,6 +165,8 @@ export function MultiChoice({
 }
 
 const styles = StyleSheet.create({
+  catalogResult: { minHeight: 27, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.onboardingBorder, justifyContent: 'center' },
+  catalogResultText: { color: colors.onboardingText, fontFamily: fonts.interRegular, fontSize: 9 },
   hint: {
     color: colors.onboardingMuted,
     fontSize: 9,
@@ -173,8 +177,8 @@ const styles = StyleSheet.create({
   allButton: { alignSelf: 'flex-end', marginBottom: 6 },
   otherLabel: {
     color: colors.onboardingText,
-    fontSize: 9,
-    fontFamily: fonts.interExtraBold,
+    fontSize: 14,
+    fontFamily: fonts.poppinsSemiBold,
     textTransform: 'uppercase',
     marginTop: 2,
     marginBottom: 3,
@@ -185,7 +189,7 @@ const styles = StyleSheet.create({
   addButton: { width: 72, minHeight: 40, borderRadius: 8 },
   otherHint: {
     color: colors.onboardingMuted,
-    fontSize: 8,
+    fontSize: 12,
     fontFamily: fonts.interRegular,
   },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 10 },
@@ -199,7 +203,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     color: colors.onboardingText,
-    fontSize: 10,
-    fontFamily: fonts.interBold,
+    fontSize: 13,
+    fontFamily: fonts.poppinsSemiBold,
   },
 });

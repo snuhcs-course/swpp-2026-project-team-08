@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """Stable revisions and target identities, shared with the HTTP boundary."""
 
 import hashlib
@@ -15,7 +15,6 @@ def revision_for(meal) -> str:
                 "name": f.name,
                 "ingredients": f.ingredients,
                 "preparation": f.preparation,
-                "traits": f.traits,
                 "serving_note": f.serving_note,
             }
             for f in meal.foods

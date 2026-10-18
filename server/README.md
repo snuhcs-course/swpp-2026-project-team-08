@@ -343,6 +343,9 @@ DB는 AWS RDS의 PostgreSQL이다. 자세한 흐름 · 운영 방법은 [`docs/d
 - 모든 `ForeignKey`에 `onupdate="CASCADE", ondelete="CASCADE"`를 지정한다.
 - DB 스키마 변경은 Alembic 리비전(`migrations/versions/`)으로 관리한다. 파일명은
   `날짜_시분_slug.py`이며 `alembic.ini`의 `file_template`이 자동 적용한다.
+- 키가 여러 개인 복잡한 `dict`를 반환하거나 주고받을 때는 가급적 `dataclass`를
+  쓰길 권장한다. 필드 이름과 타입이 코드에 드러나 IDE 자동완성을 쓸 수 있고, 키 오타를 코드를 읽거나 작성하는
+  단계에서 알아채기 쉽다. API 요청/응답 모양은 지금처럼 Pydantic DTO를 쓴다.
 - 에러 처리는 위의 [에러 처리](#에러-처리) 절을 따른다.
 - 비밀번호는 평문 저장·응답 금지(argon2 해시). 토큰 subject는 `str(user.id)`.
 - 비밀값은 코드에 하드코딩하지 않는다. 설정은 `core/config.py` + `.env`로 읽고, `.env`는 커밋하지 않는다.

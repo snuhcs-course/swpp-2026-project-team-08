@@ -28,6 +28,8 @@ Python 파일의 모듈 docstring이 있으면 그 앞(맨 위)에 둔다.
 - 요청 범위를 넘어 리팩터링하지 않는다.
 - 에러 클래스에 자연어 메시지나 HTTP 상태 코드를 넣지 않는다. 에러는 클래스와 데이터(속성)만 갖고,
   응답 포장(상태 코드 · `error_code` · `details`)은 `router.py`의 `@error_specs`에서만 정한다.
+- 키가 여러 개인 복잡한 `dict`를 반환하거나 주고받는 코드는 가급적 만들지 않고 `dataclass`를
+  쓴다. API 요청/응답 모양은 `dict`나 `dataclass`가 아니라 Pydantic DTO로 정의한다.
 - 다른 기능의 `service.py`를 호출하지 않는다. 로직을 재사용해야 하면 함수 모듈(`queries.py` 등)로 분리해
   양쪽 서비스가 import한다.
 

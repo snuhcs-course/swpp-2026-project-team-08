@@ -16,6 +16,8 @@ LLM이 작성한 코드에는 저장소 루트 [`AGENTS.md`](../AGENTS.md)의 **
 `AI-generated with <Model Name>, <Date>, reviewed by <User Name>` 주석을 단다.
 이 디렉터리에서 주석 문법은 Python · TOML · YAML · `.env.example` · `.ini`는 `#`, Markdown은 `<!-- -->`이며,
 Python 파일의 모듈 docstring이 있으면 그 앞(맨 위)에 둔다.
+다만, 이미 동작하고 있는 Python 파일의 일부를 수정하는 상황이라면 모듈 docstring의 AI 생성 코드 표기와 별개로
+해당 수정 부분에 주석을 단다.
 
 ## 하지 말 것
 

@@ -1,10 +1,10 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; remove non-Figma suggestion confirmation step
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; expose final save state
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
-import type { AfterMealReviewDraft, DifficultyCategory, GoalFeedback, Outcome, ReviewStep, SuggestionFeedback } from '../../../types/afterMealReview';
-import type { SavedSuggestion } from '../../../types/home';
+import type { AfterMealReviewDraft, DifficultyCategory, Outcome, ReviewStep } from '../../../types/afterMealReview';
 import type { FoodItem, FoodTraits, Meal, PhotoSource, TraitGroup } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
 
@@ -12,10 +12,7 @@ export type ReviewViewProps = {
   meal: Meal;
   draft: AfterMealReviewDraft;
   childName: string;
-  suggestionCards: Record<string, { title: string; description: string; servingTip?: string }>;
   language: Language;
-  savedSuggestions: SavedSuggestion[];
-  suggestionsLoading: boolean;
   finalSaveState?: 'idle' | 'saving' | 'error';
   saveStatus: 'saving' | 'saved' | 'error';
   photoError: 'permission' | 'image' | null;
@@ -53,10 +50,7 @@ export type ReviewViewProps = {
   onAddDifficulty: (foodId: string) => void;
   onRemoveDifficulty: (foodId: string, tagId: string) => void;
   difficultyForms: Record<string, { options: readonly string[]; canAdd: boolean; showNote: boolean }>;
-  onGoalFeedback: (value: GoalFeedback) => void;
-  onSuggestionFeedback: (suggestionId: string, value: SuggestionFeedback) => void;
   onSave: () => void;
   onRetrySave: () => void;
-  onNextSuggestion: (id: string) => void;
   onRecommend: () => void;
 };

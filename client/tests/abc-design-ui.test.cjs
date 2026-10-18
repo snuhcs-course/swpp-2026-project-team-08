@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify direct review saving
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify final ABC home states
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; cover ongoing meal entry summary
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -180,4 +181,29 @@ test('pressing a pending home card passes the existing meal ID without creating 
    return null;
  };
  const card=walk(root);assert.ok(card);assert.equal(opened,undefined);card.props.onPress();assert.equal(opened,'existing-meal');
+});
+
+test('difficulty Continue and Skip save directly without a suggestion confirmation step', () => {
+  const { AfterMealReviewView } = require('../src/features/after-meal-review/screens/AfterMealReviewView.tsx');
+  const { AppButton } = require('../src/components/AppButton.tsx');
+  const useState = React.useState;
+  React.useState = (initial) => [initial, noop];
+  try {
+    let saves = 0;
+    const transitions = [];
+    const tree = AfterMealReviewView({ language:'en', draft:{step:'difficulties'}, meal:{foods:[]},
+      canContinueOutcomes:true, saving:false, saveStatus:'saved', onSave:()=>saves++, onGo:step=>transitions.push(step) });
+    const buttons = [];
+    function visit(node) {
+      if (!node || typeof node !== 'object') return;
+      if (node.type === AppButton) buttons.push(node);
+      React.Children.forEach(node.props?.children, visit);
+    }
+    visit(tree);
+    for (const label of [s.common.continue, s.afterMealReview.skip]) {
+      const button = buttons.find(item=>item.props.label === label);
+      assert.ok(button, label); button.props.onPress();
+    }
+    assert.equal(saves, 2); assert.deepEqual(transitions, []);
+  } finally { React.useState = useState; }
 });

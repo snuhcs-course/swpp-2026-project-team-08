@@ -1,11 +1,17 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; remove non-Figma suggestion confirmation step
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
-import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome } from '../../types/afterMealReview';
+import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome, ReviewStep } from '../../types/afterMealReview';
 import type { FoodItem, Meal } from '../../types/meal';
 import { ingredientId } from '../../rules/ingredientIds';
 import { foodFormKey } from '../../rules/recommendationSafety';
+
+// Legacy draft steps resume at the final editable Figma screen without submitting.
+export function normalizeReviewStep(step: ReviewStep): ReviewStep {
+  return step === 'goal' || step === 'suggestions' ? 'difficulties' : step;
+}
 
 export const difficultyOptions: Record<DifficultyCategory, readonly string[]> = {
   texture: ['soft', 'firm', 'hard'],

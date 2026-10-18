@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; remove non-Figma suggestion confirmation step
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma audit details
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
@@ -52,7 +53,11 @@ export function AfterMealReviewView(
           : p.draft.step === "outcomes"
             ? 3
             : 4;
-  const goAfterDifficulties = () => p.onGo("suggestions");
+  const goAfterDifficulties = () => {
+    if (p.saving || !p.canContinueOutcomes) return;
+    setSavePanelHidden(false);
+    p.onSave();
+  };
   if (!savePanelHidden && p.draft.step !== 'complete' && (p.saving || p.finalSaveState === 'error')) return <MealSaveStatusView review
     status={p.saving ? 'saving' : 'error'} language={p.language}
     photos={[p.meal.photo?.uri, p.draft.afterPhoto?.uri].filter((uri): uri is string => !!uri)}
@@ -150,26 +155,19 @@ export function AfterMealReviewView(
               }}
             />
           )}
-          {["goal", "suggestions", "complete"].includes(p.draft.step) && (
+          {p.draft.step === "complete" && (
             <AfterMealFollowUpView
               p={{
                 meal: p.meal,
                 draft: p.draft,
                 language: p.language,
-                suggestionCards: p.suggestionCards,
-                savedSuggestions: p.savedSuggestions,
-                suggestionsLoading: p.suggestionsLoading,
-                onGoalFeedback: p.onGoalFeedback,
-                onSuggestionFeedback: p.onSuggestionFeedback,
-                onNextSuggestion: p.onNextSuggestion,
                 onRecommend: p.onRecommend,
-                onBack: p.onBack,
                 onHome: p.onHome,
               }}
             />
           )}
         </ScrollView>
-        {["outcomes", "difficulties", "goal", "suggestions"].includes(
+        {["outcomes", "difficulties"].includes(
           p.draft.step,
         ) && (
           <View style={[styles.footer, p.draft.step === "difficulties" && { paddingHorizontal: 18, backgroundColor: colors.difficultyBackground }]}>
@@ -192,6 +190,7 @@ export function AfterMealReviewView(
                 <AppButton
                   variant="meal"
                   label={s.common.continue}
+                  disabled={p.saving || !p.canContinueOutcomes}
                   onPress={goAfterDifficulties}
                   style={styles.pill}
                 />
@@ -199,42 +198,12 @@ export function AfterMealReviewView(
                   variant="meal"
                   secondary
                   label={m.skip}
+                  disabled={p.saving || !p.canContinueOutcomes}
                   onPress={goAfterDifficulties}
                   labelStyle={{ fontSize: 16, color: colors.reviewHeading, fontFamily: fonts.interBold }}
                   style={[styles.pill, { borderWidth: 0, backgroundColor: colors.transparent }]}
                 />
               </>
-            )}
-            {p.draft.step === "goal" && (
-              <>
-                <AppButton
-                  variant="meal"
-                  label={m.recordGoal}
-                  disabled={!p.draft.goalFeedback}
-                  onPress={() => p.onGo("suggestions")}
-                  style={styles.pill}
-                />
-                <AppButton
-                  variant="meal"
-                  secondary
-                  label={m.skip}
-                  onPress={() => {
-                    p.onGoalFeedback(null);
-                    p.onGo("suggestions");
-                  }}
-                  style={styles.pill}
-                />
-              </>
-            )}
-            {p.draft.step === "suggestions" && (
-              <AppButton
-                variant="meal"
-                label={p.saving ? a.savingReview : m.finish}
-                disabled={p.saving || !p.canContinueOutcomes}
-                onPress={() => { setSavePanelHidden(false); p.onSave(); }}
-                style={[styles.pill, { minHeight: 52, borderRadius: 14, marginHorizontal: 24 }]}
-                labelStyle={{ fontSize: 16 }}
-              />
             )}
             {p.saveStatus !== "saved" && <Text accessibilityLiveRegion="polite" style={styles.status}>
               {p.saveStatus === "saving"

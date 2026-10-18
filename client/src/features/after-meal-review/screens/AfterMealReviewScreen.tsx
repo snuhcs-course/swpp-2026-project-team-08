@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; remove non-Figma suggestion confirmation step
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; wire final save screen state
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
@@ -11,7 +12,6 @@ import { AppButton } from '../../../components/AppButton';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
-import { savedSuggestionText } from '../../../rules/recommendationPresentation';
 import { useAfterMealReview } from '../hooks/useAfterMealReview';
 import { canAddDifficulty, difficultyNeedsNote, difficultyOptions, textureQuestions } from '../rules';
 import { AfterMealReviewView } from './AfterMealReviewView';
@@ -64,12 +64,7 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
       meal={review.meal}
       draft={draft}
       childName={profile.profile.childName}
-      suggestionCards={Object.fromEntries(review.savedSuggestions.map((item) => [
-        item.id, savedSuggestionText(item, profile.language, profile.profile!),
-      ]))}
       language={profile.language}
-      savedSuggestions={review.savedSuggestions}
-      suggestionsLoading={review.suggestionsLoading}
       saveStatus={review.saveStatus}
       finalSaveState={review.finalSaveState}
       photoError={review.photoError}
@@ -112,14 +107,8 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
       onDifficultyInput={review.setDifficultyInput}
       onAddDifficulty={review.addDifficultyTag}
       onRemoveDifficulty={review.removeDifficultyTag}
-      onGoalFeedback={review.setGoalFeedback}
-      onSuggestionFeedback={review.markSuggestion}
       onSave={() => { void review.finish(); }}
-      onRetrySave={() => {
-        if (draft.step === 'suggestions') void review.finish();
-        else void review.retrySave();
-      }}
-      onNextSuggestion={(id) => router.push({ pathname: '/suggestion/[id]', params: { id } })}
+      onRetrySave={() => { void review.retrySave(); }}
       onRecommend={() => router.push({ pathname: '/recommendation/[mealId]', params: { mealId: review.meal!.id } })}
       onHome={() => router.replace('/(main)/home')}
     />

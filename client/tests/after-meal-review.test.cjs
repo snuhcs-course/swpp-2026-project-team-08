@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; cover removed review steps
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; verify manual food and outcome entry
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 const { test } = require('node:test');
@@ -172,4 +173,11 @@ test('texture dimensions survive storage while smell and arrangement replace onl
   await saveAfterMealDraft(draft);
   const loaded = await readAfterMealDraft(meal.childId, meal.id);
   assert.deepEqual(loaded.difficulties['food-1'].map(tag => tag.subcategory), ['hardness', 'moisture', undefined, undefined]);
+});
+
+test('legacy follow-up drafts resume at difficulties without changing current steps', () => {
+  const { normalizeReviewStep } = require('../src/features/after-meal-review/rules.ts');
+  assert.equal(normalizeReviewStep('suggestions'), 'difficulties');
+  assert.equal(normalizeReviewStep('goal'), 'difficulties');
+  for (const step of ['photo', 'preview', 'compare', 'outcomes', 'difficulties', 'complete']) assert.equal(normalizeReviewStep(step), step);
 });

@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 
@@ -60,7 +61,6 @@ export function MealFoodsStepView({ p }: { p: Props }) {
   const d = p.draft;
   const suggestion = p.suggestions.find((item) => item.id === suggestionId);
   const openFood = (food: FoodItem) => {
-    if (expanded !== food.id) p.onConfirmFood(food.id);
     setExpanded(expanded === food.id ? null : food.id);
   };
   const editFood = (food: FoodItem) => {
@@ -68,12 +68,10 @@ export function MealFoodsStepView({ p }: { p: Props }) {
       resumeLink.current = true;
       setLinkStep(0);
     }
-    p.onConfirmFood(food.id);
     p.onEdit(food);
   };
   const card = (food: FoodItem, selecting = false) => {
     const open = selecting ? targetId === food.id : expanded === food.id;
-    const confirmed = food.source === "parent" || food.confirmed;
     return (
       <View
         key={food.id}
@@ -99,11 +97,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
           <Text style={styles.foodName}>{food.name}</Text>
           {selecting ? (
             <Text style={styles.link}>{targetId === food.id ? "◉" : "○"}</Text>
-          ) : (
-            <Text style={[styles.source, confirmed && styles.confirmedText]}>
-              {confirmed ? a.confirmed : a.suggested}
-            </Text>
-          )}
+          ) : null}
         </Pressable>
         {open && (
           <View style={styles.foodBody}>
@@ -114,7 +108,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
                   key={ingredient}
                   style={[
                     styles.ingredientTag,
-                    confirmed && styles.confirmedTag,
+                    styles.confirmedTag,
                   ]}
                 >
                   {ingredient}
@@ -226,10 +220,6 @@ export function MealFoodsStepView({ p }: { p: Props }) {
             {d.photo ? s.common.edit : s.common.add}
           </Text>
         </Pressable>
-      </View>
-      <View style={styles.legend}>
-        <Text style={styles.aiBadge}>• {a.suggested}</Text>
-        <Text style={styles.parentBadge}>• {a.confirmed}</Text>
       </View>
       <View style={styles.addRow}>
         <AppButton
@@ -456,7 +446,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     fontSize: 12,
   },
-  confirmedTag: { backgroundColor: colors.successSurface },
+  confirmedTag: { backgroundColor: colors.homeBackground },
   twoColumns: { flexDirection: "row", gap: 10 },
   column: { flex: 1, gap: 3 },
   fieldValue: {

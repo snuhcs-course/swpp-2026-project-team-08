@@ -1,8 +1,8 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { upsertMeal } from '../api/mealLogApi';
-import { recognizeMealPhoto } from '../api/recognitionApi';
 import { readMeal, readMealDraft, readMeals, saveMeal, updateMealFoods } from '../storage/mealStorage';
 import type { FoodItem } from '../../types/meal';
 import { homeKeys } from './homeQueries';
@@ -28,8 +28,6 @@ export const useMeals = (childId: string) =>
     queryFn: () => readMeals(childId),
     enabled: !!childId,
   });
-export const useRecognition = () =>
-  useMutation({ mutationFn: recognizeMealPhoto, retry: false });
 export function useUpdateMealFoods() {
   const client = useQueryClient();
   return useMutation({

@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
@@ -51,8 +52,6 @@ export type MealCheckinViewProps = {
   onSaveExit: () => void;
   onPick: (source: PhotoSource) => void;
   onFullPhoto: () => void;
-  onAnalyze: () => void;
-  onCancelAnalysis: () => void;
   onEdit: (food?: FoodItem) => void;
   onRemove: (id: string) => void;
   onRemovePhoto: () => void;

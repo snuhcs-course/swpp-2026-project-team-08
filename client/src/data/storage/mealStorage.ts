@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
@@ -30,7 +31,7 @@ export async function readMealDraft(
   const value: unknown = JSON.parse(raw);
   if (!isDraft(value, childId)) throw new Error('Invalid meal draft');
   // Completion can be restored, but must not appear as a new Home draft.
-  return { ...value, step: value.step === 'analyzing' ? 'method' : value.step === 'goal' ? 'foods' : value.step };
+  return { ...value, step: ['method', 'analyzing', 'analysis-error', 'goal'].includes(value.step) ? 'foods' : value.step };
 }
 export const saveMealDraft = (draft: MealDraft) =>
   queued(draft.childId, async () => {

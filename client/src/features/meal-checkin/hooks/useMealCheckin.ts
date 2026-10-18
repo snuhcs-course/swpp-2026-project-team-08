@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
@@ -5,7 +6,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import {
   mealKeys,
-  useRecognition,
   useSaveMeal,
 } from '../../../data/queries/mealQueries';
 import {
@@ -44,9 +44,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
   const [traits, setTraits] = useState<FoodTraits | null>(null);
   const [sheet, setSheet] = useState<'help' | 'privacy' | null>(null);
   const client = useQueryClient();
-  const recognition = useRecognition();
   const saving = useSaveMeal();
-  const controller = useRef<AbortController | null>(null);
   const busy = useRef(false);
   const pickBusy = useRef(false);
   const photoRequest = useRef(0);
@@ -88,7 +86,6 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     return () => {
       active = false;
       mounted.current = false;
-      controller.current?.abort();
     };
   }, [childId, startAfterMealId, freshAfterComplete]);
   const persist = async (value: MealDraft) => {
@@ -137,17 +134,11 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     }
     const step = current.current.step;
     if (step === 'details' || step === 'complete') return false;
-    if (step === 'analyzing') {
-      controller.current?.abort();
-      go('method');
-      return true;
-    }
+
     const previous: Partial<Record<MealStep, MealStep>> = {
       photo: 'details',
       preview: 'photo',
-      method: 'preview',
-      'analysis-error': 'method',
-      foods: current.current.photo ? 'method' : 'photo',
+      foods: current.current.photo ? 'preview' : 'photo',
       goal: 'foods',
     };
     go(previous[step] ?? 'details');
@@ -162,14 +153,10 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     try {
       const photo = await pickMealPhoto(source);
       if (photo && mounted.current && request === photoRequest.current) {
-        controller.current?.abort();
-        setRemoved(null);
+          setRemoved(null);
         update({
           photo,
           step: 'preview',
-          foods: current.current?.photo ? [] : current.current?.foods ?? [],
-          suggestionLinks: current.current?.photo ? [] : current.current?.suggestionLinks ?? [],
-          exposureFoodId: null,
         });
       }
     } catch (err) {
@@ -180,47 +167,6 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
         pickBusy.current = false;
         if (mounted.current) setPicking(false);
       }
-    }
-  };
-  const analyze = async () => {
-    const value = current.current;
-    if (!value?.photo || recognition.isPending || busy.current) return;
-    controller.current?.abort();
-    const request = new AbortController();
-    controller.current = request;
-    go('analyzing');
-    setError(null);
-    try {
-      const result = await recognition.mutateAsync({
-        photo: value.photo,
-        signal: request.signal,
-      });
-      if (
-        mounted.current &&
-        !request.signal.aborted &&
-        current.current?.photo?.id === result.photoId
-      ) {
-        update({
-          step: 'foods',
-          foods: [
-            ...current.current.foods.filter((food) => food.source === 'parent'),
-            ...result.foods.filter(
-              (food) =>
-                !current.current?.foods.some(
-                  (existing) =>
-                    existing.id === food.id && existing.source === 'parent',
-                ),
-            ),
-          ],
-        });
-      }
-    } catch {
-      if (
-        mounted.current &&
-        !request.signal.aborted &&
-        current.current?.photo?.id === value.photo.id
-      )
-        go('analysis-error');
     }
   };
   const save = async (skip: boolean) => {
@@ -326,15 +272,10 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     go,
     back,
     pick,
-    analyze,
     save,
     edit,
     changeFood,
     saveFood,
-    cancelAnalysis: () => {
-      controller.current?.abort();
-      go('method');
-    },
     removeFood: (id: string) => {
       const value = current.current;
       const food = value?.foods.find((item) => item.id === id);

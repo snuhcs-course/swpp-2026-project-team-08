@@ -1,22 +1,21 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { Image } from 'expo-image';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import Feather from '@expo/vector-icons/Feather';
+import { Pressable, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
 import { AppIcon } from '../../../components/AppIcon';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import { formStyles as ui } from '../../../components/formStyles';
 import type { PhotoSource } from '../../../types/meal';
-import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import type { MealCheckinViewProps } from './mealCheckinViewTypes';
 import { styles } from './mealCheckinStyles';
 
 type PhotoStepProps = Pick<MealCheckinViewProps,
   'draft' | 'language' | 'picking' | 'onFullPhoto' | 'onGo' |
-  'onSheet' | 'onAnalyze' | 'onCancelAnalysis' | 'onSaveExit'>;
+  'onSheet' | 'onSaveExit'>;
 
 export function MealPhotoStepsView({
   p,
@@ -63,7 +62,7 @@ export function MealPhotoStepsView({
     <Pressable accessibilityRole="button" accessibilityLabel={m.fullPhoto} onPress={p.onFullPhoto}>
       <Image
         source={{ uri: d.photo.uri }}
-        style={[styles.photo, d.step === 'method' && styles.methodPhoto]}
+        style={styles.photo}
         contentFit={d.step === 'preview' ? 'contain' : 'cover'}
         onError={onImageError}
       />
@@ -81,7 +80,7 @@ export function MealPhotoStepsView({
               source={require('../../../../assets/meal/example-plate.png')}
               accessibilityLabel={m.example}
               style={styles.example}
-              contentFit="cover"
+              contentFit="contain"
             />
             <Text style={styles.exampleBadge}>{m.previewBadge}</Text>
           </View>
@@ -131,46 +130,5 @@ export function MealPhotoStepsView({
     </>
   );
 
-  if (d.step === 'method') return (
-    <>
-      {photo}
-      <View style={styles.consentSurface}>
-        <Text style={ui.text}>{m.consent}</Text>
-        <Pressable accessibilityRole="link" onPress={() => p.onSheet('privacy')}>
-          <Text style={ui.link}>{m.privacy}</Text>
-        </Pressable>
-      </View>
-      <View style={styles.methodActions}>
-      <AppButton variant="meal" label={m.analyze} icon={<UiAssetIcon name="meal-sparkles" />} onPress={p.onAnalyze} disabled={!d.photo || imageError} />
-      <AppButton variant="meal" secondary label={m.manual} onPress={() => p.onGo('foods')} />
-      </View>
-    </>
-  );
-
-  if (d.step === 'analyzing') return (
-    <>
-      <View style={styles.analysisPhotoWrap}>
-        {photo}
-        <View style={styles.analysisScrim}>
-          <View style={styles.analysisCard}>
-            <View style={styles.analysisSpinner}><ActivityIndicator color={colors.surface} /></View>
-            <Text accessibilityLiveRegion="polite" style={styles.analysisText}>{m.analyzing}</Text>
-            <View style={styles.analysisTrack}><View style={styles.analysisFill} /></View>
-          </View>
-        </View>
-      </View>
-      <AppButton variant="meal" secondary label={m.cancelAnalysis} icon={<Feather name="x" size={17} color={colors.homeText} />} onPress={p.onCancelAnalysis} />
-      <View style={styles.consentSurface}><Text style={ui.text}>{m.consent}</Text></View>
-    </>
-  );
-
-  return (
-    <>
-      {photo}
-      <View style={styles.consentSurface}><Text accessibilityRole="alert" style={ui.error}>{m.analysisFailed}</Text></View>
-      <AppButton variant="meal" label={s.common.retry} onPress={p.onAnalyze} />
-      <AppButton variant="meal" secondary label={m.manual} onPress={() => p.onGo('foods')} />
-      <AppButton variant="meal" secondary label={s.common.saveExit} onPress={p.onSaveExit} />
-    </>
-  );
+  return null;
 }

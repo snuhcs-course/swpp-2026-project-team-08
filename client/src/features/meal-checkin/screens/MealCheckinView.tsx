@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
@@ -39,9 +40,6 @@ export function MealCheckinView(p: MealCheckinViewProps) {
   const photoStep = [
     "photo",
     "preview",
-    "method",
-    "analyzing",
-    "analysis-error",
   ].includes(d.step);
   const segment = ["details", "photo"].includes(d.step)
     ? 0
@@ -81,9 +79,6 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             {d.step === "preview" && (
               <Text style={styles.headerNote}>{m.draftLabel}</Text>
             )}
-            {d.step === "method" && (
-              <Text style={styles.headerNote}>{m.photoReady}</Text>
-            )}
           </View>
         </View>
         <View
@@ -105,13 +100,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
         {review && (
           <View style={styles.reviewIntro}>
             <Text style={styles.reviewIntroTitle}>
-              {d.foods.some((food) => food.source === "ai" && !food.confirmed)
-                ? m.aiCount(
-                    d.foods.filter(
-                      (food) => food.source === "ai" && !food.confirmed,
-                    ).length,
-                  )
-                : m.reviewCount(d.foods.length)}
+              {m.foodCount(d.foods.length)}
             </Text>
           </View>
         )}
@@ -151,8 +140,6 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                   onFullPhoto: p.onFullPhoto,
                   onGo: p.onGo,
                   onSheet: p.onSheet,
-                  onAnalyze: p.onAnalyze,
-                  onCancelAnalysis: p.onCancelAnalysis,
                   onSaveExit: p.onSaveExit,
                 }}
                 replace={replace}
@@ -224,10 +211,10 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             {d.step === "preview" && (
               <AppButton
                 variant="meal"
-                label={m.usePhoto}
+                label={m.addFood}
                 icon={<UiAssetIcon name="meal-check" />}
                 disabled={!d.photo || imageError || p.picking}
-                onPress={() => p.onGo("method")}
+                onPress={() => p.onGo("foods")}
               />
             )}
             {d.step === "foods" && (

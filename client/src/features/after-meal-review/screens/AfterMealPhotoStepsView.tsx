@@ -1,29 +1,27 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { useState } from 'react';
 import { Image } from 'expo-image';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
-import { BottomSheet } from '../../../components/BottomSheet';
 import { AfterMealPhotoPicker } from '../components/AfterMealPhotoPicker';
 import { PhotoComparisonCard } from '../components/PhotoComparisonCard';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
-import { abcCopyFor, copyFor } from '../../../util/strings';
+import { copyFor } from '../../../util/strings';
 import type { ReviewViewProps } from './reviewViewTypes';
 
 type Props = Pick<ReviewViewProps,
   'meal' | 'draft' | 'language' | 'picking' | 'photoError' |
-  'elapsedSeconds' | 'onPick' | 'onRemovePhoto' | 'onFullPhoto' | 'onImageError' |
-  'onCompare' | 'onCancelComparison' | 'onManual' | 'onGo'>;
+  'onPick' | 'onRemovePhoto' | 'onFullPhoto' | 'onImageError' |
+  'onManual' | 'onGo'>;
 
 export function AfterMealPhotoStepsView({ p }: { p: Props }) {
   const s = copyFor(p.language);
   const m = s.afterMealReview;
-  const a = abcCopyFor(p.language);
   const [replaceOpen, setReplaceOpen] = useState(false);
-  const [privacyOpen, setPrivacyOpen] = useState(false);
   const photoLabels = { camera: s.mealCheckin.camera, gallery: s.mealCheckin.gallery, files: s.mealCheckin.files };
   const picker = <AfterMealPhotoPicker labels={photoLabels} fileHint={s.mealCheckin.fileHint} picking={p.picking} onPick={(source) => { setReplaceOpen(false); p.onPick(source); }} />;
   const photoError = p.photoError && (
@@ -42,7 +40,7 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
       </View>
       {picker}
       {photoError}
-      <AppButton variant="meal" secondary label={a.skipPhoto} onPress={p.onManual} />
+      <AppButton variant="meal" secondary label={m.noPhoto} onPress={p.onManual} />
       <Text style={styles.autoSave}>{s.common.saved}</Text>
     </View>
   );
@@ -52,7 +50,7 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
       <Text style={styles.title}>{m.photoLabel}</Text>
       {p.draft.afterPhoto && (
         <Pressable accessibilityRole="button" accessibilityLabel={m.enlarge} onPress={() => p.onFullPhoto('after')}>
-          <Image source={{ uri: p.draft.afterPhoto.uri }} style={styles.preview} contentFit="cover" onError={p.onImageError} />
+          <Image source={{ uri: p.draft.afterPhoto.uri }} style={styles.preview} contentFit="contain" onError={p.onImageError} />
           <Text style={styles.enlarge}>↗ {m.enlarge}</Text>
         </Pressable>
       )}
@@ -71,40 +69,11 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
     ? <PhotoComparisonCard before={p.meal.photo} after={p.draft.afterPhoto} beforeLabel={m.before} afterLabel={m.after} enlargeLabel={m.enlarge} onEnlarge={p.onFullPhoto} />
     : <Text style={styles.error}>{m.missingBefore}</Text>;
 
-  if (p.draft.step === 'compare') return (
-    <View style={styles.stack}>
-      {comparison}
-      <View style={styles.info}>
-        <Text style={styles.infoText}>{m.consent}</Text>
-        <Pressable accessibilityRole="link" onPress={() => setPrivacyOpen(true)}><Text style={styles.enlarge}>{m.privacy}</Text></Pressable>
-      </View>
-      <View style={styles.bottom}>
-        <AppButton variant="meal" label={a.compare} onPress={p.onCompare} disabled={!p.meal.photo || !p.draft.afterPhoto} />
-        <AppButton variant="meal" secondary label={m.manual} onPress={p.onManual} />
-      </View>
-      {privacyOpen && (
-        <BottomSheet title={m.privacy} closeLabel={s.common.close} onClose={() => setPrivacyOpen(false)}>
-          <Text style={styles.infoText}>{m.consent}</Text>
-        </BottomSheet>
-      )}
-    </View>
-  );
-
-  if (p.draft.step === 'comparing') return (
-    <View style={styles.stack}>
-      {comparison}
-      <View style={styles.center}><ActivityIndicator color={colors.homePrimary} /><Text style={styles.title}>{m.comparing}</Text><Text style={styles.infoText}>{m.elapsed(p.elapsedSeconds)}</Text></View>
-      <View style={styles.bottom}><AppButton variant="meal" secondary label={m.cancelSafely} onPress={p.onCancelComparison} /></View>
-    </View>
-  );
-
   return (
     <View style={styles.stack}>
       {comparison}
-      <View style={styles.failure}><Text style={styles.failureTitle}>{m.titles['comparison-error']}</Text><Text style={styles.infoText}>{m.compareFailed}</Text></View>
       <View style={styles.bottom}>
-        <AppButton variant="meal" label={m.retryCompare} onPress={p.onCompare} disabled={!p.meal.photo || !p.draft.afterPhoto} />
-        <AppButton variant="meal" secondary label={m.manual} onPress={p.onManual} />
+        <AppButton variant="meal" label={m.manual} onPress={p.onManual} />
       </View>
     </View>
   );

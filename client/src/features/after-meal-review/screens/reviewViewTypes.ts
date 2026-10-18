@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
@@ -17,7 +18,6 @@ export type ReviewViewProps = {
   saveStatus: 'saving' | 'saved' | 'error';
   photoError: 'permission' | 'image' | null;
   picking: boolean;
-  elapsedSeconds: number;
   saving: boolean;
   canContinueOutcomes: boolean;
   editingFood: FoodItem | null;
@@ -30,8 +30,6 @@ export type ReviewViewProps = {
   onRemovePhoto: () => void;
   onFullPhoto: (side: 'before' | 'after') => void;
   onImageError: () => void;
-  onCompare: () => void;
-  onCancelComparison: () => void;
   onManual: () => void;
   onSaveExit: () => void;
   onToggleIngredient: (foodId: string, ingredientId: string) => void;

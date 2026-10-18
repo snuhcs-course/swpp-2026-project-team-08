@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
@@ -35,8 +36,6 @@ export function AfterMealReviewView(
     "photo",
     "preview",
     "compare",
-    "comparing",
-    "comparison-error",
   ].includes(p.draft.step);
   const phase =
     p.draft.step === "photo"
@@ -100,13 +99,10 @@ export function AfterMealReviewView(
                 language: p.language,
                 picking: p.picking,
                 photoError: p.photoError,
-                elapsedSeconds: p.elapsedSeconds,
                 onPick: p.onPick,
                 onRemovePhoto: p.onRemovePhoto,
                 onFullPhoto: p.onFullPhoto,
                 onImageError: p.onImageError,
-                onCompare: p.onCompare,
-                onCancelComparison: p.onCancelComparison,
                 onManual: p.onManual,
                 onGo: p.onGo,
               }}
@@ -167,6 +163,7 @@ export function AfterMealReviewView(
               <AppButton
                 variant="meal"
                 label={s.common.continue}
+                disabled={!p.canContinueOutcomes}
                 onPress={() =>
                   p.canContinueOutcomes
                     ? p.onGo("difficulties")

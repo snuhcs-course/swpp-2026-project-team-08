@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
@@ -5,8 +6,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useHomeRecords } from '../../../data/queries/homeQueries';
 import { useMeal, useMeals, useUpdateMealFoods } from '../../../data/queries/mealQueries';
-import { afterMealKeys, useCompareMealPhotos, useSaveAfterMealReview } from '../../../data/queries/afterMealReviewQueries';
-import { isMealPhotoReadable, pickMealPhoto, PhotoError } from '../../../data/device/mealPhotoPicker';
+import { afterMealKeys, useSaveAfterMealReview } from '../../../data/queries/afterMealReviewQueries';
+import { pickMealPhoto, PhotoError } from '../../../data/device/mealPhotoPicker';
 import { readAfterMealDraft, readAfterMealReview, saveAfterMealDraft } from '../../../data/storage/afterMealReviewStorage';
 import { toggleFoodTrait } from '../../../rules/foodTraits';
 import { newFood } from '../../../rules/foodDraft';
@@ -14,7 +15,7 @@ import { savedSuggestionsForProfile } from '../../../rules/savedSuggestions';
 import type { AfterMealReviewDraft, DifficultyCategory, GoalFeedback, Outcome, ReviewStep, SuggestionFeedback } from '../../../types/afterMealReview';
 import type { FoodItem, FoodTraits, PhotoSource, TraitGroup } from '../../../types/meal';
 import type { ChildProfile } from '../../../types/profile';
-import { addDifficulty, allOutcomesConfirmed, applySuggestions, canAddDifficulty, newReviewDraft, reconcileOutcomes, reviewFromDraft, setOutcome, toggleIngredient } from '../rules';
+import { addDifficulty, allOutcomesConfirmed, clearOutcomeSuggestions, canAddDifficulty, newReviewDraft, reconcileOutcomes, reviewFromDraft, setOutcome, toggleIngredient } from '../rules';
 
 type SaveStatus = 'saving' | 'saved' | 'error';
 
@@ -24,7 +25,6 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const client = useQueryClient();
   const homeQuery = useHomeRecords(childId);
   const mealsQuery = useMeals(childId);
-  const compareMutation = useCompareMealPhotos();
   const saveMutation = useSaveAfterMealReview();
   const updateMealMutation = useUpdateMealFoods();
   const [draft, setDraft] = useState<AfterMealReviewDraft | null>(null);
@@ -34,9 +34,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const [loadVersion, setLoadVersion] = useState(0);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   const [photoError, setPhotoError] = useState<'permission' | 'image' | null>(null);
-  const [compareError, setCompareError] = useState(false);
   const [picking, setPicking] = useState(false);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [editingFood, setEditingFood] = useState<FoodItem | null>(null);
   const [editingTraits, setEditingTraits] = useState<FoodTraits | null>(null);
   const [ingredient, setIngredient] = useState('');
@@ -48,8 +46,6 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const pickBusy = useRef(false);
   const pickVersion = useRef(0);
   const editorBusy = useRef(false);
-  const compareVersion = useRef(0);
-  const controller = useRef<AbortController | null>(null);
   const mounted = useRef(true);
   const key = `${childId}:${mealId}`;
   const meal = mealQuery.data ?? null;
@@ -57,7 +53,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
 
   useEffect(() => {
     mounted.current = true;
-    return () => { mounted.current = false; controller.current?.abort(); };
+    return () => { mounted.current = false; };
   }, []);
 
   useEffect(() => {
@@ -69,8 +65,9 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
         const base = stored ?? (saved ? { ...saved, step: 'complete' as const, difficultyInputs: {} } : newReviewDraft(meal));
         const next: AfterMealReviewDraft = {
           ...base,
-          step: saved ? 'complete' : base.step === 'comparing' ? 'compare' : base.step === 'goal' ? 'difficulties' : base.step,
-          outcomes: reconcileOutcomes(base.outcomes, meal.foods),
+          step: saved ? 'complete' : ['comparing', 'comparison-error'].includes(base.step) ? (meal.photo && base.afterPhoto ? 'compare' : 'outcomes') : base.step === 'goal' ? 'difficulties' : base.step === 'compare' && (!meal.photo || !base.afterPhoto) ? 'outcomes' : base.step,
+          outcomes: clearOutcomeSuggestions(reconcileOutcomes(base.outcomes, meal.foods)),
+          comparisonMethod: 'manual',
         };
         skipFirstSave.current = true;
         current.current = next;
@@ -114,20 +111,12 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     setDraft(next);
   };
   const go = (step: ReviewStep) => update({ step });
-  const cancelComparison = () => {
-    ++compareVersion.current;
-    controller.current?.abort();
-    controller.current = null;
-    setElapsedSeconds(0);
-    if (current.current?.step === 'comparing') go('compare');
-  };
   const back = (): boolean => {
     const step = current.current?.step;
     if (!step || step === 'photo' || step === 'complete') return false;
-    if (step === 'comparing') { cancelComparison(); return true; }
     const previous: Partial<Record<ReviewStep, ReviewStep>> = {
       preview: 'photo', compare: 'preview', 'comparison-error': 'compare',
-      outcomes: current.current?.comparisonMethod === 'manual' && !current.current.afterPhoto ? 'photo' : 'compare',
+      outcomes: current.current?.afterPhoto ? (meal?.photo ? 'compare' : 'preview') : 'photo',
       difficulties: 'outcomes', goal: 'difficulties', suggestions: 'difficulties',
     };
     const target = previous[step];
@@ -145,10 +134,9 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     try {
       const photo = await pickMealPhoto(source);
       if (request !== pickVersion.current || !photo) return;
-      cancelComparison();
       const value = current.current;
       if (!value) return;
-      update({ afterPhoto: photo, step: 'preview', outcomes: applySuggestions(value.outcomes, []) });
+      update({ afterPhoto: photo, step: 'preview', outcomes: clearOutcomeSuggestions(value.outcomes) });
     } catch (error) {
       if (request === pickVersion.current) setPhotoError(error instanceof PhotoError ? error.code : 'image');
     } finally {
@@ -158,49 +146,16 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   };
   const removePhoto = () => {
     ++pickVersion.current;
-    cancelComparison();
     const value = current.current;
     if (!value) return;
     setPhotoError(null);
-    update({ afterPhoto: null, step: 'photo', outcomes: applySuggestions(value.outcomes, []) });
+    update({ afterPhoto: null, step: 'photo', outcomes: clearOutcomeSuggestions(value.outcomes) });
   };
 
-  const compare = async () => {
-    const value = current.current;
-    if (!meal?.photo || !value?.afterPhoto) { setCompareError(true); return; }
-    const before = meal.photo;
-    const after = value.afterPhoto;
-    const request = ++compareVersion.current;
-    controller.current?.abort();
-    const signal = new AbortController();
-    controller.current = signal;
-    setCompareError(false);
-    setElapsedSeconds(0);
-    go('comparing');
-    const started = Date.now();
-    const timer = setInterval(() => { if (mounted.current) setElapsedSeconds(Math.floor((Date.now() - started) / 1000)); }, 500);
-    try {
-      const readable = await Promise.all([isMealPhotoReadable(before), isMealPhotoReadable(after)]);
-      if (request !== compareVersion.current) return;
-      if (!readable.every(Boolean)) throw new Error('Unreadable photo');
-      const result = await compareMutation.mutateAsync({ mealId: meal.id, before, after, foods: meal.foods, signal: signal.signal });
-      const latest = current.current;
-      if (request !== compareVersion.current || !latest || result.mealId !== meal.id
-        || latest.afterPhoto?.id !== result.afterPhotoId || meal.photo.id !== result.beforePhotoId) return;
-      update({ outcomes: applySuggestions(latest.outcomes, result.suggestions), comparisonMethod: 'ai', step: 'outcomes' });
-    } catch {
-      if (request === compareVersion.current && !signal.signal.aborted) { setCompareError(true); go('comparison-error'); }
-    } finally {
-      clearInterval(timer);
-      if (request === compareVersion.current) controller.current = null;
-    }
-  };
   const manual = () => {
-    cancelComparison();
     const value = current.current;
     if (!value) return;
-    setCompareError(false);
-    update({ outcomes: applySuggestions(value.outcomes, []), comparisonMethod: 'manual', step: 'outcomes' });
+    update({ outcomes: clearOutcomeSuggestions(value.outcomes), comparisonMethod: 'manual', step: 'outcomes' });
   };
   const chooseOutcome = (foodId: string, outcome: Outcome, ingredientKey?: string) => {
     const value = current.current;
@@ -307,14 +262,14 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     missingMeal: !mealId || (mealQuery.isSuccess && !meal),
     loadError: mealQuery.isError || loadError,
     retryLoad: () => { void mealQuery.refetch(); setLoadError(false); setLoadedKey(null); setLoadVersion((value) => value + 1); },
-    saveStatus, photoError, compareError, picking, elapsedSeconds,
+    saveStatus, photoError, picking,
     markImageError: () => setPhotoError('image'),
-    comparing: compareMutation.isPending, saving: saveMutation.isPending,
+    saving: saveMutation.isPending,
     editingFood, editingTraits, ingredient, customTrait, editorSaving: updateMealMutation.isPending,
     savedSuggestions: (meal?.suggestionLinks ?? []).map((link) => savedSuggestions.find((item) => item.id === link.suggestionId) ?? { id: link.suggestionId, childId, title: link.title, description: link.description, servingTip: link.servingTip, ingredients: [], isSaved: true, safetyVerifiedForProfileAt: '' }), suggestionsLoading: homeQuery.isPending || mealsQuery.isPending,
     canContinueOutcomes: !!draft && allOutcomesConfirmed(draft.outcomes),
     toggleIngredient: (foodId: string, ingredientId: string) => { if (current.current) update({ outcomes: toggleIngredient(current.current.outcomes, foodId, ingredientId) }); },
-    update, go, back, pick, removePhoto, compare, cancelComparison, manual, chooseOutcome,
+    update, go, back, pick, removePhoto, manual, chooseOutcome,
     setDifficultyInput, addDifficultyTag, removeDifficultyTag,
     setGoalFeedback: (result: GoalFeedback) => update({ goalFeedback: result }),
     markSuggestion, finish, retrySave: () => current.current ? persist(current.current) : Promise.resolve(),

@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
@@ -33,12 +34,6 @@ export function AfterMealOutcomesView({ p }: { p: Props }) {
   const [definitionsOpen, setDefinitionsOpen] = useState(false);
   return (
     <View style={styles.root}>
-      {p.draft.comparisonMethod === "ai" && (
-        <Text style={styles.intro}>{m.outcomeIntro}</Text>
-      )}
-      {p.draft.comparisonMethod === "ai" && (
-        <Text style={styles.demo}>{m.demo}</Text>
-      )}
       <View style={styles.countRow}>
         <Text style={styles.count}>
           {m.itemCount(p.meal.foods.length).toLocaleUpperCase()}
@@ -82,7 +77,6 @@ export function AfterMealOutcomesView({ p }: { p: Props }) {
                 hideLabel
                 decision={outcome.decision}
                 labels={m.outcomes}
-                suggestedLabel={m.suggestion}
                 onSelect={(value) => p.onSelectOutcome(food.id, value)}
               />
               {!!outcome.ingredients.length && (
@@ -127,7 +121,6 @@ export function AfterMealOutcomesView({ p }: { p: Props }) {
                     label={a.ingredientIn(ingredient.name, food.name)}
                     decision={ingredient.decision}
                     labels={m.outcomes}
-                    suggestedLabel={m.suggestion}
                     onSelect={(value) =>
                       p.onSelectOutcome(food.id, value, ingredient.id)
                     }

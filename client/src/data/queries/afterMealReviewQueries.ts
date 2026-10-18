@@ -1,8 +1,8 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { compareMealPhotos } from '../api/afterMealComparisonApi';
 import { saveMealReview } from '../api/mealLogApi';
 import { readAfterMealDraft, saveAfterMealReview } from '../storage/afterMealReviewStorage';
 import { mealLogKeys } from './mealLogQueries';
@@ -20,9 +20,6 @@ export function useAfterMealDraft(childId: string, mealId: string) {
   });
 }
 
-export function useCompareMealPhotos() {
-  return useMutation({ mutationFn: compareMealPhotos, retry: false });
-}
 
 export function useSaveAfterMealReview() {
   const client = useQueryClient();

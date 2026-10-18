@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
@@ -26,14 +27,14 @@ export function reconcileOutcomes(previous: FoodOutcome[], foods: FoodItem[]): F
     const occurrences = new Map<string, number>();
     return {
       foodId: food.id,
-      decision: existing?.decision ?? { confirmed: null, suggested: null },
+      decision: { confirmed: existing?.decision.confirmed ?? null, suggested: null },
       ingredients: food.ingredients.map((name) => {
         const normalized = name.trim().toLocaleLowerCase();
         const occurrence = occurrences.get(normalized) ?? 0;
         occurrences.set(normalized, occurrence + 1);
         const id = ingredientId(food.id, name, occurrence);
         const old = existing?.ingredients.find((item) => item.id === id);
-        return { id, name, selected: old ? old.selected !== false : false, decision: old?.decision ?? { confirmed: null, suggested: null } };
+        return { id, name, selected: old ? old.selected !== false : false, decision: { confirmed: old?.decision.confirmed ?? null, suggested: null } };
       }),
     };
   });
@@ -73,6 +74,18 @@ export function setOutcome(
     : { ...food, decision: { ...food.decision, confirmed: value } });
 }
 
+/** Preserve caregiver answers while dropping legacy photo suggestions. */
+export function clearOutcomeSuggestions(outcomes: FoodOutcome[]): FoodOutcome[] {
+  return outcomes.map((food) => ({
+    ...food,
+    decision: { confirmed: food.decision.confirmed, suggested: null },
+    ingredients: food.ingredients.map((ingredient) => ({
+      ...ingredient, decision: { confirmed: ingredient.decision.confirmed, suggested: null },
+    })),
+  }));
+}
+
+/** Legacy data helper; the app no longer requests or displays photo suggestions. */
 export function applySuggestions(
   outcomes: FoodOutcome[], suggestions: { foodId: string; ingredientId?: string; outcome: Outcome }[],
 ): FoodOutcome[] {
@@ -127,7 +140,7 @@ export function reviewFromDraft(draft: AfterMealReviewDraft, meal: Meal): AfterM
     mealId: meal.id,
     childId: meal.childId,
     afterPhoto: draft.afterPhoto,
-    comparisonMethod: draft.comparisonMethod,
+    comparisonMethod: 'manual',
     outcomes: outcomes.map((food) => ({ ...food, ingredients: food.ingredients.filter((ingredient) => ingredient.selected !== false) })),
     difficulties: Object.fromEntries(meal.foods.map((food) => [food.id, draft.difficulties[food.id] ?? []])),
     goalFeedback: meal.exposureFoodId ? draft.goalFeedback : null,

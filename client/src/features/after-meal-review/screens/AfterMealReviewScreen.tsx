@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
@@ -71,7 +72,6 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
       saveStatus={review.saveStatus}
       photoError={review.photoError}
       picking={review.picking}
-      elapsedSeconds={review.elapsedSeconds}
       saving={review.saving}
       canContinueOutcomes={review.canContinueOutcomes}
       editingFood={review.editingFood}
@@ -90,8 +90,6 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
         );
       }}
       onImageError={review.markImageError}
-      onCompare={() => { void review.compare(); }}
-      onCancelComparison={review.cancelComparison}
       onManual={review.manual}
       onSaveExit={() => { void review.retrySave().then(() => router.replace('/(main)/home'), () => undefined); }}
       onToggleIngredient={review.toggleIngredient}

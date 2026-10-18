@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
@@ -6,11 +7,10 @@ import { outcomeValues, type Outcome, type OutcomeDecision } from '../../../type
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
 
-export function OutcomeChoiceRow({ label, decision, labels, suggestedLabel, ingredient = false, hideLabel = false, onSelect }: {
+export function OutcomeChoiceRow({ label, decision, labels, ingredient = false, hideLabel = false, onSelect }: {
   label: string;
   decision: OutcomeDecision;
   labels: Record<Outcome, string>;
-  suggestedLabel: string;
   ingredient?: boolean;
   hideLabel?: boolean;
   onSelect: (value: Outcome) => void;
@@ -21,18 +21,16 @@ export function OutcomeChoiceRow({ label, decision, labels, suggestedLabel, ingr
       <View style={styles.options}>
         {outcomeValues.map((value) => {
           const confirmed = decision.confirmed === value;
-          const suggested = !decision.confirmed && decision.suggested === value;
           return (
             <Pressable
               key={value}
               accessibilityRole="button"
               accessibilityState={{ selected: confirmed }}
-              accessibilityLabel={`${label ? `${label}: ` : ''}${labels[value]}${suggested ? `, ${suggestedLabel}` : ''}`}
+              accessibilityLabel={`${label ? `${label}: ` : ''}${labels[value]}`}
               onPress={() => onSelect(value)}
-              style={[styles.option, confirmed && styles.confirmed, suggested && styles.suggested]}
+              style={[styles.option, confirmed && styles.confirmed]}
             >
               <Text style={[styles.optionText, confirmed && styles.confirmedText]} numberOfLines={2}>{labels[value]}</Text>
-              {suggested && <Text style={styles.suggestedText}>{suggestedLabel}</Text>}
             </Pressable>
           );
         })}

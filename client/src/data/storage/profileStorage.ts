@@ -1,4 +1,4 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ChildProfile } from '../../types/profile';
@@ -16,9 +16,14 @@ export async function readProfile(): Promise<ChildProfile | null> {
     || typeof profile.ageRange !== 'string' || typeof profile.updatedAt !== 'string'
     || !Array.isArray(profile.allergies) || !Array.isArray(profile.restrictions)
     || !Array.isArray(profile.safeFoods)) throw new Error('Invalid profile');
-  return parsed as ChildProfile;
+  const photoUri = typeof profile.photoUri === 'string' ? profile.photoUri : null;
+  return { ...(parsed as ChildProfile), photoUri };
 }
 
 export async function saveProfile(profile: ChildProfile): Promise<void> {
   await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+}
+
+export async function clearProfile(): Promise<void> {
+  await AsyncStorage.removeItem(PROFILE_KEY);
 }

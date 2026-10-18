@@ -1,9 +1,9 @@
-// This Code is generated with AI
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import { getLocales } from 'expo-localization';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { readLanguage, saveLanguage } from '../data/storage/languageStorage';
-import { readProfile, saveProfile } from '../data/storage/profileStorage';
+import { clearProfile, readProfile, saveProfile } from '../data/storage/profileStorage';
 import type { ChildProfile, Language } from '../types/profile';
 
 type ProfileContextValue = {
@@ -12,6 +12,7 @@ type ProfileContextValue = {
   language: Language;
   retryLoad: () => Promise<void>;
   commitProfile: (value: ChildProfile) => Promise<void>;
+  wipeProfile: () => Promise<void>;
   changeLanguage: (value: Language) => Promise<void>;
 };
 
@@ -51,6 +52,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     await saveProfile(value);
     setProfile(value);
   }, []);
+  const wipeProfile = useCallback(async () => {
+    await clearProfile();
+    setProfile(null);
+  }, []);
   const changeLanguage = useCallback((value: Language) => {
     const next = languageQueue.current.catch(() => undefined).then(() => saveLanguage(value));
     languageQueue.current = next;
@@ -58,7 +63,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <ProfileContext.Provider value={{ status, profile, language, retryLoad, commitProfile, changeLanguage }}>
+    <ProfileContext.Provider value={{ status, profile, language, retryLoad, commitProfile, wipeProfile, changeLanguage }}>
       {children}
     </ProfileContext.Provider>
   );

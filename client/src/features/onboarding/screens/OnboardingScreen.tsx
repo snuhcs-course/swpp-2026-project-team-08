@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -35,17 +35,36 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
   const s = copyFor(language);
   const index = steps.indexOf(step);
 
-  const navigate = (target: OnboardingStep, returnToReview = false) => {
+  const origin = typeof from === 'string' ? from : undefined;
+  const navigate = (target: OnboardingStep, returnTo = origin) => {
     model.setStep(target);
-    router.replace({ pathname: '/onboarding/[step]', params: { step: target, ...(returnToReview ? { from: 'review' } : {}) } });
+    router.replace({
+      pathname: '/onboarding/[step]',
+      params: { step: target, ...(returnTo ? { from: returnTo } : {}) },
+    });
   };
   const handlePrevious = () => {
-    if (from === 'review') navigate('review');
+    if (origin === 'child-profile') {
+      void model.cancelEdit().then(() => router.back());
+      return;
+    }
+    if (origin === 'review') navigate('review');
     else if (index === 0) router.replace('/');
     else navigate(previousStep(step));
   };
   const handleContinue = async () => {
     if (submitting || !model.canContinue(step)) return;
+    if (origin === 'child-profile') {
+      if (step === 'allergies') {
+        navigate('restrictions', 'child-profile');
+        return;
+      }
+      setSubmitting(true);
+      const saved = await model.applyEdit();
+      setSubmitting(false);
+      if (saved) router.back();
+      return;
+    }
     if (step === 'account' && !model.editing && !auth.session) {
       setSubmitting(true);
       setAuthError(undefined);
@@ -67,7 +86,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
       const saved = await model.finish();
       setSubmitting(false);
       if (saved) router.replace('/home');
-    } else if (from === 'review') navigate('review');
+    } else if (origin === 'review') navigate('review');
     else navigate(nextStep(step));
   };
   const handleSaveExit = async () => {
@@ -115,7 +134,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         conflicts={matchingSafeFoods(model.draft, language)}
         editLabel={s.common.edit}
         conflictLabel={s.onboarding.conflict}
-        onEditStep={(target) => navigate(target, true)}
+        onEditStep={(target) => navigate(target, 'review')}
       />
     );
     if (choiceSteps.includes(step as ChoiceStep)) return (

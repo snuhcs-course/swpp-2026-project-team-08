@@ -167,7 +167,7 @@ server/
 기능에 LangGraph 같은 다단계 LLM 워크플로가 필요하면 `app/features/suggestions/`를 기준 구현으로 삼아
 본뜬다 (구조와 규칙은 [`docs/architecture.md`](docs/architecture.md) §2.5). 서비스는 `generator.py` 같은
 단일 진입점만 부르고, 테스트에서는 실제 LLM 대신 `tests/fake_chat_model.py`의 가짜 모델을 쓴다. LLM을 쓰려면
-`.env`에 `OPENAI_API_KEY`가 필요하다 (비어 있으면 서버는 뜨지만 생성 요청이 실패한다).
+`.env`에 `OPENROUTER_API_KEY`가 필요하다 (비어 있으면 서버는 뜨지만 생성 요청이 실패한다).
 
 ## 에러 처리
 

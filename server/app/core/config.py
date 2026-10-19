@@ -42,8 +42,8 @@ class Settings(BaseSettings):
     # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
     # ── LLM (suggestions) ──
     # 비어 있으면 앱은 기동하지만 제안 생성은 실패한다.
-    OPENAI_API_KEY: str = ""
-    SUGGESTION_MODEL: str = "gpt-6-luna"
+    OPENROUTER_API_KEY: str = ""
+    SUGGESTION_MODEL: str = "openai/gpt-6-luna"
 
     @model_validator(mode="after")
     def _forbid_dev_secret_outside_local(self) -> "Settings":

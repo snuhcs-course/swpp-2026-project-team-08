@@ -116,7 +116,7 @@ DB 비밀번호나 JWT 키 같은 비밀 값은 GitHub에 없고, EC2가 배포�
 
 파라미터 이름의 **마지막 부분이 환경변수 이름**이 됩니다. 예를 들어 `/nurturebites/prod/POSTGRES_HOST`는 `POSTGRES_HOST`로 컨테이너에 전달됩니다.
 
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim (OPENAI_API_KEY · SUGGESTION_MODEL 행) -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim (OPENROUTER_API_KEY · SUGGESTION_MODEL 행) -->
 | 이름 | 종류 | 설명 |
 | --- | --- | --- |
 | `ENVIRONMENT` | String | 운영에서는 `production`. `local`이 아니면 기본 JWT 키로는 서버가 기동하지 않습니다. |
@@ -127,8 +127,8 @@ DB 비밀번호나 JWT 키 같은 비밀 값은 GitHub에 없고, EC2가 배포�
 | `POSTGRES_DB` | String | 데이터베이스 이름 |
 | `POSTGRES_PASSWORD` | SecureString | RDS 비밀번호. **영문과 숫자로만** 구성합니다. `@`, `/`, `:`, `#` 같은 문자가 있으면 DB 접속 주소가 깨집니다. |
 | `JWT_SECRET_KEY` | SecureString | 로그인 토큰 서명 키. `openssl rand -hex 32`로 만든 값을 씁니다. |
-| `OPENAI_API_KEY` | SecureString | 제안 생성(LLM)에 쓰는 OpenAI API 키. 필수 파라미터가 아니라서 없어도 배포와 서버 기동은 되지만, 제안 생성 요청이 실패(502 `GENERATION_FAILED`)합니다. |
-| `SUGGESTION_MODEL` | String | 제안 생성에 쓰는 모델 이름. 생략하면 코드의 기본값(`gpt-6-luna`)을 씁니다. |
+| `OPENROUTER_API_KEY` | SecureString | 제안 생성(LLM)에 쓰는 OpenRouter API 키. 필수 파라미터가 아니라서 없어도 배포와 서버 기동은 되지만, 제안 생성 요청이 실패(502 `GENERATION_FAILED`)합니다. |
+| `SUGGESTION_MODEL` | String | 제안 생성에 쓰는 OpenRouter 모델 이름(`provider/model`). 생략하면 코드의 기본값(`openai/gpt-6-luna`)을 씁니다. |
 
 `SecureString`은 암호화되어 저장되고, EC2가 배포할 때만 복호화해서 읽습니다. 비밀 값은 채팅, 이슈, 커밋에 올리지 마세요.
 

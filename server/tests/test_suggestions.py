@@ -5,27 +5,31 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.features.suggestions import mock
+from app.features.suggestions import service
+from app.features.suggestions.generator import GenerationRejectedError
+from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
 from tests.test_meal_logs import CHILD, FOOD_ID, MEAL_ID, meal_payload, put_meal, review_payload
 
 ROOT = f"/api/v1/children/{CHILD}/suggestions"
 
 
+# AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 @pytest.fixture(autouse=True)
 def generator(monkeypatch):
-    async def generate(foods):
+    async def generate(foods, restrictions):
         return [
-            {
-                "food_id": f["id"],
-                "what_to_try": f["name"],
-                "why_this_may_help": "A familiar portion",
-                "serving_tip": "No pressure",
-            }
+            GeneratedSuggestion(
+                food_id=f.id,
+                what_to_try=f.name,
+                why_this_may_help="A familiar portion",
+                serving_tip="No pressure",
+                used_ingredients=("rice",),
+            )
             for f in foods
         ]
 
     mocked = AsyncMock(side_effect=generate)
-    monkeypatch.setattr(mock, "generate_suggestions", mocked)
+    monkeypatch.setattr(service, "generate_suggestions", mocked)
     return mocked
 
 
@@ -118,8 +122,8 @@ async def test_bad_generation_is_atomic_and_review_edits_regenerate(client, gene
     changed = review_payload()
     changed["saved_at"] = "2026-10-10T13:00:00Z"
     await client.put(f"/api/v1/children/{CHILD}/meals/{MEAL_ID}/review", json=changed)
-    generator.side_effect = None
-    generator.return_value = []
+    # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+    generator.side_effect = GenerationRejectedError([])
     bad = await client.post(f"{ROOT}/meals/{MEAL_ID}/generate", json={})
     assert bad.status_code == 502
     assert (await client.get(ROOT)).json()[0]["id"] == item["id"]
@@ -147,7 +151,8 @@ async def test_added_selection_only_generates_missing_food_and_preserves_saved(c
     saved = await decision(client, first["items"][0])
     changed = await client.post(url, json={"selected_food_ids": ["f1", "f3"]})
     assert changed.status_code == 200, changed.text
-    assert generator.await_args.args[0] == [{"id": "f3", "name": "Food 3"}]
+    # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+    assert generator.await_args.args[0] == [FoodInput(id="f3", name="Food 3")]
     assert (await client.get(ROOT)).json()[0]["id"] == saved.json()["id"]
     restored = (await client.post(url, json={"selected_food_ids": ["f0", "f3"]})).json()
     assert restored["items"][0]["status"] == "saved"

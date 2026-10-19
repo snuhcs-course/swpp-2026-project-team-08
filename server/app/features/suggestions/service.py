@@ -10,8 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import AppError
 from app.core.timezone import now_kst
 from app.features.meal_logs import queries as meal_queries
-from app.features.suggestions import mock
+from app.features.suggestions.generator import generate_suggestions
+from app.features.suggestions.mock_profile import MOCK_RESTRICTIONS
 from app.features.suggestions.rules import revision_for, targets_for, utc
+from app.features.suggestions.workflow.state import FoodInput
 from app.models import MealLog, Suggestion, SuggestionAction, SuggestionBatch, SuggestionTry
 
 
@@ -100,27 +102,18 @@ class SuggestionService:
         known = {s.food_id for s in existing}
         missing = [foods[f] for f in selected if f not in known]
         if missing:
+            # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+            # 결과의 형식과 아이의 제한 검증은 generator(워크플로)가 한다.
+            # 통과하지 못하면 예외를 던진다.
             try:
                 async with asyncio.timeout(60):
-                    generated = await mock.generate_suggestions(
-                        [{"id": f.id, "name": f.name} for f in missing]
+                    generated = await generate_suggestions(
+                        [FoodInput(id=f.id, name=f.name) for f in missing], MOCK_RESTRICTIONS
                     )
             except Exception as error:
                 raise GenerationFailedError() from error
-            if (
-                not isinstance(generated, list)
-                or any(not isinstance(r, dict) for r in generated)
-                or len(generated) != len(missing)
-                or {r.get("food_id") for r in generated} != {f.id for f in missing}
-                or any(
-                    not isinstance(r.get(key), str) or not r[key].strip()
-                    for r in generated
-                    for key in ("what_to_try", "why_this_may_help", "serving_tip")
-                )
-            ):
-                raise GenerationFailedError()
             for result in generated:
-                food = foods[result["food_id"]]
+                food = foods[result.food_id]
                 item = Suggestion(
                     id=str(uuid5(NAMESPACE_URL, f"{batch_id}:{revision}:{food.id}")),
                     child_id=child_id,
@@ -129,7 +122,12 @@ class SuggestionService:
                     food_id=food.id,
                     revision=revision,
                     content={
-                        **result,
+                        # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+                        "food_id": result.food_id,
+                        "what_to_try": result.what_to_try,
+                        "why_this_may_help": result.why_this_may_help,
+                        "serving_tip": result.serving_tip,
+                        "used_ingredients": list(result.used_ingredients),
                         "food_name": food.name,
                         "ingredients": food.ingredients,
                         "preparation": food.preparation,

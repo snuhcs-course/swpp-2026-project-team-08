@@ -5,37 +5,19 @@
 """
 
 from collections import Counter
-from dataclasses import dataclass
-from typing import Literal
 
 from app.features.suggestions.ingredients import (
     ChildRestrictions,
-    RestrictionId,
     conflicting_restrictions,
     find_ingredient,
 )
-from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
+from app.features.suggestions.workflow.state import (
+    FoodInput,
+    GeneratedSuggestion,
+    ValidationProblem,
+)
 
 TEXT_FIELDS = ("what_to_try", "why_this_may_help", "serving_tip")
-
-
-@dataclass(frozen=True)
-class ValidationProblem:
-    """검증에서 발견한 문제 하나. 자연어 문구는 갖지 않는다."""
-
-    kind: Literal[
-        "missing_food",
-        "unexpected_food",
-        "duplicate_food",
-        "blank_field",
-        "empty_ingredients",
-        "unknown_ingredient",
-        "restricted_ingredient",
-    ]
-    food_id: str = ""
-    field: str | None = None
-    ingredient: str | None = None
-    restrictions: tuple[RestrictionId, ...] = ()
 
 
 def find_problems(

@@ -163,6 +163,12 @@ server/
 6. **테스트 쓰기.** `tests/test_meal_logs.py`에 정상 동작과 주요 에러 케이스를 추가하고,
    `uv run pytest`와 `uv run ruff check .`가 통과하는지 확인한다.
 
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+기능에 LangGraph 같은 다단계 LLM 워크플로가 필요하면 `app/features/suggestions/`를 기준 구현으로 삼아
+본뜬다 (구조와 규칙은 [`docs/architecture.md`](docs/architecture.md) §2.5). 서비스는 `generator.py` 같은
+단일 진입점만 부르고, 테스트에서는 실제 LLM 대신 `tests/fake_chat_model.py`의 가짜 모델을 쓴다. LLM을 쓰려면
+`.env`에 `OPENAI_API_KEY`가 필요하다 (비어 있으면 서버는 뜨지만 생성 요청이 실패한다).
+
 ## 에러 처리
 
 API가 실패할 때(예: 이미 가입된 이메일로 가입 시도) 클라이언트에게 어떤 응답을 줄지 정하는 규칙이다.

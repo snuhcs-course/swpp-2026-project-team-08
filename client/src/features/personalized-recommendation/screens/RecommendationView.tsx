@@ -1,5 +1,5 @@
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -38,8 +38,8 @@ export function RecommendationView(p: Props) {
           : p.status === 'error' ? m.loadFailed : m.allDone;
   return (
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+      <AppHeader title={m.title} backLabel={s.common.back} onBack={p.onBack} />
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>{m.title}</Text>
         <Text style={styles.intro}>{m.intro}</Text>
         {p.card ? (
           <>
@@ -92,7 +92,7 @@ export function RecommendationView(p: Props) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.homeBackground },
-  content: { padding: 18, gap: 12, flexGrow: 1 },
+  content: { ...topBarStyles.content, paddingBottom: 18, gap: 12, flexGrow: 1 },
   title: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 22 },
   intro: { color: colors.mealReviewMuted, fontFamily: fonts.interRegular, fontSize: 11, lineHeight: 17 },
   safety: { color: colors.mealReviewMuted, fontFamily: fonts.interRegular, fontSize: 10, lineHeight: 16 },

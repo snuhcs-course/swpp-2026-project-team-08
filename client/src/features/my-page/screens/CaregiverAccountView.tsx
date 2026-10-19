@@ -1,6 +1,5 @@
-// AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
-
-import Feather from '@expo/vector-icons/Feather';
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader } from '../../../components/AppHeader';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../../util/colors';
@@ -43,13 +42,8 @@ export function CaregiverAccountView({
   return (
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
       <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={[styles.page, styles.content]} keyboardShouldPersistTaps="handled">
-        <View style={styles.headerRow}>
-          <Pressable accessibilityRole="button" accessibilityLabel={s.common.back} onPress={onBack} style={styles.back}>
-            <Feather name="chevron-left" size={24} color={colors.homeText} />
-          </Pressable>
-          <Text accessibilityRole="header" style={styles.headerTitle}>{title}</Text>
-        </View>
+      <AppHeader title={title} backLabel={s.common.back} onBack={onBack} />
+      <ScrollView contentContainerStyle={[styles.body, styles.content]} keyboardShouldPersistTaps="handled">
         {mode === 'account' && updated ? (
           <View style={styles.banner}>
             <Text style={styles.bannerTitle}>✓ {m.emailUpdated}</Text>

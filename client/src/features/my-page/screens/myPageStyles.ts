@@ -1,28 +1,13 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
 
 export const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.homeBackground },
-  page: { flex: 1, paddingHorizontal: 20, paddingTop: 8 },
+  body: { ...topBarStyles.content },
   content: { paddingBottom: 28, gap: 12 },
-  title: {
-    color: colors.homeText,
-    fontSize: 28,
-    fontFamily: fonts.poppinsBold,
-    marginBottom: 8,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 44,
-    gap: 4,
-    marginBottom: 8,
-  },
-  back: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { color: colors.homeText, fontSize: 22, fontFamily: fonts.poppinsSemiBold },
   sectionLabel: {
     color: colors.homeText,
     fontSize: 12,

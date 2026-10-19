@@ -1,5 +1,5 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader } from '../../../components/AppHeader';
 import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
 import { useState } from 'react';
@@ -57,13 +57,8 @@ export function ChildProfileView({
   const ageLabel = ages.find((option) => option.id === ageRange)?.label ?? ageRange;
   return (
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-      <ScrollView contentContainerStyle={[styles.page, styles.content]} keyboardShouldPersistTaps="handled">
-        <View style={styles.headerRow}>
-          <Pressable accessibilityRole="button" accessibilityLabel={copyFor(language).common.back} onPress={onBack} style={styles.back}>
-            <Feather name="chevron-left" size={24} color={colors.homeText} />
-          </Pressable>
-          <Text accessibilityRole="header" style={styles.headerTitle}>{m.childProfile}</Text>
-        </View>
+      <AppHeader title={m.childProfile} backLabel={copyFor(language).common.back} onBack={onBack} />
+      <ScrollView contentContainerStyle={[styles.body, styles.content]} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
           {editing ? (
             <>

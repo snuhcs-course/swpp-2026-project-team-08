@@ -1,5 +1,5 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader } from '../../../components/AppHeader';
 import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
 import { Pressable, ScrollView, Text, View } from 'react-native';
@@ -31,8 +31,8 @@ export function MyPageView({
   const m = copyFor(language).myPage;
   return (
     <View style={styles.root}>
-      <ScrollView contentContainerStyle={[styles.page, styles.content]} keyboardShouldPersistTaps="handled">
-        <Text accessibilityRole="header" style={styles.title}>{m.title}</Text>
+      <AppHeader title={m.title} />
+      <ScrollView contentContainerStyle={[styles.body, styles.content]} keyboardShouldPersistTaps="handled">
         <Text style={styles.sectionLabel}>{m.childProfileSection}</Text>
         <Pressable accessibilityRole="button" onPress={onViewProfile} style={styles.card}>
           <View style={styles.childRow}>

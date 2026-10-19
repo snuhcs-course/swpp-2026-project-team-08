@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader } from '../../../components/AppHeader';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
@@ -40,12 +40,7 @@ export function SavedSuggestionFlowView({ model: m, language, onEdit }: {
   );
   return (
     <View style={s.root}>
-      <View style={s.savedHeader}>
-        <Pressable accessibilityRole="button" accessibilityLabel={c.back} onPress={m.back} style={s.savedBack}>
-          <UiAssetIcon name="suggestion-back" />
-        </Pressable>
-        <Text accessibilityRole="header" style={s.savedTitle}>{c.recordHeader}</Text>
-      </View>
+      <AppHeader title={c.recordHeader} backLabel={c.back} onBack={m.back} />
       <ScrollView style={s.root} contentContainerStyle={[s.flowContent, m.mode === 'feedback' && { flexGrow: 1 }]}>
         {item && <View style={s.flowRecord}>
           <Text style={s.recordTitle}>{item.content.food_name}</Text>

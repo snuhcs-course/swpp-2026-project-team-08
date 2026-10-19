@@ -1,9 +1,8 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
-
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader, topBarStyles } from '../../../components/AppHeader';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../../../components/AppButton';
-import { AppIcon } from '../../../components/AppIcon';
 import type { MealDraft } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
@@ -17,14 +16,9 @@ export function MealDraftResumeView({ draft, childName, language, onContinue, on
   const s = copyFor(language);
   const m = s.mealCheckin;
   return <SafeAreaView style={styles.root}>
-    <View style={styles.header}>
-      <Pressable accessibilityRole="button" accessibilityLabel={s.common.back} onPress={onBack} style={styles.back}><AppIcon name="back" size={18} /></Pressable>
-      <View style={{ flex: 1, gap: 1 }}>
-        <Text style={styles.headerTitle}>{m.ongoingHeader}</Text>
-        <Text style={styles.subtitle}>{m.childMeals(childName)}</Text>
-      </View>
-    </View>
+    <AppHeader title={m.ongoingHeader} backLabel={s.common.back} onBack={onBack} />
     <ScrollView contentContainerStyle={styles.content}>
+      <Text style={styles.subtitle}>{m.childMeals(childName)}</Text>
       <Text style={styles.title}>{m.ongoingTitle}</Text>
       <Text style={styles.intro}>{m.ongoingIntro}</Text>
       <View style={styles.card}>
@@ -39,11 +33,8 @@ export function MealDraftResumeView({ draft, childName, language, onContinue, on
 }
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.afterMealBackground },
-  header: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 12, flexDirection: 'row', gap: 10, alignItems: 'center' },
-  back: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 17, lineHeight: 25.5 },
   subtitle: { color: colors.mealReviewMuted, fontFamily: fonts.poppinsRegular, fontSize: 10, lineHeight: 15 },
-  content: { paddingHorizontal: 24, paddingTop: 6, paddingBottom: 16, gap: 16 },
+  content: { ...topBarStyles.content, paddingBottom: 16, gap: 16 },
   title: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 22, lineHeight: 31.9 },
   intro: { color: colors.homeText, fontFamily: fonts.poppinsRegular, fontSize: 12, lineHeight: 17.4 },
   card: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.mealReviewBorder, borderRadius: 14, padding: 12, gap: 6 },

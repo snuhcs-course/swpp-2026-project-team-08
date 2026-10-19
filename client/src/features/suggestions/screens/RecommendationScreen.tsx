@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, BackHandler, Pressable, ScrollView, Text, View } from 'react-native';
@@ -74,18 +74,8 @@ function RecommendationContent({ childId, mealId }: { childId: string; mealId: s
 
   return (
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
+      <AppHeader title={c.title} backLabel={c.back} onBack={back} />
       <View style={s.recommendationContent}>
-        <View style={s.header}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={c.back}
-            onPress={back}
-            style={s.savedBack}
-          >
-            <UiAssetIcon name="suggestion-back" />
-          </Pressable>
-          <Text style={[s.savedTitle, s.headerTitle]}>{c.title}</Text>
-        </View>
         {meal && (
           <View style={s.row}>
             <Text style={s.mealContextDate}>

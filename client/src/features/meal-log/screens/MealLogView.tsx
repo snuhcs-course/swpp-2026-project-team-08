@@ -1,5 +1,5 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader } from '../../../components/AppHeader';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useState } from 'react';
@@ -72,6 +72,7 @@ export function MealLogView(p: Props) {
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <AppHeader title={m.title} backLabel={s.common.back} onBack={p.onBack} />
       <ScrollView
         style={styles.root}
         contentContainerStyle={styles.content}
@@ -80,13 +81,6 @@ export function MealLogView(p: Props) {
           <RefreshControl refreshing={p.refreshing} onRefresh={p.onRefresh} tintColor={colors.homePrimary} />
         }
       >
-        <View style={styles.header}>
-          <Pressable accessibilityRole="button" accessibilityLabel={s.common.back} onPress={p.onBack} style={styles.headerSide}>
-            <Feather name="chevron-left" size={22} color={colors.homeText} />
-          </Pressable>
-          <Text accessibilityRole="header" style={styles.headerTitle}>{m.title}</Text>
-          <View style={styles.headerSide} />
-        </View>
         {!searchFocused ? (
           <>
             {p.draftMeta ? (

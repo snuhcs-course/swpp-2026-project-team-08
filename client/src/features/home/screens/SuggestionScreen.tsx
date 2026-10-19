@@ -1,7 +1,7 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useProfile } from '../../../providers/ProfileProvider';
 import type { ChildProfile } from '../../../types/profile';
@@ -26,7 +26,8 @@ function SuggestionContent({ profile, id, mealId }: { profile: ChildProfile; id:
       }
       : null;
   return <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-    <Pressable accessibilityRole="button" onPress={() => router.back()}><Text style={styles.back}>← {s.common.back}</Text></Pressable>
+    <AppHeader title={s.afterMealReview.savedSuggestion} backLabel={s.common.back} onBack={() => router.back()} />
+    <ScrollView contentContainerStyle={styles.content}>
     {suggestion.loading && <ActivityIndicator color={colors.homePrimary} />}
     {suggestion.error && <Text style={styles.description}>{s.home.refreshFailed}</Text>}
     {suggestion.ready && !item && !suggestion.linked && <Text style={styles.description}>{s.common.empty}</Text>}
@@ -40,6 +41,7 @@ function SuggestionContent({ profile, id, mealId }: { profile: ChildProfile; id:
       />
       {item?.recommendation && <Text style={styles.description}>{s.recommendation.safety}</Text>}
     </>}
+    </ScrollView>
   </SafeAreaView>;
 }
 
@@ -51,7 +53,7 @@ export function SuggestionScreen({ id, mealId }: { id: string; mealId?: string }
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, padding: 24, backgroundColor: colors.homeBackground, gap: 20 },
-  back: { color: colors.homePrimary, fontSize: 14, fontWeight: '700' },
+  root: { flex: 1, backgroundColor: colors.homeBackground },
+  content: { ...topBarStyles.content, paddingBottom: 24, gap: 20 },
   description: { color: colors.homeMuted, fontSize: 14, lineHeight: 21 },
 });

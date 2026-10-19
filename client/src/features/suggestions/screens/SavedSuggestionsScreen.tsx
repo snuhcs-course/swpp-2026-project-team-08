@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader } from '../../../components/AppHeader';
 import { Redirect, router, useIsFocused } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { ActivityIndicator, BackHandler, Pressable, ScrollView, Text, View } from 'react-native';
@@ -60,12 +60,7 @@ function SavedContent({
   return (
     <SafeAreaView style={s.root} edges={[]}>
       <View style={[s.root, model.mode !== 'list' && s.hidden]}>
-        <View style={s.savedHeader}>
-          <Pressable accessibilityRole="button" accessibilityLabel={c.back} onPress={() => router.replace('/home')} style={s.savedBack}>
-            <UiAssetIcon name="suggestion-back" />
-          </Pressable>
-          <Text accessibilityRole="header" style={s.savedTitle}>{c.savedTitle}</Text>
-        </View>
+        <AppHeader title={c.savedTitle} backLabel={c.back} onBack={() => router.replace('/home')} />
         <ScrollView
           ref={listRef}
           onContentSizeChange={() =>

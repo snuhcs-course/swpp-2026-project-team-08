@@ -103,6 +103,8 @@ export function MealLogView(p: Props) {
               </View>
             ) : null}
             <MealLogCalendar
+              monthLabel={s.mealCheckin.month}
+              yearLabel={s.mealCheckin.year}
               year={p.year}
               month={p.month}
               selectedDate={p.selectedDate}

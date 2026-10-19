@@ -1,14 +1,12 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { DateField } from '../../../components/DateField';
 import { Feather } from '@expo/vector-icons';
-import { useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { colors } from '../../../util/colors';
 import { calendarCells, densityLevel, mealDateParts } from '../rules';
 import { styles } from '../screens/mealLogStyles';
 
 const densityFill = [colors.transparent, colors.logDensity1, colors.logDensity2, colors.logDensity3] as const;
-const months = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
 export function MealLogCalendar({
   year,
@@ -28,6 +26,8 @@ export function MealLogCalendar({
   selectedDateLabel,
   noneYet,
   locale,
+  monthLabel,
+  yearLabel,
   onPrev,
   onNext,
   onToggleDate,
@@ -51,17 +51,15 @@ export function MealLogCalendar({
   selectedDateLabel: string;
   noneYet: string;
   locale: string;
+  monthLabel: string;
+  yearLabel: string;
   onPrev: () => void;
   onNext: () => void;
   onToggleDate: (date: string) => void;
   onClear: () => void;
   onMonthYear: (year: number, month: number) => void;
 }) {
-  const monthDate = new Date(year, month, 1);
-  const monthTitle = new Intl.DateTimeFormat(locale, { month: 'short' }).format(monthDate);
   const selectedParts = selectedDate ? mealDateParts(selectedDate, locale) : null;
-  const [picker, setPicker] = useState<'month' | 'year' | null>(null);
-  const years = Array.from({ length: 8 }, (_, index) => year - 4 + index);
 
   return (
     <View style={styles.calendarBlock}>
@@ -99,16 +97,9 @@ export function MealLogCalendar({
           <Pressable accessibilityRole="button" accessibilityLabel={previousMonth} onPress={onPrev} style={styles.nav}>
             <Feather name="chevron-left" size={16} color={colors.homeText} />
           </Pressable>
-          <View style={styles.monthPickers}>
-            <Pressable accessibilityRole="button" onPress={() => setPicker('month')} style={styles.picker}>
-              <Text style={styles.pickerLabel}>{monthTitle}</Text>
-              <Feather name="chevron-down" size={14} color={colors.homeMuted} />
-            </Pressable>
-            <Pressable accessibilityRole="button" onPress={() => setPicker('year')} style={styles.picker}>
-              <Text style={styles.pickerLabel}>{String(year)}</Text>
-              <Feather name="chevron-down" size={14} color={colors.homeMuted} />
-            </Pressable>
-          </View>
+          <DateField key={`${year}-${month}`} variant="month-year" size={{ height: 36, fontSize: 14, borderRadius: 12 }} year={year} month={month + 1}
+            labels={{ month: monthLabel, year: yearLabel, locale }}
+            onChange={(nextYear, nextMonth) => onMonthYear(nextYear, nextMonth - 1)} />
           <Pressable accessibilityRole="button" accessibilityLabel={nextMonth} onPress={onNext} style={styles.nav}>
             <Feather name="chevron-right" size={16} color={colors.homeText} />
           </Pressable>
@@ -150,33 +141,6 @@ export function MealLogCalendar({
           })}
         </View>
       </View>
-      <Modal transparent animationType="fade" visible={picker != null} onRequestClose={() => setPicker(null)}>
-        <Pressable style={styles.pickerSheet} onPress={() => setPicker(null)}>
-          <Pressable style={styles.pickerCard} onPress={() => undefined}>
-            <ScrollView>
-              {(picker === 'month' ? months : years).map((value) => {
-                const active = picker === 'month' ? value === month : value === year;
-                const label = picker === 'month'
-                  ? new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(year, value, 1))
-                  : String(value);
-                return (
-                  <Pressable
-                    key={String(value)}
-                    onPress={() => {
-                      if (picker === 'month') onMonthYear(year, value);
-                      else onMonthYear(value, month);
-                      setPicker(null);
-                    }}
-                    style={styles.pickerOption}
-                  >
-                    <Text style={[styles.pickerOptionText, active && styles.pickerOptionOn]}>{label}</Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
     </View>
   );
 }

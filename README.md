@@ -28,3 +28,8 @@ Please note that the README doesn't affect your grade and is not included in doc
 ### Installation
 
 [Installation link here]
+
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+## Docs
+
+- [Food ingredient · restriction ids](docs/food-ingredient-restriction-ids.md): 클라이언트와 서버가 공유하는 알러지 · 식이 제한 id

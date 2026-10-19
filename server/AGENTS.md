@@ -8,6 +8,10 @@
 - `README.md`(작업 규칙 · 컨벤션)와 `docs/architecture.md`를 먼저 읽는다.
 - `Dockerfile`, `deploy/`, `.github/workflows/`, 환경변수를 다루는 작업이면 [`docs/deploy.md`](docs/deploy.md)도
   먼저 읽어야 한다.
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+- 알러지 · 식이 제한 id(`RestrictionId`)나 재료 카탈로그를 다루는 작업이면
+  [`../docs/food-ingredient-restriction-ids.md`](../docs/food-ingredient-restriction-ids.md)도 먼저 읽어야 한다.
+  클라이언트와 id가 같아야 한다.
 - 기존 코드와 패턴을 먼저 확인하고, 필요한 파일만 추가한다.
 
 ## AI 생성 코드 표기

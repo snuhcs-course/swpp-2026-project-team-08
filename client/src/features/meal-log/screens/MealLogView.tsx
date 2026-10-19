@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+// AI-generated with Grok 4.6, 2026-10-19, reviewed by Doyeon Kim
 
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
+import { AppIcon } from '../../../components/AppIcon';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
@@ -80,25 +81,24 @@ export function MealLogView(p: Props) {
           <RefreshControl refreshing={p.refreshing} onRefresh={p.onRefresh} tintColor={colors.homePrimary} />
         }
       >
-        <View style={styles.header}>
-          <Pressable accessibilityRole="button" accessibilityLabel={s.common.back} onPress={p.onBack} style={styles.headerSide}>
-            <Feather name="chevron-left" size={22} color={colors.homeText} />
+        <View style={styles.historyHeader}>
+          <Pressable accessibilityRole="button" accessibilityLabel={s.common.back} onPress={p.onBack} style={styles.historyBack}>
+            <AppIcon name="back" size={18} />
           </Pressable>
-          <Text accessibilityRole="header" style={styles.headerTitle}>{m.title}</Text>
-          <View style={styles.headerSide} />
+          <Text accessibilityRole="header" style={styles.historyHeaderTitle}>{m.title}</Text>
         </View>
         {!searchFocused ? (
           <>
             {p.draftMeta ? (
               <View style={styles.continueBlock} accessibilityLabel={m.continueLogging}>
-                <Text style={styles.sectionLabel}>{m.continueLogging}</Text>
+                <Text style={styles.continueLabel}>{m.continueLogging}</Text>
                 <View style={styles.continueCard}>
                   <View style={styles.continueCopy}>
                     <Text style={styles.continueTitle}>{p.draftMeta}</Text>
                     <View style={styles.continueSubtitle}>
                       <Text style={styles.continueDraft}>{m.draft}</Text>
                       {p.draftName ? (
-                        <Text style={styles.continueFood} numberOfLines={1}>{p.draftName}</Text>
+                        <Text style={styles.continueFood}>{p.draftName}</Text>
                       ) : null}
                     </View>
                   </View>
@@ -173,11 +173,11 @@ export function MealLogView(p: Props) {
           {p.loading ? (
             <View style={styles.state}>
               <ActivityIndicator color={colors.homePrimary} />
-              <Text style={styles.stateText}>{s.common.loading}</Text>
+              <Text style={styles.historyStateText}>{s.common.loading}</Text>
             </View>
           ) : p.error ? (
             <View style={styles.state}>
-              <Text style={styles.stateText}>{m.loadFailed}</Text>
+              <Text style={styles.historyStateText}>{m.loadFailed}</Text>
               <AppButton label={s.common.retry} onPress={p.onRefresh} />
             </View>
           ) : p.records.length ? (
@@ -197,7 +197,7 @@ export function MealLogView(p: Props) {
                   <View style={styles.recordTitleRow}>
                     <Text style={styles.recordTitle} numberOfLines={1}>{row.title}</Text>
                     <View style={[styles.badge, row.awaiting ? styles.awaiting : styles.reviewed]}>
-                      <Text style={row.awaiting ? styles.awaitingText : styles.reviewedText}>
+                      <Text style={row.awaiting ? styles.historyAwaitingText : styles.historyReviewedText}>
                         {row.awaiting ? m.awaitingReview : m.reviewed}
                       </Text>
                     </View>

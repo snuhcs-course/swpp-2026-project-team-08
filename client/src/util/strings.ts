@@ -273,7 +273,7 @@ const en = {
     foodsAndResponses: 'Foods and responses',
     noRecord: 'No record',
     acceptance: 'Acceptance',
-    reason: 'Reason of outcome',
+    reason: 'Reasons of outcome',
     linkedSuggestion: 'Linked Suggestion',
     whatToTry: 'What to try',
     whyHelp: 'Why this may help',

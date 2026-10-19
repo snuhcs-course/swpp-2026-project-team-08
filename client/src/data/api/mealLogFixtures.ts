@@ -1,6 +1,7 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+// AI-generated with Grok 4.6, 2026-10-19, reviewed by Doyeon Kim
 
 import { emptyTraits } from '../../rules/foodDraft';
+import type { DifficultyTag } from '../../types/afterMealReview';
 import type { FoodItem } from '../../types/meal';
 import type { MealDetail, MealListItem, MealLogSuggestion } from './mealLogApi';
 
@@ -72,11 +73,16 @@ function meal(
   };
 }
 
-function reviewed(mealDate: string, foodId: string, ingredients: { id: string; name: string }[]): MealDetail['review'] {
+function reviewed(
+  mealDate: string,
+  foodId: string,
+  ingredients: { id: string; name: string }[],
+  difficulties: DifficultyTag[] = [],
+): MealDetail['review'] {
   return {
     afterPhotoUri: `file:///demo-after-${mealDate}.png`,
     outcomes: [eaten(foodId, ingredients)],
-    difficulties: { [foodId]: [] },
+    difficulties: { [foodId]: difficulties },
     goalFeedback: 'tried',
     savedAt: `${mealDate}T13:00:00.000Z`,
   };
@@ -120,7 +126,10 @@ const demoMeals: MealDetail[] = [
     'dinner',
     'home',
     [omelet],
-    reviewed('2026-10-16', omelet.id, [{ id: 'ing-egg', name: 'Egg' }]),
+    reviewed('2026-10-16', omelet.id, [{ id: 'ing-egg', name: 'Egg' }], [
+      { id: 'diff-omelet-intensity', category: 'tasteIntensity', value: 'sour' },
+      { id: 'diff-omelet-texture', category: 'texture', value: 'chewy' },
+    ]),
     [linked(
       'sug-2026-10-16-dinner',
       omelet,

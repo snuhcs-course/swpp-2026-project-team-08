@@ -34,7 +34,7 @@ Module._load = function (name, ...args) {
 };
 
 const {
-  calendarCells, countsByDate, densityLevel, filterMeals, foodResponseCards,
+  calendarCells, countsByDate, densityLevel, filterMeals, foodResponseCards, formatDifficultyReason,
   isoDate, matchesMealQuery, mealDateParts, mealThumbnail, monthKey, shiftMonth,
   sortMealsLatestFirst,
 } = require('../src/features/meal-log/rules.ts');
@@ -95,6 +95,21 @@ test('frontend search matches food names or ingredients and can hide reviewed me
   assert.deepEqual(filterMeals([rice, soup], 'rice', false).map((meal) => meal.id), ['food-1']);
   assert.deepEqual(filterMeals([rice, soup], '', true).map((meal) => meal.id), ['food-1']);
   assert.deepEqual(filterMeals([rice, soup], 'soup', true), []);
+});
+
+test('difficulty reasons use after-meal review category and value labels', () => {
+  const labels = {
+    categories: { tasteIntensity: 'Taste intensity', texture: 'Texture' },
+    values: { sour: 'Sour', chewy: 'Chewy/tough' },
+  };
+  assert.equal(
+    formatDifficultyReason({ category: 'tasteIntensity', value: 'sour' }, labels),
+    'Taste intensity - Sour',
+  );
+  assert.equal(
+    formatDifficultyReason({ category: 'texture', value: 'chewy', note: 'hard to chew' }, labels),
+    'Texture - Chewy/tough · hard to chew',
+  );
 });
 
 test('food cards join stored outcomes, difficulties, and linked suggestions', () => {

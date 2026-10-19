@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+// AI-generated with Grok 4.6, 2026-10-19, reviewed by Doyeon Kim
 
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -76,7 +76,7 @@ export function MealDetailsView(p: Props) {
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.detailDate}>{p.heading}</Text>
           <View style={styles.statusRow}>
-            <View style={[styles.badge, p.awaitingReview ? styles.awaiting : styles.reviewed]}>
+            <View style={[styles.foodBadge, p.awaitingReview ? styles.awaiting : styles.reviewed]}>
               <Text style={p.awaitingReview ? styles.awaitingText : styles.reviewedText}>
                 {p.awaitingReview ? m.awaitingReview : m.reviewed}
               </Text>

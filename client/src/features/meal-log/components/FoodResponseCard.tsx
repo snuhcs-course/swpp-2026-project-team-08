@@ -7,7 +7,7 @@ import { Pressable, Text, View } from 'react-native';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
-import { acceptanceFill } from '../rules';
+import { acceptanceFill, formatDifficultyReason } from '../rules';
 import type { FoodResponseCard as Card } from '../types';
 import { styles } from '../screens/mealLogStyles';
 
@@ -52,10 +52,7 @@ export function FoodResponseCard({
     return (
       <View style={[styles.foodCard, styles.suggestionBack]}>
         <View style={styles.suggestionHeader}>
-          <View style={styles.foodHeader}>
-            <Feather name="chevron-down" size={16} color={colors.homeMuted} />
-            <Text style={styles.suggestionTitle}>{card.name}</Text>
-          </View>
+          <Text style={styles.suggestionTitle}>{card.name}</Text>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={isSaved ? m.unsaveSuggestion : m.saveSuggestion}
@@ -102,7 +99,10 @@ export function FoodResponseCard({
   }
 
   const reasonText = card.reasons
-    .map((reason) => reason.note || review.values[reason.value as keyof typeof review.values] || reason.value)
+    .map((reason) => formatDifficultyReason(reason, {
+      categories: review.categories,
+      values: review.values as Record<string, string>,
+    }))
     .filter(Boolean)
     .join('\n');
 
@@ -132,12 +132,8 @@ export function FoodResponseCard({
             <View style={styles.acceptanceTrack}>
               <View style={[styles.acceptanceFill, { width: `${Math.round(fill * 100)}%` }]} />
             </View>
-            {reasonText ? (
-              <>
-                <Text style={styles.outcomeLabel}>{m.reason}</Text>
-                <Text style={styles.outcomeValue}>{reasonText}</Text>
-              </>
-            ) : null}
+            <Text style={styles.outcomeLabel}>{m.reason}</Text>
+            {reasonText ? <Text style={styles.outcomeValue}>{reasonText}</Text> : null}
           </View>
           {linked ? (
             <Pressable accessibilityRole="button" accessibilityLabel={m.linkedSuggestion} onPress={() => setShowingSuggestion(true)}>

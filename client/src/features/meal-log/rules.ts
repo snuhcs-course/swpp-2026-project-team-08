@@ -154,3 +154,14 @@ export function foodResponseCards(
   }
   return cards;
 }
+
+// AI-generated with Grok 4.6, 2026-10-19, reviewed by Doyeon Kim
+export function formatDifficultyReason(
+  reason: { category: string; value: string; note?: string },
+  labels: { categories: Record<string, string>; values: Record<string, string> },
+): string {
+  const category = labels.categories[reason.category] ?? reason.category;
+  const value = labels.values[reason.value] ?? reason.value;
+  const detail = reason.note?.trim() ? `${value} · ${reason.note.trim()}` : value;
+  return `${category} - ${detail}`;
+}

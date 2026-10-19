@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+// AI-generated with Grok 4.6, 2026-10-19, reviewed by Doyeon Kim
 
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -65,7 +65,7 @@ export function MealLogCalendar({
 
   return (
     <View style={styles.calendarBlock}>
-      <Text style={styles.sectionLabel}>{title}</Text>
+      <Text style={styles.calendarTitle}>{title}</Text>
       <View style={styles.selectedRow}>
         <View style={styles.selectedLeft}>
           <View style={styles.selectedTitle}>
@@ -141,7 +141,7 @@ export function MealLogCalendar({
                 ]}>
                   <Text style={[
                     styles.dayText,
-                    (!cell.inMonth || (count === 0 && !selected)) && styles.dayMuted,
+                    !!selectedDate && !cell.inMonth && styles.dayMuted,
                     onDark && cell.inMonth && styles.dayOnDark,
                   ]}>{cell.day}</Text>
                 </View>

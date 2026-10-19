@@ -46,6 +46,7 @@ app/
 
 위 두 파일 외에, 각 파일이 길어지거나 기능에 따라 추가 파일이 필요하면 다음 예시와 같이 파일을 더할 수 있다.
 
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 | 파일 | 언제 | 역할 |
 |---|---|---|
 | `dto.py` | DTO가 다른 기능에서 재사용되거나 `router.py`가 길어질 때 | DTO를 `router.py`에서 분리 |
@@ -54,7 +55,7 @@ app/
 | `security.py` 등 | 그 기능만 쓰는 기술 도구가 필요할 때 | 예: `auth/security.py`의 비밀번호 암호화 · 토큰 발급 · 검증 |
 | `queries.py` | 같은 쿼리를 둘 이상에서 쓰거나 길어질 때 | 평범한 **함수**로 쿼리를 분리 (클래스 · 리포지토리 계층은 두지 않는다) |
 | `analysis.py` · `scoring.py` 등 | DB 조회 없이 판단되는 계산 규칙 | **순수 함수** 모듈. 서비스가 데이터를 읽어 넘기고 결과를 저장한다 |
-| `workflow/` | LangGraph 같은 다단계 워크플로가 필요할 때 | `state.py · nodes.py · prompts.py · graph.py` (§2.5) |
+| `workflow/` | LangGraph 같은 다단계 워크플로가 필요할 때 | `state.py · nodes.py · prompts.py · graph.py` 등 (§2.5). LLM이 직접 호출할 도구가 필요하면 `tools.py`를 더할 수 있다 |
 
 **규칙은 service에 둔다.** "이미 가입된 이메일이면 가입할 수 없다" 같은 비즈니스 규칙은 지금은 모두
 `service.py`에 작성한다. 규칙을 모델(`models/`)이나 다른 곳에 나눠 두지 않으므로, 규칙을 찾을 때는
@@ -105,13 +106,14 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 
 특정 기능을 모르는 횡단 기술 관심사를 담는다.
 
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 | 파일 | 역할 |
 |---|---|
 | `config.py` | pydantic-settings 설정 (싱글턴). `.env`/환경변수 타입 안전 로딩 |
 | `database.py` | async 엔진/세션, `DeclarativeBase`, `get_session`(요청 단위 트랜잭션 경계) |
 | `timezone.py` | KST 현재 시각 `now_kst` |
 | `errors.py` | `AppError`(에러 베이스), `RequestInvalidError` — FastAPI import 없는 순수 파이썬 |
-| `llm.py` (필요 시) | LLM 클라이언트 생성. 비즈니스 지식 없이 설정에서 키를 읽는다 |
+| `llm.py` (필요 시) | 둘 이상의 기능이 LLM을 쓰게 되면 두는 LLM 클라이언트 생성 코드. 비즈니스 지식 없이 설정에서 키를 읽는다. LLM을 쓰는 기능이 하나뿐인 동안은 그 기능의 `workflow/llm.py`에 둔다 (§2.5) |
 
 **무엇이 `core/`에 가나.** 한 기능만 쓰는 코드는 그 기능 폴더에 두고, **둘 이상의 기능이 함께 쓰는 기술 도구**는
 `core/`에 둔다 (설정, DB 세션, 시각 등).
@@ -121,14 +123,52 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 
 ### 2.5 워크플로 (LangGraph 등)
 
-다단계 워크플로는 새 계층이 아니라 **해당 기능 서비스의 구현 수단**이다 (예: `features/meal_recommendations/workflow/`).
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+다단계 워크플로는 새 계층이 아니라 **해당 기능 서비스의 구현 수단**이다. 다른 기능에서 LangGraph를 추가할 때는
+`features/suggestions/`를 기준 구현으로 삼아 본뜬다.
 
-- 진입점은 서비스 하나다. 서비스가 입력을 모으고 그래프를 실행해 결과를 저장한다. `router`가 그래프를 직접 부르지 않는다.
-- 노드는 얇게 둔다: 상태를 읽고, 순수 함수나 LLM을 호출하고, 바뀐 상태만 반환한다. 결정적 규칙은 `scoring.py`
-  같은 순수 함수에 두어 그래프 없이 단위 테스트한다.
-- **상태에 ORM 객체를 넣지 않는다.** 서비스가 모델을 평범한 값(dict · dataclass · Pydantic)으로 바꿔 담는다.
+```
+features/suggestions/
+├── generator.py          # 서비스가 부르는 단일 진입점 (그래프 실행, 검증 실패 시 예외)
+├── validation.py         # 결과 검증 — 순수 함수, 문제 목록을 반환
+├── ingredients.py        # 재료 카탈로그 · 제한 판정 — 순수 함수
+└── workflow/
+    ├── state.py          # InputState · OutputState · GraphState, 입출력 dataclass, 컨텍스트
+    ├── nodes.py          # 노드 (얇게)
+    ├── graph.py          # 그래프 조립 (한 번 컴파일해 재사용)
+    ├── prompts.py        # 프롬프트
+    ├── schemas.py        # LLM 구조화 출력 스키마 (Pydantic)
+    ├── llm.py            # 이 기능의 LLM 클라이언트 생성
+    └── tools.py          # LLM이 호출하는 도구 (필요할 때만)
+```
+
+- 진입점은 서비스 하나다. 서비스가 입력을 모으고 `generator.py`의 함수를 불러 결과를 저장한다. `router`나
+  서비스가 그래프를 직접 다루지 않는다. 타임아웃과 에러 변환(`AppError`)은 서비스가 맡는다.
+- **상태는 입력 · 출력 · 전체로 나눈다.** `InputState`(호출할 때 넘기는 값), `OutputState`(끝났을 때 돌려주는 값),
+  `GraphState`(둘을 상속하고 `messages` 같은 내부 값을 더한 노드 간 전체 상태)를 `TypedDict`로 정의한다.
+  내부 값은 첫 노드(`prepare`)가 초기화한다.
+- **데이터는 상태에, 의존성은 컨텍스트에 둔다.** 입력 음식 · 아이의 제한 목록처럼 작업의 데이터는 상태에 넣고,
+  LLM 클라이언트처럼 실행에 필요한 도구는 `context_schema`로 정의한 컨텍스트에 넣어 노드가
+  `runtime: Runtime[Context]` 인자로 받는다. 그러면 노드가 최상위 함수가 되고 그래프를 한 번만 컴파일해 모든 요청이
+  재사용한다.
+- 노드는 얇게 둔다: 상태를 읽고, 순수 함수나 LLM을 호출하고, 바뀐 상태만 반환한다. 결정적 규칙은 `validation.py` ·
+  `ingredients.py` 같은 순수 함수에 두어 그래프 없이 단위 테스트한다.
+- **상태에 ORM 객체를 넣지 않는다.** 서비스가 모델을 평범한 값(dataclass)으로 바꿔 담는다.
 - 노드가 DB를 더 읽어야 하면 의존성으로 주입한다. 노드가 직접 세션을 열지 않는다.
-- LLM 호출은 `core/llm.py`의 클라이언트를 쓰고, 프롬프트는 `prompts.py`에 모은다. 테스트에서는 클라이언트만 가짜로 바꾼다.
+- **LLM 출력은 Pydantic으로 파싱한 뒤 dataclass로 바꾼다.** 외부에서 온 값이라 런타임 검증이 필요하기 때문이고,
+  파싱 뒤 워크플로 안에서는 Pydantic 스키마를 쓰지 않는다.
+- **결과 검증은 순수 함수가 한다.** 문제를 예외로 던지지 않고 문제 목록(자연어 없는 데이터)으로 반환해 `validate`
+  노드가 재시도 여부를 정한다. 문구는 `prompts.py` 한 곳에서 만든다. 재시도를 다 쓰고도 통과하지 못한 결과는
+  저장하지 않고 예외로 끝낸다.
+- LLM 클라이언트는 그 기능의 `workflow/llm.py`에서 만들고, 프롬프트는 `prompts.py`에 모은다. 둘 이상의 기능이
+  LLM을 쓰게 되면 `core/llm.py`로 올린다 (§2.4).
+- **도구(`tools.py`)는 LLM이 상황에 따라 직접 조회해야 할 때만 둔다.** 항상 필요한 데이터는 도구가 아니라 서비스가
+  입력으로 넘긴다. 도구는 읽기 전용이고 세션을 열지 않으며, `child_id`나 제한 목록 같은 식별자 · 권한 값은 LLM
+  인자로 받지 않고 `InjectedState`로 상태에서 주입한다 (LLM이 다른 값을 지어내지 못하도록).
+- 테스트에서는 LLM 클라이언트만 가짜로 바꿔 그래프 전체를 실행한다 (`tests/fake_chat_model.py`). 테스트에서 실제 LLM을
+  호출하지 않는다.
+- LangSmith 추적은 코드를 바꾸지 않고 환경변수로 켤 수 있다. 프롬프트에 아이의 식사 정보가 들어가므로, 운영에서
+  켜기 전에 외부 서비스로 보내도 되는지 팀이 정한다.
 
 ### 2.6 로그인한 사용자 받기
 

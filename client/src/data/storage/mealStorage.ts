@@ -1,5 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { FoodItem, Meal, MealDraft } from '../../types/meal';
 import { isDraft, isMeal } from './mealValidation';
@@ -20,16 +19,53 @@ function queued<T>(childId: string, work: () => Promise<T>): Promise<T> {
     .catch(() => undefined);
   return next;
 }
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Compatibility for records written before the feature was removed.
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+function normalizeStoredFood(value: unknown): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  const next = { ...value } as Record<string, unknown>;
+  delete next.history;
+  delete next.traits;
+  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+  // Older entries used source for confirmation and origin for provenance.
+  if (next.confirmed === undefined) next.confirmed = next.source === 'parent';
+  if (next.origin === 'ai' || next.origin === 'parent') next.source = next.origin;
+  delete next.origin;
+  return next;
+}
+
+function normalizeStoredMeal(value: unknown): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  const next = { ...value } as Record<string, unknown>;
+  delete next.exposureFoodId;
+  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+  if (Array.isArray(next.foods)) next.foods = next.foods.map(normalizeStoredFood);
+  if (next.editingFood) next.editingFood = normalizeStoredFood(next.editingFood);
+  if (next.step === 'goal') next.step = 'foods';
+  return next;
+}
+
 export async function readMealDraft(
   childId: string,
 ): Promise<MealDraft | null> {
   await queues.get(childId)?.catch(() => undefined);
   const raw = await AsyncStorage.getItem(draftKey(childId));
   if (!raw) return null;
-  const value: unknown = JSON.parse(raw);
+  const value: unknown = normalizeStoredMeal(JSON.parse(raw));
   if (!isDraft(value, childId)) throw new Error('Invalid meal draft');
-  // Completion can be restored, but must not appear as a new Home draft.
-  return { ...value, step: value.step === 'analyzing' ? 'method' : value.step };
+  // Preserve saved receipts and all user-confirmed foods. Old photo fixtures must
+  // never reappear as foods the caregiver entered.
+  if (value.step === 'complete') return value;
+  const keepFood = (food: FoodItem) => food.source !== 'ai' || food.confirmed === true;
+  const foods = value.foods.filter(keepFood);
+  return {
+    ...value,
+    foods,
+    editingFood: value.editingFood && keepFood(value.editingFood) ? value.editingFood : null,
+    suggestionLinks: value.suggestionLinks?.filter((link) => foods.some((food) => food.id === link.foodId)),
+    step: ['method', 'analyzing', 'analysis-error'].includes(value.step) ? 'foods' : value.step,
+  };
 }
 export const saveMealDraft = (draft: MealDraft) =>
   queued(draft.childId, async () => {
@@ -39,7 +75,8 @@ export const saveMealDraft = (draft: MealDraft) =>
 export async function readMeals(childId: string): Promise<Meal[]> {
   const raw = await AsyncStorage.getItem(mealsKey(childId));
   if (!raw) return [];
-  const value: unknown = JSON.parse(raw);
+  const parsed: unknown = JSON.parse(raw);
+  const value = Array.isArray(parsed) ? parsed.map(normalizeStoredMeal) : parsed;
   if (!Array.isArray(value) || !value.every((meal) => isMeal(meal, childId)))
     throw new Error('Invalid meals');
   return value;
@@ -55,17 +92,16 @@ export function updateMealFoods(childId: string, mealId: string, foods: FoodItem
     const next: Meal = {
       ...current,
       foods,
-      exposureFoodId: current.exposureFoodId && foods.some((food) => food.id === current.exposureFoodId)
-        ? current.exposureFoodId : null,
+      suggestionLinks: current.suggestionLinks?.filter((link) => foods.some((food) => food.id === link.foodId)),
     };
     if (!isMeal(next, childId)) throw new Error('Invalid edited meal');
     meals[index] = next;
     await AsyncStorage.setItem(mealsKey(childId), JSON.stringify(meals));
     const rawDraft = await AsyncStorage.getItem(draftKey(childId));
     if (rawDraft) {
-      const stored: unknown = JSON.parse(rawDraft);
+      const stored: unknown = normalizeStoredMeal(JSON.parse(rawDraft));
       if (isDraft(stored, childId) && stored.step === 'complete' && stored.savedMealId === mealId) {
-        await AsyncStorage.setItem(draftKey(childId), JSON.stringify({ ...stored, foods, exposureFoodId: next.exposureFoodId }));
+        await AsyncStorage.setItem(draftKey(childId), JSON.stringify({ ...stored, foods, suggestionLinks: next.suggestionLinks }));
       }
     }
     return next;

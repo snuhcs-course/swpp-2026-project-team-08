@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -38,7 +39,6 @@ const {
   isoDate, matchesMealQuery, mealDateParts, mealThumbnail, monthKey, shiftMonth,
   sortMealsLatestFirst,
 } = require('../src/features/meal-log/rules.ts');
-const { emptyTraits } = require('../src/rules/foodDraft.ts');
 const { mealToUpsertBody, reviewToBody, suggestionToBody } = require('../src/data/api/mealLogApi.ts');
 const { demoMealCounts, demoMealDetail, demoMealList, mergeDemoMealList } = require('../src/data/api/mealLogFixtures.ts');
 const { applySuggestionSaved } = require('../src/data/storage/homeStorage.ts');
@@ -100,7 +100,7 @@ test('frontend search matches food names or ingredients and can hide reviewed me
 test('food cards join stored outcomes, difficulties, and linked suggestions', () => {
   const food = {
     id: 'food-1', name: 'Rice', ingredients: ['rice'], preparation: 'steamed', servingNote: '',
-    traits: emptyTraits(), history: 'usually', source: 'parent',
+    source: 'parent', confirmed: true,
   };
   const cards = foodResponseCards(
     [food],
@@ -138,21 +138,27 @@ test('upsert, review, and suggestion bodies use the server field names', () => {
     photo: { id: 'p1', uri: 'file:///before.png', mimeType: 'image/png' },
     foods: [{
       id: 'food-1', name: 'Rice', ingredients: ['rice'], preparation: 'steamed', servingNote: 'small bowl',
-      traits: emptyTraits(), history: 'usually', source: 'parent',
+      source: 'ai', confirmed: true,
     }],
-    exposureFoodId: 'food-1', savedAt: '2026-10-12T12:00:00.000Z',
+    savedAt: '2026-10-12T12:00:00.000Z',
   });
   assert.equal(body.meal_date, '2026-10-12');
   assert.equal(body.before_photo_uri, 'file:///before.png');
+  assert.equal(Object.hasOwn(body.foods[0], 'history'), false);
+  assert.equal(Object.hasOwn(body.foods[0], 'traits'), false);
   assert.equal(body.foods[0].serving_note, 'small bowl');
+  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+  assert.equal(body.foods[0].source, 'ai');
+  assert.equal(body.foods[0].confirmed, true);
+  assert.equal(Object.hasOwn(body.foods[0], 'origin'), false);
   const review = reviewToBody({
     mealId: 'meal-1', childId: 'child-1',
     afterPhoto: { id: 'p2', uri: 'file:///after.png', mimeType: 'image/png' },
-    comparisonMethod: 'manual', outcomes: [], difficulties: {}, goalFeedback: null, suggestionFeedback: {},
+    comparisonMethod: 'manual', outcomes: [], difficulties: {}, suggestionFeedback: { yes: { tried: true }, no: { tried: false } },
     savedAt: '2026-10-12T13:00:00.000Z',
   });
   assert.equal(review.after_photo_uri, 'file:///after.png');
-  assert.equal(review.goal_feedback, null);
+  assert.deepEqual(review.suggestion_feedback, { yes: { tried: true }, no: { tried: false } });
   const suggestion = suggestionToBody({
     id: 's1', childId: 'child-1', title: 'Try rice', description: 'Small separate portion',
     servingTip: 'Keep the form', ingredients: ['rice'], isSaved: true, safetyVerifiedForProfileAt: 'v1',
@@ -186,7 +192,7 @@ test('demo meals vary by day so the calendar can show different densities', () =
 
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 test('bookmarking a linked suggestion toggles the saved flag without dropping it on a later unsave', () => {
-  const records = { meals: [], exposures: [], suggestions: [] };
+  const records = { meals: [], suggestions: [] };
   const draft = {
     id: 'sug-2026-10-16-dinner',
     title: 'Offer a smaller piece beside a familiar food.',
@@ -207,7 +213,7 @@ test('bookmarking a linked suggestion toggles the saved flag without dropping it
 test('meal history food and ingredient cards preserve managed suggestion routing', () => {
   const food = {
     id: 'food-managed', name: 'Omelet', ingredients: ['Egg'], preparation: 'pan-fried',
-    servingNote: '', traits: emptyTraits(), history: 'usually', source: 'parent',
+    servingNote: '', source: 'parent', confirmed: true,
   };
   const cards = foodResponseCards([food], {
     outcomes: [{ foodId: food.id, decision: { confirmed: 'tasted', suggested: null },
@@ -222,4 +228,34 @@ test('meal history food and ingredient cards preserve managed suggestion routing
   ]);
   assert.equal(cards[1].parentName, 'Omelet');
   assert.equal(cards[1].outcome, 'eaten');
+});
+
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+test('meal detail responses preserve boolean feedback and reject invalid values', async () => {
+  const api = require('../src/data/network/apiClient.ts');
+  const { getMealDetail } = require('../src/data/api/mealLogApi.ts');
+  const original = api.apiRequest;
+  const response = {
+    id: 'boolean-feedback-meal', child_id: 'boolean-feedback-child', meal_date: '2026-10-19',
+    meal_type: 'lunch', setting: 'home', before_photo_uri: null, saved_at: '2026-10-19T12:00:00Z',
+    foods: [], suggestions: [], review: {
+      after_photo_uri: '', outcomes: [], difficulties: {}, saved_at: '2026-10-19T13:00:00Z',
+      suggestion_feedback: { yes: { tried: true }, no: { tried: false } },
+    },
+  };
+  api.apiRequest = async () => response;
+  try {
+    const detail = await getMealDetail(response.child_id, response.id);
+    assert.deepEqual(detail.review.suggestionFeedback, response.review.suggestion_feedback);
+    for (const invalid of ['tried', 'notTried', true, {}, { tried: 'false' }, { tried: 0 }, { tried: null }]) {
+      response.review.suggestion_feedback = { invalid };
+      await assert.rejects(getMealDetail(response.child_id, response.id), /Invalid suggestion feedback/);
+    }
+    response.review.suggestion_feedback = null;
+    await assert.rejects(getMealDetail(response.child_id, response.id), /Invalid suggestion feedback/);
+    delete response.review.suggestion_feedback;
+    assert.deepEqual((await getMealDetail(response.child_id, response.id)).review.suggestionFeedback, {});
+  } finally {
+    api.apiRequest = original;
+  }
 });

@@ -1,10 +1,11 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
 import { useAuth } from '../../providers/AuthProvider';
 import { useProfile } from '../../providers/ProfileProvider';
 import type { ChildProfile, SafeFood } from '../../types/profile';
+import { createDraftSaveGate } from './draftSaveGate';
 import { addUnique, canAddSafeFood, canContinue, canFinish, isDraft, toggleExclusive, validEmail } from './rules';
 import { emptyDraft, type OnboardingDraft, type OnboardingStep } from './types';
 import { OnboardingContext, type ConsentField, type DraftField, type ListField, type SaveStatus } from './onboardingContext';
@@ -23,8 +24,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   const [editing, setEditing] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
-  const saveChain = useRef<Promise<void>>(Promise.resolve());
-  const saveVersion = useRef(0);
+  const saveGate = useRef(createDraftSaveGate());
   const skipFirstSave = useRef(true);
   const finishing = useRef(false);
 
@@ -46,15 +46,14 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [status, profile, ready]);
 
   const persist = useCallback((value: OnboardingDraft) => {
-    const version = ++saveVersion.current;
     setSaveStatus('saving');
     setHasDraft(true);
-    saveChain.current = saveChain.current.catch(() => undefined).then(() => saveDraft(value));
-    saveChain.current.then(
-      () => { if (version === saveVersion.current) setSaveStatus('saved'); },
-      () => { if (version === saveVersion.current) setSaveStatus('error'); },
+    const pending = saveGate.current.persist(() => saveDraft(value));
+    pending.then(
+      () => { if (!finishing.current) setSaveStatus('saved'); },
+      () => { if (!finishing.current) setSaveStatus('error'); },
     );
-    return saveChain.current;
+    return pending;
   }, []);
 
   useEffect(() => {
@@ -115,13 +114,63 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const setStep = useCallback((step: OnboardingStep) => {
     setDraft((current) => ({ ...current, step }));
   }, []);
-  const startEdit = useCallback(() => {
-    if (!profile) return;
-    if (editing) return;
+  const draftFromProfile = useCallback((step: OnboardingStep): OnboardingDraft | null => {
+    if (!profile) return null;
     const { id: _id, updatedAt: _updatedAt, ...values } = profile;
-    setDraft({ ...values, step: 'review', safeFoodInput: { name: '', preparation: '', presentationNote: '' } });
+    return { ...values, step, safeFoodInput: { name: '', preparation: '', presentationNote: '' } };
+  }, [profile]);
+  const startEdit = useCallback(() => {
+    if (editing) return;
+    const next = draftFromProfile('review');
+    if (!next) return;
+    setDraft(next);
     setEditing(true);
-  }, [profile, editing]);
+  }, [editing, draftFromProfile]);
+  const startProfileEdit = useCallback(() => {
+    const next = draftFromProfile('review');
+    if (!next) return;
+    setDraft(next);
+    setEditing(true);
+  }, [draftFromProfile]);
+  const cancelEdit = useCallback(async () => {
+    finishing.current = true;
+    const next = draftFromProfile('review');
+    if (next) setDraft(next);
+    setEditing(false);
+    setHasDraft(false);
+    try { await saveGate.current.discard(clearDraft); } finally { finishing.current = false; }
+  }, [draftFromProfile]);
+  const applyEdit = useCallback(async () => {
+    if (finishing.current) return false;
+    finishing.current = true;
+    try {
+      await persist(draft);
+      const { step: _step, safeFoodInput: _safeFoodInput, ...values } = draft;
+      const next: ChildProfile = {
+        ...values,
+        id: profile?.id ?? auth.session?.user.id ?? `child-${Date.now()}`,
+        updatedAt: new Date().toISOString(),
+      };
+      await commitProfile(next);
+      await clearDraft();
+      setEditing(false);
+      setHasDraft(false);
+      return true;
+    } catch {
+      setSaveStatus('error');
+      return false;
+    } finally {
+      finishing.current = false;
+    }
+  }, [draft, profile, persist, commitProfile, auth.session]);
+  const resetLocal = useCallback(async () => {
+    finishing.current = true;
+    setDraft(emptyDraft());
+    setPassword('');
+    setEditing(false);
+    setHasDraft(false);
+    try { await saveGate.current.discard(clearDraft); } finally { finishing.current = false; }
+  }, []);
   const retrySave = useCallback(() => persist(draft), [draft, persist]);
   const retryLoad = useCallback(() => {
     skipFirstSave.current = true;
@@ -133,7 +182,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     finishing.current = true;
     try {
       await persist(draft);
-      await saveChain.current;
       const { step: _step, safeFoodInput: _safeFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,
@@ -158,7 +206,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     draft, password, saveStatus, editing, hasDraft,
     setPassword, setField, setConsent, toggleList, setList, addListItem,
     removeListItem, addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setStep,
-    startEdit, retrySave, retryLoad, finish, canContinue: (step) => step === 'review' ? canFinish(draft)
+    startEdit, startProfileEdit, cancelEdit, applyEdit, resetLocal,
+    retrySave, retryLoad, finish, canContinue: (step) => step === 'review' ? canFinish(draft)
       : step === 'account' && (editing || !!auth.session) ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)
         : canContinue(step, draft, password),
   }}>{children}</OnboardingContext.Provider>;

@@ -4,6 +4,8 @@
 import pytest
 from httpx import AsyncClient
 
+from tests.test_meal_logs import put_meal
+
 SIGNUP_PAYLOAD = {
     "email": "user@example.com",
     "password": "supersecret",
@@ -169,3 +171,153 @@ async def test_login_unknown_email_unauthorized(client: AsyncClient) -> None:
     # 존재하지 않는 이메일도 비밀번호 오류와 동일하게 응답한다.
     assert res.status_code == 401
     assert res.json()["error_code"] == "INVALID_CREDENTIALS"
+
+
+# AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+def _auth_header(tokens: dict) -> dict:
+    return {"Authorization": f"Bearer {tokens['access_token']}"}
+
+
+@pytest.mark.asyncio
+async def test_patch_me_updates_full_name(client: AsyncClient) -> None:
+    tokens = await _sign_up_and_login(client)
+
+    res = await client.patch(
+        "/api/v1/auth/me",
+        headers=_auth_header(tokens),
+        json={"full_name": "김도연"},
+    )
+
+    assert res.status_code == 200
+    assert res.json()["full_name"] == "김도연"
+    me = await client.get("/api/v1/auth/me", headers=_auth_header(tokens))
+    assert me.json()["full_name"] == "김도연"
+
+
+@pytest.mark.asyncio
+async def test_email_change_requires_server_code(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("app.features.auth.service.issue_email_code", lambda: "482190")
+    tokens = await _sign_up_and_login(client)
+
+    sent = await client.post(
+        "/api/v1/auth/email-change",
+        headers=_auth_header(tokens),
+        json={"email": "new@example.com"},
+    )
+    assert sent.status_code == 200
+    assert sent.json() == {"sent": True, "dev_code": "482190"}
+
+    wrong = await client.post(
+        "/api/v1/auth/email-change/confirm",
+        headers=_auth_header(tokens),
+        json={"email": "new@example.com", "code": "123456"},
+    )
+    assert wrong.status_code == 400
+    assert wrong.json()["error_code"] == "INVALID_EMAIL_CODE"
+
+    confirmed = await client.post(
+        "/api/v1/auth/email-change/confirm",
+        headers=_auth_header(tokens),
+        json={"email": "new@example.com", "code": "482190"},
+    )
+    assert confirmed.status_code == 200
+    assert confirmed.json()["email"] == "new@example.com"
+
+    old_login = await client.post(
+        "/api/v1/auth/login",
+        json={"email": SIGNUP_PAYLOAD["email"], "password": SIGNUP_PAYLOAD["password"]},
+    )
+    assert old_login.status_code == 401
+    new_login = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "new@example.com", "password": SIGNUP_PAYLOAD["password"]},
+    )
+    assert new_login.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_email_change_omits_code_outside_local(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("app.features.auth.service.issue_email_code", lambda: "482190")
+    monkeypatch.setattr(
+        "app.features.auth.router.get_settings",
+        lambda: type("Settings", (), {"ENVIRONMENT": "production"})(),
+    )
+    tokens = await _sign_up_and_login(client)
+
+    sent = await client.post(
+        "/api/v1/auth/email-change",
+        headers=_auth_header(tokens),
+        json={"email": "new@example.com"},
+    )
+    assert sent.status_code == 200
+    assert sent.json() == {"sent": True}
+    assert "482190" not in sent.text
+
+    confirmed = await client.post(
+        "/api/v1/auth/email-change/confirm",
+        headers=_auth_header(tokens),
+        json={"email": "new@example.com", "code": "482190"},
+    )
+    assert confirmed.status_code == 200
+    assert confirmed.json()["email"] == "new@example.com"
+
+
+@pytest.mark.asyncio
+async def test_email_change_rejects_same_and_taken_email(client: AsyncClient) -> None:
+    tokens = await _sign_up_and_login(client)
+    await client.post(
+        "/api/v1/auth/signup",
+        json={"email": "taken@example.com", "password": "supersecret", "full_name": "다른사람"},
+    )
+
+    same = await client.post(
+        "/api/v1/auth/email-change",
+        headers=_auth_header(tokens),
+        json={"email": SIGNUP_PAYLOAD["email"]},
+    )
+    assert same.status_code == 422
+    assert same.json()["error_code"] == "SAME_EMAIL"
+
+    taken = await client.post(
+        "/api/v1/auth/email-change",
+        headers=_auth_header(tokens),
+        json={"email": "taken@example.com"},
+    )
+    assert taken.status_code == 409
+    assert taken.json()["error_code"] == "EMAIL_ALREADY_EXISTS"
+
+
+@pytest.mark.asyncio
+async def test_delete_me_removes_user_and_child_meals(client: AsyncClient) -> None:
+    signup = await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
+    user_id = signup.json()["id"]
+    tokens = (
+        await client.post(
+            "/api/v1/auth/login",
+            json={"email": SIGNUP_PAYLOAD["email"], "password": SIGNUP_PAYLOAD["password"]},
+        )
+    ).json()
+
+    meal = await put_meal(client, child_id=user_id, meal_id="meal-to-wipe")
+    assert meal.status_code == 200
+
+    deleted = await client.delete("/api/v1/auth/me", headers=_auth_header(tokens))
+    assert deleted.status_code == 204
+
+    me = await client.get("/api/v1/auth/me", headers=_auth_header(tokens))
+    assert me.status_code == 401
+
+    leftover = await client.get(f"/api/v1/children/{user_id}/meals/meal-to-wipe")
+    assert leftover.status_code == 404
+
+    login = await client.post(
+        "/api/v1/auth/login",
+        json={"email": SIGNUP_PAYLOAD["email"], "password": SIGNUP_PAYLOAD["password"]},
+    )
+    assert login.status_code == 401

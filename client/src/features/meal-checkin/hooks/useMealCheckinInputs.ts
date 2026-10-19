@@ -1,7 +1,6 @@
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { useState } from 'react';
-import type { FoodItem, FoodTraits, MealDraft, TraitGroup } from '../../../types/meal';
+import type { FoodItem, MealDraft } from '../../../types/meal';
 import { localDate } from '../../../util/date';
 
 type DateParts = [number, number, number];
@@ -9,18 +8,14 @@ type DateFieldIndex = 0 | 1 | 2 | null;
 
 export function useMealCheckinInputs({
   draft,
-  traits,
   onUpdate,
   onEditFood,
   onChangeFood,
-  onToggleTrait,
 }: {
   draft: MealDraft | null;
-  traits: FoodTraits | null;
   onUpdate: (value: Partial<MealDraft>) => void;
   onEditFood: (food?: FoodItem) => void;
   onChangeFood: (value: Partial<FoodItem>) => void;
-  onToggleTrait: (group: TraitGroup, value: string) => void;
 }) {
   const [dateOpen, setDateOpen] = useState(false);
   const [dateField, setDateField] = useState<DateFieldIndex>(null);
@@ -28,14 +23,13 @@ export function useMealCheckinInputs({
     (draft?.mealDate ?? localDate()).split('-').map(Number) as DateParts,
   );
   const [ingredient, setIngredient] = useState('');
-  const [customTrait, setCustomTrait] = useState({ color: '', shape: '' });
 
   const editFood = (food?: FoodItem) => {
     setIngredient('');
-    setCustomTrait({ color: '', shape: '' });
     onEditFood(food);
   };
   const toggleDate = () => {
+    setDateField(null);
     if (draft) setDateParts(draft.mealDate.split('-').map(Number) as DateParts);
     setDateOpen((value) => !value);
   };
@@ -51,6 +45,7 @@ export function useMealCheckinInputs({
     const [year, month, day] = dateParts;
     const dayCount = new Date(year, month, 0).getDate();
     onUpdate({ mealDate: localDate(new Date(year, month - 1, Math.min(day, dayCount))) });
+    setDateField(null);
     setDateOpen(false);
   };
   const addIngredient = () => {
@@ -63,11 +58,6 @@ export function useMealCheckinInputs({
   const removeIngredient = (value: string) => {
     if (!draft?.editingFood) return;
     onChangeFood({ ingredients: draft.editingFood.ingredients.filter((item) => item !== value) });
-  };
-  const addCustomTrait = (group: 'color' | 'shape') => {
-    const value = customTrait[group].trim();
-    if (value && !traits?.[group].includes(value)) onToggleTrait(group, value);
-    setCustomTrait((current) => ({ ...current, [group]: '' }));
   };
 
   return {
@@ -86,10 +76,6 @@ export function useMealCheckinInputs({
       onIngredientChange: setIngredient,
       onAddIngredient: addIngredient,
       onRemoveIngredient: removeIngredient,
-      custom: customTrait,
-      onCustomChange: (group: 'color' | 'shape', value: string) =>
-        setCustomTrait((current) => ({ ...current, [group]: value })),
-      onAddCustomTrait: addCustomTrait,
     },
   };
 }

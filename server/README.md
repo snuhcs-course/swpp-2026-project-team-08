@@ -1,4 +1,4 @@
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim -->
+<!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 
 # server
 
@@ -35,6 +35,37 @@ uv run uvicorn app.main:app --reload     # 서버 실행 → http://localhost:80
 | 의존성 추가 / 제거 | `uv add <package>` / `uv remove <package>` (dev 는 `--dev`) |
 | 마이그레이션 생성 | `uv run alembic revision --autogenerate -m "설명"` |
 | 마이그레이션 적용 / 되돌리기 | `uv run alembic upgrade head` / `uv run alembic downgrade -1` |
+
+## Removed meal fields
+
+The current API no longer stores exposure goals or goal feedback. Migration
+`0005_remove_exposure` joins the two existing migration heads and drops
+`meal_logs.exposure_food_id` and `meal_reviews.goal_feedback`. Applying it deletes
+those values; downgrading restores nullable columns without recovering the data.
+The migration must be applied explicitly to each database before deploying this
+schema change. Historical creation migrations are retained.
+
+Migration `0006_boolean_feedback` converts each `suggestion_feedback` value from
+`"tried"` / `"notTried"` to `{ "tried": true }` / `{ "tried": false }`. The current
+API requires the object format with a strict boolean; omitted keys stay unanswered.
+The downgrade converts those objects back to strings.
+
+Migration `0007_remove_food_history` drops `meal_foods.history`. Applying it
+permanently removes food acceptance history values. Downgrading restores an empty
+nullable column. Meal records and suggestion attempt history are separate features.
+
+Migration `0008_remove_food_traits` drops `meal_foods.traits`. It preserves
+`meal_reviews.difficulties` (after-meal rejection reasons). Downgrading restores
+an empty JSON object for each food without recovering removed traits. Existing
+saved suggestions remain stored; recommendation generation uses revisions based
+on the remaining food fields and may regenerate suggestions on the next request.
+
+<!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
+Migration `0009_food_confirmation` replaces food `origin` with a strict boolean
+`confirmed`. `source` now always records provenance (`ai` or `parent`); confirming
+or editing a food preserves it. Existing rows derive confirmation from the old
+`source = 'parent'` state and restore provenance from `origin` when present.
+Apply this migration explicitly before deploying the matching client and server.
 
 ## 코드 품질 기준
 

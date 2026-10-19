@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """식사 기록 HTTP 라우터: /children/{child_id}/meals."""
 
 from datetime import date
@@ -25,6 +25,11 @@ from app.features.meal_logs.dto import (
     MealSuggestionResponse,
     MealUpsertRequest,
 )
+from app.features.meal_logs.link_data import (
+    InvalidMealLinkError,
+    SuggestionFeedbackData,
+    SuggestionLinkData,
+)
 from app.features.meal_logs.service import InvalidMonthError, MealLogService, MealNotFoundError
 from app.models import MealLog
 
@@ -42,6 +47,7 @@ def get_meal_log_service(
 
 
 MEAL_WRITE_ERRORS = {
+    InvalidMealLinkError: ErrorSpec(status_code=422, error_code="INVALID_MEAL_LINK"),
     InvalidMealTypeError: ErrorSpec(
         status_code=422,
         error_code="INVALID_MEAL_TYPE",
@@ -66,6 +72,7 @@ MEAL_WRITE_ERRORS = {
 }
 
 MEAL_LOOKUP_ERRORS = {
+    InvalidMealLinkError: ErrorSpec(status_code=422, error_code="INVALID_MEAL_LINK"),
     MealNotFoundError: ErrorSpec(
         status_code=404,
         error_code="MEAL_NOT_FOUND",
@@ -90,7 +97,7 @@ def _detail(meal: MealLog) -> MealDetailResponse:
         meal_type=meal.meal_type,
         setting=meal.setting,
         before_photo_uri=meal.before_photo_uri,
-        exposure_food_id=meal.exposure_food_id,
+        suggestion_links=meal.suggestion_links,
         saved_at=meal.saved_at,
         foods=[MealFoodResponse.model_validate(food) for food in meal.foods],
         review=MealReviewResponse.model_validate(meal.review) if meal.review else None,
@@ -128,8 +135,10 @@ async def upsert_meal(
         meal_type=payload.meal_type,
         setting=payload.setting,
         before_photo_uri=payload.before_photo_uri,
-        exposure_food_id=payload.exposure_food_id,
         foods=[food.model_dump() for food in payload.foods],
+        suggestion_links=[
+            SuggestionLinkData(**link.model_dump()) for link in payload.suggestion_links
+        ],
         saved_at=payload.saved_at,
     )
     return _detail(meal)
@@ -187,7 +196,11 @@ async def save_review(
         after_photo_uri=payload.after_photo_uri,
         outcomes=[outcome.model_dump() for outcome in payload.outcomes],
         difficulties=payload.difficulties,
-        goal_feedback=payload.goal_feedback,
+        # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+        suggestion_feedback={
+            key: SuggestionFeedbackData(tried=value.tried)
+            for key, value in payload.suggestion_feedback.items()
+        },
         saved_at=payload.saved_at,
     )
     return _detail(meal)

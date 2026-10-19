@@ -1,16 +1,19 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; initialize calendar from the selected home date
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 
 import { useCallback, useMemo, useState } from 'react';
+import { validDate } from '../../../util/date';
 import { useMealList } from '../../../data/queries/mealLogQueries';
 import { useMealDraft } from '../../../data/queries/mealQueries';
 import { filterMeals, monthKey, shiftMonth, sortMealsLatestFirst } from '../rules';
 
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
-export function useMealLog(childId: string) {
-  const now = new Date();
+export function useMealLog(childId: string, initialDate?: string) {
+  const validInitial = initialDate && validDate(initialDate) ? initialDate : null;
+  const now = validInitial ? new Date(`${validInitial}T12:00:00`) : new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(validInitial);
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
   const [unreviewedOnly, setUnreviewedOnly] = useState(false);

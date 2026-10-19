@@ -1,5 +1,4 @@
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { Redirect } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import type { HomeTab } from '../../../components/BottomNavigation';
@@ -7,7 +6,7 @@ import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 
-const sections: HomeTab[] = ['mealLog', 'sos', 'ideas', 'insight'];
+const sections: HomeTab[] = ['mealLog', 'ideas', 'insight'];
 
 export function SectionScreen({ name }: { name: string }) {
   const model = useProfile();

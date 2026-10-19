@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; restore independent Link record food selector -->
 <!-- AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung -->
 
 # D — 추천 및 저장된 추천
@@ -449,7 +450,7 @@
 | `Remove` 클릭 | 저장 목록에서 제거하고 바텀시트를 닫는다. 목록을 갱신하고 제거됐다는 안내를 보여준다. 마지막 추천이면 저장된 추천이 없는 화면을 보여준다. 식사·시도·도움 여부 기록은 삭제하지 않는다. |
 | Record a Try / Add a Try 클릭 | 두 버튼 모두 기록 방법 선택 메뉴를 연다. Add a Try는 기존 Trial을 유지한 채 추가 시도를 기록하는 흐름이다. |
 | `Link an existing record` 클릭 | `Link record (select meal)`로 이동한다. 같은 아이의 식사 기록 중 추천 생성 이후 저장된 기록을 조회한다. |
-| Log a meal 클릭 | `Meal Check-in`으로 이동한다. `Trying this suggestion`은 선택된 상태이다. |
+| Log a meal 클릭 | `Meal Check-in`으로 이동한다. `Trying this suggestion`은 선택된 상태이다. 식사 저장 성공 후 새 기록 ID로 S.07 음식 확인 화면으로 돌아온다. B의 Link suggestion 음식 카드 화면으로 대체하지 않는다. |
 | 각 Tried / 시도 날짜 칩 클릭 | 선택한 Trial에 연결된 식사 ID로 Meal History의 Meal Review 화면을 연다. |
 | 닫기(`X`), 배경 흐린 부분, 아래로 닫기, Android 뒤로가기 | 바텀시트를 닫는다. 저장 목록의 스크롤 위치는 유지한다. 기록 방법 메뉴가 열려 있으면 메뉴만 먼저 닫는다. |
 
@@ -549,7 +550,7 @@
 | 항목 | 기본 표시 |
 | --- | --- |
 | 추천과 선택한 식사 | 추천 요약, `Confirm this try` 섹션에서 `Selected record`— 선택한 식사의 날짜,식사 때, 음식 및 추적 재료—를 보여준다. |
-| 적용 대상 목록 | `Which food did you use it for?` 아래에 선택한 식사의 음식 및 추적 재료들을 보여준다.  |
+| 적용 대상 목록 | `Which food did you use it for?` 아래에 선택한 식사의 음식 및 추적 재료들을 보여준다. 흰색 카드 안에 왼쪽 라디오와 음식 이름만 있는 간단한 목록을 사용한다. 선택한 이름만 굵게 표시하며 Meal Check-in의 펼침 음식 카드·조리법·추가 설명·Edit을 재사용하지 않는다. |
 | 버튼과 선택 | `Change`, `Confirm & Link Record`, 뒤로가기를 보여준다. 처음에는 선택된 음식이 없고 `Confirm & Link Record`는 비활성화한다. |
 
 ### 상태

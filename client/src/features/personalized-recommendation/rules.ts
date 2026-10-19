@@ -1,6 +1,6 @@
-// This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 
-import { foodFormKey, hasKnownFoodForm, hasVerifiedNoRestrictions } from '../../rules/recommendationSafety';
+import { foodFormKey, hasKnownFoodForm, hasVerifiedNoRestrictions, normalizedFoodFormKey } from '../../rules/recommendationSafety';
 import type { AfterMealReview } from '../../types/afterMealReview';
 import type { RecommendationEvidence } from '../../types/home';
 import type { Meal } from '../../types/meal';
@@ -25,7 +25,7 @@ export function buildRecommendations(profile: ChildProfile, meal: Meal, review: 
     || !hasVerifiedNoRestrictions(profile)) return { status: 'safety-unverified', candidates: [] };
   const verifiedForms = meal.foods.filter(hasKnownFoodForm);
   if (!verifiedForms.length) return { status: 'no-safe-candidate', candidates: [] };
-  const knownFoods = verifiedForms.filter((food) => review.foodFormKeys?.[food.id] === foodFormKey(food));
+  const knownFoods = verifiedForms.filter((food) => normalizedFoodFormKey(review.foodFormKeys?.[food.id]) === foodFormKey(food));
   if (!knownFoods.length) return { status: 'meal-changed', candidates: [] };
   const candidates = knownFoods.flatMap((food): RecommendationCandidate[] => {
     const outcome = review.outcomes.find((entry) => entry.foodId === food.id)?.decision.confirmed;

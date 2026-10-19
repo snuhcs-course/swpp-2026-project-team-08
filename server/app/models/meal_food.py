@@ -1,10 +1,11 @@
-# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """식사에 포함된 음식 항목 (meal_foods)."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -28,9 +29,11 @@ class MealFood(Base):
     preparation: Mapped[str] = mapped_column(Text, nullable=False, default="")
     serving_note: Mapped[str] = mapped_column(Text, nullable=False, default="")
     ingredients: Mapped[list[str]] = mapped_column(JSON, nullable=False)
-    traits: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
-    history: Mapped[str | None] = mapped_column(String(20), nullable=True)
     source: Mapped[str] = mapped_column(String(20), nullable=False)
+    # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    acceptance: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    confirmed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False
     )

@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """Recommendation generation, decisions, saved snapshots, and try records."""
 
 import asyncio
@@ -79,9 +79,8 @@ class SuggestionService:
         if selected is None:
             selected = batch.selected_food_ids if not changed else []
             if not selected:
-                selected = [
-                    f.id for f in sorted(meal.foods, key=lambda f: f.id != meal.exposure_food_id)
-                ][:3]
+                # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+                selected = [food.id for food in meal.foods[:3]]
         foods = {f.id: f for f in meal.foods}
         if (
             not 1 <= len(selected) <= 3

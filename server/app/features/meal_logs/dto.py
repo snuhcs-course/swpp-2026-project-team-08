@@ -1,19 +1,20 @@
-# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 """식사 기록 요청/응답 DTO."""
 
 from datetime import date, datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator
 
 from app.core.errors import AppError
+from app.models.food_enums import FoodPreparation
 
 MealType = Literal["breakfast", "lunch", "dinner", "snack"]
 MealSetting = Literal["home", "restaurant", "school", "others"]
 ReviewStatus = Literal["awaiting_review", "reviewed"]
 FoodSource = Literal["ai", "parent"]
 OutcomeValue = Literal["eaten", "tasted", "untouched", "unclear"]
-GoalFeedback = Literal["achieved", "tried", "notYet"]
 
 
 class InvalidMealTypeError(AppError):
@@ -41,15 +42,27 @@ class DuplicateFoodIdError(AppError):
 # ── 요청 ────────────────────────────────────────────
 
 
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 class MealFoodRequest(BaseModel):
     id: str = Field(min_length=1, max_length=80)
     name: str = Field(min_length=1, max_length=200)
     ingredients: list[str]
-    preparation: str = ""
+    cooking_method: FoodPreparation | None = None
     serving_note: str = ""
-    traits: dict[str, Any]
-    history: str | None = None
     source: FoodSource
+    # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    acceptance: int | None = Field(default=None, ge=0, le=3, strict=True)
+    # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    confirmed: StrictBool = False
+
+
+# AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+class SuggestionLinkRequest(BaseModel):
+    suggestion_id: str = Field(min_length=1, max_length=80)
+    food_id: str = Field(min_length=1, max_length=80)
+    title: str
+    description: str
+    serving_tip: str | None = None
 
 
 class MealUpsertRequest(BaseModel):
@@ -57,7 +70,7 @@ class MealUpsertRequest(BaseModel):
     meal_type: str
     setting: str
     before_photo_uri: str | None = None
-    exposure_food_id: str | None = None
+    suggestion_links: list[SuggestionLinkRequest] = Field(default_factory=list)
     foods: list[MealFoodRequest]
     saved_at: datetime
 
@@ -105,11 +118,17 @@ class FoodOutcomeRequest(BaseModel):
     ingredients: list[IngredientOutcomeRequest]
 
 
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+class SuggestionFeedback(BaseModel):
+    tried: StrictBool
+
+
 class MealReviewRequest(BaseModel):
-    after_photo_uri: str = Field(min_length=1)
+    # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    after_photo_uri: str = ""
     outcomes: list[FoodOutcomeRequest]
     difficulties: dict[str, Any]
-    goal_feedback: GoalFeedback | None = None
+    suggestion_feedback: dict[str, SuggestionFeedback] = Field(default_factory=dict)
     saved_at: datetime
 
 
@@ -151,11 +170,12 @@ class MealFoodResponse(BaseModel):
     id: str
     name: str
     ingredients: list[str]
-    preparation: str
+    cooking_method: FoodPreparation | None = None
     serving_note: str
-    traits: dict[str, Any]
-    history: str | None
-    source: str
+    source: FoodSource
+    acceptance: int | None = None
+    # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    confirmed: StrictBool = False
     position: int
 
 
@@ -165,7 +185,7 @@ class MealReviewResponse(BaseModel):
     after_photo_uri: str
     outcomes: list[dict[str, Any]]
     difficulties: dict[str, Any]
-    goal_feedback: str | None
+    suggestion_feedback: dict[str, SuggestionFeedback] = Field(default_factory=dict)
     saved_at: datetime
 
 
@@ -188,8 +208,8 @@ class MealDetailResponse(BaseModel):
     meal_type: str
     setting: str
     before_photo_uri: str | None
-    exposure_food_id: str | None
     saved_at: datetime
+    suggestion_links: list[SuggestionLinkRequest] = Field(default_factory=list)
     foods: list[MealFoodResponse]
     review: MealReviewResponse | None
     suggestions: list[MealSuggestionResponse]

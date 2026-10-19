@@ -1,16 +1,12 @@
-// This Code is generated with AI
-
-import type { FoodItem, FoodTraits } from '../types/meal';
-
-export const emptyTraits = (): FoodTraits => ({
-  texture: [], tasteType: [], tasteIntensity: [], smell: [],
-  shape: [], visibility: [], temperature: [], color: [],
-});
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+import type { FoodItem } from '../types/meal';
 
 export function newFood(): FoodItem {
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
     name: '', ingredients: [], preparation: '', servingNote: '',
-    traits: emptyTraits(), history: null, source: 'parent',
+    source: 'parent',
+    // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    confirmed: false,
   };
 }

@@ -1,8 +1,27 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { Image } from 'expo-image';
 
 const iconAssets = {
+  'outcome-help': require('../../assets/ui/outcome-help.svg'),
+  'meal-save-error': require('../../assets/ui/meal-save-error.svg'),
+  'difficulty-texture': require('../../assets/ui/difficulty-texture.svg'),
+  'difficulty-taste': require('../../assets/ui/difficulty-taste.svg'),
+  'difficulty-smell': require('../../assets/ui/difficulty-smell.svg'),
+  'difficulty-color': require('../../assets/ui/difficulty-color.svg'),
+  'difficulty-piece': require('../../assets/ui/difficulty-piece.svg'),
+  'difficulty-arrangement': require('../../assets/ui/difficulty-arrangement.svg'),
+  'difficulty-temperature': require('../../assets/ui/difficulty-temperature.svg'),
+  'difficulty-unsure': require('../../assets/ui/difficulty-unsure.svg'),
+
+  'meal-saved-check': require('../../assets/ui/meal-saved-check.svg'),
+  'onboarding-edit': require('../../assets/ui/onboarding-edit.png'),
+  'abc-add-food': require('../../assets/ui/abc-add-food.svg'),
+  'abc-select': require('../../assets/ui/abc-select.svg'),
+  'abc-utensils': require('../../assets/ui/abc-utensils.svg'),
+  'abc-chevron': require('../../assets/ui/abc-chevron.svg'),
+  'abc-trash': require('../../assets/ui/abc-trash.svg'),
+  'abc-edit': require('../../assets/ui/abc-edit.svg'),
+  'abc-open': require('../../assets/ui/abc-open.svg'),
   'suggestion-close': require('../../assets/ui/suggestion-close.svg'),
   'suggestion-checked': require('../../assets/ui/suggestion-checked.svg'),
   'suggestion-complete': require('../../assets/ui/suggestion-complete.svg'),
@@ -39,19 +58,24 @@ const iconAssets = {
   'review-info': require('../../assets/ui/review-info.svg'),
   'review-route': require('../../assets/ui/review-route.svg'),
   'review-calendar': require('../../assets/ui/review-calendar.svg'),
-  'trait-leaf': require('../../assets/ui/trait-leaf.svg'),
-  'trait-droplet': require('../../assets/ui/trait-droplet.svg'),
-  'trait-sparkles': require('../../assets/ui/trait-sparkles.svg'),
-  'trait-wind': require('../../assets/ui/trait-wind.svg'),
-  'trait-square': require('../../assets/ui/trait-square.svg'),
-  'trait-check-circle': require('../../assets/ui/trait-check-circle.svg'),
-  'trait-eye': require('../../assets/ui/trait-eye.svg'),
-  'trait-sun': require('../../assets/ui/trait-sun.svg'),
 } as const;
 
 export type UiAssetIconName = keyof typeof iconAssets;
 
 const size: Record<UiAssetIconName, number> = {
+  'outcome-help': 20,
+  'meal-save-error': 28,
+  'difficulty-texture': 12,
+  'difficulty-taste': 12,
+  'difficulty-smell': 12,
+  'difficulty-color': 12,
+  'difficulty-piece': 12,
+  'difficulty-arrangement': 12,
+  'difficulty-temperature': 12,
+  'difficulty-unsure': 12,
+
+  'meal-saved-check': 28, 'onboarding-edit': 15, 'abc-add-food': 12.3333, 'abc-select': 14, 'abc-utensils': 13,
+  'abc-chevron': 16, 'abc-trash': 16, 'abc-edit': 16, 'abc-open': 16,
   'suggestion-close': 20,
   'suggestion-checked': 15,
   'suggestion-complete': 28,
@@ -72,8 +96,6 @@ const size: Record<UiAssetIconName, number> = {
   'review-shield': 14, 'review-users': 14, 'review-filter': 14,
   'review-sparkles': 14, 'review-heart': 14, 'review-utensils': 14,
   'review-info': 14, 'review-route': 14, 'review-calendar': 14,
-  'trait-leaf': 10, 'trait-droplet': 10, 'trait-sparkles': 10, 'trait-wind': 10,
-  'trait-square': 10, 'trait-check-circle': 10, 'trait-eye': 10, 'trait-sun': 10,
 };
 
 export function UiAssetIcon({ name }: { name: UiAssetIconName }) {

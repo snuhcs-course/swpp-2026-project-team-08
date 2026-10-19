@@ -1,10 +1,7 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
-import { emptyTraits } from '../../rules/foodDraft';
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import type { FoodItem } from '../../types/meal';
 import type { MealDetail, MealListItem, MealLogSuggestion } from './mealLogApi';
 
-const traits = emptyTraits();
 
 function food(id: string, name: string, ingredients: string[], extras: Partial<FoodItem> = {}): FoodItem {
   return {
@@ -13,9 +10,9 @@ function food(id: string, name: string, ingredients: string[], extras: Partial<F
     ingredients,
     preparation: extras.preparation ?? '',
     servingNote: extras.servingNote ?? '',
-    traits: extras.traits ?? traits,
-    history: extras.history ?? null,
     source: extras.source ?? 'parent',
+    // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+    confirmed: extras.confirmed ?? true,
   };
 }
 
@@ -64,7 +61,6 @@ function meal(
     mealType,
     setting,
     beforePhotoUri: null,
-    exposureFoodId: foods[0]?.id ?? null,
     savedAt: `${mealDate}T12:00:00.000Z`,
     foods,
     review,
@@ -76,13 +72,13 @@ function reviewed(mealDate: string, foodId: string, ingredients: { id: string; n
   return {
     afterPhotoUri: `file:///demo-after-${mealDate}.png`,
     outcomes: [eaten(foodId, ingredients)],
+    suggestionFeedback: {},
     difficulties: { [foodId]: [] },
-    goalFeedback: 'tried',
     savedAt: `${mealDate}T13:00:00.000Z`,
   };
 }
 
-const omelet = food('food-omelet', 'Rolled omelet', ['Egg', 'Carrot'], { preparation: 'Pan-fried', history: 'usually' });
+const omelet = food('food-omelet', 'Rolled omelet', ['Egg', 'Carrot'], { preparation: 'Pan-fried' });
 const rice = food('food-kimchi-rice', 'Kimchi fried rice', ['Rice', 'Kimchi'], { preparation: 'Stir-fried' });
 const soup = food('food-seaweed-soup', 'Seaweed soup', ['Seaweed', 'Tofu'], { preparation: 'Simmered' });
 const oats = food('food-oatmeal', 'Banana oatmeal', ['Oats', 'Banana'], { preparation: 'Cooked' });

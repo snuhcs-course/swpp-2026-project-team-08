@@ -1,9 +1,9 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 
 import { ApiError, apiRequest } from '../network/apiClient';
 import type { AuthUser } from '../storage/authStorage';
 
-export type AuthFailure = 'invalid-credentials' | 'email-taken' | 'network' | 'unknown';
+export type AuthFailure = 'invalid-credentials' | 'email-taken' | 'invalid-email-code' | 'network' | 'unknown';
 export type TokenPair = { accessToken: string; refreshToken: string };
 
 const record = (value: unknown): value is Record<string, unknown> =>
@@ -13,6 +13,7 @@ export function authFailure(error: unknown): AuthFailure {
   if (error instanceof ApiError) {
     if (error.errorCode === 'INVALID_CREDENTIALS') return 'invalid-credentials';
     if (error.errorCode === 'EMAIL_ALREADY_EXISTS') return 'email-taken';
+    if (error.errorCode === 'INVALID_EMAIL_CODE') return 'invalid-email-code';
     return 'unknown';
   }
   return 'network';
@@ -40,10 +41,46 @@ export async function loginAccount(input: { email: string; password: string }): 
   return { accessToken: value.access_token, refreshToken: value.refresh_token };
 }
 
-export async function readCurrentUser(): Promise<AuthUser> {
-  const value = await apiRequest<unknown>('/api/v1/auth/me');
+function asUser(value: unknown): AuthUser {
   if (!record(value) || typeof value.id !== 'string' || typeof value.email !== 'string' || typeof value.full_name !== 'string') {
     throw new Error('Invalid user response');
   }
   return { id: value.id, email: value.email, fullName: value.full_name };
+}
+
+export async function readCurrentUser(): Promise<AuthUser> {
+  return asUser(await apiRequest<unknown>('/api/v1/auth/me'));
+}
+
+export async function updateCurrentName(fullName: string): Promise<AuthUser> {
+  return asUser(await apiRequest<unknown>('/api/v1/auth/me', {
+    method: 'PATCH',
+    body: JSON.stringify({ full_name: fullName }),
+  }));
+}
+
+export function issuedEmailCode(value: unknown): string | undefined {
+  if (record(value) && typeof value.dev_code === 'string' && /^\d{6}$/.test(value.dev_code)) {
+    return value.dev_code;
+  }
+  return undefined;
+}
+
+export async function requestEmailChange(email: string): Promise<string | undefined> {
+  const value = await apiRequest<unknown>('/api/v1/auth/email-change', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+  return issuedEmailCode(value);
+}
+
+export async function confirmEmailChange(email: string, code: string): Promise<AuthUser> {
+  return asUser(await apiRequest<unknown>('/api/v1/auth/email-change/confirm', {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
+  }));
+}
+
+export async function deleteAccount(): Promise<void> {
+  await apiRequest<unknown>('/api/v1/auth/me', { method: 'DELETE' });
 }

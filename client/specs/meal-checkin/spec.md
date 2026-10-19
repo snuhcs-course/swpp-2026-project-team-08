@@ -1,241 +1,120 @@
+<!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
+
 # Meal Check-in
 
 ## Goal
 
-보호자가 식사 날짜와 상황을 기록하고, 식사 사진을 분석하거나 음식 정보를 직접 입력해 Meal 기록 초안을 만든다. 사진 분석 결과는 제안으로 취급하며, 보호자가 확인하고 수정하기 전에는 확정된 음식 정보로 사용하지 않는다.
+보호자가 식사 정보와 실제 제공한 음식을 확인하고 저장한다. 사진은 선택 사항이며, 제안 연결만으로 시도·섭취를 기록하지 않는다.
 
 ## Design Document
 
-[Meal details — setting of the meal](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=94-191)
+[최종 ABC — B](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/ABC?node-id=455-1277)
 
-[Add before-meal photo](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=94-457)
-
-[Before-photo preview](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=34-2819)
-
-[Analyze or enter food items manually](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=34-2779)
-
-[Analysis progress and recovery](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=34-2739)
-
-[Analysis failed](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=34-2397)
-
-[Review food items](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=96-821)
-
-[Review or edit a food item](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=56-2424)
-
-[Food traits selector](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=56-2558)
-
-[Optional exposure goal](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=59-3335)
-
-[Exposure Tracker explanation](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/%25EC%2586%258C%25EA%25B0%259C%25EC%259B%2590%25EC%258B%25A4?node-id=39-5093)
-
-공통 시각 규칙과 사진 미리보기, 진행 표시, Meal form 버튼은 [`specs/ui-components/spec.md`](../ui-components/spec.md)를 따른다. Figma의 진행 표시는 5개 segment로 구성된다.
-입력 필드의 글자색과 키보드 대응, 한글·영어 표시는 온보딩과 같은 앱 공통 규칙을 따른다.
+근거: 세부 정보 `455:7645`·`455:7751`, 사진 `455:7879`·`455:3528`·`455:9194`, 음식 카드 `455:8123`·`815:3432`·`815:3554`, 편집 `455:8593`, 제안 연결 `455:8856`·`455:7013`, 저장 `455:9936`·`455:10158`·`455:9843`.
 
 ## User Flow
 
-1. 보호자가 Meal Check-in을 시작한다.
-2. 식사 날짜를 확인하거나 변경하고, 식사 유형과 장소/상황을 선택한다.
-3. 카메라, 갤러리 또는 파일에서 한 장의 식사 사진을 추가한다.
-4. 사진을 확인하고 필요하면 전체 화면으로 보거나 교체·삭제한다.
-5. 사진 분석을 선택하거나 음식 정보를 직접 입력한다.
-6. 사진 분석 중 취소할 수 있으며, 분석 실패 시 재시도하거나 수동 입력으로 전환한다.
-7. 음식별로 인식된 정보를 보호자가 확인하거나 추가·수정·삭제한다.
-8. Confirm food items로 음식 확인을 마친 뒤, 선택적으로 한 음식을 Exposure goal로 지정하거나 건너뛴다.
-9. 보호자가 선택 또는 건너뛰기를 확정하면 Meal 기록을 저장한다.
+1. 기존 미완료 초안이 있으면 Ongoing Meal 안내를 먼저 표시한다. Continue draft를 누른 뒤에만 마지막 작성 단계로 진입한다. 완료된 기록은 미완료 초안 안내로 표시하지 않는다.
+2. 날짜·유형·장소를 확인한다. 사진을 추가하거나 건너뛰고 음식만 입력한다.
+3. 사진 미리보기에서 확대·교체·제거를 선택한다. 사진 사용 뒤에도 음식을 직접 추가한다. 사진 분석 단계는 없다.
+4. 음식 카드를 열어 확인하거나 편집한다. 필요하면 이전 저장 제안을 실제 제공 음식에 연결한다.
+5. Save check-in로 확인·저장하고, 저장 성공 뒤 같은 Meal의 식후 검토 또는 홈으로 이동한다.
 
 ## Requirements
 
-### R1 — Meal details
+### R1 — 날짜·식사 정보와 초안
 
-1. 날짜, 식사 유형, 식사 장소/상황을 입력할 수 있어야 한다.
-2. 날짜 입력은 날짜 선택 UI를 통해 변경할 수 있어야 한다.
-   날짜 필드를 누르면 날짜 카드 안에 월·일·연도 필드가 펼쳐진다. 각 필드를 누르면 선택 목록은 날짜 카드의 자식 레이아웃이 아닌 별도의 오버레이에 나타나야 하며, 목록을 열고 닫아도 날짜 카드의 크기는 바뀌지 않아야 한다. 날짜 숫자와 선택 상태는 밝은 배경 위에 선명하게 표시한다. `Confirm date`를 눌러 선택을 확정한다.
-   오늘 날짜는 `Today · 17 October` / `오늘 · 10월 17일`처럼 오늘 표시와 월·일을 함께 보여준다.
-3. 식사 유형은 Breakfast, Lunch, Dinner, Snack 중 하나를 선택할 수 있어야 한다.
-4. 장소/상황은 Home, Restaurant, School, Others 중 하나를 선택할 수 있어야 한다.
-   한국어에서 Home 장소 선택지는 `집`으로 표시한다. School은 학교를 나타내는 아이콘, Others는 기타를 나타내는 아이콘을 사용한다.
-5. 선택된 항목은 선택되지 않은 항목과 시각적으로 구분되어야 하며, 다시 선택해 변경할 수 있어야 한다.
-6. Continue to photo를 누르면 사진 추가 단계로 이동해야 한다.
+- 저장된 미완료 초안으로 새로 진입하면 `455:9380`의 Ongoing Meal을 먼저 표시한다. Meal Check-in 헤더·아동 이름의 meals 부제·Finish your draft before starting a new check-in. 안내, AUTO-SAVED DRAFT 카드와 Continue draft 버튼을 제공한다. 카드에는 실제 아동·식사 종류·날짜·사진 저장 여부·음식 수를 표시한다. 임의 예시값을 넣지 않는다.
+- Continue draft 이전에는 마지막 단계·음식 편집창·사진 소스·제안 선택창을 자동으로 열지 않는다. 누르면 기존 초안 ID·단계·사진·음식·편집 중 값·연결을 그대로 이어간다. 안내에서 뒤로가면 초안을 보존하고 홈으로 이동한다. 완료 기록·새 초안에는 이 안내를 띄우지 않는다. 사진 확대 화면에서 돌아오는 등 이미 진행 중인 세션을 매번 가로막지 않는다.
 
-### R2 — Add a before-meal photo
+- 식사 유형·장소 카드는 아이콘 배경 28px·아이콘 16px·체크 원 18px, 안쪽 여백 10px·요소 간격 6px로 표시한다. 글자는 남은 너비에서 줄바꿈하며 체크 원은 줄어들거나 카드 밖으로 밀려나지 않는다. 기본·선택·날짜 변경 화면에 동일하게 적용한다.
 
-1. 보호자는 카메라 촬영, 사진 보관함 선택, 파일 선택 중 하나로 사진을 추가할 수 있어야 한다.
-2. 파일 선택은 지원되는 이미지 형식만 허용해야 한다.
-3. 사진 안내에는 한 접시 전체가 보이는 사진을 권장한다는 점과, 좋은 조명·접시 중앙 배치·음식이 잘 보이도록 촬영하라는 팁을 표시해야 한다.
-   안내 카드에는 Figma의 예시 식사 사진을 함께 표시한다.
-4. 카메라 또는 사진 보관함 권한은 보호자가 해당 입력 방식을 선택한 뒤 요청해야 한다.
-5. 사진이 아직 선택되지 않은 상태를 구분하고, 사진을 선택한 뒤 미리보기 단계로 이동해야 한다.
+- 날짜는 현재 현지 날짜로 시작한다. 월·일·연도 선택창을 누르면 해당 창 바로 아래에 최대 180px 높이의 스크롤 picker를 오버레이로 표시한다. 바텀시트를 사용하지 않고 카드 높이와 아래 콘텐츠 위치를 유지한다. 한 번에 하나만 열리고 현재 선택값 주변을 표시한다. 값을 선택하거나 같은 창을 다시 누르면 닫히고 Confirm date로 날짜를 확정한다. 날짜 확정·카드 닫기에도 목록을 닫는다.
+- 유형은 Breakfast/Lunch/Dinner/Snack, 장소는 Home/Restaurant/School/Others 중 하나를 고른다. 날짜·유형·장소를 보존하며 5분할 진행 표시를 제공한다.
+- 입력을 로컬에 자동 저장한다. 저장 중·성공·실패를 구분하고 Save as Draft & Exit는 저장 성공 후 홈으로 이동한다. 실패하면 입력을 유지한다.
+- 저장된 Meal에는 안정적인 ID를 사용한다. 재시도는 같은 ID로 저장하며 중복 Meal을 생성하지 않는다.
 
-### R3 — Review the photo
+### R2 — 선택적 참고 사진
 
-1. 선택한 사진을 화면에 표시해야 한다.
-2. 사진을 누르면 작은 팝업이 아닌 전체 화면 사진 보기로 이동해야 한다. 사진은 비율을 유지하면서 화면의 사용 가능한 너비와 높이에 맞게 크게 표시되고, Go back 및 시스템 뒤로 가기로 미리보기로 돌아올 수 있어야 한다.
-3. Replace photo를 누르면 다른 사진을 선택할 수 있어야 한다.
-4. Remove photo를 누르면 현재 사진이 제거되어야 한다.
-5. 사진 전송 안내에는 보호자가 분석을 시작하거나 명시적으로 저장하기 전까지 사진이 기기에 남는다는 점을 표시해야 한다.
-6. Use this photo를 누르면 음식 입력 방법 선택 단계로 이동해야 한다.
+- 확대 화면 `455:5332`의 Go back 버튼은 헤더 왼쪽 24px 위치의 내용 너비 pill이다. 높이 38px, 가로 여백 12px, 원본 왼쪽 화살표 18px·문구 간격 8px, Poppins SemiBold 14px를 사용한다. 배경 #EEF7FF·1px 테두리 #1667FF·글자 #13233A이며 전체 너비 버튼으로 표시하지 않는다.
 
-### R4 — Analyze photo or enter food manually
+- 사진 추가 화면 `455:7879`의 상단 안내는 `Optional - keep a photo for your meal record.`, 사진 건너뛰기 버튼은 `Skip photo`, 보조 설명은 `Add foods yourself without a photo.`로 표시한다. 한국어는 각각 `선택 사항 - 식사 기록용 사진을 남길 수 있습니다.`, `사진 건너뛰기`, `사진 없이 음식을 직접 추가하세요.`로 표시한다.
 
-1. 보호자는 사진 분석 또는 음식 정보 직접 입력 중 하나를 선택할 수 있어야 한다.
-2. 분석 실행 전에, Analyze photo를 누르면 해당 식사의 사진이 분석 제공자에게 전송된다는 동의를 명확하게 안내해야 한다.
-3. 사진은 별도의 동의 없이 AI 학습에 사용되지 않는다는 점을 함께 안내해야 한다.
-4. 사진 사용 안내의 상세 내용을 확인할 수 있는 링크를 제공해야 한다.
-5. Enter food items manually를 누르면 사진 분석을 실행하지 않고 음식 입력으로 이동해야 한다.
-6. 사진 분석은 Feature Hook이 `data/queries`의 mutation을 통해 요청한다. 서버가 없는 프로토타입에서는 `data/api`의 mock 함수를 사용한다.
+- 카메라·갤러리·파일 경로를 제공하고 해당 경로를 선택할 때 권한을 요청한다. 지원 이미지 형식만 받아들이며 취소·권한 거부·손상 이미지에는 기존 입력을 보존한다.
+- 좋은 조명·접시 중앙·음식이 잘 보이게 촬영하라는 안내와 기존 예시 사진을 표시한다. Skip photo는 분석 요청 없이 음식 입력으로 이동한다.
+- 사진 미리보기와 전체 화면 보기를 제공한다. Replace photo는 소스 선택을 열며, 이미 음식이나 연결이 있으면 먼저 교체 확인을 받는다.
+- 유효한 새 사진을 고르면 사진만 바꾼다. 음식·상세·목표·제안 연결·날짜·유형·장소는 유지한다. 취소 또는 잘못된 이미지에는 아무것도 초기화하지 않는다.
+- 사진 제거는 사진만 제거하고 확인한 음식 입력을 보존한다. 음식 목록에 사진이 없으면 `No Before-meal photo added`와 Add 동작을 표시한다.
+- 사진 분석 요청·동의 안내·진행·실패·재시도 화면은 제공하지 않는다. 사진 사용과 건너뛰기는 모두 직접 음식 추가로 이어진다. 이전 분석 단계 초안은 foods로 복원한다.
 
-### R5 — Analysis progress and recovery
+### R3 — 음식 카드와 확인 상태
 
-1. 분석 중 진행 상태와 현재 사진을 표시해야 한다.
-2. 보호자는 분석을 취소할 수 있어야 한다.
-3. 분석이 실패하면 실패 상태를 안내하고 재시도와 수동 입력 경로를 제공해야 한다.
-4. 분석 실패 시 기존 사진과 Meal 초안은 유지되어야 한다.
-5. 실패 또는 네트워크 오류를 성공으로 표시하거나 음식 정보를 임의로 추정해서는 안 된다.
+- 사진 요약, Add Food, 음식 목록, 이전 제안 진입점, 검토 안내, Save check-in, Save as Draft & Exit 순서로 표시한다.
+- 음식 카드는 한 번에 하나만 펼친다. 접힌 카드는 이름, 펼친 카드는 재료 토큰·Cooking method·Additional detail·선택적 Acceptance·Remove/Edit를 표시한다.
+- 사용자가 모든 음식을 직접 추가·수정한다. AI/Confirmed 출처 표시·범례·확인 안내는 없으며 재료 토큰은 같은 중립색으로 표시한다. 기존 음식의 ID·내용·원출처 저장값은 호환을 위해 보존한다.
+- Remove 뒤 음식 이름과 Undo를 표시한다. Undo는 같은 ID·내용·순서·제안 연결을 복원한다. 사진 교체는 음식 목록을 초기화하지 않는다.
+- 빈 목록은 직접 추가 안내를 표시하고 Save check-in를 비활성화한다.
 
-### R6 — Review food items
+### R4 — 음식 편집
 
-1. 분석으로 찾은 음식 수와 보호자 검토가 필요하다는 상태를 표시해야 한다. 수동 입력 항목만 있는 경우에는 AI suggestion 수가 아니라 전체 음식 항목 수를 표시한다.
-2. 각 음식 카드는 음식 이름, 재료, 제공 형태, serving note, food traits, food history를 요약해 보여줘야 한다.
-3. 음식 출처를 AI suggestion 또는 parent input으로 표시해야 하며 색상 외 텍스트 표기도 제공해야 한다. 보호자가 AI 제안 음식을 열어 확인·수정한 뒤 Save food를 누르면 그 음식의 출처는 Parent input으로 바뀌어야 한다.
-4. 보호자는 음식 카드를 편집하거나 제거할 수 있어야 한다.
-5. 보호자가 Add food item에서 음식 이름을 입력하고 Save food를 누르면 새 항목이 목록에 실제로 추가되고 Parent input으로 표시되어야 한다.
-6. 음식 편집 화면에서 음식 이름을 수정하고 재료를 추가·제거할 수 있어야 한다.
-7. 음식 편집 화면에서 제공 형태와 serving note를 수정할 수 있어야 한다.
-8. 음식 편집 시트에서는 현재 Food traits를 읽기 전용 태그로 보여준다. 태그를 직접 눌러 켜거나 끌 수 없다. `Edit all traits →`를 누르면 별도의 Food traits selector로 이동한다.
-   selector는 Texture·Taste type의 복수 선택, Taste intensity·Smell·Shape and size·Ingredient visibility·Temperature의 단일 선택, Color의 복수 선택을 제공한다. Color와 Shape and size에는 직접 입력과 Add 동작을 제공한다. `Save traits`는 선택 결과를 음식 편집 시트에 반영하고, Cancel은 변경을 버린다.
-9. Food history는 자유 입력 필드가 아닌 드롭다운이어야 한다. 프로토타입에서는 `Usually accepted`, `Sometimes accepted`, `Not sure` 중 하나를 선택하거나 미선택 상태를 유지할 수 있으며, 선택 결과가 카드와 저장된 음식 정보에 반영되어야 한다.
-10. 음식별 Exposure Goal 추가는 선택 사항이어야 하며, 이를 추가해도 음식 정보 확인·수정 흐름을 막지 않아야 한다.
-11. AI 분석 결과는 보호자 확인 전 확정된 음식 정보로 취급하지 않아야 한다.
+- 같은 음식 ID로 이름·재료·선택적 Cooking method·Additional detail·Acceptance를 편집한다. 재료는 개별 제거 가능한 토큰으로 표시하며 Add로 추가한다.
+- Cooking method는 선택 목록을 제공한다. Acceptance는 0–3의 네 단계로 입력하며 미입력은 0으로 자동 대체하지 않는다.
+- 편집창은 흰색 대화상자와 어두운 배경, Cancel/Save food를 제공한다. 이름이 없으면 저장하지 않는다. Cancel은 편집 입력을 버리고 카드로 돌아온다.
+- 음식 항목은 이름·재료·조리법·제공 메모·Acceptance를 사용한다. 기존 저장 데이터는 읽을 수 있어야 한다.
 
-### R7 — Save meal
+### R5 — 이전 제안을 실제 음식에 연결
 
-1. 보호자가 Confirm food items를 누르면 확인된 AI 제안 음식의 출처를 Parent input으로 바꾸고 `Add an exposure goal` 선택 시트를 열어야 한다. 이 단계에서는 아직 Meal 저장을 완료하지 않는다.
-2. 기록에는 Meal 날짜, 유형, 장소/상황, 사진(있는 경우), 보호자가 확인한 음식 정보를 함께 저장해야 한다.
-3. 보호자는 분석 결과가 없거나 분석을 건너뛴 경우에도 직접 입력한 음식 정보를 저장할 수 있어야 한다.
-4. Meal 초안은 입력 도중 자동 저장되어야 하며, 화면에는 저장 상태를 표시해야 한다.
-5. 저장 실패 시 현재 화면과 입력 내용을 유지하고 다시 시도할 수 있어야 한다.
-6. 저장에 성공한 Meal의 ID를 완료 화면에서 보존하고, `After-meal Review` 동작으로 바로 그 Meal의 식후 검토를 시작할 수 있어야 한다. 저장 실패 상태에서는 식후 검토로 이동하지 않는다.
-7. 보호자가 홈의 Meal Check-in 초안에서 식후 검토를 선택했다면, 초안의 음식 확인·선택적 Exposure goal 단계를 먼저 완료해 Meal을 저장한 뒤 저장된 ID로 식후 검토를 연다. 불완전한 초안을 저장된 Meal처럼 식후 검토에 전달하지 않는다.
+- Saved Suggestions의 Log a meal 진입은 별도 흐름이다. Trying this suggestion을 기본 선택하고, 저장 성공 후 새 Meal ID로 S.07 Link record (`622:422`)를 연다. 이 흐름은 아래 B의 Link suggestion 화면을 자동으로 열지 않는다. S.07은 저장된 식사의 음식·추적 재료를 왼쪽 라디오가 있는 간단한 목록으로 표시하며 B의 펼침 음식 카드를 재사용하지 않는다. 선택 해제 시 일반 식사 저장 흐름을 따른다.
 
-### R8 — Optional exposure goal
+- `Are you trying a previous suggestion?`은 저장된 실제 제안을 선택하는 1단계 화면을 연다. 로딩·오류·빈 목록을 구분하고 재시도를 제공한다.
+- 2단계에서는 선택한 제안과 이번 Meal의 음식 카드를 표시한다. 실제 제공 음식 하나를 고른 뒤 Link suggestion으로 연결한다. 제안의 음식을 목록에 자동 추가하지 않는다.
+- 연결에는 제안 ID, 대상 음식 ID, 확인 가능한 제안 내용 스냅샷을 저장한다. 취소는 기존 연결을 보존한다. 음식 제거 시 연결을 함께 제거하고 Undo 시 복원한다.
+- 연결은 pending 상태이며 시도 기록을 생성하지 않는다. 식후 검토 저장에서 실제 사용 여부를 확정한다. 추천 화면에서 진입해도 미완료 초안의 음식은 임의로 교체하지 않는다.
 
-1. `Add an exposure goal` 시트는 확인된 음식 목록을 표시하고, 보호자가 이번 식사에서 집중할 음식 하나를 선택할 수 있어야 한다.
-2. `Select this meal as exposure goal`을 누르면 선택한 음식 ID를 Meal에 저장하고 온보딩 답변만을 근거로 Exposure 단계를 자동 설정하지 않아야 한다.
-3. `Skip exposure goal`을 누르면 목표 음식 없이 Meal을 저장해야 한다.
-4. 시트의 `?`를 누르면 Exposure Tracker가 음식별 익숙함과 작은 시도를 기록한다는 안내 및 Look·Interact·Smell·Touch·Taste/Lick·Swallow의 6단계 설명 바텀시트가 열려야 한다. 뒤로 가면 음식 선택 상태를 유지한 채 목표 선택 시트로 돌아와야 한다.
-5. 목표 선택 또는 건너뛰기 이후 저장에 실패하면 확인한 음식과 목표 선택을 유지하고 다시 시도할 수 있어야 한다.
+### R6 — 최종 저장과 식후 검토
 
-## Edge Cases
-
-- 날짜 선택기를 열고 닫거나 날짜를 변경함
-- 식사 유형 또는 장소/상황을 선택하지 않거나 이후 선택을 변경함
-- 권한이 거부되거나 사진 선택기를 취소함
-- 지원하지 않는 형식이거나 손상된 이미지 파일을 선택함
-- 미리보기에서 사진을 교체하거나 제거함
-- 사진 전체 화면 보기에서 Go back 또는 시스템 뒤로 가기로 복귀함
-- 사진 분석 동의를 하지 않고 이전 화면으로 돌아감
-- 분석 중 취소하거나 네트워크 오류가 발생함
-- 분석 결과가 비어 있거나 일부 음식만 인식됨
-- 분석에 실패한 뒤 재시도하거나 직접 입력으로 전환함
-- 인식된 음식의 이름, 재료, 제공 형태 또는 serving note를 수정함
-- 음식의 재료를 추가하거나 제거함
-- 음식 항목을 제거하거나 새 항목을 추가함
-- AI 제안 음식이 보호자 편집·확인을 거쳐 Parent input으로 전환됨
-- Food history 드롭다운에서 선택을 바꾸거나 선택하지 않음
-- Food traits를 입력하지 않거나 일부만 선택함
-- Food traits 태그를 눌렀을 때 편집되지 않음, selector에서 선택 후 저장 또는 취소함
-- Exposure Goal을 추가하거나 추가하지 않음
-- Confirm food items 이후 목표 음식 선택 또는 건너뛰기, `?` 설명 시트에서 돌아오기
-- 음식을 입력하지 않은 상태로 저장하려고 함
-- 저장 전에 화면을 이탈하거나 앱을 종료함
-- 자동 저장 또는 최종 저장에 실패함
+- Save check-in 후 Meal을 바로 저장한다. 이전 버전의 중단된 초안은 음식 검토로 복원한다.
+- 저장 중 진행·식사 요약·초안 유지 안내를 표시한다. 저장 실패에는 Retry와 Save & exit를 제공하고 같은 Meal로 재시도한다.
+- 성공 화면에는 Check-in saved, Awaiting after-meal review, 실제 식사 정보와 음식, Add after-meal review, Back to Home을 표시한다.
+- 저장 성공 후에만 Meal ID로 식후 검토에 진입한다. 앱 재시작 뒤에도 완료 영수증으로 ID를 복원한다.
 
 ## Acceptance Criteria
 
-Given 보호자가 Meal details 화면에 있고<br>
-When 식사 날짜, 유형, 장소/상황을 선택한 뒤 Continue to photo를 누르면<br>
-Then 선택한 Meal 정보가 유지된 채 사진 추가 화면으로 이동한다.
+- 사진 없이 음식 하나를 추가하면 확인·저장 후 같은 Meal ID로 식후 검토에 진입한다.
+- 사진 유무와 관계없이 Add Food로 직접 음식을 추가·편집할 수 있으며 카드 하나만 펼쳐진다. 분석 호출과 AI 출처 표시는 없다.
+- 음식 제거·Undo는 같은 ID와 연결을 복원한다. 교체 취소·잘못된 이미지는 초안을 유지하며 유효한 교체도 음식과 연결을 유지한다.
+- 이전 제안을 음식에 연결·저장해도 tries에 시도가 추가되지 않는다.
+- 저장 오류·재시도는 초안을 잃거나 중복 Meal을 만들지 않는다.
 
-Given 보호자가 Meal details의 날짜 필드를 눌렀고<br>
-When 펼쳐진 월·일·연도를 선택해 Confirm date를 누르면<br>
-Then 선택한 날짜가 화면의 날짜 필드에 반영되고 오늘이면 Today/오늘 표시가 함께 나타난다.
+## 구현 범위
 
-Given 월·일·연도 필드가 날짜 카드에 표시되어 있고<br>
-When 어느 필드의 선택 목록을 열면<br>
-Then 목록은 카드 밖 오버레이에 표시되며 날짜 카드의 높이는 바뀌지 않는다.
+`features/meal-checkin`, 공유 FoodEditor, Meal 타입·저장 검증, 한글·영어 문구를 변경한다. 기존 로컬 Meal 저장 경로에서 연결 스냅샷까지 보존하고, 서버 tries 생성은 보호자의 식후 확인 전 실행하지 않는다. 홈의 전체 위젯 개편은 세 기능 구현에 포함하지 않는다.
 
-Given 보호자가 사진 추가 화면에 있고<br>
-When 카메라, 갤러리 또는 파일에서 지원되는 사진을 선택하면<br>
-Then 선택한 사진의 미리보기가 표시된다.
+서버 연동: 식사 API는 acceptance·source·confirmed·suggestion_links, 식후 API는 사진 없는 입력과 suggestion_feedback을 보존한다. 식후 검토 저장 트랜잭션에서 연결 제안의 `{ tried: true }` 응답만 서버 시도로 확정하며 같은 Meal·음식·제안의 재시도는 중복을 만들지 않는다. 새 저장 필드의 마이그레이션은 작성만 하고 적용은 별도 확인 후 진행한다.
 
-Given 사진 미리보기 화면에 사진이 표시되어 있고<br>
-When Replace photo 또는 Remove photo를 누르면<br>
-Then 사진이 교체되거나 제거되고 해당 변경 상태가 화면에 반영된다.
+## 변경 범위와 호환
 
-Given 사진 미리보기 화면에 사진이 표시되어 있고<br>
-When 사진이나 전체 화면 보기 동작을 누르면<br>
-Then 사진이 전체 화면의 사용 가능한 영역에 크게 표시되고 뒤로 돌아올 수 있다.
+분석 버튼·화면·요청 Hook 연결을 제거한다. 기존 분석 단계 초안은 직접 음식 목록으로 이동한다. 보호자가 직접 추가했거나 확인한 음식은 보존하고, 확인하지 않은 과거 AI 샘플 음식·해당 음식의 편집 초안·제안 연결만 제외한다. 완료된 식사는 변경하지 않는다. 사진 선택과 Save check-in은 이미지 인식 요청을 만들지 않는다. 사진·제안 연결·Undo·저장 실패 복구는 유지한다.
 
-Given 보호자가 사진 분석 화면에 있고<br>
-When Analyze photo를 선택하면<br>
-Then 사진이 분석 요청으로 전달되고 분석 진행 상태가 표시된다.
+## 화면 대조 보완 — 2026-10-18
 
-Given 보호자가 분석 대신 수동 입력을 선택했고<br>
-When Enter food items manually를 누르면<br>
-Then 분석 요청 없이 음식 직접 입력 화면으로 이동한다.
+- 교체 확인 `455:9247`: 화면 중앙의 342px 흰색 Dialog, 모서리 24px, 제목 18px. 본문 12px와 `Cancel or an invalid image keeps everything.` 11px 회색 보조문을 별도 줄로 둔다. Replace photo와 Cancel은 세로로 배치하며 바텀시트 손잡이를 표시하지 않는다.
+- 최초 사진 없는 빈 목록 `455:6970`: 제목 Add food items, 한 줄 안내, 46px 흰색 Add food item 버튼, 비활성 Save check-in만 표시한다. 사진 요약·음식 개수·이전 제안 링크를 추가하지 않는다.
+- 사진 있는 빈 목록 `815:3080`: Review food items·0 food items·식사 요약·사진 요약·검은 Add Food·일반 텍스트 빈 안내를 표시한다. 하단 추천 연결·직접 입력 안내·Save check-in·Save as Draft & Exit를 유지한다. 별도 빈 상태 카드를 만들지 않는다.
+- 추가 `455:8047`·편집 `455:8628`: 중앙 374px Dialog, 모서리 28px. 새 음식은 이름·재료·조리 방법·추가 설명·Acceptance가 전부 비어 있다. `Enter food name`은 입력값이 아닌 placeholder이며 예시 음식명을 넣지 않는다. 이름 입력 중에도 Add food item 제목을 유지한다.
+- Cooking method와 Additional detail은 동일한 줄의 두 열이며 사이 간격 8px, 입력 높이 38px이다. Optional은 각 제목 줄에 둔다. Acceptance 0–3은 최초 미선택이며 미입력을 0으로 저장하지 않는다. 이름이 비어 있으면 Save food는 비활성이다.
+- 음식 목록 `455:8123`: 처음에는 첫 음식 카드를 펼치고, 이후 한 번에 하나만 펼친다. 추천 링크는 카드 아래에 놓고 카드·하단 안내와 겹치지 않는다.
+- 제안 선택 `455:8856`·연결 `455:7013`: 뒤로가기·식사 요약·진행 바·Step 1/2 표시·라디오 선택·하단 Continue/Link suggestion을 표시한다. 카드의 날짜·식사 종류는 실제 제안의 원본 식사 정보를 사용하며 임의 날짜를 만들지 않는다.
+- 저장 `455:9936`·실패 `455:10158`·완료 `455:9843`: 버튼 문구만 바꾸지 않고 해당 전용 화면과 실제 식사 요약을 표시한다. 저장 중 편집 복귀는 요청을 취소하거나 중복 저장하지 않으며 입력은 잠근다. 오류 후 Retry는 동일 기록을 저장한다. 성공 뒤에만 식후 리뷰를 연다.
+- 비교 기준은 390px 콘텐츠 너비다. iOS 상태 표시줄과 예시 식사 데이터는 콘텐츠·실제 사용자 데이터와 구분한다.
 
-Given 사진 분석이 진행 중이고<br>
-When 보호자가 Cancel analysis를 누르면<br>
-Then 분석 요청이 취소되고 Meal 초안과 사진은 유지된다.
+## 사진 교체·음식 목록 보완 — 2026-10-18
 
-Given 사진 분석에 실패했고<br>
-When 실패 화면이 표시되면<br>
-Then 보호자는 재시도하거나 음식 정보를 직접 입력할 수 있다.
+- Check your photo의 Replace photo는 사진 소스 바텀시트 `455:10796`을 연다. 기존 음식·연결이 있으면 중앙 교체 확인 Dialog를 거친 다음 연다. 제목 Replace meal check-in photo, 카메라·갤러리·파일의 60px 선택 행, Cancel을 표시한다. 화면 안에 소스 행을 펼치지 않는다. 취소·바깥 영역·뒤로가기는 시트만 닫고 기존 사진과 입력을 보존한다.
+- 사진 없는 카드 `815:3432`는 화면 좌우 24px, 카드 안쪽 좌우 10px·상하 13px, 요소 간격 10px이다. Add는 64×29px 파란 버튼이며 긴 문구가 버튼을 밀어내지 않는다.
+- Add and edit foods yourself. Photos are optional. 안내는 중앙 정렬한다.
+- 삭제 직후 `815:3554`는 Add Food 아래에 높이 41px 이상·남색 배경·모서리 10px·안쪽 12px 알림을 표시한다. 삭제 이름은 흰색 12px, Undo는 파란색 11px이다. 남은 음식 카드와 이전 제안 진입점을 유지하고 제안 진입점은 아래쪽에 배치한다. 이 상태에서는 일반 직접 입력 안내를 생략하며 Undo로 원래 ID·순서·연결을 복원한다.
 
-Given 사진 분석 결과가 표시되어 있고<br>
-When 보호자가 음식 카드를 수정하거나 제거하고 새 항목을 추가하면<br>
-Then 변경 사항이 화면에 반영되고 AI 제안과 보호자 입력의 출처가 구분된다.
+- 음식 카드의 Acceptance가 미입력이면 진행 막대를 표시하지 않고 제목 바로 오른쪽에 10px 간격으로 Not entered를 표시한다. 값이 있으면 기존 수용도 막대를 표시한다.
 
-Given AI suggestion 음식의 편집 화면에 있고<br>
-When 보호자가 Save food를 누르면<br>
-Then 해당 음식이 Parent input으로 바뀌어 목록과 초안에 저장된다.
-
-Given 보호자가 Add food item에서 새 음식 이름을 입력했고<br>
-When Save food를 누르면<br>
-Then 새 음식이 Parent input 항목으로 목록에 추가된다.
-
-Given 보호자가 음식 편집 화면에서 Food history를 눌렀고<br>
-When 드롭다운 값을 선택해 Save food를 누르면<br>
-Then 선택값이 음식 카드와 저장된 초안에 반영된다.
-
-Given 보호자가 음식 편집 시트에서 Food traits 태그를 보고 있고<br>
-When 태그를 누르거나 Edit all traits를 누르면<br>
-Then 태그를 누른 경우 값은 바뀌지 않고, Edit all traits를 누른 경우에만 selector가 열려 선택·저장할 수 있다.
-
-Given 보호자가 음식 정보를 검토하고 있고<br>
-When Confirm food items를 누르면<br>
-Then Add an exposure goal 시트가 열리고 음식 하나를 선택하거나 건너뛸 수 있다.
-
-Given Add an exposure goal 시트에서 음식을 선택했고<br>
-When Select this meal as exposure goal을 누르면<br>
-Then 선택한 음식과 보호자가 확인한 음식 정보 및 Meal 세부 정보가 함께 저장된다.
-
-Given Add an exposure goal 시트가 열려 있고<br>
-When ?를 누르면<br>
-Then Exposure Tracker 설명 바텀시트가 열리고, 뒤로 돌아오면 선택한 음식은 유지된다.
-
-Given 보호자가 Meal Check-in 도중 앱을 종료했다가 다시 열었고<br>
-When 저장된 진행 상태를 불러오면<br>
-Then 마지막으로 자동 저장된 Meal 정보와 단계에서 이어서 입력할 수 있다.
-
-Given 보호자가 Meal Check-in을 완료해 Meal 저장에 성공했고<br>
-When 완료 화면에서 After-meal Review를 누르면<br>
-Then 방금 저장한 Meal ID로 식후 검토가 열린다.
-
-Given 보호자가 홈에 저장된 Meal Check-in 초안이 있고<br>
-When 그 초안의 식후 기록 동작을 선택해 음식 확인과 목표 선택 또는 건너뛰기를 마치면<br>
-Then 초안이 Meal로 저장된 후 같은 Meal의 식후 검토가 열린다.
-
-Given 초안에서 식후 기록으로 이어가던 중 Meal 저장에 실패했고<br>
-When 저장 오류가 표시되면<br>
-Then 초안과 현재 입력을 유지하고 식후 검토로 이동하지 않는다.
+`suggestion_feedback`은 제안 ID별 `{ "tried": true | false }` 객체를 저장한다. 미응답은 키를 생략하며 `false`로 자동 채우지 않는다.

@@ -1,6 +1,6 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { readHomeMeals } from '../storage/homeMealStorage';
 import type { HomeRecords } from '../../types/home';
 import {
   applySuggestionSaved,
@@ -9,7 +9,11 @@ import {
   type SuggestionSavedDraft,
 } from '../storage/homeStorage';
 
-export const homeKeys = { byChild: (childId: string) => ['home', childId] as const };
+export const homeKeys = { byChild: (childId: string) => ['home', childId] as const, meals: (childId: string) => ['home', childId, 'meal-statuses'] as const };
+
+export function useHomeMeals(childId: string) {
+  return useQuery({ queryKey: homeKeys.meals(childId), queryFn: () => readHomeMeals(childId), enabled: !!childId });
+}
 
 export function useHomeRecords(childId: string) {
   return useQuery({ queryKey: homeKeys.byChild(childId), queryFn: () => readHomeRecords(childId), enabled: !!childId });
@@ -36,7 +40,7 @@ export function useSetSuggestionSaved() {
       client.setQueryData<HomeRecords>(homeKeys.byChild(vars.childId), (old) => {
         const records: HomeRecords = old
           ? { ...old, suggestions: old.suggestions.map((item) => ({ ...item })) }
-          : { meals: [], exposures: [], suggestions: [] };
+          : { meals: [], suggestions: [] };
         applySuggestionSaved(records, vars.childId, vars.suggestion, vars.saved, vars.profileUpdatedAt);
         return records;
       });

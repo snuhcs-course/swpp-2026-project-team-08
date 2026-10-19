@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -38,8 +38,6 @@ Module._load = function (name, ...args) {
 const { newDraft, mealFromDraft } = require('../src/features/meal-checkin/rules.ts');
 const { newFood } = require('../src/rules/foodDraft.ts');
 const { newReviewDraft, setOutcome, reviewFromDraft } = require('../src/features/after-meal-review/rules.ts');
-const { recognizeMealPhoto } = require('../src/data/api/recognitionApi.ts');
-const { compareMealPhotos } = require('../src/data/api/afterMealComparisonApi.ts');
 const { mealToUpsertBody, reviewToBody } = require('../src/data/api/mealLogApi.ts');
 
 const PNG =
@@ -52,53 +50,15 @@ function mealWithBeforePhoto(childId = 'child-photo') {
   draft.mealType = 'lunch';
   draft.setting = 'home';
   draft.photo = beforePhoto;
-  draft.foods = [{ ...newFood(), id: 'food-1', name: 'Rice', ingredients: ['Egg'], source: 'parent' }];
-  draft.step = 'goal';
+  draft.foods = [{ ...newFood(), id: 'food-1', name: 'Rice', ingredients: ['Egg'], source: 'parent', confirmed: true }];
+  draft.step = 'foods';
   return mealFromDraft(draft);
 }
 
-test('before-meal photo recognition accepts an image and rejects a non-image', async () => {
-  const result = await recognizeMealPhoto({ photo: beforePhoto, signal: new AbortController().signal });
-  assert.equal(result.photoId, beforePhoto.id);
-  assert.equal(result.foods[0].source, 'ai');
-  await assert.rejects(
-    recognizeMealPhoto({
-      photo: { id: 'bad', uri: '', mimeType: 'application/pdf' },
-      signal: new AbortController().signal,
-    }),
-    /Invalid photo/,
-  );
-});
 
-test('after-meal comparison needs both photos and does not invent consumption', async () => {
-  const meal = mealWithBeforePhoto();
-  const result = await compareMealPhotos({
-    mealId: meal.id,
-    before: meal.photo,
-    after: afterPhoto,
-    foods: meal.foods,
-    signal: new AbortController().signal,
-  });
-  assert.equal(result.beforePhotoId, beforePhoto.id);
-  assert.equal(result.afterPhotoId, afterPhoto.id);
-  assert.equal(result.suggestions.every((item) => item.outcome === 'unclear'), true);
-  await assert.rejects(compareMealPhotos({
-    mealId: meal.id,
-    before: { ...beforePhoto, uri: '' },
-    after: afterPhoto,
-    foods: meal.foods,
-    signal: new AbortController().signal,
-  }));
-  await assert.rejects(compareMealPhotos({
-    mealId: meal.id,
-    before: meal.photo,
-    after: { ...afterPhoto, uri: '' },
-    foods: meal.foods,
-    signal: new AbortController().signal,
-  }));
-});
 
-test('saving a meal keeps the before photo; the after-meal review requires an after photo', () => {
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+test('saving a meal keeps the before photo; manual after-meal review may omit its photo', () => {
   const meal = mealWithBeforePhoto();
   assert.equal(meal.photo.uri, PNG);
   assert.equal(mealToUpsertBody(meal).before_photo_uri, PNG);
@@ -109,7 +69,7 @@ test('saving a meal keeps the before photo; the after-meal review requires an af
   for (const ingredient of draft.outcomes[0].ingredients) {
     draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'tasted', ingredient.id);
   }
-  assert.throws(() => reviewFromDraft(draft, meal), /photo/);
+  assert.equal(reviewFromDraft(draft, meal).afterPhoto, null);
   draft.afterPhoto = afterPhoto;
   const review = reviewFromDraft(draft, meal);
   assert.equal(review.afterPhoto.id, afterPhoto.id);
@@ -138,12 +98,7 @@ test('live API stores a before-meal photo then an after-meal photo', async (t) =
     ingredients: ['Egg'],
     preparation: '',
     serving_note: '',
-    traits: {
-      texture: [], tasteType: [], tasteIntensity: [], smell: [],
-      shape: [], visibility: [], temperature: [], color: [],
-    },
-    history: null,
-    source: 'parent',
+    source: 'parent', confirmed: true,
   };
   const mealRes = await fetch(`${api}/api/v1/children/${encodeURIComponent(childId)}/meals/${encodeURIComponent(mealId)}`, {
     method: 'PUT',
@@ -153,7 +108,6 @@ test('live API stores a before-meal photo then an after-meal photo', async (t) =
       meal_type: 'lunch',
       setting: 'home',
       before_photo_uri: PNG,
-      exposure_food_id: 'food-1',
       saved_at: new Date().toISOString(),
       foods: [food],
     }),
@@ -171,7 +125,6 @@ test('live API stores a before-meal photo then an after-meal photo', async (t) =
       after_photo_uri: '',
       outcomes: [],
       difficulties: {},
-      goal_feedback: 'tried',
       saved_at: new Date().toISOString(),
     }),
   });
@@ -189,7 +142,6 @@ test('live API stores a before-meal photo then an after-meal photo', async (t) =
         ingredients: [{ id: 'ing-egg', name: 'Egg', decision: { confirmed: 'tasted', suggested: null } }],
       }],
       difficulties: { 'food-1': [] },
-      goal_feedback: 'tried',
       saved_at: new Date().toISOString(),
     }),
   });

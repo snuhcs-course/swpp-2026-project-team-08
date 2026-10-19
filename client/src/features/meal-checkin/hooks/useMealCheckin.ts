@@ -1,10 +1,8 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import {
   mealKeys,
-  useRecognition,
   useSaveMeal,
 } from '../../../data/queries/mealQueries';
 import {
@@ -14,23 +12,36 @@ import {
 import { pickMealPhoto, PhotoError } from '../../../data/device/mealPhotoPicker';
 import type {
   FoodItem,
-  FoodTraits,
   MealDraft,
   MealStep,
   PhotoSource,
-  TraitGroup,
 } from '../../../types/meal';
-import { toggleFoodTrait } from '../../../rules/foodTraits';
 import { newFood } from '../../../rules/foodDraft';
+import type { MealSuggestionLinking, MealSuggestionOption } from '../types';
 import {
   confirmFoods,
   mealFromDraft,
   newDraft,
 } from '../rules';
 
-export function useMealCheckin(childId: string, startAfterMealId?: string, freshAfterComplete = false) {
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+export function useMealCheckin(childId: string, startAfterMealId?: string, freshAfterComplete = false, suggestions: readonly MealSuggestionOption[] = []) {
   const [draft, setDraft] = useState<MealDraft | null>(null);
+  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+  const [linkStep, setLinkStep] = useState<0 | 1 | 2>(0);
+  const [suggestionId, setSuggestionId] = useState('');
+  const [targetId, setTargetId] = useState('');
+  const resumeLink = useRef(false);
+  const selectedSuggestion = suggestions.find((item) => item.id === suggestionId);
+  useEffect(() => {
+    if (!draft?.editingFood && resumeLink.current) {
+      resumeLink.current = false;
+      setLinkStep(2);
+    }
+  }, [draft?.editingFood]);
+  const [resumeRequired, setResumeRequired] = useState(false);
   const current = useRef<MealDraft | null>(null);
+  const [removed, setRemoved] = useState<{ food: FoodItem; index: number; links: NonNullable<MealDraft['suggestionLinks']> } | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saving' | 'saved' | 'error'>(
     'saved',
@@ -39,12 +50,9 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     null,
   );
   const [picking, setPicking] = useState(false);
-  const [traits, setTraits] = useState<FoodTraits | null>(null);
-  const [sheet, setSheet] = useState<'help' | 'privacy' | null>(null);
+  const [sheet, setSheet] = useState<'privacy' | null>(null);
   const client = useQueryClient();
-  const recognition = useRecognition();
   const saving = useSaveMeal();
-  const controller = useRef<AbortController | null>(null);
   const busy = useRef(false);
   const pickBusy = useRef(false);
   const photoRequest = useRef(0);
@@ -60,6 +68,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
           : (stored ?? newDraft(childId));
       if (mounted.current) {
         current.current = value;
+        setResumeRequired(!!stored && stored.step !== 'complete');
         setDraft(value);
       }
     } catch {
@@ -77,6 +86,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
               ? newDraft(childId)
               : (value ?? newDraft(childId));
           current.current = restored;
+          setResumeRequired(!!value && value.step !== 'complete');
           setDraft(restored);
         }
       })
@@ -86,7 +96,6 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     return () => {
       active = false;
       mounted.current = false;
-      controller.current?.abort();
     };
   }, [childId, startAfterMealId, freshAfterComplete]);
   const persist = async (value: MealDraft) => {
@@ -125,28 +134,17 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       setSheet(null);
       return true;
     }
-    if (traits) {
-      setTraits(null);
-      return true;
-    }
     if (current.current.editingFood) {
       update({ editingFood: null });
       return true;
     }
     const step = current.current.step;
     if (step === 'details' || step === 'complete') return false;
-    if (step === 'analyzing') {
-      controller.current?.abort();
-      go('method');
-      return true;
-    }
+
     const previous: Partial<Record<MealStep, MealStep>> = {
       photo: 'details',
       preview: 'photo',
-      method: 'preview',
-      'analysis-error': 'method',
-      foods: current.current.photo ? 'method' : 'photo',
-      goal: 'foods',
+      foods: current.current.photo ? 'preview' : 'photo',
     };
     go(previous[step] ?? 'details');
     return true;
@@ -160,13 +158,10 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     try {
       const photo = await pickMealPhoto(source);
       if (photo && mounted.current && request === photoRequest.current) {
-        controller.current?.abort();
+          setRemoved(null);
         update({
           photo,
           step: 'preview',
-          foods:
-            current.current?.foods.filter((food) => food.source === 'parent') ??
-            [],
         });
       }
     } catch (err) {
@@ -179,54 +174,9 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       }
     }
   };
-  const analyze = async () => {
-    const value = current.current;
-    if (!value?.photo || recognition.isPending || busy.current) return;
-    controller.current?.abort();
-    const request = new AbortController();
-    controller.current = request;
-    go('analyzing');
-    setError(null);
-    try {
-      const result = await recognition.mutateAsync({
-        photo: value.photo,
-        signal: request.signal,
-      });
-      if (
-        mounted.current &&
-        !request.signal.aborted &&
-        current.current?.photo?.id === result.photoId
-      ) {
-        update({
-          step: 'foods',
-          foods: [
-            ...current.current.foods.filter((food) => food.source === 'parent'),
-            ...result.foods.filter(
-              (food) =>
-                !current.current?.foods.some(
-                  (existing) =>
-                    existing.id === food.id && existing.source === 'parent',
-                ),
-            ),
-          ],
-        });
-      }
-    } catch {
-      if (
-        mounted.current &&
-        !request.signal.aborted &&
-        current.current?.photo?.id === value.photo.id
-      )
-        go('analysis-error');
-    }
-  };
-  const save = async (skip: boolean) => {
+  const save = async () => {
     if (!current.current || busy.current) return null;
-    const value = {
-      ...current.current,
-      exposureFoodId: skip ? null : current.current.exposureFoodId,
-    };
-    if (!skip && !value.exposureFoodId) return null;
+    const value = current.current;
     let meal;
     try {
       meal = mealFromDraft(value);
@@ -258,21 +208,22 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       busy.current = false;
     }
   };
-  const edit = (food?: FoodItem) =>
+  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+  const edit = (food?: FoodItem) => {
+    if (!current.current || busy.current) return;
+    if (linkStep === 2) {
+      resumeLink.current = true;
+      setLinkStep(0);
+    }
     update({
       editingFood: food
         ? {
             ...food,
             ingredients: [...food.ingredients],
-            traits: Object.fromEntries(
-              Object.entries(food.traits).map(([key, values]) => [
-                key,
-                [...values],
-              ]),
-            ) as FoodTraits,
           }
         : newFood(),
     });
+  };
   const changeFood = (patch: Partial<FoodItem>) => {
     if (current.current?.editingFood)
       update({ editingFood: { ...current.current.editingFood, ...patch } });
@@ -283,7 +234,8 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     const item: FoodItem = {
       ...food,
       name: food.name.trim(),
-      source: 'parent',
+      // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+      confirmed: true,
     };
     const foods = current.current?.foods ?? [];
     update({
@@ -295,61 +247,84 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
   };
   return {
     draft,
+    // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+    suggestionLinking: {
+      step: linkStep,
+      selectedSuggestion,
+      selectedFoodId: targetId,
+      canContinue: !!selectedSuggestion && (linkStep === 1 || !!draft?.foods.some((food) => food.id === targetId)),
+      onOpen: () => setLinkStep(1),
+      onBack: () => setLinkStep(linkStep === 2 ? 1 : 0),
+      onSelectSuggestion: (id) => { setSuggestionId(id); setTargetId(''); },
+      onSelectFood: setTargetId,
+      onContinue: () => {
+        const value = current.current;
+        if (!value || busy.current || !selectedSuggestion) return;
+        if (linkStep === 1) { setLinkStep(2); return; }
+        if (linkStep !== 2 || !value.foods.some((food) => food.id === targetId)) return;
+        update({ suggestionLinks: [
+          ...(value.suggestionLinks ?? []).filter((link) => link.suggestionId !== selectedSuggestion.id),
+          { suggestionId: selectedSuggestion.id, foodId: targetId, title: selectedSuggestion.title,
+            description: selectedSuggestion.description, servingTip: selectedSuggestion.servingTip },
+        ] });
+        setLinkStep(0);
+      },
+      onUnlink: (id) => {
+        if (current.current) update({ suggestionLinks: current.current.suggestionLinks?.filter((link) => link.suggestionId !== id) });
+      },
+    } satisfies MealSuggestionLinking,
+    resumeRequired,
+    continueDraft: () => setResumeRequired(false),
     loadError,
+    removed,
+    undoRemove: () => {
+      const value = current.current;
+      if (!value || !removed || busy.current) return;
+      const foods = [...value.foods];
+      foods.splice(Math.min(removed.index, foods.length), 0, removed.food);
+      update({ foods, suggestionLinks: [...(value.suggestionLinks ?? []).filter((link) => !removed.links.some((old) => old.suggestionId === link.suggestionId)), ...removed.links] });
+      setRemoved(null);
+    },
+    confirmFood: (id: string) => {
+      if (current.current) update({ foods: current.current.foods.map((food) => food.id === id ? { ...food, confirmed: true } : food) });
+    },
     reload: load,
     saveStatus,
     error,
     picking,
     saving: saving.isPending,
-    traits,
     sheet,
     setSheet,
-    setTraits,
     update,
     go,
     back,
     pick,
-    analyze,
     save,
     edit,
     changeFood,
     saveFood,
-    cancelAnalysis: () => {
-      controller.current?.abort();
-      go('method');
-    },
-    removeFood: (id: string) =>
+    removeFood: (id: string) => {
+      const value = current.current;
+      const food = value?.foods.find((item) => item.id === id);
+      if (!value || !food || busy.current) return;
+      setRemoved({ food, index: value.foods.indexOf(food), links: (value.suggestionLinks ?? []).filter((link) => link.foodId === id) });
       update({
+        suggestionLinks: (value.suggestionLinks ?? []).filter((link) => link.foodId !== id),
         foods: current.current?.foods.filter((f) => f.id !== id) ?? [],
-        exposureFoodId:
-          current.current?.exposureFoodId === id
-            ? null
-            : (current.current?.exposureFoodId ?? null),
-      }),
+      });
+    },
     removePhoto: () => {
       const value = current.current;
       if (!value) return;
       update({
         photo: null,
         step: 'photo',
-        foods: value.foods.filter((food) => food.source === 'parent'),
-        exposureFoodId: null,
+        foods: value.foods,
       });
     },
     confirm: () => {
       if (current.current?.foods.length)
-        update({ foods: confirmFoods(current.current.foods), step: 'goal' });
-    },
-    toggleTrait: (group: TraitGroup, value: string) => {
-      setTraits((current) =>
-        current ? toggleFoodTrait(current, group, value) : null,
-      );
-    },
-    saveTraits: () => {
-      if (traits) {
-        changeFood({ traits });
-        setTraits(null);
-      }
+        update({ foods: confirmFoods(current.current.foods), step: 'foods' });
     },
     flush: () =>
       !busy.current && current.current

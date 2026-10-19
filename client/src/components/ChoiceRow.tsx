@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; support inline option explanations
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import Feather from '@expo/vector-icons/Feather';
@@ -12,9 +14,10 @@ type Props = {
   multiple?: boolean;
   subtitle?: string;
   controlPosition?: 'leading' | 'trailing';
+  inlineSubtitle?: boolean;
 };
 
-export function ChoiceRow({ label, selected, onPress, multiple, subtitle, controlPosition = 'trailing' }: Props) {
+export function ChoiceRow({ label, selected, onPress, multiple, subtitle, inlineSubtitle = false, controlPosition = 'trailing' }: Props) {
   const control = <View style={[styles.control, selected && styles.controlSelected]}>
     {selected && <Feather name="check" size={12} color={colors.surface} />}
   </View>;
@@ -27,8 +30,8 @@ export function ChoiceRow({ label, selected, onPress, multiple, subtitle, contro
     >
       {controlPosition === 'leading' && control}
       <View style={styles.copy}>
-        <Text style={[styles.label, selected && styles.selectedLabel]}>{label}</Text>
-        {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+        <Text style={[styles.label, selected && styles.selectedLabel]}>{label}{inlineSubtitle && !!subtitle && <Text style={{ color: colors.onboardingMuted, fontFamily: fonts.poppinsSemiBold }}> {subtitle}</Text>}</Text>
+        {!!subtitle && !inlineSubtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       </View>
       {controlPosition === 'trailing' && control}
     </Pressable>
@@ -42,7 +45,7 @@ const styles = StyleSheet.create({
   control: { width: 20, height: 20, borderRadius: 6, borderWidth: 1, borderColor: colors.onboardingBorder, alignItems: 'center', justifyContent: 'center' },
   controlSelected: { backgroundColor: colors.onboardingPrimary, borderColor: colors.onboardingPrimary },
   copy: { flex: 1 },
-  label: { color: colors.onboardingText, fontSize: 10, lineHeight: 12, fontFamily: fonts.interMedium },
+  label: { color: colors.onboardingText, fontSize: 13, lineHeight: 18, fontFamily: fonts.poppinsSemiBold },
   selectedLabel: { color: colors.onboardingPrimary },
-  subtitle: { color: colors.onboardingMuted, fontSize: 8, lineHeight: 10, fontFamily: fonts.interRegular, marginTop: 1 },
+  subtitle: { color: colors.onboardingMuted, fontSize: 11, lineHeight: 15, fontFamily: fonts.interRegular, marginTop: 1 },
 });

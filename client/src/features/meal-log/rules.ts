@@ -1,5 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { FoodItem } from '../../types/meal';
 import type { FoodResponseCard, MealRecord } from './types';
@@ -125,8 +124,6 @@ export function foodResponseCards(
       parentName: null,
       name: food.name,
       ingredients: food.ingredients,
-      traits: food.traits,
-      history: food.history,
       preparation: food.preparation,
       servingNote: food.servingNote,
       outcome: outcome?.decision.confirmed ?? null,
@@ -142,8 +139,6 @@ export function foodResponseCards(
         parentName: food.name,
         name: ingredient.name,
         ingredients: [],
-        traits: food.traits,
-        history: food.history,
         preparation: '',
         servingNote: '',
         outcome: ingredient.decision.confirmed,

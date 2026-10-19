@@ -1,43 +1,75 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
-import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { AppButton } from '../../../components/AppButton';
-import { AppIcon } from '../../../components/AppIcon';
-import { UiAssetIcon } from '../../../components/UiAssetIcon';
-import { FoodEditor } from '../../../components/FoodEditor';
-import { formStyles as ui } from '../../../components/formStyles';
-import { copyFor, suggestionCopyFor } from '../../../util/strings';
-import { MealCompleteStepView } from './MealCompleteStepView';
-import { MealDetailsStepView } from './MealDetailsStepView';
-import { MealFoodsStepView } from './MealFoodsStepView';
-import { MealGoalSheetsView } from './MealGoalSheetsView';
-import { MealPhotoStepsView } from './MealPhotoStepsView';
-import type { MealCheckinViewProps } from './mealCheckinViewTypes';
-import { styles } from './mealCheckinStyles';
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+import { fonts } from "../../../util/fonts";
+import { colors } from "../../../util/colors";
+import { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { AppButton } from "../../../components/AppButton";
+import { AppIcon } from "../../../components/AppIcon";
+import { UiAssetIcon } from "../../../components/UiAssetIcon";
+import { MealFoodEditorDialog } from "../../../components/MealFoodEditorDialog";
+import { formStyles as ui } from "../../../components/formStyles";
+import { abcCopyFor, copyFor, suggestionCopyFor } from "../../../util/strings";
+import { MealCompleteStepView } from "./MealCompleteStepView";
+import { MealDetailsStepView } from "./MealDetailsStepView";
+import { MealFoodsStepView } from "./MealFoodsStepView";
+import { MealSaveStatusView } from "../../../components/MealSaveStatusView";
+import { Dialog } from "../../../components/Dialog";
+import { MealPrivacySheetView } from "./MealPrivacySheetView";
+import { MealPhotoStepsView } from "./MealPhotoStepsView";
+import type { MealCheckinViewProps } from "./mealCheckinViewTypes";
+import { styles } from "./mealCheckinStyles";
 
 export function MealCheckinView(p: MealCheckinViewProps) {
   const d = p.draft;
   const s = copyFor(p.language);
   const m = s.mealCheckin;
+  const [savePanelHidden, setSavePanelHidden] = useState(false);
+  const [replaceConfirm, setReplaceConfirm] = useState(false);
+  const a = abcCopyFor(p.language);
   const [replace, setReplace] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const review = d.step === 'foods' || d.step === 'goal';
-  const photoStep = ['photo', 'preview', 'method', 'analyzing', 'analysis-error'].includes(d.step);
-  const segment = ['details', 'photo'].includes(d.step)
+  const review = d.step === "foods";
+  const emptyManual = review && !d.photo && !d.foods.length && !p.removedName;
+  const photoStep = [
+    "photo",
+    "preview",
+  ].includes(d.step);
+  const segment = ["details", "photo"].includes(d.step)
     ? 0
-    : d.step === 'preview'
+    : d.step === "preview"
       ? 1
-      : ['method', 'analyzing', 'analysis-error'].includes(d.step)
+      : ["method", "analyzing", "analysis-error"].includes(d.step)
         ? 2
-        : d.step === 'foods'
+        : d.step === "foods"
           ? 3
           : 4;
 
+  if (!savePanelHidden && d.step !== 'complete' && (p.saving || p.error === 'save')) return <MealSaveStatusView
+    status={p.saving ? 'saving' : 'error'} language={p.language} photos={d.photo ? [d.photo.uri] : []}
+    mealDate={d.mealDate} mealType={d.mealType} foods={d.foods} onRetry={p.onConfirm} onSaveExit={p.onSaveExit}
+    onReturn={() => setSavePanelHidden(true)} />;
+
   return (
-    <SafeAreaView style={[styles.root, d.step === 'photo' && styles.photoRoot, review && styles.reviewRoot]} edges={['top', 'bottom']}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <SafeAreaView
+      style={[
+        styles.root,
+        d.step === "photo" && styles.photoRoot,
+        review && styles.reviewRoot,
+      ]}
+      edges={["top", "bottom"]}
+    >
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
         <View style={styles.header}>
           <Pressable
             accessibilityRole="button"
@@ -49,48 +81,87 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             <AppIcon name="back" size={18} />
           </Pressable>
           <View style={styles.headerCopy}>
-            <Text style={ui.heading}>{m.titles[d.step]}</Text>
-            {d.step === 'preview' && <Text style={styles.headerNote}>{m.draftLabel}</Text>}
-            {d.step === 'method' && <Text style={styles.headerNote}>{m.photoReady}</Text>}
+            <Text style={ui.heading}>{emptyManual ? m.addFoodsTitle : d.step === "complete" ? a.mealCheckinHeader : m.titles[d.step]}</Text>
+            {d.step === "preview" && (
+              <Text style={styles.headerNote}>{m.draftLabel}</Text>
+            )}
           </View>
         </View>
-        {p.tryingSuggestion && d.step !== 'complete' && <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: p.tryingSuggestion.checked }} disabled={p.saving} onPress={p.tryingSuggestion.onToggle} style={styles.header}>
+        {p.tryingSuggestion && d.step !== 'complete' && <Pressable
+          accessibilityRole="checkbox" accessibilityState={{ checked: p.tryingSuggestion.checked }}
+          disabled={p.saving} onPress={p.tryingSuggestion.onToggle} style={styles.header}>
           <Text style={ui.text}>{p.tryingSuggestion.checked ? '☑' : '☐'} {suggestionCopyFor(p.language).trying}</Text>
         </Pressable>}
-        {review && <View style={styles.reviewIntro}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.reviewIntroTitle}>{d.foods.some((food) => food.source === 'ai') ? m.aiCount(d.foods.filter((food) => food.source === 'ai').length) : m.reviewCount(d.foods.length)}</Text>
-            <Text style={styles.reviewIntroText}>{m.reviewFoodHint}</Text>
-          </View>
-          <View style={styles.reviewBadge}><Text style={styles.reviewBadgeText}>{m.parentReviewBadge}</Text></View>
-        </View>}
         <View
           accessibilityRole="progressbar"
           accessibilityValue={{ min: 1, max: 5, now: segment + 1 }}
           style={styles.progress}
         >
           {[0, 1, 2, 3, 4].map((i) => (
-            <View key={i} style={[styles.segment, d.step === 'photo' && styles.photoSegment, i <= segment && styles.activeSegment]} />
+            <View
+              key={i}
+              style={[
+                styles.segment,
+                d.step === "photo" && styles.photoSegment,
+                i <= segment && styles.activeSegment,
+              ]}
+            />
           ))}
         </View>
-        <View style={{ flex: 1 }} pointerEvents={p.saving ? 'none' : 'auto'}>
-          <ScrollView contentContainerStyle={[styles.content, d.step === 'photo' && styles.photoContent]} keyboardShouldPersistTaps="handled">
-            {d.step === 'details' && (
+        {review && !emptyManual && (
+          <View style={styles.reviewIntro}>
+            <Text style={styles.reviewIntroTitle}>
+              {m.foodCount(d.foods.length)}
+            </Text>
+          </View>
+        )}
+        <View style={{ flex: 1 }} pointerEvents={p.saving ? "none" : "auto"}>
+          <ScrollView
+            contentContainerStyle={[
+              styles.content,
+              review && !emptyManual && { paddingTop: 4 },
+              d.step === "photo" && styles.photoContent,
+            ]}
+            keyboardShouldPersistTaps="handled"
+          >
+            {d.step === "details" && (
               <>
-                <MealDetailsStepView p={{ draft: d, language: p.language, dateInput: p.dateInput, onUpdate: p.onUpdate }} />
-                <AppButton variant="meal" label={m.toPhoto} icon={<UiAssetIcon name="meal-arrow-right" />} disabled={!d.mealType || !d.setting} onPress={() => p.onGo('photo')} />
+                <MealDetailsStepView
+                  p={{
+                    draft: d,
+                    language: p.language,
+                    dateInput: p.dateInput,
+                    onUpdate: p.onUpdate,
+                  }}
+                />
+                <AppButton
+                  variant="meal"
+                  label={m.toPhoto}
+                  icon={<UiAssetIcon name="meal-arrow-right" />}
+                  disabled={!d.mealType || !d.setting}
+                  onPress={() => p.onGo("photo")}
+                />
               </>
             )}
             {photoStep && (
               <MealPhotoStepsView
                 p={{
-                  draft: d, language: p.language, picking: p.picking,
-                  onFullPhoto: p.onFullPhoto, onGo: p.onGo, onSheet: p.onSheet,
-                  onAnalyze: p.onAnalyze, onCancelAnalysis: p.onCancelAnalysis,
+                  draft: d,
+                  language: p.language,
+                  picking: p.picking,
+                  onFullPhoto: p.onFullPhoto,
+                  onGo: p.onGo,
+                  onSheet: p.onSheet,
+                  onSaveExit: p.onSaveExit,
                 }}
                 replace={replace}
                 imageError={imageError}
-                onReplace={() => setReplace((value) => !value)}
+                onCloseReplace={() => setReplace(false)}
+                onReplace={() => {
+                  if (d.photo && (d.foods.length || d.suggestionLinks?.length))
+                    setReplaceConfirm(true);
+                  else setReplace((value) => !value);
+                }}
                 onImageError={() => setImageError(true)}
                 onPick={(source) => {
                   setImageError(false);
@@ -104,62 +175,149 @@ export function MealCheckinView(p: MealCheckinViewProps) {
               />
             )}
             {review && (
-              <MealFoodsStepView p={{ draft: d, language: p.language, onEdit: p.onEdit, onRemove: p.onRemove, onGo: p.onGo, onFullPhoto: p.onFullPhoto }} />
+              <MealFoodsStepView
+                p={{
+                  draft: d,
+                  childName: p.childName,
+                  language: p.language,
+                  onEdit: p.onEdit,
+                  onRemove: p.onRemove,
+                  onGo: p.onGo,
+                  onFullPhoto: p.onFullPhoto,
+                  onConfirmFood: p.onConfirmFood,
+                  removedName: p.removedName,
+                  onUndoRemove: p.onUndoRemove,
+                  suggestions: p.suggestions,
+                  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+                  suggestionLinking: p.suggestionLinking,
+                  suggestionsLoading: p.suggestionsLoading,
+                  suggestionsError: p.suggestionsError,
+                  onRetrySuggestions: p.onRetrySuggestions,
+                }}
+              />
             )}
-            {d.step === 'complete' && (
-              <MealCompleteStepView p={{ draft: d, language: p.language, onAfterMeal: p.onAfterMeal, onHome: p.onHome }} />
+            {d.step === "complete" && (
+              <MealCompleteStepView
+                p={{
+                  draft: d,
+                  language: p.language,
+                  onAfterMeal: p.onAfterMeal,
+                  onHome: p.onHome,
+                }}
+              />
             )}
             {(p.error || imageError || p.languageError) && (
               <Text accessibilityRole="alert" style={ui.error}>
-                {p.error === 'save' ? m.saveFailed
-                  : p.error === 'permission' ? m.permission
-                    : p.error === 'image' || imageError ? m.imageError : s.common.saveFailed}
+                {p.error === "save"
+                  ? m.saveFailed
+                  : p.error === "permission"
+                    ? m.permission
+                    : p.error === "image" || imageError
+                      ? m.imageError
+                      : s.common.saveFailed}
               </Text>
             )}
           </ScrollView>
         </View>
-        {(['photo', 'preview', 'foods'] as string[]).includes(d.step) && (
+        {(["photo", "preview", "foods"] as string[]).includes(d.step) && (
           <View style={styles.footer}>
-            {d.step === 'preview' && (
-              <AppButton variant="meal" label={m.usePhoto} icon={<UiAssetIcon name="meal-check" />} disabled={!d.photo || imageError || p.picking} onPress={() => p.onGo('method')} />
+            {d.step === "preview" && (
+              <AppButton
+                variant="meal"
+                label={m.addFood}
+                icon={<UiAssetIcon name="meal-check" />}
+                disabled={!d.photo || imageError || p.picking}
+                onPress={() => p.onGo("foods")}
+              />
             )}
-            {d.step === 'foods' && (
+            {d.step === "foods" && (
               <>
-                <AppButton variant="meal" label={m.confirmFoods} icon={<UiAssetIcon name="meal-check" />} disabled={!d.foods.length || p.saving} onPress={p.onConfirm} />
-                <Text style={styles.confirmHint}>{m.confirmFoodsHint}</Text>
-                <AppButton variant="meal" secondary label={s.common.saveExit} onPress={p.onSaveExit} />
+                <AppButton
+                  variant="meal"
+                  label={
+                    p.saving
+                      ? a.savingMeal
+                      : p.error === "save"
+                        ? s.common.retry
+                        : m.confirmFoods
+                  }
+                  icon={<UiAssetIcon name="meal-check" />}
+                  style={{ minHeight: 50 }} labelStyle={{ fontSize: emptyManual ? 13 : 16 }}
+                  disabled={!d.foods.length || p.saving}
+                  onPress={() => { setSavePanelHidden(false); p.onConfirm(); }}
+                />
+                {p.saving && (
+                  <Text style={styles.confirmHint}>{a.draftKept}</Text>
+                )}
+                {!emptyManual && <Pressable
+                  accessibilityRole="button"
+                  onPress={p.onSaveExit}
+                  style={{ padding: 12, alignItems: "center" }}
+                >
+                  <Text style={{ color: colors.homePrimary, fontSize: 16, fontFamily: fonts.poppinsSemiBold }}>
+                    {a.saveExit}
+                  </Text>
+                </Pressable>}
               </>
             )}
-            {d.step === 'photo' && <Text style={styles.draftNote}>{m.draftSaved}</Text>}
-            {p.saveStatus === 'error' && <AppButton label={s.common.retry} secondary onPress={p.onRetryDraft} />}
+            {d.step === "photo" && (
+              <Text style={styles.draftNote}>{m.draftSaved}</Text>
+            )}
+            {p.saveStatus === "error" && (
+              <AppButton
+                label={s.common.retry}
+                secondary
+                onPress={p.onRetryDraft}
+              />
+            )}
           </View>
         )}
         {d.editingFood && (
-          <FoodEditor
+          <MealFoodEditorDialog
             key={d.editingFood.id}
             food={d.editingFood}
-            labels={{ meal: m, common: s.common }}
-            traits={p.traits}
+            mode={d.foods.some((item) => item.id === d.editingFood?.id) ? 'edit' : 'add'}
+            meal={m}
+            common={s.common}
             {...p.foodInput}
             onChange={p.onChangeFood}
             onSave={p.onSaveFood}
             onCancel={() => p.onUpdate({ editingFood: null })}
-            onEditTraits={() => p.onTraits(d.editingFood!.traits)}
-            onToggleTrait={p.onToggleTrait}
-            onSaveTraits={p.onSaveTraits}
-            onCancelTraits={() => p.onTraits(null)}
-            goal={{
-              label: m.goalLabel,
-              value: d.exposureFoodId === d.editingFood.id ? d.editingFood.name || m.goalNotSet : m.goalNotSet,
-              actionLabel: s.common.add,
-              onPress: () => p.onUpdate({ exposureFoodId: d.editingFood!.id }),
-            }}
+            labels={a}
           />
         )}
-        <MealGoalSheetsView p={{
-          draft: d, language: p.language, sheet: p.sheet, saving: p.saving, error: p.error,
-          onSheet: p.onSheet, onGo: p.onGo, onUpdate: p.onUpdate, onSave: p.onSave,
-        }} />
+        {replaceConfirm && (
+          <Dialog compact title={a.replaceTitle} closeLabel={s.common.close} onClose={() => setReplaceConfirm(false)} footer={<>
+            <AppButton
+              style={{ minHeight: 50 }}
+              variant="meal"
+              label={m.replace}
+              labelStyle={styles.replaceButtonLabel}
+              onPress={() => {
+                setReplaceConfirm(false);
+                setReplace(true);
+              }}
+            />
+            <AppButton
+              secondary
+              style={{ minHeight: 50 }}
+              variant="meal"
+              label={m.cancel}
+              labelStyle={styles.replaceCancelLabel}
+              onPress={() => setReplaceConfirm(false)}
+            />
+          </>}>
+            <Text style={styles.replaceBody}>{a.replaceBody}</Text>
+            <Text style={styles.replaceHint}>{a.replaceHint}</Text>
+          </Dialog>
+        )}
+        <MealPrivacySheetView
+          p={{
+            language: p.language,
+            sheet: p.sheet,
+            onSheet: p.onSheet,
+          }}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

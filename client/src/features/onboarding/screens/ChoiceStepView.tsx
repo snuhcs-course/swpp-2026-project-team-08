@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match allergy option explanation placement
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
 
 import { useState } from 'react';
@@ -25,9 +27,9 @@ type ChoiceValues = Pick<OnboardingDraft,
 type ListField = 'allergies' | 'restrictions' | 'familyFoods' | 'approaches' | 'texture' | 'taste' | 'presentation';
 type TextField = 'childName' | 'ageRange' | 'smell' | 'temperature' | 'familiarity';
 
-function Guidance({ title, body, icon = 'info' }: { title?: string; body: string; icon?: 'info' | 'calendar' | 'activity' }) {
+function Guidance({ title, body, icon = 'info' }: { title?: string; body: string; icon?: 'info' | 'calendar' | 'activity' | 'utensils' }) {
   return <View style={styles.infoBanner}>
-    <View style={styles.infoIcon}>{icon === 'calendar' ? <UiAssetIcon name="onboarding-calendar" /> : <Feather name={icon} size={13} color={colors.onboardingPrimary} />}</View>
+    <View style={styles.infoIcon}>{icon === 'utensils' ? <UiAssetIcon name="abc-utensils" /> : icon === 'calendar' ? <UiAssetIcon name="onboarding-calendar" /> : <Feather name={icon} size={13} color={colors.onboardingPrimary} />}</View>
     <View style={styles.safetyCopy}>
       {title && <Text style={styles.infoTitle}>{title}</Text>}
       <Text style={styles.infoText}>{body}</Text>
@@ -56,10 +58,10 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
       presentation: [values.presentation, 'presentation'],
     } as const;
     const config = groups[step as keyof typeof groups];
-    if (!config) return step === 'family' || step === 'approaches';
+    if (!config) return false;
     const [selectedValues, group] = config;
     const baseIds = optionsFor(group, language).map((option) => option.id);
-    return step === 'family' || step === 'approaches' || selectedValues.some((value) => value !== 'none' && !baseIds.includes(value));
+    return selectedValues.some((value) => value !== 'none' && !baseIds.includes(value));
   });
   const s = copyFor(language);
   const labels = {
@@ -114,7 +116,7 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
     return (
       <View>
         {step === 'restrictions' && <Text style={styles.question}>{guidance.restrictionsQuestion(name)}</Text>}
-        {step === 'family' && <Guidance title={guidance.familyTitle} body={guidance.familyBody} />}
+        {step === 'family' && <Guidance title={guidance.familyTitle} body={guidance.familyBody} icon="utensils" />}
         {step === 'approaches' && <Guidance title={guidance.approachesTitle} body={guidance.approachesBody} />}
         {step === 'allergies' && (
           <View style={styles.safetyBanner}>
@@ -132,12 +134,19 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
           search={search}
           onSearchChange={setSearch}
           showOther={showOther}
-          onShowOtherChange={setShowOther}
+          onShowOtherChange={(open) => {
+            setShowOther(open);
+            if (open && values[current.field].includes('none')) onRemoveListItem(current.field, 'none');
+          }}
+          inlineSubtitleIds={step === 'allergies' ? ['tree-nut'] : undefined}
           optionSubtitles={step === 'allergies' ? { 'tree-nut': s.onboarding.treeNutsHint } : subtitles[step]}
           selected={values[current.field]}
           noneLabel={current.none}
           otherLabel={otherLabel}
-          onToggle={(value) => onToggleList(current.field, value)}
+          onToggle={(value) => {
+            if (value === 'none') { setShowOther(false); setSearch(''); }
+            onToggleList(current.field, value);
+          }}
           onAdd={(value) => { onAddListItem(current.field, value); setSearch(''); }}
           onRemove={(value) => onRemoveListItem(current.field, value)}
         />

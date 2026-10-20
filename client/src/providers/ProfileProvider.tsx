@@ -2,9 +2,11 @@
 
 import { getLocales } from 'expo-localization';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { fromOnboardingResponse, readOnboarding, writeOnboarding } from '../data/api/onboardingApi';
 import { readLanguage, saveLanguage } from '../data/storage/languageStorage';
-import { clearProfile, readProfile, saveProfile } from '../data/storage/profileStorage';
+import { clearProfile, saveProfile } from '../data/storage/profileStorage';
 import type { ChildProfile, Language } from '../types/profile';
+import { useAuth } from './AuthProvider';
 
 type ProfileContextValue = {
   status: 'loading' | 'ready' | 'error';
@@ -23,35 +25,68 @@ function deviceLanguage(): Language {
 }
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
-  const [status, setStatus] = useState<ProfileContextValue['status']>('loading');
-  const [profile, setProfile] = useState<ChildProfile | null>(null);
+  const auth = useAuth();
+  const user = auth.session?.user ?? null;
+  const userId = user?.id ?? null;
+  const [loadedStatus, setLoadedStatus] = useState<ProfileContextValue['status']>('loading');
+  const [storedProfile, setProfile] = useState<ChildProfile | null>(null);
+  const [loadedUserId, setLoadedUserId] = useState<string | null>(null);
   const [language, setLanguage] = useState<Language>(deviceLanguage);
   const languageQueue = useRef<Promise<void>>(Promise.resolve());
   const mounted = useRef(false);
+  const loadSequence = useRef(0);
 
-  const load = useCallback(() => Promise.all([readProfile(), readLanguage()]).then(
-    ([storedProfile, storedLanguage]) => {
-      if (!mounted.current) return;
-      setProfile(storedProfile);
-      if (storedLanguage) setLanguage(storedLanguage);
-      setStatus('ready');
-    },
-    () => { if (mounted.current) setStatus('error'); },
-  ), []);
+  const load = useCallback(async () => {
+    if (auth.status === 'loading') return;
+    const sequence = ++loadSequence.current;
+    setLoadedStatus('loading');
+    try {
+      const storedLanguage = await readLanguage();
+      if (storedLanguage && mounted.current && sequence === loadSequence.current) setLanguage(storedLanguage);
+      if (!user) {
+        if (mounted.current && sequence === loadSequence.current) {
+          setProfile(null);
+          setLoadedUserId(null);
+          setLoadedStatus('ready');
+        }
+        return;
+      }
+      const response = await readOnboarding();
+      const next = fromOnboardingResponse(response, user);
+      if (!mounted.current || sequence !== loadSequence.current) return;
+      setProfile(next);
+      setLoadedUserId(user.id);
+      setLoadedStatus('ready');
+      if (next) void saveProfile(next).catch(() => undefined);
+    } catch {
+      if (mounted.current && sequence === loadSequence.current) {
+        setLoadedUserId(userId);
+        setLoadedStatus('error');
+      }
+    }
+  }, [auth.status, user, userId]);
   const retryLoad = useCallback(() => {
-    setStatus('loading');
     return load();
   }, [load]);
   useEffect(() => {
     mounted.current = true;
-    void load();
-    return () => { mounted.current = false; };
-  }, [load]);
+    let active = true;
+    if (auth.status === 'ready') {
+      void Promise.resolve().then(() => { if (active) void load(); });
+    }
+    return () => { active = false; mounted.current = false; loadSequence.current += 1; };
+  }, [auth.status, load]);
 
   const commitProfile = useCallback(async (value: ChildProfile) => {
-    await saveProfile(value);
-    setProfile(value);
-  }, []);
+    if (!user) throw new Error('Auth session is missing');
+    const response = await writeOnboarding(value);
+    const next = fromOnboardingResponse(response, user);
+    if (!next) throw new Error('Onboarding response has no profile');
+    setProfile(next);
+    setLoadedUserId(user.id);
+    setLoadedStatus('ready');
+    await saveProfile(next).catch(() => undefined);
+  }, [user]);
   const wipeProfile = useCallback(async () => {
     await clearProfile();
     setProfile(null);
@@ -61,6 +96,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     languageQueue.current = next;
     return next.then(() => setLanguage(value));
   }, []);
+
+  const status = auth.status === 'loading' || loadedUserId !== userId ? 'loading' : loadedStatus;
+  const profile = loadedUserId === userId && storedProfile && user
+    ? { ...storedProfile, caregiverName: user.fullName, caregiverEmail: user.email }
+    : null;
 
   return (
     <ProfileContext.Provider value={{ status, profile, language, retryLoad, commitProfile, wipeProfile, changeLanguage }}>

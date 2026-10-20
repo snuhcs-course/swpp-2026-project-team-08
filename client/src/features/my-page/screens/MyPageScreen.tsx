@@ -28,7 +28,6 @@ export function MyPageScreen() {
       language={appProfile.language}
       childName={profile.childName}
       ageLabel={labelFor('age', profile.ageRange, appProfile.language)}
-      photoUri={profile.photoUri ?? null}
       caregiver={caregiverLine(profile.caregiverName, profile.caregiverEmail)}
       deleteError={account.deleteError}
       confirm={account.confirm}

@@ -319,7 +319,6 @@ Food는 수정 가능, Meal 정보는 수정 불가능. 따라서 Food Snapshot�
   "user_id": "1",
   "child_name": "아이 이름",
   "age_group": "4-5",
-  "photo_key": null,
   "safety": {
     "allergies": {
       "status": "specified",
@@ -360,7 +359,6 @@ Food는 수정 가능, Meal 정보는 수정 불가능. 따라서 Food Snapshot�
 | `user_id` | `Id`; 프로필의 기본 키이자 소유 사용자 ID. 사용자당 프로필은 하나이다 |
 | `child_name` | 공백 제외 비어 있지 않은 문자열 |
 | `age_group` | 연령대 코드: `under-2`, `2-3`, `4-5`, `6-8`, `9-12`, `13-plus` |
-| `photo_key` | 업로드된 사진의 저장 키 또는 `null`; 기기 내부 URI는 저장하지 않음 |
 | `safety.allergies` | `{ status, items: ProfileChoice[] }`; `status`는 `unknown`, `none_known`, `specified` 중 하나. `specified`일 때만 `items`가 비어 있지 않음 |
 | `safety.restrictions` | `{ status, items: ProfileChoice[] }`; `status`는 `none`, `specified` 중 하나. `specified`일 때만 `items`가 비어 있지 않음 |
 | `food_preferences.family_foods` | `ProfileChoice[]`; 가족 식단에 포함할 식품군, 1개 이상 |
@@ -718,7 +716,6 @@ Food는 수정 가능, Meal 정보는 수정 불가능. 따라서 Food Snapshot�
       "profile": {
         "child_name": "아이 이름",
         "age_group": "4-5",
-        "photo_key": null,
         "safety": {
           "allergies": {
             "status": "specified",
@@ -890,7 +887,6 @@ Review 저장 시 해당 식사의 음식마다 한 행을 만든다. `food_id`�
 | `user_id` | `BIGINT` | PK; `users.id` 참조 |
 | `child_name` | `TEXT` | `NOT NULL`; 공백 제외 비어 있지 않음 |
 | `age_group` | `TEXT` | `NOT NULL`; `UserProfile.age_group`의 허용 코드 |
-| `photo_key` | `TEXT` | `NULL` 허용; 업로드된 사진의 저장 키 |
 | `allergy_status` | `TEXT` | `NOT NULL`; `unknown`, `none_known`, `specified` 중 하나 |
 | `restriction_status` | `TEXT` | `NOT NULL`; `none`, `specified` 중 하나 |
 | `smell_sensitivity` | `TEXT` | `NULL` 허용; 값이 있으면 `UserProfile.food_preferences.smell_sensitivity`의 허용 코드 |

@@ -98,7 +98,7 @@ test('account wipe removes profile, draft, meals, and photos for the child', asy
   assert.equal(values.has('nurturebites.language.v1'), true);
 });
 
-test('saved profiles keep an optional photo and can be cleared', async () => {
+test('saved profiles can be cleared', async () => {
   values.clear();
   const draft = emptyDraft();
   const profile = {
@@ -108,13 +108,12 @@ test('saved profiles keep an optional photo and can be cleared', async () => {
     caregiverEmail: 'alex@example.com',
     childName: 'Child',
     ageRange: '4-5',
-    photoUri: 'file:///photo.png',
     updatedAt: '2026-10-17T00:00:00.000Z',
   };
   delete profile.step;
   delete profile.safeFoodInput;
   await saveProfile(profile);
-  assert.equal((await readProfile()).photoUri, 'file:///photo.png');
+  assert.equal((await readProfile()).childName, 'Child');
   await clearProfile();
   assert.equal(await readProfile(), null);
 });

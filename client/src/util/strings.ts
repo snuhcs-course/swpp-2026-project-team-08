@@ -295,7 +295,6 @@ const en = {
     childProfile: 'Child Profile',
     edit: 'Edit',
     save: 'Save',
-    uploadPhoto: 'Upload photo',
     childName: 'CHILD NAME',
     ageGroup: 'AGE GROUP',
     allergies: 'Allergies & Restrictions',
@@ -324,8 +323,6 @@ const en = {
     cancel: 'Cancel',
     delete: 'Delete',
     deleteFailed: 'Could not delete this account. Try again.',
-    photoFailed: 'Could not use this photo. Choose another supported image.',
-    photoPermission: 'Photo access was denied. Allow access in device settings or choose another source.',
   },
 };
 
@@ -622,7 +619,6 @@ const ko = {
     childProfile: '아이 프로필',
     edit: '수정',
     save: '저장',
-    uploadPhoto: '사진 올리기',
     childName: '아이 이름',
     ageGroup: '연령대',
     allergies: '알레르기 및 제한',
@@ -651,8 +647,6 @@ const ko = {
     cancel: '취소',
     delete: '삭제',
     deleteFailed: '계정을 삭제하지 못했습니다. 다시 시도해 주세요.',
-    photoFailed: '이 사진을 사용할 수 없습니다. 지원되는 다른 이미지를 선택해 주세요.',
-    photoPermission: '사진 접근이 거부되었습니다. 설정에서 허용하거나 다른 방법을 선택해 주세요.',
   },
 };
 

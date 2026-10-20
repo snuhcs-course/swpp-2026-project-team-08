@@ -21,7 +21,7 @@ export function emptyDraft(): OnboardingDraft {
     consent: { accountPrivacy: false, photoAnalysis: false, aiTraining: false },
     allergies: [], restrictions: [], familyFoods: [], approaches: [], texture: [],
     smell: '', taste: [], presentation: [], temperature: '', familiarity: '',
-    safeFoods: [], noSafeFoods: false, photoUri: null,
+    safeFoods: [], noSafeFoods: false,
     safeFoodInput: { name: '', preparation: '', presentationNote: '' },
   };
 }

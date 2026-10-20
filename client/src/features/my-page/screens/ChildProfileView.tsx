@@ -1,37 +1,30 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 import { AppHeader } from '../../../components/AppHeader';
 import Feather from '@expo/vector-icons/Feather';
-import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { PhotoSource } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { copyFor, optionsFor } from '../../../util/strings';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { PhotoSourceSheet } from '../components/PhotoSourceSheet';
 import { styles } from './myPageStyles';
 
 export function ChildProfileView({
-  language, editing, childName, ageRange, photoUri, allergies, familyFoods, safeFoods,
-  picking, saving, saveError, photoError, photoOpen, deleteError, confirm, busy,
-  onBack, onEdit, onSave, onName, onAge, onOpenPhoto, onClosePhoto, onPick,
+  language, editing, childName, ageRange, allergies, familyFoods, safeFoods,
+  saving, saveError, deleteError, confirm, busy,
+  onBack, onEdit, onSave, onName, onAge,
   onAllergies, onFamily, onSafeFoods, onLogOut, onDelete, onConfirm, onCancelConfirm,
 }: {
   language: Language;
   editing: boolean;
   childName: string;
   ageRange: string;
-  photoUri: string | null;
   allergies: string;
   familyFoods: string;
   safeFoods: string;
-  picking: boolean;
   saving: boolean;
   saveError: boolean;
-  photoError: 'permission' | 'image' | null;
-  photoOpen: boolean;
   deleteError: boolean;
   confirm: 'logout' | 'delete' | null;
   busy: boolean;
@@ -40,9 +33,6 @@ export function ChildProfileView({
   onSave: () => void;
   onName: (value: string) => void;
   onAge: (value: string) => void;
-  onOpenPhoto: () => void;
-  onClosePhoto: () => void;
-  onPick: (source: PhotoSource) => void;
   onAllergies: () => void;
   onFamily: () => void;
   onSafeFoods: () => void;
@@ -62,15 +52,6 @@ export function ChildProfileView({
         <View style={styles.card}>
           {editing ? (
             <>
-              <Pressable accessibilityRole="button" onPress={onOpenPhoto} style={styles.uploadRow}>
-                <View style={styles.avatar}>
-                  {photoUri
-                    ? <Image source={{ uri: photoUri }} style={styles.avatarImage} />
-                    : <Feather name="user" size={22} color={colors.homePrimary} />}
-                </View>
-                <Text style={styles.uploadLabel}>{m.uploadPhoto}</Text>
-                <Feather name="upload" size={16} color={colors.homePrimary} />
-              </Pressable>
               <Text style={styles.fieldLabel}>{m.childName}</Text>
               <TextInput
                 accessibilityLabel={m.childName}
@@ -84,8 +65,8 @@ export function ChildProfileView({
               <Pressable
                 accessibilityRole="button"
                 onPress={onSave}
-                disabled={saving || picking}
-                style={[styles.save, (saving || picking) && styles.saveOff]}
+                disabled={saving}
+                style={[styles.save, saving && styles.saveOff]}
               >
                 <Text style={styles.saveLabel}>{saving ? copy.common.saving : m.save}</Text>
                 <Feather name="check" size={14} color={colors.surface} />
@@ -94,9 +75,7 @@ export function ChildProfileView({
           ) : (
             <View style={styles.childRow}>
               <View style={styles.avatar}>
-                {photoUri
-                  ? <Image source={{ uri: photoUri }} style={styles.avatarImage} />
-                  : <Feather name="user" size={22} color={colors.homePrimary} />}
+                <Feather name="user" size={22} color={colors.homePrimary} />
               </View>
               <View style={styles.childCopy}>
                 <Text style={styles.childName}>{childName}</Text>
@@ -144,14 +123,6 @@ export function ChildProfileView({
         busy={busy}
         onCancel={onCancelConfirm}
         onConfirm={onConfirm}
-      />
-      <PhotoSourceSheet
-        visible={photoOpen}
-        language={language}
-        picking={picking}
-        error={photoError}
-        onClose={onClosePhoto}
-        onPick={onPick}
       />
     </SafeAreaView>
   );

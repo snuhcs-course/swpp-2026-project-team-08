@@ -15,7 +15,8 @@ MIGRATIONS = Path(__file__).resolve().parents[1] / "migrations"
 # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0010_bigint_user_ids"]
+    assert scripts.get_heads() == ["0011_onboarding"]
+    assert scripts.get_revision("0011_onboarding").down_revision == "0010_bigint_user_ids"
     assert scripts.get_revision("0010_bigint_user_ids").down_revision == "0009_food_confirmation"
     assert set(scripts.get_revision("0005_remove_exposure").down_revision) == {
         "0004_final_abc_fields",

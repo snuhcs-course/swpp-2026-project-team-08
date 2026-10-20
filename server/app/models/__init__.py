@@ -9,7 +9,11 @@ from app.models.meal_food import MealFood
 from app.models.meal_log import MealLog
 from app.models.meal_review import MealReview
 from app.models.meal_suggestion import MealSuggestion
+from app.models.safe_food import SafeFood
 from app.models.user import User
+from app.models.user_consent import UserConsent
+from app.models.user_profile import UserProfile
+from app.models.user_profile_choice import UserProfileChoice
 
 __all__ = ["User", "MealLog", "MealFood", "MealReview", "MealSuggestion"]
 
@@ -19,3 +23,4 @@ from app.models.suggestion_batch import SuggestionBatch
 from app.models.suggestion_try import SuggestionTry
 
 __all__ += ["SuggestionBatch", "Suggestion", "SuggestionAction", "SuggestionTry"]
+__all__ += ["UserProfile", "UserProfileChoice", "SafeFood", "UserConsent"]

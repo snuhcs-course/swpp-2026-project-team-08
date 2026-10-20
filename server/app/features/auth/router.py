@@ -5,7 +5,6 @@
 이 파일에서 정한다. DTO 가 여러 기능에서 재사용되거나 길어지면 dto.py 로 분리한다.
 """
 
-import uuid
 from datetime import datetime
 from typing import Annotated
 
@@ -107,10 +106,15 @@ class SignUpRequest(BaseModel):
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: uuid.UUID
+    id: str
     email: EmailStr
     full_name: str
     created_at: datetime
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def _stringify_id(cls, value: int) -> str:
+        return str(value)
 
 
 class LoginRequest(BaseModel):

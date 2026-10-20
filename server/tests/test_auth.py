@@ -4,6 +4,7 @@
 import pytest
 from httpx import AsyncClient
 
+from app.features.auth.security import create_access_token, decode_token
 from tests.test_meal_logs import put_meal
 
 SIGNUP_PAYLOAD = {
@@ -21,7 +22,7 @@ async def test_signup_creates_user(client: AsyncClient) -> None:
     body = res.json()
     assert body["email"] == SIGNUP_PAYLOAD["email"]
     assert body["full_name"] == SIGNUP_PAYLOAD["full_name"]
-    assert "id" in body
+    assert isinstance(body["id"], str) and body["id"].isdecimal() and int(body["id"]) > 0
     assert "created_at" in body
     assert "password" not in body  # 비밀번호는 응답에 노출되지 않음
     assert "hashed_password" not in body
@@ -76,7 +77,7 @@ async def test_signup_missing_field_is_validation_error(client: AsyncClient) -> 
 
 @pytest.mark.asyncio
 async def test_login_returns_tokens(client: AsyncClient) -> None:
-    await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
+    signup = await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
 
     res = await client.post(
         "/api/v1/auth/login",
@@ -88,6 +89,8 @@ async def test_login_returns_tokens(client: AsyncClient) -> None:
     assert body["token_type"] == "bearer"
     assert body["access_token"]
     assert body["refresh_token"]
+    assert decode_token(body["access_token"])["sub"] == signup.json()["id"]
+    assert decode_token(body["refresh_token"])["sub"] == signup.json()["id"]
 
 
 @pytest.mark.asyncio
@@ -145,6 +148,17 @@ async def test_me_documents_unauthenticated_response(client: AsyncClient) -> Non
 async def test_me_with_invalid_token_unauthorized(client: AsyncClient) -> None:
     res = await client.get("/api/v1/auth/me", headers={"Authorization": "Bearer not-a-token"})
 
+    assert res.status_code == 401
+    assert res.json()["error_code"] == "UNAUTHENTICATED"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "subject", ["3fa85f64-5717-4562-b3fc-2c963f66afa6", "0", "01", "9223372036854775808"]
+)
+async def test_me_rejects_non_bigint_token_subject(client: AsyncClient, subject: str) -> None:
+    token = create_access_token(subject)
+    res = await client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 401
     assert res.json()["error_code"] == "UNAUTHENTICATED"
 

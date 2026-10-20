@@ -47,7 +47,7 @@ const { ApiError, apiBaseUrl } = require('../src/data/network/apiClient.ts');
 const session = {
   accessToken: 'access-secret',
   refreshToken: 'refresh-secret',
-  user: { id: 'user-1', email: 'parent@example.com', fullName: 'Parent' },
+  user: { id: '1', email: 'parent@example.com', fullName: 'Parent' },
 };
 
 test('auth session stores tokens in SecureStore and user in AsyncStorage', async () => {
@@ -76,6 +76,19 @@ test('auth session migrates plaintext AsyncStorage tokens into SecureStore', asy
   assert.deepEqual(await readSession(), session);
   assert.equal(secrets.get('nurturebites.auth.accessToken'), 'access-secret');
   assert.equal(values.get('nurturebites.auth.session.v1'), undefined);
+});
+
+test('stored UUID user session is cleared after the ID change', async () => {
+  values.clear();
+  secrets.clear();
+  secureAvailable = true;
+  await clearSession();
+  await storage.setItem('nurturebites.auth.user.v1', JSON.stringify({ ...session.user, id: '3fa85f64-5717-4562-b3fc-2c963f66afa6' }));
+  await secureStore.setItemAsync('nurturebites.auth.accessToken', 'access-secret');
+  await secureStore.setItemAsync('nurturebites.auth.refreshToken', 'refresh-secret');
+  assert.equal(await readSession(), null);
+  assert.equal(secrets.size, 0);
+  assert.equal(values.has('nurturebites.auth.user.v1'), false);
 });
 
 test('auth session falls back to AsyncStorage when SecureStore is unavailable', async () => {

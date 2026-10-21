@@ -487,6 +487,7 @@ Food는 수정 가능, Meal 정보는 수정 불가능. 따라서 Food Snapshot�
 | API | 요청 | 성공 응답 | 인증 |
 |---|---|---|---|
 | `GET /api/v1/meals/{meal_id}` | 본문 없음 | `200`, `MealDetail` | Bearer 토큰; 해당 식사 접근 권한 |
+| `PUT /api/v1/meals/{meal_id}/foods` | `MealFoodsWriteRequest` | `200`, `MealDetail` | Bearer 토큰; 해당 식사 접근 권한 |
 | `PUT /api/v1/meals/{meal_id}/review` | `MealReviewWriteRequest` | `200`, `MealReviewResponse` | Bearer 토큰; 해당 식사 접근 권한 |
 
 #### `GET /api/v1/meals/{meal_id}`
@@ -495,6 +496,16 @@ Food는 수정 가능, Meal 정보는 수정 불가능. 따라서 Food Snapshot�
   - `meal_id`: 조회할 식사의 `Id`
 - 응답
   - 공통 스키마의 `MealDetail`. 음식과 재료, Review 결과, 식사에 연결된 추천을 포함한다. Review를 저장하기 전에는 `review`가 `null`이다.
+
+#### `PUT /api/v1/meals/{meal_id}/foods`
+
+- 경로 파라미터
+  - `meal_id`: 음식을 수정할 식사의 `Id`.
+- 요청
+  - `MealFoodsWriteRequest`: `{ foods: FoodWriteRequest[] }`. `foods`는 수정 후 식사에 남길 음식의 전체 목록이며 최소 1개다. 각 음식은 `PUT /api/v1/meals`의 `foods`와 같은 형식이다. 목록에 없는 음식은 삭제한다.
+- 응답
+  - 수정된 공통 스키마의 `MealDetail`. 삭제된 음식이나 재료를 가리키는 추천 연결도 삭제한다.
+  - Review가 이미 저장된 식사는 `409 MEAL_ALREADY_REVIEWED`를 반환한다.
 
 #### `PUT /api/v1/meals/{meal_id}/review`
 

@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import AppError
 from app.core.timezone import now_kst
 from app.features.ingredients.queries import resolve_ingredient
-from app.features.meals.data import MealData, ReviewData
+from app.features.meals.data import FoodData, MealData, ReviewData
 from app.features.meals.queries import MealRecords, meal_records, meals_records, owned_meal
 from app.models import (
     FoodItem,
@@ -38,6 +38,10 @@ class MealNotFoundError(AppError):
 
 
 class InvalidReviewError(AppError):
+    pass
+
+
+class MealAlreadyReviewedError(AppError):
     pass
 
 
@@ -77,6 +81,76 @@ class MealService:
             raise MealNotFoundError()
         await self._session.delete(meal)
         await self._session.flush()
+
+    async def update_foods(
+        self, *, user_id: int, meal_id: int, foods: list[FoodData]
+    ) -> MealRecords:
+        meal = await owned_meal(self._session, user_id, meal_id)
+        if meal is None:
+            raise MealNotFoundError()
+        records = await meal_records(self._session, meal)
+        if records.food_results:
+            raise MealAlreadyReviewedError()
+
+        resolved: dict[int, tuple[FoodData, set[int]]] = {}
+        for food in foods:
+            ingredient_ids: list[int] = []
+            for item in food.ingredients:
+                ingredient = await resolve_ingredient(
+                    self._session, ingredient_id=item.id, name=item.name
+                )
+                if ingredient is None:
+                    raise IngredientNotFoundError()
+                ingredient_ids.append(ingredient.id)
+            if len(ingredient_ids) != len(set(ingredient_ids)):
+                raise DuplicateIngredientError()
+            resolved[int(food.id)] = (food, set(ingredient_ids))
+
+        for link, _ in records.links:
+            target = resolved.get(link.food_id)
+            if target is None or (
+                link.ingredient_id is not None and link.ingredient_id not in target[1]
+            ):
+                await self._session.delete(link)
+        await self._session.flush()
+
+        for old in records.foods:
+            if old.id not in resolved:
+                await self._session.execute(
+                    delete(MealFoodIngredient).where(
+                        MealFoodIngredient.meal_id == meal_id,
+                        MealFoodIngredient.food_id == old.id,
+                    )
+                )
+                await self._session.delete(old)
+        old_ingredients = {
+            (link.food_id, link.ingredient_id): link for link, _ in records.ingredients
+        }
+        for (food_id, ingredient_id), link in old_ingredients.items():
+            target = resolved.get(food_id)
+            if target is not None and ingredient_id not in target[1]:
+                await self._session.delete(link)
+        await self._session.flush()
+
+        existing = {food.id: food for food in records.foods}
+        for food_id, (data, ingredient_ids) in resolved.items():
+            item = existing.get(food_id)
+            if item is None:
+                item = FoodItem(id=food_id, meal_id=meal_id)
+                self._session.add(item)
+            item.name = data.name
+            item.cooking_method = data.cooking_method
+            item.serving_note = data.serving_note
+            item.acceptance = data.acceptance
+            for ingredient_id in ingredient_ids:
+                if (food_id, ingredient_id) not in old_ingredients:
+                    self._session.add(
+                        MealFoodIngredient(
+                            meal_id=meal_id, food_id=food_id, ingredient_id=ingredient_id
+                        )
+                    )
+        await self._session.flush()
+        return await meal_records(self._session, meal)
 
     async def review(self, *, user_id: int, meal_id: int, data: ReviewData) -> MealRecords:
         meal = await owned_meal(self._session, user_id, meal_id)

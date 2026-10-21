@@ -86,6 +86,20 @@ class MealWriteRequest(BaseModel):
         return foods
 
 
+class MealFoodsWriteRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    foods: list[FoodWriteRequest] = Field(min_length=1)
+
+    @field_validator("foods")
+    @classmethod
+    def unique_food_ids(cls, foods: list[FoodWriteRequest]) -> list[FoodWriteRequest]:
+        ids = [food.id for food in foods]
+        if len(ids) != len(set(ids)):
+            raise ValueError("food IDs must be unique")
+        return foods
+
+
 class MealWriteResponse(BaseModel):
     id: str
     user_id: str

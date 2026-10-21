@@ -38,7 +38,7 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
         <View style={styles.column}><FormField variant="editor" label={m.addIngredient} hideLabel value={ingredient} onChangeText={onIngredientChange} placeholder={m.addIngredient} /></View>
         <AppButton compact label={common.add} disabled={!ingredient.trim() || (!!ingredientOptions?.length && !ingredientOptions.some((name) => name.toLocaleLowerCase() === ingredient.trim().toLocaleLowerCase()))} onPress={() => { onAddIngredient(); setIngredientOpen(false); }} />
       </View>}
-      {ingredientOpen && ingredientOptions && onSelectIngredient && ingredient.trim() && (
+      {ingredientOpen && ingredientOptions && onSelectIngredient && ingredient.trim().length > 0 && (
         <View style={styles.ingredientChoices}>
           {ingredientOptions.filter((name) => name.toLocaleLowerCase().includes(ingredient.trim().toLocaleLowerCase())
             && !food.ingredients.includes(name)).slice(0, 6).map((name) => (

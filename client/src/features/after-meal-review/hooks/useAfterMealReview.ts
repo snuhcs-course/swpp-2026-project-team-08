@@ -1,21 +1,22 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useMeal, useUpdateMealFoods } from '../../../data/queries/mealQueries';
+import { useMeal, useMealDetail, useUpdateMealFoods } from '../../../data/queries/mealQueries';
 import { afterMealKeys, useSaveAfterMealReview } from '../../../data/queries/afterMealReviewQueries';
 import { pickMealPhoto, PhotoError } from '../../../data/device/mealPhotoPicker';
-import { readAfterMealDraft, readAfterMealReview, saveAfterMealDraft } from '../../../data/storage/afterMealReviewStorage';
+import { readAfterMealDraft, saveAfterMealDraft } from '../../../data/storage/afterMealReviewStorage';
 import { newFood } from '../../../rules/foodDraft';
 import type { AfterMealReviewDraft, DifficultyCategory, Outcome, ReviewStep } from '../../../types/afterMealReview';
 import type { FoodItem, PhotoSource } from '../../../types/meal';
 import type { ChildProfile } from '../../../types/profile';
-import { addDifficulty, allOutcomesConfirmed, clearOutcomeSuggestions, canAddDifficulty, newReviewDraft, normalizeReviewStep, reconcileOutcomes, reviewFromDraft, setOutcome, toggleIngredient } from '../rules';
+import { addDifficulty, allOutcomesConfirmed, clearOutcomeSuggestions, canAddDifficulty, newReviewDraft, normalizeReviewStep, reconcileOutcomes, reviewDraftFromServer, reviewFromDraft, setOutcome, toggleIngredient } from '../rules';
 
 type SaveStatus = 'saving' | 'saved' | 'error';
 
 export function useAfterMealReview(profile: ChildProfile | null, mealId: string) {
   const childId = profile?.id ?? '';
   const mealQuery = useMeal(childId, mealId);
+  const detailQuery = useMealDetail(childId, mealId);
   const client = useQueryClient();
   const saveMutation = useSaveAfterMealReview();
   const updateMealMutation = useUpdateMealFoods();
@@ -40,7 +41,8 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const mounted = useRef(true);
   const key = `${childId}:${mealId}`;
   const meal = mealQuery.data ?? null;
-  const ready = loadedKey === key && draft !== null && meal !== null;
+  const detail = detailQuery.data ?? null;
+  const ready = loadedKey === key && draft !== null && meal !== null && detail !== null;
 
   useEffect(() => {
     mounted.current = true;
@@ -48,16 +50,17 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   }, []);
 
   useEffect(() => {
-    if (!meal || !profile || loadedKey === key) return;
+    if (!meal || !detail || !profile || loadedKey === key) return;
     let active = true;
-    Promise.all([readAfterMealDraft(childId, mealId), readAfterMealReview(childId, mealId)]).then(
-      ([stored, saved]) => {
+    readAfterMealDraft(childId, mealId).then(
+      (stored) => {
         if (!active) return;
         setFinalSaveState('idle');
-        const base = stored ?? (saved ? { ...saved, step: 'complete' as const, difficultyInputs: {} } : newReviewDraft(meal));
+        const base = detail.review ? reviewDraftFromServer(meal, detail)
+          : stored?.step === 'complete' ? newReviewDraft(meal) : stored ?? newReviewDraft(meal);
         const next: AfterMealReviewDraft = {
           ...base,
-          step: saved ? 'complete' : ['comparing', 'comparison-error'].includes(base.step) ? (meal.photo && base.afterPhoto ? 'compare' : 'outcomes') : base.step === 'compare' && (!meal.photo || !base.afterPhoto) ? 'outcomes' : normalizeReviewStep(base.step),
+          step: detail.review ? 'complete' : ['comparing', 'comparison-error'].includes(base.step) ? (meal.photo && base.afterPhoto ? 'compare' : 'outcomes') : base.step === 'compare' && (!meal.photo || !base.afterPhoto) ? 'outcomes' : normalizeReviewStep(base.step),
           outcomes: clearOutcomeSuggestions(reconcileOutcomes(base.outcomes, meal.foods)),
           comparisonMethod: 'manual',
         };
@@ -71,7 +74,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     );
     return () => { active = false; };
     // Reload only for a different Meal or an explicit retry; food edits reconcile in saveFood.
-  }, [key, loadVersion, meal, mealId, profile, childId, loadedKey]);
+  }, [key, loadVersion, meal, detail, mealId, profile, childId, loadedKey]);
 
   const persist = useCallback((value: AfterMealReviewDraft) => {
     const version = ++saveVersion.current;
@@ -207,10 +210,11 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
       ? meal.foods.map((food) => food.id === item.id ? item : food)
       : [...meal.foods, item];
     try {
-      const savedMeal = await updateMealMutation.mutateAsync({ childId: profile.id, mealId, foods });
+      const saved = await updateMealMutation.mutateAsync({ childId: profile.id, mealId, foods });
+      const savedMeal = saved.meal;
       const value = current.current;
       if (value) update({
-        outcomes: reconcileOutcomes(value.outcomes, savedMeal.foods),
+        outcomes: reconcileOutcomes(value.outcomes.map((outcome) => ({ ...outcome, foodId: saved.foodIdMap.get(outcome.foodId) ?? outcome.foodId })), savedMeal.foods),
         difficulties: Object.fromEntries(savedMeal.foods.map((food) => [food.id, value.difficulties[food.id] ?? []])),
         difficultyInputs: Object.fromEntries(savedMeal.foods.map((food) => [food.id, value.difficultyInputs[food.id] ?? { category: null, value: '', note: '' }])),
       });
@@ -222,7 +226,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     if (!meal || !profile || meal.foods.length <= 1 || editorBusy.current) return;
     editorBusy.current = true;
     try {
-      const savedMeal = await updateMealMutation.mutateAsync({ childId: profile.id, mealId, foods: meal.foods.filter((food) => food.id !== foodId) });
+      const savedMeal = (await updateMealMutation.mutateAsync({ childId: profile.id, mealId, foods: meal.foods.filter((food) => food.id !== foodId) })).meal;
       const value = current.current;
       if (value) update({
         outcomes: reconcileOutcomes(value.outcomes, savedMeal.foods),
@@ -240,14 +244,14 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
 
   const finish = async (): Promise<boolean> => {
     const value = current.current;
-    if (!value || !meal || finishing.current || !allOutcomesConfirmed(value.outcomes)) return false;
+    if (!value || !meal || !detail || finishing.current || !allOutcomesConfirmed(value.outcomes)) return false;
     finishing.current = true;
     setFinalSaveState('saving');
     try {
       await persist(value);
       await saveChain.current;
       const review = reviewFromDraft(value, meal);
-      await saveMutation.mutateAsync(review);
+      await saveMutation.mutateAsync({ review, detail });
       if (mounted.current && current.current?.mealId === value.mealId) {
         update({ step: 'complete' });
         setFinalSaveState('idle');
@@ -262,10 +266,10 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
 
   return {
     meal, draft: ready ? draft : null,
-    loading: !!mealId && (mealQuery.isPending || (!!meal && !ready && !loadError)),
+    loading: !!mealId && (mealQuery.isPending || detailQuery.isPending || (!!meal && !ready && !loadError)),
     missingMeal: !mealId || (mealQuery.isSuccess && !meal),
-    loadError: mealQuery.isError || loadError,
-    retryLoad: () => { void mealQuery.refetch(); setLoadError(false); setLoadedKey(null); setLoadVersion((value) => value + 1); },
+    loadError: mealQuery.isError || detailQuery.isError || loadError,
+    retryLoad: () => { void detailQuery.refetch(); setLoadError(false); setLoadedKey(null); setLoadVersion((value) => value + 1); },
     saveStatus, finalSaveState, photoError, picking,
     markImageError: () => setPhotoError('image'),
     saving: finalSaveState === 'saving',

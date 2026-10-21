@@ -16,6 +16,7 @@ const values = new Map();
 let saveRemoteReview;
 let pickPhoto;
 let meal;
+let detail;
 let slots;
 let cursor;
 let effects;
@@ -53,13 +54,15 @@ Module._load = function (name, ...args) {
     useQueryClient: () => queryClient,
     useMutation: (options) => ({ ...options, mutateAsync: options.mutationFn, isPending: false }),
   };
-  if (name === '../api/mealLogApi') return { saveMealReview: (...args) => saveRemoteReview(...args) };
+  if (name === '../api/mealReviewApi') return { writeMealReview: (...args) => saveRemoteReview(...args) };
   if (name === './homeQueries') return { homeKeys: { byChild: (id) => ['home', id] } };
   if (name === './mealLogQueries') return { mealLogKeys: { all: (id) => ['meal-log', id] } };
+  if (name === './checkinReferenceQueries') return { checkinReferenceKeys: { meals: (id) => ['meal-details-v1', id] } };
   if (name.endsWith('/mealQueries')) return {
     mealKeys: require('../src/data/queries/mealQueryKeys.ts').mealKeys,
     useSaveMeal: () => ({ isPending: false }),
     useMeal: () => ({ data: meal, isSuccess: true }),
+    useMealDetail: () => ({ data: detail, isSuccess: true }),
     useUpdateMealFoods: () => ({ isPending: false }),
   };
   if (name.endsWith('/mealPhotoPicker')) return {
@@ -86,6 +89,7 @@ function createMeal(childId) {
 test('failed server save stays pending on Home and restores editable answers until retry succeeds', async () => {
   values.clear();
   const savedMeal = createMeal('retry-review');
+  detail = { id: savedMeal.id, userId: savedMeal.childId, review: null };
   await saveMeal(savedMeal);
   const draft = { ...newReviewDraft(savedMeal), step: 'difficulties' };
   draft.outcomes = setOutcome(draft.outcomes, 'rice', 'tasted');
@@ -93,14 +97,14 @@ test('failed server save stays pending on Home and restores editable answers unt
   const review = reviewFromDraft(draft, savedMeal);
   saveRemoteReview = async () => { throw new Error('Network unavailable'); };
   const mutation = useSaveAfterMealReview();
-  await assert.rejects(mutation.mutateAsync(review), /Network unavailable/);
+  await assert.rejects(mutation.mutateAsync({ review, detail }), /Network unavailable/);
   assert.equal(await readAfterMealReview(savedMeal.childId, savedMeal.id), null);
   assert.equal((await readHomeMeals(savedMeal.childId))[0].reviewed, false);
   const restored = await readAfterMealDraft(savedMeal.childId, savedMeal.id);
   assert.equal(restored.step, 'difficulties');
   assert.equal(restored.outcomes[0].decision.confirmed, 'tasted');
-  saveRemoteReview = async (value) => { assert.equal(value.mealId, savedMeal.id); };
-  await mutation.mutateAsync(review);
+  saveRemoteReview = async (value) => { assert.equal(value.mealId, savedMeal.id); return detail; };
+  await mutation.mutateAsync({ review, detail });
   assert.equal((await readHomeMeals(savedMeal.childId))[0].reviewed, true);
   assert.equal((await readAfterMealDraft(savedMeal.childId, savedMeal.id)).step, 'complete');
 });
@@ -109,6 +113,7 @@ test('skipping a delayed photo ignores its result without cancelling a newer pho
   values.clear();
   slots = []; cursor = 0; effects = [];
   meal = createMeal('skip-photo');
+  detail = { id: meal.id, userId: meal.childId, review: null };
   const profile = { id: meal.childId };
   const ReviewHarness = () => {
     cursor = 0;

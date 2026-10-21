@@ -19,6 +19,7 @@ from app.features.meals.data import (
 )
 from app.features.meals.dto import (
     MealDetailResponse,
+    MealFoodsWriteRequest,
     MealReviewResponse,
     MealReviewWriteRequest,
     MealWriteRequest,
@@ -30,6 +31,7 @@ from app.features.meals.service import (
     IngredientNotFoundError,
     InvalidReviewError,
     InvalidSuggestionLinkError,
+    MealAlreadyReviewedError,
     MealNotFoundError,
     MealService,
 )
@@ -105,6 +107,37 @@ async def get_meal(
     service: Annotated[MealService, Depends(get_meal_service)],
 ) -> MealDetailResponse:
     return meal_detail_response(await service.get(user_id=current_user.id, meal_id=meal_id))
+
+
+@router.put("/{meal_id}/foods", response_model=MealDetailResponse, summary="평가 전 식사 음식 수정")
+@error_specs(
+    {
+        **MEAL_ERRORS,
+        MealAlreadyReviewedError: ErrorSpec(status_code=409, error_code="MEAL_ALREADY_REVIEWED"),
+        IngredientNotFoundError: ErrorSpec(status_code=404, error_code="INGREDIENT_NOT_FOUND"),
+        DuplicateIngredientError: ErrorSpec(status_code=422, error_code="DUPLICATE_INGREDIENT"),
+    }
+)
+async def update_meal_foods(
+    meal_id: MealId,
+    payload: MealFoodsWriteRequest,
+    current_user: CurrentUser,
+    service: Annotated[MealService, Depends(get_meal_service)],
+) -> MealDetailResponse:
+    foods = [
+        FoodData(
+            id=item.id,
+            name=item.name,
+            ingredients=[IngredientData(id=part.id, name=part.name) for part in item.ingredients],
+            cooking_method=item.cooking_method.value if item.cooking_method else None,
+            serving_note=item.serving_note,
+            acceptance=item.acceptance,
+        )
+        for item in payload.foods
+    ]
+    return meal_detail_response(
+        await service.update_foods(user_id=current_user.id, meal_id=meal_id, foods=foods)
+    )
 
 
 @router.put("/{meal_id}/review", response_model=MealReviewResponse, summary="식사 평가 저장")

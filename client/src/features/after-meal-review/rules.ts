@@ -1,6 +1,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome, ReviewStep } from '../../types/afterMealReview';
 import type { FoodItem, Meal } from '../../types/meal';
+import type { MealDetail } from '../../types/mealRecord';
 import { ingredientId } from '../../rules/ingredientIds';
 import { foodFormKey } from '../../rules/recommendationSafety';
 
@@ -53,6 +54,54 @@ export function newReviewDraft(meal: Meal): AfterMealReviewDraft {
     difficulties: {},
     difficultyInputs: {},
     suggestionFeedback: {},
+  };
+}
+
+export function reviewDraftFromServer(meal: Meal, detail: MealDetail): AfterMealReviewDraft {
+  const base = newReviewDraft(meal);
+  const review = detail.review;
+  if (!review) return base;
+  const outcomes = base.outcomes.map((food) => {
+    const result = review.foodResults.find((item) => item.foodId === food.foodId);
+    const recordFood = detail.foods.find((item) => item.id === food.foodId);
+    const occurrences = new Map<string, number>();
+    const names = new Map(recordFood?.ingredients.map((ingredient) => {
+      const key = ingredient.name.trim().toLocaleLowerCase();
+      const occurrence = occurrences.get(key) ?? 0;
+      occurrences.set(key, occurrence + 1);
+      return [ingredientId(food.foodId, ingredient.name, occurrence), ingredient.id];
+    }) ?? []);
+    return {
+      ...food,
+      decision: { confirmed: result?.outcome ?? null, suggested: null },
+      ingredients: food.ingredients.map((ingredient) => {
+        const saved = review.ingredientResults.find((item) =>
+          item.foodId === food.foodId && item.ingredientId === names.get(ingredient.id));
+        return {
+          ...ingredient,
+          selected: !!saved,
+          decision: { confirmed: saved?.outcome ?? null, suggested: null },
+        };
+      }),
+    };
+  });
+  return {
+    ...base,
+    step: 'complete',
+    afterPhoto: detail.afterPhotoUri
+      ? { id: detail.afterPhotoUri, uri: detail.afterPhotoUri, mimeType: 'image/jpeg' }
+      : null,
+    comparisonMethod: 'manual',
+    outcomes,
+    difficulties: Object.fromEntries(review.foodResults.map((food) => [
+      food.foodId,
+      food.difficulties.map((tag, index) => ({
+        id: `${food.foodId}:${index}`,
+        category: tag.category,
+        value: tag.value,
+        ...(tag.subcategory ? { subcategory: tag.subcategory } : {}),
+      })),
+    ])),
   };
 }
 

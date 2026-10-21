@@ -7,3 +7,7 @@ export async function listMealDetails(signal?: AbortSignal): Promise<MealDetail[
   if (!Array.isArray(response)) throw new Error('Invalid meal list');
   return response.map(toMealDetail);
 }
+
+export async function getMealDetail(mealId: string, signal?: AbortSignal): Promise<MealDetail> {
+  return toMealDetail(await apiRequest<unknown>(`/api/v1/meals/${encodeURIComponent(mealId)}`, { signal }));
+}

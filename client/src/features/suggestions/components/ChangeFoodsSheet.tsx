@@ -1,31 +1,30 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
 import { useState } from 'react';
 import { Text, Pressable, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import { BottomSheet } from '../../../components/BottomSheet';
-import type { FoodItem } from '../../../types/meal';
+import type { SuggestionTarget } from '../../../types/suggestionRecord';
 import type { Language } from '../../../types/profile';
 import { suggestionCopyFor } from '../../../util/strings';
-import { canUpdateFoods, toggleFood } from '../rules';
 import { suggestionStyles as s } from '../screens/suggestionStyles';
 
+const targetKey = (target: SuggestionTarget) => `${target.foodId}:${target.ingredientId ?? ''}`;
+
 export function ChangeFoodsSheet({
-  current,
-  foods,
-  language,
-  onClose,
-  onUpdate,
+  current, options, language, onClose, onUpdate,
 }: {
-  current: string[];
-  foods: FoodItem[];
+  current: SuggestionTarget[];
+  options: { target: SuggestionTarget; name: string; detail: string }[];
   language: Language;
   onClose: () => void;
-  onUpdate: (ids: string[]) => void;
+  onUpdate: (targets: SuggestionTarget[]) => void;
 }) {
   const [selected, setSelected] = useState(current);
   const c = suggestionCopyFor(language);
+  const changed = selected.length > 0 && (
+    selected.length !== current.length
+    || selected.some((target) => !current.some((item) => targetKey(item) === targetKey(target)))
+  );
   return (
     <BottomSheet
       title={c.changeFoods}
@@ -38,29 +37,28 @@ export function ChangeFoodsSheet({
         <View style={s.sheetActions}>
           <AppButton variant="suggestion" secondary label={c.cancel} onPress={onClose} />
           <AppButton variant="suggestion" style={s.grow} label={c.update}
-            disabled={!canUpdateFoods(current, selected)} onPress={() => onUpdate(selected)} />
+            disabled={!changed} onPress={() => onUpdate(selected)} />
         </View>
       }
     >
       <Text style={s.savedIntro}>{c.chooseFoods(selected.length)}</Text>
-      {foods.map((food) => {
-        const checked = selected.includes(food.id);
-        const disabled = !checked && selected.length === 3;
+      {options.map(({ target, name, detail }) => {
+        const checked = selected.some((item) => targetKey(item) === targetKey(target));
         return (
           <Pressable
-            key={food.id}
+            key={targetKey(target)}
             accessibilityRole="checkbox"
-            accessibilityState={{ checked, disabled }}
-            disabled={disabled}
-            onPress={() => setSelected((old) => toggleFood(old, food.id))}
-            style={[s.checkRow, disabled && s.disabled]}
+            accessibilityState={{ checked }}
+            onPress={() => setSelected((old) => checked
+              ? old.filter((item) => targetKey(item) !== targetKey(target)) : [...old, target])}
+            style={s.checkRow}
           >
             <View style={[s.checkbox, checked && s.checkboxChecked]}>
               {checked && <UiAssetIcon name="suggestion-checked" />}
             </View>
             <View style={s.foodChoice}>
-              <Text style={s.text}>{food.name}</Text>
-              <Text style={s.muted}>{food.ingredients.join(', ')}</Text>
+              <Text style={s.text}>{name}</Text>
+              {!!detail && <Text style={s.muted}>{detail}</Text>}
             </View>
           </Pressable>
         );

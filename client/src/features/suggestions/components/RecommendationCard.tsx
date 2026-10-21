@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import { Animated, PanResponder, Pressable, ScrollView, Text, View } from 'react-native';
-import type { Suggestion } from '../../../types/suggestion';
+import type { Suggestion } from '../../../types/suggestionRecord';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { suggestionCopyFor } from '../../../util/strings';
-import { SuggestionBody } from './SuggestionBody';
+import { GeneratedSuggestionBody, suggestionTargetName } from './GeneratedSuggestionBody';
 import { suggestionStyles as s } from '../screens/suggestionStyles';
 
 type Props = {
@@ -87,7 +87,7 @@ export function RecommendationCard(p: Props) {
         </View>
         <View style={s.row}>
           <Text style={s.cardPosition}>{c.count(p.index, p.total)}</Text>
-          <Text style={s.cardFoodName}>{p.item.content.food_name}</Text>
+          <Text style={s.cardFoodName}>{suggestionTargetName(p.item)}</Text>
         </View>
       </>}
       <Animated.View
@@ -113,9 +113,9 @@ export function RecommendationCard(p: Props) {
           >
             {details && <>
               <Text style={s.infoLabel}>{c.foodDetails}</Text>
-              <Text style={[s.heading, { marginBottom: 12 }]}>{p.item.content.food_name}</Text>
+              <Text style={[s.heading, { marginBottom: 12 }]}>{suggestionTargetName(p.item)}</Text>
             </>}
-            <SuggestionBody item={p.item} language={p.language} details={details} />
+            <GeneratedSuggestionBody item={p.item} language={p.language} details={details} />
           </Pressable>
         </ScrollView>
       </Animated.View>

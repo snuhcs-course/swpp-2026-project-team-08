@@ -15,12 +15,6 @@ const cookingMethods: Record<string, CookingMethod> = {
 export function prepareMealWrite(meal: CheckinMeal) {
   const foodIds = new Map(meal.foods.map((food, index) => [food.id, String(index + 1)]));
   if (foodIds.size !== meal.foods.length) throw new Error('Duplicate meal food ID');
-  const methodFor = (value: string): CookingMethod | null => {
-    if (!value) return null;
-    const method = cookingMethods[value];
-    if (!method) throw new Error('Unknown cooking method');
-    return method;
-  };
   const draft = {
     mealDate: meal.mealDate,
     mealType: meal.mealType,
@@ -30,7 +24,7 @@ export function prepareMealWrite(meal: CheckinMeal) {
       id: foodIds.get(food.id)!,
       name: food.name,
       ingredients: food.ingredients.map((name) => ({ id: null, name })),
-      cookingMethod: methodFor(food.preparation),
+      cookingMethod: cookingMethodFor(food.preparation),
       servingNote: food.servingNote || null,
       acceptance: food.acceptance ?? null,
     })),
@@ -41,6 +35,13 @@ export function prepareMealWrite(meal: CheckinMeal) {
     })),
   };
   return { foodIds, body: toMealWrite(draft) };
+}
+
+export function cookingMethodFor(value: string): CookingMethod | null {
+  if (!value) return null;
+  const method = cookingMethods[value];
+  if (!method) throw new Error('Unknown cooking method');
+  return method;
 }
 
 export async function writeMeal(meal: CheckinMeal): Promise<CheckinMeal> {

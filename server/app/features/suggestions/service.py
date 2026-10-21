@@ -1,5 +1,6 @@
 """Suggestions owned by the authenticated user."""
 
+import asyncio
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
@@ -10,7 +11,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import AppError
 from app.core.timezone import now_kst
 from app.features.meals.queries import meal_records, owned_meal
-from app.features.suggestions.mock import generate_suggestions
+from app.features.suggestions.generator import generate_suggestions
+from app.features.suggestions.mock_profile import MOCK_RESTRICTIONS
+from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
 from app.models import UserSuggestion
 
 
@@ -101,7 +104,7 @@ class UserSuggestionService:
             ):
                 raise InvalidSuggestionTargetError()
 
-        inputs = []
+        inputs: list[FoodInput] = []
         for index, target in enumerate(targets):
             snapshot = reviewed_foods[target.food_id].food_snapshot
             name = snapshot["name"]
@@ -111,24 +114,25 @@ class UserSuggestionService:
                     for item in snapshot["ingredients"]
                     if int(item["id"]) == target.ingredient_id
                 )
-            inputs.append({"id": str(index), "name": name})
+            inputs.append(FoodInput(id=str(index), name=name))
         try:
-            generated = await generate_suggestions(inputs)
+            async with asyncio.timeout(60):
+                generated = await generate_suggestions(inputs, MOCK_RESTRICTIONS)
         except Exception as error:
             raise GenerationFailedError() from error
         if (
             not isinstance(generated, list)
             or len(generated) != len(targets)
-            or any(not isinstance(item, dict) for item in generated)
-            or {item.get("food_id") for item in generated} != {item["id"] for item in inputs}
+            or any(not isinstance(item, GeneratedSuggestion) for item in generated)
+            or {item.food_id for item in generated} != {item.id for item in inputs}
             or any(
-                not isinstance(item.get(key), str) or not item[key].strip()
+                not isinstance(getattr(item, key), str) or not getattr(item, key).strip()
                 for item in generated
                 for key in ("what_to_try", "why_this_may_help")
             )
         ):
             raise GenerationFailedError()
-        by_index = {item["food_id"]: item for item in generated}
+        by_index = {item.food_id: item for item in generated}
         suggestions = []
         for index, target in enumerate(targets):
             content = by_index[str(index)]
@@ -138,9 +142,9 @@ class UserSuggestionService:
                 food_id=target.food_id,
                 ingredient_id=target.ingredient_id,
                 food_snapshot=reviewed_foods[target.food_id].food_snapshot,
-                what_to_try=content["what_to_try"],
-                why_this_may_help=content["why_this_may_help"],
-                serving_tip=content.get("serving_tip"),
+                what_to_try=content.what_to_try,
+                why_this_may_help=content.why_this_may_help,
+                serving_tip=content.serving_tip,
                 status="pending",
                 dismiss_reasons=[],
             )

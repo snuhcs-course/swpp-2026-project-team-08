@@ -6,6 +6,9 @@ This is an Expo/React Native mobile application. Prioritize mobile-first pattern
 
 Read `client/docs/architecture.md` before starting any work in `client/`.
 
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+If the work touches allergy or dietary-restriction ids (`allergies` / `restrictions` in the child profile or the option groups in `src/util/strings.ts`), also read [`docs/food-ingredient-restriction-ids.md`](../docs/food-ingredient-restriction-ids.md). The server defines the same ids (`RestrictionId`), so a change here must be made there in the same change.
+
 ## Expo has changed — do not trust your training data
 
 Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:

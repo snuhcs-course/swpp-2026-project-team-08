@@ -6,6 +6,8 @@ requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.20.0",
     "fastapi>=0.143.0",
+    "langchain-openrouter>=0.2.9",
+    "langgraph>=1.2.16",
     "psycopg[binary]>=3.3.6",
     "pwdlib[argon2]>=0.3.1",
     "pydantic-settings>=2.15.0",

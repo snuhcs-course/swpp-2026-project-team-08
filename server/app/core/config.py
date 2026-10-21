@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 14
 
+    # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+    # ── LLM (suggestions) ──
+    # 비어 있으면 앱은 기동하지만 제안 생성은 실패한다.
+    OPENROUTER_API_KEY: str = ""
+    SUGGESTION_MODEL: str = "openai/gpt-6-luna"
+
     @model_validator(mode="after")
     def _forbid_dev_secret_outside_local(self) -> "Settings":
         """local 이 아닌 환경에서 개발용 JWT 시크릿을 쓰면 기동을 막는다."""

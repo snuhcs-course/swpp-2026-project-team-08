@@ -2,13 +2,23 @@
 
 from dataclasses import dataclass
 
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
 from app.core.timezone import now_kst
 from app.features.ingredients.queries import resolve_ingredient
-from app.features.meals.data import MealData
-from app.models import FoodItem, Meal, MealFoodIngredient, SuggestionMealLink, UserSuggestion
+from app.features.meals.data import MealData, ReviewData
+from app.features.meals.queries import MealRecords, meal_records, meals_records, owned_meal
+from app.models import (
+    FoodItem,
+    Meal,
+    MealFoodIngredient,
+    ReviewFoodResult,
+    ReviewIngredientResult,
+    SuggestionMealLink,
+    UserSuggestion,
+)
 
 
 class IngredientNotFoundError(AppError):
@@ -20,6 +30,14 @@ class DuplicateIngredientError(AppError):
 
 
 class InvalidSuggestionLinkError(AppError):
+    pass
+
+
+class MealNotFoundError(AppError):
+    pass
+
+
+class InvalidReviewError(AppError):
     pass
 
 
@@ -36,6 +54,89 @@ class ResolvedFood:
 class MealService:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def get(self, *, user_id: int, meal_id: int) -> MealRecords:
+        meal = await owned_meal(self._session, user_id, meal_id)
+        if meal is None:
+            raise MealNotFoundError()
+        return await meal_records(self._session, meal)
+
+    async def list_all(self, *, user_id: int) -> list[MealRecords]:
+        meals = (
+            await self._session.scalars(
+                select(Meal)
+                .where(Meal.user_id == user_id)
+                .order_by(Meal.meal_date.desc(), Meal.id.desc())
+            )
+        ).all()
+        return await meals_records(self._session, list(meals))
+
+    async def delete(self, *, user_id: int, meal_id: int) -> None:
+        meal = await owned_meal(self._session, user_id, meal_id)
+        if meal is None:
+            raise MealNotFoundError()
+        await self._session.delete(meal)
+        await self._session.flush()
+
+    async def review(self, *, user_id: int, meal_id: int, data: ReviewData) -> MealRecords:
+        meal = await owned_meal(self._session, user_id, meal_id)
+        if meal is None:
+            raise MealNotFoundError()
+        records = await meal_records(self._session, meal)
+        foods = {food.id: food for food in records.foods}
+        incoming_ids = [result.food_id for result in data.food_results]
+        if len(incoming_ids) != len(foods) or set(incoming_ids) != set(foods):
+            raise InvalidReviewError()
+        ingredients_by_food: dict[int, list] = {food_id: [] for food_id in foods}
+        for link, ingredient in records.ingredients:
+            ingredients_by_food[link.food_id].append(ingredient)
+        for result in data.food_results:
+            allowed = {item.id for item in ingredients_by_food[result.food_id]}
+            selected = [item.ingredient_id for item in result.ingredient_outcomes]
+            if len(selected) != len(set(selected)) or not set(selected) <= allowed:
+                raise InvalidReviewError()
+
+        await self._session.execute(
+            delete(ReviewIngredientResult).where(ReviewIngredientResult.meal_id == meal_id)
+        )
+        await self._session.execute(
+            delete(ReviewFoodResult).where(ReviewFoodResult.meal_id == meal_id)
+        )
+        await self._session.flush()
+        meal.after_photo_uri = data.after_photo_uri
+        for result in data.food_results:
+            food = foods[result.food_id]
+            snapshot = {
+                "name": food.name,
+                "ingredients": [
+                    {"id": str(item.id), "name": item.name}
+                    for item in ingredients_by_food[result.food_id]
+                ],
+                "cooking_method": food.cooking_method,
+                "serving_note": food.serving_note,
+                "acceptance": food.acceptance,
+            }
+            self._session.add(
+                ReviewFoodResult(
+                    meal_id=meal_id,
+                    food_id=result.food_id,
+                    food_snapshot=snapshot,
+                    outcome=result.outcome,
+                    difficulties=result.difficulties,
+                )
+            )
+            for item in result.ingredient_outcomes:
+                self._session.add(
+                    ReviewIngredientResult(
+                        meal_id=meal_id,
+                        food_id=result.food_id,
+                        ingredient_id=item.ingredient_id,
+                        outcome=item.outcome,
+                        difficulties=item.difficulties,
+                    )
+                )
+        await self._session.flush()
+        return await meal_records(self._session, meal)
 
     async def write(self, *, user_id: int, data: MealData) -> Meal:
         foods: list[ResolvedFood] = []
@@ -73,11 +174,7 @@ class MealService:
             ):
                 raise InvalidSuggestionLinkError()
             suggestion = await self._session.get(UserSuggestion, int(link.suggestion_id))
-            if (
-                suggestion is None
-                or suggestion.user_id != user_id
-                or suggestion.status != "saved"
-            ):
+            if suggestion is None or suggestion.user_id != user_id or suggestion.status != "saved":
                 raise InvalidSuggestionLinkError()
             linked_suggestions.add(link.suggestion_id)
 

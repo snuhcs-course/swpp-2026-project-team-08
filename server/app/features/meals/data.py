@@ -35,3 +35,24 @@ class MealData:
     before_photo_uri: str | None
     foods: list[FoodData]
     suggestion_links: list[SuggestionLinkData]
+
+
+@dataclass(frozen=True)
+class IngredientReviewData:
+    ingredient_id: int
+    outcome: str | None
+    difficulties: list[dict]
+
+
+@dataclass(frozen=True)
+class FoodReviewData:
+    food_id: int
+    outcome: str | None
+    difficulties: list[dict]
+    ingredient_outcomes: list[IngredientReviewData]
+
+
+@dataclass(frozen=True)
+class ReviewData:
+    after_photo_uri: str | None
+    food_results: list[FoodReviewData]

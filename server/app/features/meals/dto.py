@@ -95,3 +95,133 @@ class MealWriteResponse(BaseModel):
     before_photo_uri: str | None
     after_photo_uri: str | None
     saved_at: datetime
+
+
+class IngredientResponse(BaseModel):
+    id: str
+    name: str
+
+
+class FoodItemDetailResponse(BaseModel):
+    id: str
+    meal_id: str
+    name: str
+    cooking_method: FoodPreparation | None
+    serving_note: str | None
+    acceptance: int | None
+    ingredients: list[IngredientResponse]
+
+
+class Difficulty(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    category: Literal[
+        "texture",
+        "tasteType",
+        "tasteIntensity",
+        "smell",
+        "color",
+        "shape",
+        "visibility",
+        "temperature",
+        "notSure",
+        "pieceSize",
+        "arrangement",
+    ]
+    subcategory: str | None = None
+    value: str
+
+
+class FoodSnapshot(BaseModel):
+    name: str
+    ingredients: list[IngredientResponse]
+    cooking_method: FoodPreparation | None
+    serving_note: str | None
+    acceptance: int | None
+
+
+class ReviewFoodResultResponse(BaseModel):
+    meal_id: str
+    food_id: str
+    food_snapshot: FoodSnapshot
+    outcome: Literal["eaten", "tasted", "untouched", "unclear"] | None
+    difficulties: list[Difficulty]
+
+
+class ReviewIngredientResultResponse(BaseModel):
+    meal_id: str
+    food_id: str
+    ingredient_id: str
+    outcome: Literal["eaten", "tasted", "untouched", "unclear"] | None
+    difficulties: list[Difficulty]
+
+
+class ReviewResponse(BaseModel):
+    food_results: list[ReviewFoodResultResponse]
+    ingredient_results: list[ReviewIngredientResultResponse]
+
+
+class LinkedSuggestionResponse(BaseModel):
+    what_to_try: str
+    why_this_may_help: str
+    serving_tip: str | None
+
+
+class SuggestionMealLinkResponse(BaseModel):
+    id: str
+    suggestion_id: str
+    meal_id: str
+    food_id: str
+    ingredient_id: str | None
+    feedback: Literal["helpful", "not_helpful", "not_sure"] | None
+    created_at: datetime
+    updated_at: datetime
+    suggestion: LinkedSuggestionResponse
+
+
+class MealDetailResponse(MealWriteResponse):
+    foods: list[FoodItemDetailResponse]
+    review: ReviewResponse | None
+    suggestion_links: list[SuggestionMealLinkResponse]
+
+
+class IngredientOutcomeInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    ingredient_id: str = Field(max_length=19, pattern=r"^[1-9][0-9]*$")
+    outcome: Literal["eaten", "tasted", "untouched", "unclear"] | None = None
+    difficulties: list[Difficulty] = Field(default_factory=list)
+
+    @field_validator("ingredient_id")
+    @classmethod
+    def bigint_id(cls, value: str) -> str:
+        if int(value) > 2**63 - 1:
+            raise ValueError("id exceeds BIGINT")
+        return value
+
+
+class FoodReviewInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    food_id: str = Field(max_length=19, pattern=r"^[1-9][0-9]*$")
+    outcome: Literal["eaten", "tasted", "untouched", "unclear"] | None = None
+    difficulties: list[Difficulty] = Field(default_factory=list)
+    ingredient_outcomes: list[IngredientOutcomeInput] = Field(default_factory=list)
+
+    @field_validator("food_id")
+    @classmethod
+    def bigint_id(cls, value: str) -> str:
+        if int(value) > 2**63 - 1:
+            raise ValueError("id exceeds BIGINT")
+        return value
+
+
+class MealReviewWriteRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    after_photo_uri: str | None = None
+    food_results: list[FoodReviewInput]
+
+
+class MealReviewResponse(ReviewResponse):
+    meal: MealWriteResponse

@@ -10,13 +10,13 @@ features/auth/security.py 를 사용한다. HTTP 와 DTO 는 모른다: 실패�
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
 from app.core.timezone import KST, now_kst
 from app.features.auth.codes import issue_email_code
-from app.features.auth.queries import delete_child_owned_rows
+from app.features.auth.queries import delete_user_owned_rows
 from app.features.auth.security import (
     create_access_token,
     create_refresh_token,
@@ -146,10 +146,12 @@ class AuthService:
         return user
 
     async def delete_account(self, user: User) -> None:
-        await delete_child_owned_rows(self._session, [str(user.id)])
+        await delete_user_owned_rows(self._session, user.id)
         await self._session.delete(user)
         await self._session.flush()
 
     async def _find_by_email(self, email: str) -> User | None:
-        result = await self._session.execute(select(User).where(User.email == email))
+        result = await self._session.execute(
+            select(User).where(func.lower(User.email) == email.lower())
+        )
         return result.scalar_one_or_none()

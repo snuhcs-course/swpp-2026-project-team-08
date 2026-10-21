@@ -1,18 +1,44 @@
 # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
-"""계정 삭제 시 아이 소유의 식사·추천 행을 지운다."""
+"""Delete records owned by one account before removing the user."""
 
-from collections.abc import Sequence
-
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import MealLog, Suggestion, SuggestionBatch
+from app.models import (
+    FoodItem,
+    Meal,
+    MealFoodIngredient,
+    ReviewFoodResult,
+    ReviewIngredientResult,
+    SafeFood,
+    SuggestionMealLink,
+    UserConsent,
+    UserProfile,
+    UserProfileChoice,
+    UserSuggestion,
+)
 
 
-async def delete_child_owned_rows(session: AsyncSession, child_ids: Sequence[str]) -> None:
-    ids = [child_id for child_id in child_ids if child_id]
-    if not ids:
-        return
-    await session.execute(delete(Suggestion).where(Suggestion.child_id.in_(ids)))
-    await session.execute(delete(SuggestionBatch).where(SuggestionBatch.child_id.in_(ids)))
-    await session.execute(delete(MealLog).where(MealLog.child_id.in_(ids)))
+async def delete_user_owned_rows(session: AsyncSession, user_id: int) -> None:
+    meal_ids = select(Meal.id).where(Meal.user_id == user_id)
+    suggestion_ids = select(UserSuggestion.id).where(UserSuggestion.user_id == user_id)
+    await session.execute(
+        delete(SuggestionMealLink).where(
+            SuggestionMealLink.meal_id.in_(meal_ids)
+            | SuggestionMealLink.suggestion_id.in_(suggestion_ids)
+        )
+    )
+    await session.execute(
+        delete(ReviewIngredientResult).where(ReviewIngredientResult.meal_id.in_(meal_ids))
+    )
+    await session.execute(delete(ReviewFoodResult).where(ReviewFoodResult.meal_id.in_(meal_ids)))
+    await session.execute(
+        delete(MealFoodIngredient).where(MealFoodIngredient.meal_id.in_(meal_ids))
+    )
+    await session.execute(delete(FoodItem).where(FoodItem.meal_id.in_(meal_ids)))
+    await session.execute(delete(Meal).where(Meal.user_id == user_id))
+    await session.execute(delete(UserSuggestion).where(UserSuggestion.user_id == user_id))
+    await session.execute(delete(SafeFood).where(SafeFood.user_id == user_id))
+    await session.execute(delete(UserProfileChoice).where(UserProfileChoice.user_id == user_id))
+    await session.execute(delete(UserProfile).where(UserProfile.user_id == user_id))
+    await session.execute(delete(UserConsent).where(UserConsent.user_id == user_id))

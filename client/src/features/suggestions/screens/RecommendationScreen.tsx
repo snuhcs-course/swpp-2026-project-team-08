@@ -64,8 +64,6 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
       <Text style={s.completionBody}>{c.allDoneBody}</Text>
       <View style={s.completionActions}>
         <AppButton variant="suggestion" label={c.savedTitle} onPress={() => router.replace({ pathname: '/section/[name]', params: { name: 'ideas' } })} />
-        <AppButton variant="suggestion" secondary label={c.changeFoods}
-          disabled={!model.availableTargets.length} onPress={() => setSheet(true)} />
         <AppButton variant="suggestion" secondary label={c.backMeal} onPress={backMeal} />
       </View>
       {model.failed && <Text accessibilityRole="alert" style={s.error}>{c.saveFailed}</Text>}
@@ -74,7 +72,6 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
       disabled={model.busy} style={s.completionUndo} onPress={() => { void model.undo(); }}>
       <Text style={s.undoLabel}>{c.undoLast}</Text>
     </Pressable>}
-    {targetSheet}
   </SafeAreaView>;
 
   return <SafeAreaView style={s.root} edges={['top', 'bottom']}>

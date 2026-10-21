@@ -17,3 +17,15 @@
   - 식이 제한: `gluten-free` `lactose-free` `casein-free` `low-fructose` `no-pork` `no-beef`
 - 클라이언트의 `none`(제한 없음 선택)은 제한 id가 아니다. 서버에서는 빈 집합으로 나타낸다.
 - 서버 카탈로그(`mock_ingredients.json`)에 `RestrictionId`에 없는 id가 있으면 카탈로그를 읽는 시점에 `ValueError`가 난다.
+
+<!-- AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung -->
+## 추천 생성에 프로필 연결
+
+- 추천 서비스는 로그인한 사용자의 `user_profiles`와 `user_profile_choices`에서 알레르기·식이 제한을 매 요청마다 읽는다.
+- `allergy`와 `restriction`의 표준 `code`를 `RestrictionId`로 바꿔 합친 뒤,
+  `ChildRestrictions(ids=frozenset(...))`로 생성기에 전달한다. 식사 선호 등 다른 선택 항목은 포함하지 않는다.
+- `none_known` 알레르기와 `none` 식이 제한은 빈 집합으로 전달한다.
+- 프로필이 없거나 알레르기가 `unknown`이면 해당 제한은 빈 집합으로 취급하고 추천 생성을 계속한다.
+- `specified`인 그룹의 표준 코드만 포함한다. 직접 입력한 제한과 지원하지 않는 코드는 건너뛰며,
+  같은 프로필의 나머지 표준 제한은 유지한다. 직접 입력값을 LLM 프롬프트에 별도로 전달하지 않는다.
+- 선택 목록이 비어 있어도 `PROFILE_RESTRICTIONS_UNAVAILABLE`로 중단하지 않는다.

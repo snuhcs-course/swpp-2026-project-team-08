@@ -9,7 +9,9 @@ from app.core.database import get_session
 from app.core.timezone import now_kst
 from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
 from app.main import app
-from app.models import Ingredient
+
+# AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
+from app.models import Ingredient, UserProfile
 
 
 async def auth_headers(client: AsyncClient, email: str) -> dict[str, str]:
@@ -18,6 +20,18 @@ async def auth_headers(client: AsyncClient, email: str) -> dict[str, str]:
         json={"email": email, "password": "supersecret", "full_name": "보호자"},
     )
     assert signup.status_code == 201
+    # AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
+    async for session in app.dependency_overrides[get_session]():
+        session.add(
+            UserProfile(
+                user_id=int(signup.json()["id"]),
+                child_name="아이",
+                age_group="4-5",
+                allergy_status="none_known",
+                restriction_status="none",
+                safe_food_status="none",
+            )
+        )
     login = await client.post(
         "/api/v1/auth/login",
         json={"email": email, "password": "supersecret"},

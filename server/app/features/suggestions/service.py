@@ -12,7 +12,9 @@ from app.core.errors import AppError
 from app.core.timezone import now_kst
 from app.features.meals.queries import meal_records, owned_meal
 from app.features.suggestions.generator import generate_suggestions
-from app.features.suggestions.mock_profile import MOCK_RESTRICTIONS
+
+# AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
+from app.features.suggestions.profile import load_restrictions
 from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
 from app.models import UserSuggestion
 
@@ -115,9 +117,11 @@ class UserSuggestionService:
                     if int(item["id"]) == target.ingredient_id
                 )
             inputs.append(FoodInput(id=str(index), name=name))
+        # AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
+        restrictions = await load_restrictions(self._session, user_id)
         try:
             async with asyncio.timeout(60):
-                generated = await generate_suggestions(inputs, MOCK_RESTRICTIONS)
+                generated = await generate_suggestions(inputs, restrictions)
         except Exception as error:
             raise GenerationFailedError() from error
         if (

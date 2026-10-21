@@ -3,9 +3,13 @@
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
 
+from app.core.database import get_session
+from app.core.timezone import now_kst
 from app.features.auth.security import create_access_token, decode_token
-from tests.test_meal_logs import put_meal
+from app.main import app
+from app.models import Meal, ReviewFoodResult, UserSuggestion
 
 SIGNUP_PAYLOAD = {
     "email": "user@example.com",
@@ -38,6 +42,21 @@ async def test_signup_duplicate_email_conflict(client: AsyncClient) -> None:
         "error_code": "EMAIL_ALREADY_EXISTS",
         "details": {"email": SIGNUP_PAYLOAD["email"]},
     }
+
+
+@pytest.mark.asyncio
+async def test_email_identity_is_case_insensitive(client: AsyncClient) -> None:
+    await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
+    duplicate = await client.post(
+        "/api/v1/auth/signup",
+        json={**SIGNUP_PAYLOAD, "email": "USER@example.com"},
+    )
+    assert duplicate.status_code == 409
+    login = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "USER@example.com", "password": SIGNUP_PAYLOAD["password"]},
+    )
+    assert login.status_code == 200
 
 
 @pytest.mark.asyncio
@@ -308,7 +327,7 @@ async def test_email_change_rejects_same_and_taken_email(client: AsyncClient) ->
 
 
 @pytest.mark.asyncio
-async def test_delete_me_removes_user_and_child_meals(client: AsyncClient) -> None:
+async def test_delete_me_removes_user_and_owned_meals_and_suggestions(client: AsyncClient) -> None:
     signup = await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
     user_id = signup.json()["id"]
     tokens = (
@@ -318,8 +337,41 @@ async def test_delete_me_removes_user_and_child_meals(client: AsyncClient) -> No
         )
     ).json()
 
-    meal = await put_meal(client, child_id=user_id, meal_id="meal-to-wipe")
+    meal = await client.put(
+        "/api/v1/meals",
+        headers=_auth_header(tokens),
+        json={
+            "meal_date": "2026-10-20",
+            "meal_type": "lunch",
+            "setting": "home",
+            "foods": [{"id": "1", "name": "감자", "ingredients": []}],
+        },
+    )
     assert meal.status_code == 200
+    meal_id = meal.json()["id"]
+    reviewed = await client.put(
+        f"/api/v1/meals/{meal_id}/review",
+        headers=_auth_header(tokens),
+        json={
+            "food_results": [
+                {"food_id": "1", "outcome": "eaten", "difficulties": [], "ingredient_outcomes": []}
+            ]
+        },
+    )
+    assert reviewed.status_code == 200
+    async for session in app.dependency_overrides[get_session]():
+        session.add(
+            UserSuggestion(
+                user_id=int(user_id),
+                meal_id=int(meal_id),
+                food_id=1,
+                food_snapshot=reviewed.json()["food_results"][0]["food_snapshot"],
+                what_to_try="작게 제공",
+                why_this_may_help="익숙한 형태",
+                status="saved",
+                saved_at=now_kst(),
+            )
+        )
 
     deleted = await client.delete("/api/v1/auth/me", headers=_auth_header(tokens))
     assert deleted.status_code == 204
@@ -327,8 +379,12 @@ async def test_delete_me_removes_user_and_child_meals(client: AsyncClient) -> No
     me = await client.get("/api/v1/auth/me", headers=_auth_header(tokens))
     assert me.status_code == 401
 
-    leftover = await client.get(f"/api/v1/children/{user_id}/meals/meal-to-wipe")
-    assert leftover.status_code == 404
+    leftover = await client.get(f"/api/v1/meals/{meal_id}", headers=_auth_header(tokens))
+    assert leftover.status_code == 401
+    async for session in app.dependency_overrides[get_session]():
+        assert (await session.scalars(select(Meal))).all() == []
+        assert (await session.scalars(select(ReviewFoodResult))).all() == []
+        assert (await session.scalars(select(UserSuggestion))).all() == []
 
     login = await client.post(
         "/api/v1/auth/login",

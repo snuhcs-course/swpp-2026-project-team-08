@@ -1,11 +1,10 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
 
 import { getLocales } from 'expo-localization';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { fromOnboardingResponse, readOnboarding, writeOnboarding } from '../data/api/onboardingApi';
 import { readLanguage, saveLanguage } from '../data/storage/languageStorage';
 import { ApiError } from '../data/network/apiClient';
-import { clearProfile, saveProfile } from '../data/storage/profileStorage';
 import type { ChildProfile, Language } from '../types/profile';
 import { useAuth } from './AuthProvider';
 
@@ -15,7 +14,6 @@ type ProfileContextValue = {
   language: Language;
   retryLoad: () => Promise<void>;
   commitProfile: (value: ChildProfile) => Promise<void>;
-  wipeProfile: () => Promise<void>;
   changeLanguage: (value: Language) => Promise<void>;
 };
 
@@ -59,7 +57,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       setProfile(next);
       setLoadedUserId(user.id);
       setLoadedStatus('ready');
-      if (next) void saveProfile(next).catch(() => undefined);
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         await signOut();
@@ -91,12 +88,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     setProfile(next);
     setLoadedUserId(user.id);
     setLoadedStatus('ready');
-    await saveProfile(next).catch(() => undefined);
   }, [user]);
-  const wipeProfile = useCallback(async () => {
-    await clearProfile();
-    setProfile(null);
-  }, []);
   const changeLanguage = useCallback((value: Language) => {
     const next = languageQueue.current.catch(() => undefined).then(() => saveLanguage(value));
     languageQueue.current = next;
@@ -109,7 +101,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     : null;
 
   return (
-    <ProfileContext.Provider value={{ status, profile, language, retryLoad, commitProfile, wipeProfile, changeLanguage }}>
+    <ProfileContext.Provider value={{ status, profile, language, retryLoad, commitProfile, changeLanguage }}>
       {children}
     </ProfileContext.Provider>
   );

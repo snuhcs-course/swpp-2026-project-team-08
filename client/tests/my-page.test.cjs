@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -32,8 +33,6 @@ const {
 const { wipeAccountLocalData } = require('../src/data/storage/accountWipe.ts');
 const { createDraftSaveGate } = require('../src/features/onboarding/draftSaveGate.ts');
 const { onboardingRouteParams } = require('../src/features/onboarding/navigation.ts');
-const { readProfile, saveProfile, clearProfile } = require('../src/data/storage/profileStorage.ts');
-const { emptyDraft } = require('../src/features/onboarding/types.ts');
 
 test('empty food summaries show nothing and skip none', () => {
   assert.equal(optionSummary([], 'allergies', 'en'), 'nothing');
@@ -96,24 +95,4 @@ test('account wipe removes profile, draft, meals, and photos for the child', asy
   assert.equal(values.has('nurturebites.after-meal.child-1.meal-1.draft.v1'), false);
   assert.equal(values.has('nurturebites.auth.user.v1'), true);
   assert.equal(values.has('nurturebites.language.v1'), true);
-});
-
-test('saved profiles can be cleared', async () => {
-  values.clear();
-  const draft = emptyDraft();
-  const profile = {
-    ...draft,
-    id: 'child-1',
-    caregiverName: 'Alex',
-    caregiverEmail: 'alex@example.com',
-    childName: 'Child',
-    ageRange: '4-5',
-    updatedAt: '2026-10-17T00:00:00.000Z',
-  };
-  delete profile.step;
-  delete profile.safeFoodInput;
-  await saveProfile(profile);
-  assert.equal((await readProfile()).childName, 'Child');
-  await clearProfile();
-  assert.equal(await readProfile(), null);
 });

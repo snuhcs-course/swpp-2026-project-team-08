@@ -91,6 +91,9 @@ API와 Storage 함수는 일반 비동기 함수로 작성한다. HTTP API는 �
 - Provider는 공통 타입과 `data`의 API·Storage·Query에 의존할 수 있지만 특정 Feature의 Screen·Hook·규칙에는 의존하지 않는다.
 - Feature는 Provider의 공개된 값과 `commitProfile`, `changeLanguage`, `signOut`처럼 의미가 분명한 명령을 사용한다. 다른 기능에 범용 `setState`를 노출하지 않는다.
 - 영속화할 값은 저장 성공 후 전역 상태에 반영한다. 저장 실패 시 기존 확정 상태를 유지하고 호출자에게 실패를 전달한다.
+<!-- AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung -->
+- 확정된 프로필은 서버의 온보딩 API로만 저장·조회한다. Provider는 화면에 필요한 메모리 상태만 유지하며,
+  AsyncStorage에 프로필 사본을 저장하지 않는다. 작성 중 온보딩 초안과 앱 언어는 계속 기기에 저장한다.
 - Feature의 작성 중 초안·단계·입력 오류, 시트 열림 상태, 서버 조회 결과를 앱 전역 Provider에 복제하지 않는다. 인증을 도입하더라도 서버 데이터는 TanStack Query의 소유권을 따른다.
 
 ### features — 기능별 화면과 작업 흐름

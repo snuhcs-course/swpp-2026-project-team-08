@@ -1,4 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
 
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -35,7 +35,6 @@ export function useAccountSession() {
       await deleteAccount();
       await onboarding.resetLocal();
       await wipeAccountLocalData([appProfile.profile?.id, auth.session?.user.id]);
-      await appProfile.wipeProfile();
       await auth.signOut();
       setConfirm(null);
       router.replace('/');

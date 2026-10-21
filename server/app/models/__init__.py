@@ -5,6 +5,7 @@
 `create_all` 이 필요로 한다). 새 모델 파일을 만들면 아래에 추가한다.
 """
 
+from app.models.ingredient import Ingredient
 from app.models.meal_food import MealFood
 from app.models.meal_log import MealLog
 from app.models.meal_review import MealReview
@@ -24,3 +25,4 @@ from app.models.suggestion_try import SuggestionTry
 
 __all__ += ["SuggestionBatch", "Suggestion", "SuggestionAction", "SuggestionTry"]
 __all__ += ["UserProfile", "UserProfileChoice", "SafeFood", "UserConsent"]
+__all__ += ["Ingredient"]

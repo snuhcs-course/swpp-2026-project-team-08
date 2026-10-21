@@ -31,6 +31,17 @@
 |`id`| `IngredientId`, DB 전체에서 고유 |
 | `name` | 공백 제외 비어 있지 않은 문자열 |
 
+### IngredientInput
+
+```json
+{ "id": null, "name": "감자" }
+```
+
+| 필드 | 타입 / 설명 |
+|---|---|
+| `id` | 문자열 또는 `null`; 유효한 `IngredientId`가 아니거나 이름과 맞지 않으면 이름으로 다시 찾음 |
+| `name` | 공백 제외 비어 있지 않은 문자열; 재료 확인의 기준 |
+
 ### Difficulty
 
 ```json
@@ -405,8 +416,24 @@ Food는 수정 가능, Meal 정보는 수정 불가능. 따라서 Food Snapshot�
 
 | API | 요청 | 성공 응답 | 인증 |
 |---|---|---|---|
+| `GET /api/v1/ingredients` | 본문 없음 | `200`, `Ingredient[]` | Bearer 토큰 |
+| `POST /api/v1/ingredients/resolve` | `IngredientInput` | `200`, `Ingredient` | Bearer 토큰 |
 | `GET /api/v1/suggestions` | 본문 없음 | `200`, `SuggestionResponse[]` | Bearer 토큰; 해당 user 접근 권한 |
 | `PUT /api/v1/meals` | `MealWriteRequest` | `200`, `MealWriteResponse` | Bearer 토큰; 해당 user 접근 권한 |
+
+#### `GET /api/v1/ingredients`
+
+- 응답
+  - 모든 사용자가 공유하는 재료 목록 `Ingredient[]`. ID 오름차순으로 반환한다.
+
+#### `POST /api/v1/ingredients/resolve`
+
+- 요청
+  - 공통 스키마의 `IngredientInput`.
+- 응답
+  - 입력 이름과 일치하는 `Ingredient`. ID가 없거나 존재하지 않거나 이름과 맞지 않아도 이름으로 찾는다. 이름 앞뒤 및 연속 공백과 영문 대소문자는 비교할 때 정리한다.
+- 오류
+  - 이름에 해당하는 재료가 없으면 `404 INGREDIENT_NOT_FOUND`.
 
 #### `GET /api/v1/suggestions`
 저장된 추천들을 모두 반환한다. 결과는 created_at 내림차순이다. 
@@ -432,7 +459,10 @@ Food는 수정 가능, Meal 정보는 수정 불가능. 따라서 Food Snapshot�
         {
           "id": "1",
           "name": "당근 감자볶음",
-          "ingredient_ids": ["182", "212"],
+          "ingredients": [
+            { "id": "182", "name": "당근" },
+            { "id": null, "name": "감자" }
+          ],
           "cooking_method": "stir_fried",
           "serving_note": "작게 잘라 제공",
           "acceptance": 1
@@ -449,6 +479,8 @@ Food는 수정 가능, Meal 정보는 수정 불가능. 따라서 Food Snapshot�
     ```
 - 응답
   - `MealWriteResponse`: 공통 스키마의 `Meal`
+
+서버는 `foods[].ingredients`의 각 항목을 공통 재료 DB에서 이름으로 확인하고, 확정된 ID로 `MealFoodIngredient`를 저장한다. 이름에 해당하는 재료가 없으면 `404 INGREDIENT_NOT_FOUND`이다.
 
 ### After Meal Review
 
@@ -768,7 +800,11 @@ Food는 수정 가능, Meal 정보는 수정 불가능. 따라서 Food Snapshot�
 | 필드 | DB 타입 | 제약 조건 |
 |---|---|---|
 | `id` | `BIGINT` | PK; 양수 |
-| `name` | `TEXT` | `NOT NULL`; 공백 제외 비어 있지 않음 |
+| `name` | `TEXT` | `NOT NULL`; 공백 제외 비어 있지 않음; UNIQUE |
+| `created_at` | `TIMESTAMPTZ` | `NOT NULL`; 서버 생성 |
+| `updated_at` | `TIMESTAMPTZ` | `NOT NULL`; 서버 생성·갱신 |
+
+초기 목업 재료는 당근(`182`), 감자(`212`), 달걀(`213`), 쌀(`214`), 닭고기(`215`), 두부(`216`), 사과(`217`), 브로콜리(`218`)이다.
 
 ### `meals` — 식사
 

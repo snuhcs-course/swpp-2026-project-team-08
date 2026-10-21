@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
 import type { MealPhoto } from './meal';
 
 export const outcomeValues = ['eaten', 'tasted', 'untouched', 'unclear'] as const;
@@ -45,5 +45,4 @@ export type AfterMealReviewDraft = {
 
 export type AfterMealReview = Omit<AfterMealReviewDraft, 'step' | 'difficultyInputs'> & {
   savedAt: string;
-  foodFormKeys?: Record<string, string>;
 };

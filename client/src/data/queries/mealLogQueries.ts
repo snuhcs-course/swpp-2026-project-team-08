@@ -1,11 +1,10 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { listMealDetails, getMealDetail } from '../api/mealReadApi';
 import { deleteMealRecord } from '../api/mealHistoryApi';
 import { deleteAfterMealReview } from '../storage/afterMealReviewStorage';
 import { deleteLocalMeal } from '../storage/mealStorage';
-import { homeKeys } from './homeQueries';
 import { mealKeys, mealLogKeys } from './mealQueryKeys';
 
 
@@ -21,22 +20,6 @@ export function useMealList(childId: string, date: string | null) {
       return meals;
     },
     enabled: !!childId,
-  });
-}
-
-export function useMealCalendar(childId: string, month: string) {
-  return useQuery({
-    queryKey: mealLogKeys.calendar(childId, month),
-    queryFn: async ({ signal }) => {
-      const meals = await listMealDetails(signal);
-      if (meals.some((meal) => meal.userId !== childId)) throw new Error('Mismatched meal owner');
-      const counts = new Map<string, number>();
-      for (const meal of meals) {
-        if (meal.mealDate.startsWith(`${month}-`)) counts.set(meal.mealDate, (counts.get(meal.mealDate) ?? 0) + 1);
-      }
-      return [...counts].map(([date, count]) => ({ date, count }));
-    },
-    enabled: !!childId && !!month,
   });
 }
 
@@ -65,8 +48,6 @@ export function useDeleteMeal() {
       client.removeQueries({ queryKey: mealLogKeys.detail(childId, mealId) });
       client.removeQueries({ queryKey: mealKeys.detail(childId, mealId) });
       void client.invalidateQueries({ queryKey: mealLogKeys.all(childId) });
-      void client.invalidateQueries({ queryKey: ['meals', childId] });
-      void client.invalidateQueries({ queryKey: homeKeys.byChild(childId) });
     },
   });
 }

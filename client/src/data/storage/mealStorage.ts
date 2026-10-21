@@ -1,8 +1,7 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { FoodItem, Meal, MealDraft } from '../../types/meal';
 import { isDraft, isMeal } from './mealValidation';
-import { updateHomeRecords } from './homeStorage';
 const draftKey = (id: string) => `nurturebites.meal-draft.${id}.v1`;
 const mealsKey = (id: string) => `nurturebites.meals.${id}.v1`;
 // One queue per child also serializes final save against pending autosaves.
@@ -81,32 +80,6 @@ export async function readMeals(childId: string): Promise<Meal[]> {
     throw new Error('Invalid meals');
   return value;
 }
-export const readMeal = async (childId: string, mealId: string) =>
-  (await readMeals(childId)).find((meal) => meal.id === mealId) ?? null;
-export function updateMealFoods(childId: string, mealId: string, foods: FoodItem[]): Promise<Meal> {
-  return queued(childId, async () => {
-    const meals = await readMeals(childId);
-    const index = meals.findIndex((meal) => meal.id === mealId);
-    if (index < 0) throw new Error('Meal not found');
-    const current = meals[index];
-    const next: Meal = {
-      ...current,
-      foods,
-      suggestionLinks: current.suggestionLinks?.filter((link) => foods.some((food) => food.id === link.foodId)),
-    };
-    if (!isMeal(next, childId)) throw new Error('Invalid edited meal');
-    meals[index] = next;
-    await AsyncStorage.setItem(mealsKey(childId), JSON.stringify(meals));
-    const rawDraft = await AsyncStorage.getItem(draftKey(childId));
-    if (rawDraft) {
-      const stored: unknown = normalizeStoredMeal(JSON.parse(rawDraft));
-      if (isDraft(stored, childId) && stored.step === 'complete' && stored.savedMealId === mealId) {
-        await AsyncStorage.setItem(draftKey(childId), JSON.stringify({ ...stored, foods, suggestionLinks: next.suggestionLinks }));
-      }
-    }
-    return next;
-  });
-}
 export const saveMeal = (meal: Meal): Promise<Meal> =>
   queued(meal.childId, async () => {
     if (!isMeal(meal, meal.childId)) throw new Error('Invalid meal');
@@ -114,12 +87,6 @@ export const saveMeal = (meal: Meal): Promise<Meal> =>
     const saved = meals.find((entry) => entry.id === meal.id) ?? meal;
     if (!meals.some((entry) => entry.id === saved.id)) meals.push(saved);
     await AsyncStorage.setItem(mealsKey(meal.childId), JSON.stringify(meals));
-    await updateHomeRecords(meal.childId, (home) => {
-      home.meals = [
-        ...home.meals.filter((entry) => entry.id !== saved.id),
-        { id: saved.id, childId: saved.childId, mealDate: saved.mealDate },
-      ];
-    });
     // A completion receipt preserves the saved ID even if the app closes before navigation.
     await AsyncStorage.setItem(
       draftKey(meal.childId),
@@ -136,8 +103,4 @@ export const deleteLocalMeal = (childId: string, mealId: string): Promise<void> 
   queued(childId, async () => {
     const meals = (await readMeals(childId)).filter((meal) => meal.id !== mealId);
     await AsyncStorage.setItem(mealsKey(childId), JSON.stringify(meals));
-    await updateHomeRecords(childId, (home) => {
-      home.meals = home.meals.filter((entry) => entry.id !== mealId);
-      home.suggestions = home.suggestions.filter((item) => item.recommendation?.mealId !== mealId);
-    });
   });

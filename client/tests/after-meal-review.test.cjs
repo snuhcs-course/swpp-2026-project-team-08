@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -28,10 +28,10 @@ Module._load = function (name, ...args) {
 
 const { newDraft, mealFromDraft } = require('../src/features/meal-checkin/rules.ts');
 const { newFood } = require('../src/rules/foodDraft.ts');
-const { saveMeal, readMeal, updateMealFoods } = require('../src/data/storage/mealStorage.ts');
+const { saveMeal, readMeals } = require('../src/data/storage/mealStorage.ts');
 const { readAfterMealDraft, readAfterMealReview, saveAfterMealDraft, saveAfterMealReview } =
   require('../src/data/storage/afterMealReviewStorage.ts');
-const { newReviewDraft, reconcileOutcomes, setOutcome, applySuggestions, allOutcomesConfirmed, addDifficulty, reviewFromDraft, toggleIngredient, canAddDifficulty } =
+const { newReviewDraft, reconcileOutcomes, setOutcome, allOutcomesConfirmed, addDifficulty, reviewFromDraft, toggleIngredient, canAddDifficulty } =
   require('../src/features/after-meal-review/rules.ts');
 
 function savedMeal(childId) {
@@ -43,11 +43,12 @@ function savedMeal(childId) {
   return mealFromDraft(draft);
 }
 
-test('AI suggestions remain separate from independently confirmed food and ingredient outcomes', () => {
+test('legacy AI suggestions do not count as confirmed food and ingredient outcomes', () => {
   const meal = savedMeal('outcomes');
   let draft = newReviewDraft(meal);
   const ingredient = draft.outcomes[0].ingredients[0].id;
-  draft.outcomes = applySuggestions(draft.outcomes, [{ foodId: 'food-1', outcome: 'eaten' }, { foodId: 'food-1', ingredientId: ingredient, outcome: 'eaten' }]);
+  draft.outcomes[0].decision.suggested = 'eaten';
+  draft.outcomes[0].ingredients[0].decision.suggested = 'eaten';
   assert.equal(allOutcomesConfirmed(draft.outcomes), false);
   draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'tasted');
   draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'untouched', ingredient);
@@ -97,10 +98,9 @@ test('stored after-meal draft and result are tied to one meal and preserve the b
   await saveAfterMealDraft({ ...draft, step: 'preview' });
   const loaded = await readAfterMealDraft(meal.childId, meal.id);
   assert.equal(loaded.afterPhoto.id, 'after');
-  assert.equal((await readMeal(meal.childId, meal.id)).photo.id, 'before');
+  assert.equal((await readMeals(meal.childId))[0].photo.id, 'before');
   const oldIngredient = loaded.outcomes[0].ingredients[0].id;
-  await updateMealFoods(meal.childId, meal.id, [{ ...meal.foods[0], ingredients: ['Carrot', 'Potato'] }]);
-  const updated = await readMeal(meal.childId, meal.id);
+  const updated = { ...meal, foods: [{ ...meal.foods[0], ingredients: ['Carrot', 'Potato'] }] };
   assert.equal(updated.photo.id, 'before');
   draft.outcomes = reconcileOutcomes(loaded.outcomes, updated.foods);
   assert.equal(draft.outcomes[0].ingredients[0].id, oldIngredient);

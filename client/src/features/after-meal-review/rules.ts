@@ -1,9 +1,8 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome, ReviewStep } from '../../types/afterMealReview';
 import type { FoodItem, Meal } from '../../types/meal';
 import type { MealDetail } from '../../types/mealRecord';
 import { ingredientId } from '../../rules/ingredientIds';
-import { foodFormKey } from '../../rules/recommendationSafety';
 
 // Legacy draft steps resume at the final editable Figma screen without submitting.
 export function normalizeReviewStep(step: ReviewStep): ReviewStep {
@@ -135,26 +134,6 @@ export function clearOutcomeSuggestions(outcomes: FoodOutcome[]): FoodOutcome[] 
   }));
 }
 
-/** Legacy data helper; the app no longer requests or displays photo suggestions. */
-export function applySuggestions(
-  outcomes: FoodOutcome[], suggestions: { foodId: string; ingredientId?: string; outcome: Outcome }[],
-): FoodOutcome[] {
-  return outcomes.map((food) => ({
-    ...food,
-    decision: {
-      ...food.decision,
-      suggested: suggestions.find((item) => item.foodId === food.foodId && !item.ingredientId)?.outcome ?? null,
-    },
-    ingredients: food.ingredients.map((ingredient) => ({
-      ...ingredient,
-      decision: {
-        ...ingredient.decision,
-        suggested: suggestions.find((item) => item.foodId === food.foodId && item.ingredientId === ingredient.id)?.outcome ?? null,
-      },
-    })),
-  }));
-}
-
 export function addDifficulty(
   tags: DifficultyTag[], category: DifficultyCategory, value: string, note?: string, subcategory?: string,
 ): DifficultyTag[] {
@@ -195,7 +174,6 @@ export function reviewFromDraft(draft: AfterMealReviewDraft, meal: Meal): AfterM
     difficulties: Object.fromEntries(meal.foods.map((food) => [food.id, draft.difficulties[food.id] ?? []])),
     suggestionFeedback: draft.suggestionFeedback,
     savedAt: new Date().toISOString(),
-    foodFormKeys: Object.fromEntries(meal.foods.map((food) => [food.id, foodFormKey(food)])),
   };
 }
 

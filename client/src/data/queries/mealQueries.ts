@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
+// AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -6,9 +6,8 @@ import { updateReviewMealFoods } from '../api/mealFoodsApi';
 import { getMealDetail } from '../api/mealReadApi';
 import { writeMeal } from '../api/mealWriteApi';
 import { toLegacyMeal } from '../dto/mealLegacyDto';
-import { readMealDraft, readMeals, saveMeal } from '../storage/mealStorage';
+import { readMealDraft, saveMeal } from '../storage/mealStorage';
 import type { FoodItem } from '../../types/meal';
-import { homeKeys } from './homeQueries';
 import { mealKeys, mealLogKeys } from './mealQueryKeys';
 import { checkinReferenceKeys } from './checkinReferenceQueries';
 
@@ -33,12 +32,6 @@ export const useMeal = (childId: string, id: string) =>
     select: toLegacyMeal,
     enabled: !!childId && !!id,
   });
-export const useMeals = (childId: string) =>
-  useQuery({
-    queryKey: ['meals', childId],
-    queryFn: () => readMeals(childId),
-    enabled: !!childId,
-  });
 export function useUpdateMealFoods() {
   const client = useQueryClient();
   return useMutation({
@@ -53,7 +46,6 @@ export function useUpdateMealFoods() {
     },
     onSuccess: ({ detail }) => {
       client.setQueryData(mealKeys.detail(detail.userId, detail.id), detail);
-      void client.invalidateQueries({ queryKey: ['meals', detail.userId] });
       void client.invalidateQueries({ queryKey: mealKeys.draft(detail.userId) });
       void client.invalidateQueries({ queryKey: mealLogKeys.all(detail.userId) });
       void client.invalidateQueries({ queryKey: checkinReferenceKeys.meals(detail.userId) });
@@ -71,10 +63,6 @@ export function useSaveMeal() {
     retry: false,
     onSuccess: (meal) => {
       void client.invalidateQueries({ queryKey: mealKeys.detail(meal.childId, meal.id) });
-      void client.invalidateQueries({ queryKey: ['meals', meal.childId] });
-      void client.invalidateQueries({
-        queryKey: homeKeys.byChild(meal.childId),
-      });
       void client.invalidateQueries({ queryKey: mealKeys.draft(meal.childId) });
       void client.invalidateQueries({ queryKey: mealLogKeys.all(meal.childId) });
       void client.invalidateQueries({ queryKey: checkinReferenceKeys.meals(meal.childId) });

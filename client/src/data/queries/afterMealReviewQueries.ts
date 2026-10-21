@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; refresh home pending meals after review completion
+// AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
@@ -8,7 +8,6 @@ import { writeMealReview } from '../api/mealReviewApi';
 import { readAfterMealDraft, saveAfterMealReview } from '../storage/afterMealReviewStorage';
 import type { MealDetail } from '../../types/mealRecord';
 import type { AfterMealReview } from '../../types/afterMealReview';
-import { homeKeys } from './homeQueries';
 import { mealLogKeys } from './mealLogQueries';
 import { mealKeys } from './mealQueryKeys';
 import { checkinReferenceKeys } from './checkinReferenceQueries';
@@ -37,13 +36,11 @@ export function useSaveAfterMealReview() {
     },
     retry: false,
     onSuccess: ({ review, detail }) => {
-      void client.invalidateQueries({ queryKey: homeKeys.byChild(review.childId) });
       client.setQueryData(afterMealKeys.result(review.childId, review.mealId), review);
       client.setQueryData(afterMealKeys.draft(review.childId, review.mealId), { ...review, step: 'complete', difficultyInputs: {} });
       client.setQueryData(mealKeys.detail(review.childId, review.mealId), detail);
       void client.invalidateQueries({ queryKey: checkinReferenceKeys.meals(review.childId) });
       void client.invalidateQueries({ queryKey: mealLogKeys.all(review.childId) });
-      void client.invalidateQueries({ queryKey: ['suggestions', review.childId] });
     },
   });
 }

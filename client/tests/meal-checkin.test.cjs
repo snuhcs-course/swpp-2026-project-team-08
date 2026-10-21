@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -18,7 +18,7 @@ const { newDraft, confirmFoods, mealFromDraft } = require('../src/features/meal-
 const { newFood } = require('../src/rules/foodDraft.ts');
 const { validDate } = require('../src/util/date.ts');
 const { isDraft } = require('../src/data/storage/mealValidation.ts');
-const { readMealDraft, saveMealDraft, readMeals, readMeal, saveMeal } = require('../src/data/storage/mealStorage.ts');
+const { readMealDraft, saveMealDraft, readMeals, saveMeal } = require('../src/data/storage/mealStorage.ts');
 function completeDraft(childId) { return { ...newDraft(childId), mealType: 'lunch', setting: 'home', foods: [{ ...newFood(), name: 'Rice', confirmed: true }], step: 'foods' }; }
 
 test('valid calendar dates', () => {
@@ -45,13 +45,12 @@ test('autosaves are ordered, recover edits and migrate interrupted legacy analys
   failedKey = 'nurturebites.meal-draft.autosave.v1'; await assert.rejects(saveMealDraft(draft)); await saveMealDraft(draft);
   assert.equal((await readMealDraft('autosave')).id, draft.id);
 });
-test('save failure keeps draft, retry is idempotent and home gets exactly one saved meal', async () => {
+test('save failure keeps draft and retry preserves one saved meal and completion receipt', async () => {
   const draft = completeDraft('final'); await saveMealDraft(draft);
-  const meal = mealFromDraft(draft); failedKey = 'nurturebites.home.final.v1'; await assert.rejects(saveMeal(meal));
+  const meal = mealFromDraft(draft); failedKey = 'nurturebites.meal-draft.final.v1'; await assert.rejects(saveMeal(meal));
   assert.deepEqual((await readMealDraft('final')).foods, draft.foods);
   await saveMeal(meal); await saveMeal(meal);
-  assert.equal((await readMeals('final')).length, 1); assert.deepEqual((await readMeal('final', meal.id)).foods, draft.foods);
-  assert.equal(JSON.parse(values.get('nurturebites.home.final.v1')).meals.length, 1);
+  assert.equal((await readMeals('final')).length, 1); assert.deepEqual((await readMeals('final'))[0].foods, draft.foods);
   assert.equal((await readMealDraft('final')).savedMealId, meal.id);
   assert.equal((await readMealDraft('final')).step, 'complete');
 });
@@ -122,30 +121,6 @@ test('legacy completed receipts preserve confirmed records even when their sourc
   assert.deepEqual((await readMealDraft(draft.childId)).foods,draft.foods);
 });
 
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
-test('home pending meals survive an unfinished review and disappear only after final review storage', async () => {
-  const { readHomeMeals } = require('../src/data/storage/homeMealStorage.ts');
-  const { pendingHomeMeals } = require('../src/features/home/rules.ts');
-  const { newReviewDraft, setOutcome, reviewFromDraft } = require('../src/features/after-meal-review/rules.ts');
-  const { saveAfterMealDraft, saveAfterMealReview } = require('../src/data/storage/afterMealReviewStorage.ts');
-  const child='home-review-lifecycle';
-  const old=mealFromDraft({...completeDraft(child),id:'old-meal',mealDate:'2026-10-10'});
-  const recent=mealFromDraft({...completeDraft(child),id:'recent-meal',mealDate:'2026-10-11'});
-  await saveMeal(old);await saveMeal(recent);
-  await saveMealDraft(completeDraft(child));
-  let entries=await readHomeMeals(child);
-  assert.deepEqual(pendingHomeMeals(child,entries).map(meal=>meal.id),['recent-meal','old-meal']);
-  assert.deepEqual(pendingHomeMeals('different-child',entries),[]);
-  const draft=newReviewDraft(recent);
-  draft.step='outcomes';await saveAfterMealDraft(draft);
-  assert.equal(pendingHomeMeals(child,await readHomeMeals(child)).length,2);
-  draft.outcomes=setOutcome(draft.outcomes,recent.foods[0].id,'eaten');
-  await saveAfterMealReview(reviewFromDraft(draft,recent));
-  entries=await readHomeMeals(child);
-  assert.deepEqual(pendingHomeMeals(child,entries).map(meal=>meal.id),['old-meal']);
-  assert.equal((await readMeals(child)).length,2);
-});
-
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 test('legacy goal drafts and receipts retain meals while discarding retired data', async () => {
   const child = 'retired-goal';
@@ -166,9 +141,6 @@ test('legacy goal drafts and receipts retain meals while discarding retired data
   const receipt = await readMealDraft(child);
   assert.equal(receipt.savedMealId, meal.id);
   assert.equal(Object.hasOwn(receipt, 'exposureFoodId'), false);
-  const { readHomeRecords } = require('../src/data/storage/homeStorage.ts');
-  values.set(`nurturebites.home.${child}.v1`, JSON.stringify({ meals: [], suggestions: [], exposures: [{ stage: 'touched' }] }));
-  assert.deepEqual(await readHomeRecords(child), { meals: [], suggestions: [] });
 });
 
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo

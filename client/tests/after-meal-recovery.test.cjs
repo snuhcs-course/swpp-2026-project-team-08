@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -55,7 +55,6 @@ Module._load = function (name, ...args) {
     useMutation: (options) => ({ ...options, mutateAsync: options.mutationFn, isPending: false }),
   };
   if (name === '../api/mealReviewApi') return { writeMealReview: (...args) => saveRemoteReview(...args) };
-  if (name === './homeQueries') return { homeKeys: { byChild: (id) => ['home', id] } };
   if (name === './mealLogQueries') return { mealLogKeys: { all: (id) => ['meal-log', id] } };
   if (name === './checkinReferenceQueries') return { checkinReferenceKeys: { meals: (id) => ['meal-details-v1', id] } };
   if (name.endsWith('/mealQueries')) return {
@@ -74,7 +73,6 @@ Module._load = function (name, ...args) {
 const { newDraft, mealFromDraft } = require('../src/features/meal-checkin/rules.ts');
 const { newFood } = require('../src/rules/foodDraft.ts');
 const { saveMeal, saveMealDraft, readMealDraft } = require('../src/data/storage/mealStorage.ts');
-const { readHomeMeals } = require('../src/data/storage/homeMealStorage.ts');
 const { readAfterMealDraft, readAfterMealReview, saveAfterMealDraft } = require('../src/data/storage/afterMealReviewStorage.ts');
 const { newReviewDraft, reviewFromDraft, setOutcome } = require('../src/features/after-meal-review/rules.ts');
 const { useSaveAfterMealReview } = require('../src/data/queries/afterMealReviewQueries.ts');
@@ -86,7 +84,7 @@ function createMeal(childId) {
     foods: [{ ...newFood(), confirmed: true, id: 'rice', name: 'Rice' }] });
 }
 
-test('failed server save stays pending on Home and restores editable answers until retry succeeds', async () => {
+test('failed server save restores editable answers until retry succeeds', async () => {
   values.clear();
   const savedMeal = createMeal('retry-review');
   detail = { id: savedMeal.id, userId: savedMeal.childId, review: null };
@@ -99,13 +97,12 @@ test('failed server save stays pending on Home and restores editable answers unt
   const mutation = useSaveAfterMealReview();
   await assert.rejects(mutation.mutateAsync({ review, detail }), /Network unavailable/);
   assert.equal(await readAfterMealReview(savedMeal.childId, savedMeal.id), null);
-  assert.equal((await readHomeMeals(savedMeal.childId))[0].reviewed, false);
   const restored = await readAfterMealDraft(savedMeal.childId, savedMeal.id);
   assert.equal(restored.step, 'difficulties');
   assert.equal(restored.outcomes[0].decision.confirmed, 'tasted');
   saveRemoteReview = async (value) => { assert.equal(value.mealId, savedMeal.id); return detail; };
   await mutation.mutateAsync({ review, detail });
-  assert.equal((await readHomeMeals(savedMeal.childId))[0].reviewed, true);
+  assert.equal((await readAfterMealReview(savedMeal.childId, savedMeal.id)).mealId, savedMeal.id);
   assert.equal((await readAfterMealDraft(savedMeal.childId, savedMeal.id)).step, 'complete');
 });
 

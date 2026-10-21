@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-22, reviewed by Haechan Jung
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { difficultyCategories, outcomeValues, reviewSteps, type AfterMealReview, type AfterMealReviewDraft } from '../../types/afterMealReview';
 
@@ -50,9 +50,7 @@ function validReview(value: unknown, childId: string, mealId: string): value is 
 }
 
 function validFinal(value: unknown, childId: string, mealId: string): value is AfterMealReview {
-  if (!record(value) || typeof value.savedAt !== 'string'
-    || !(value.foodFormKeys === undefined || (record(value.foodFormKeys)
-      && Object.values(value.foodFormKeys).every((key) => typeof key === 'string')))) return false;
+  if (!record(value) || typeof value.savedAt !== 'string') return false;
   const draft = { ...value, step: 'complete', difficultyInputs: {} };
   return validReview(draft, childId, mealId)
     && draft.outcomes.length > 0

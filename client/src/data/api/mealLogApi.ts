@@ -3,7 +3,6 @@ import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { SavedSuggestion } from '../../types/home';
 import type { FoodItem, Meal } from '../../types/meal';
 import { apiRequest } from '../network/apiClient';
-import { demoMealDetail, mergeDemoMealList } from './mealLogFixtures';
 
 const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 const mealSettings = ['home', 'restaurant', 'school', 'others'] as const;
@@ -224,16 +223,10 @@ export const upsertMeal = async (meal: Meal): Promise<MealDetail> =>
   }));
 
 export const listMeals = async (childId: string, date?: string | null): Promise<MealListItem[]> => {
-  let remote: MealListItem[] = [];
-  try {
-    const query = date ? `?date=${encodeURIComponent(date)}` : '';
-    const value = await apiRequest<unknown>(`${mealsPath(childId)}${query}`);
-    if (!Array.isArray(value)) throw new Error('Invalid meal list');
-    remote = value.map(parseListItem);
-  } catch {
-    remote = [];
-  }
-  return mergeDemoMealList(remote, date);
+  const query = date ? `?date=${encodeURIComponent(date)}` : '';
+  const value = await apiRequest<unknown>(`${mealsPath(childId)}${query}`);
+  if (!Array.isArray(value)) throw new Error('Invalid meal list');
+  return value.map(parseListItem);
 };
 
 export const getMealCalendar = async (childId: string, month: string): Promise<MealCalendarDay[]> => {
@@ -247,13 +240,7 @@ export const getMealCalendar = async (childId: string, month: string): Promise<M
 };
 
 export const getMealDetail = async (childId: string, mealId: string): Promise<MealDetail> => {
-  try {
-    return parseDetail(await apiRequest(`${mealsPath(childId)}/${encodeURIComponent(mealId)}`));
-  } catch (error) {
-    const demo = demoMealDetail(childId, mealId);
-    if (demo) return demo;
-    throw error;
-  }
+  return parseDetail(await apiRequest(`${mealsPath(childId)}/${encodeURIComponent(mealId)}`));
 };
 
 export const saveMealReview = async (review: AfterMealReview): Promise<MealDetail> =>

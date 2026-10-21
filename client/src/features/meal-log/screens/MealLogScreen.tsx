@@ -52,7 +52,7 @@ export function MealLogScreen() {
           title: s.mealLog.cardTitle(s.mealCheckin.types[meal.mealType], parts.monthDay, parts.weekday),
           foods: meal.foods.map((food) => food.name).join(', ') || s.common.empty,
           photoUri: mealThumbnail(meal),
-          awaiting: meal.reviewStatus === 'awaiting_review',
+          awaiting: meal.review === null,
         };
       })}
       query={log.query}
@@ -81,7 +81,7 @@ export function MealLogScreen() {
       onToggleUnreviewed={() => log.setUnreviewedOnly((value) => !value)}
       onContinueDraft={() => {
         if (draft?.savedMealId) {
-          router.push({ pathname: '/after-meal-photo', params: { mealId: draft.savedMealId } });
+          router.push({ pathname: '/after-meal-review', params: { mealId: draft.savedMealId } });
           return;
         }
         router.push('/meal-checkin');

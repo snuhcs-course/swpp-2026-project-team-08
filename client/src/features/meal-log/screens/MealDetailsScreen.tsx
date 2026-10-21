@@ -12,7 +12,7 @@ import { MealDetailsView } from './MealDetailsView';
 
 export function MealDetailsScreen({ mealId }: { mealId?: string }) {
   const profile = useProfile();
-  const details = useMealDetails(profile.profile?.id ?? '', mealId ?? '', profile.profile?.updatedAt ?? '');
+  const details = useMealDetails(profile.profile?.id ?? '', mealId ?? '');
   const s = copyFor(profile.language);
   const locale = profile.language === 'ko' ? 'ko-KR' : 'en-US';
 
@@ -45,19 +45,15 @@ export function MealDetailsScreen({ mealId }: { mealId?: string }) {
       heading={heading}
       deleteLine={deleteLine}
       beforeUri={meal?.beforePhotoUri ?? null}
-      afterUri={meal?.review?.afterPhotoUri ?? null}
+      afterUri={meal?.afterPhotoUri ?? null}
       awaitingReview={!!meal && !meal.review}
       cards={details.cards}
-      savedSuggestionIds={details.savedSuggestionIds}
       loading={details.loading}
       error={details.error || (!details.loading && !meal)}
       deleting={details.deleting}
       deleteError={details.deleteError}
-      suggestionSaveError={details.saveError}
-      savingSuggestion={details.savingSuggestion}
       onBack={() => router.back()}
-      onContinueReview={() => router.push({ pathname: '/after-meal-photo', params: { mealId: mealId ?? '' } })}
-      onToggleSaved={details.toggleSaved}
+      onContinueReview={() => router.push({ pathname: '/after-meal-review', params: { mealId: mealId ?? '' } })}
       onRetry={() => { void details.retry(); }}
       onDelete={() => {
         void details.deleteMeal().then(() => {

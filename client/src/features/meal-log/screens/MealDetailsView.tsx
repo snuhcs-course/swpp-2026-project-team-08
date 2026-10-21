@@ -25,12 +25,8 @@ type Props = {
   error: boolean;
   deleting: boolean;
   deleteError: boolean;
-  suggestionSaveError?: boolean;
-  savingSuggestion?: boolean;
-  savedSuggestionIds: string[];
   onBack: () => void;
   onContinueReview: () => void;
-  onToggleSaved: (card: Card, saved: boolean) => void;
   onRetry: () => void;
   onDelete: () => void;
 };
@@ -91,16 +87,12 @@ export function MealDetailsView(p: Props) {
             <PhotoTile uri={p.afterUri} label={m.afterImage} />
           </View>
           <Text style={styles.foodsLabel}>{m.foodsAndResponses}</Text>
-          {p.suggestionSaveError && <Text accessibilityRole="alert" style={styles.deleteBody}>{s.common.saveFailed}</Text>}
           {p.cards.map((card, index) => (
             <FoodResponseCard
               key={card.foodId}
               card={card}
               language={p.language}
-              disabled={p.savingSuggestion}
               defaultOpen={index === 0}
-              saved={!!card.suggestion && p.savedSuggestionIds.includes(card.suggestion.id)}
-              onToggleSaved={card.suggestion ? (saved) => p.onToggleSaved(card, saved) : undefined}
             />
           ))}
         </ScrollView>

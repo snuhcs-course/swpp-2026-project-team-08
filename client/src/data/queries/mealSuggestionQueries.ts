@@ -43,10 +43,24 @@ export function useMealSuggestionActions(userId: string, mealId: string) {
   const undo = useMutation({
     mutationFn: (id: string) => undoMealSuggestion(userId, id),
     retry: false,
+    onMutate: async (id) => {
+      const savedKey = checkinReferenceKeys.savedSuggestions(userId);
+      await client.cancelQueries({ queryKey: savedKey });
+      const previous = client.getQueryData<Suggestion[]>(savedKey);
+      client.setQueryData<Suggestion[]>(savedKey, (old) => old?.filter((entry) => entry.id !== id));
+      return { previous };
+    },
+    onError: (_error, _id, context) => {
+      if (context?.previous) {
+        client.setQueryData(checkinReferenceKeys.savedSuggestions(userId), context.previous);
+      }
+    },
     onSuccess: (item) => {
       client.setQueryData<Suggestion[]>(key, (old) => old?.map((entry) => entry.id === item.id ? item : entry));
-      refreshSaved();
+      client.setQueryData<Suggestion[]>(checkinReferenceKeys.savedSuggestions(userId),
+        (old) => old?.filter((entry) => entry.id !== item.id));
     },
+    onSettled: refreshSaved,
   });
   return { generate, decide, undo };
 }

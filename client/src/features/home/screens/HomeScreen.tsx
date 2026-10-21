@@ -11,7 +11,6 @@ import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import { useHome } from '../hooks/useHome';
-import { savedSuggestionText } from '../../../rules/recommendationPresentation';
 import { HomeView } from './HomeView';
 
 function HomeContent({ profile }: { profile: ChildProfile }) {
@@ -55,8 +54,8 @@ function HomeContent({ profile }: { profile: ChildProfile }) {
         onTrySuggestion={(id) =>
           router.push({ pathname: '/suggestion/[id]', params: { id } })
         }
-        suggestionText={Object.fromEntries((home.data?.suggestions ?? []).map((item) => [
-          item.id, savedSuggestionText(item, language, profile),
+        suggestionText={Object.fromEntries(home.data.suggestions.map((item) => [
+          item.id, { title: item.title, description: item.description },
         ]))}
       />
     </SafeAreaView>

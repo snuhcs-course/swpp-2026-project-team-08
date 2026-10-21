@@ -4,7 +4,6 @@ import { AppButton } from '../../../components/AppButton';
 import { HomeAssetIcon } from '../../../components/HomeAssetIcon';
 import type { Meal, MealDraft } from '../../../types/meal';
 import type { ChildProfile, Language } from '../../../types/profile';
-import type { SavedSuggestion } from '../../../types/home';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import { displayDate } from '../../../util/date';
@@ -19,7 +18,7 @@ export type HomeViewProps = {
   profile: ChildProfile;
   language: Language;
   now: Date;
-  data: { loggedDates: Set<string>; suggestions: SavedSuggestion[] } | null;
+  data: { loggedDates: Set<string>; suggestions: { id: string; title: string; description: string }[] } | null;
   meals: Meal[];
   pendingMeals: Meal[];
   loading: boolean;

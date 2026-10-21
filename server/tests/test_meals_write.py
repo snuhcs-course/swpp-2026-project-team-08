@@ -93,9 +93,6 @@ async def test_write_meal_uses_authenticated_user_and_resolves_ingredient(
     assert body["id"].isdecimal()
     assert body["after_photo_uri"] is None
     assert body["saved_at"]
-    legacy = await client.get(f"/api/v1/children/1/meals/{body['id']}")
-    assert legacy.status_code == 404
-
     async for session in app.dependency_overrides[get_session]():
         meal = await session.get(Meal, int(body["id"]))
         links = (

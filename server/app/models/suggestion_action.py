@@ -13,7 +13,7 @@ class SuggestionAction(Base):
 
     id: Mapped[str] = mapped_column(String(80), primary_key=True)
     suggestion_id: Mapped[str] = mapped_column(
-        ForeignKey("suggestions.id", onupdate="CASCADE", ondelete="CASCADE"), index=True
+        ForeignKey("legacy_suggestions.id", onupdate="CASCADE", ondelete="CASCADE"), index=True
     )
     before: Mapped[dict] = mapped_column(JSON)
     after_version: Mapped[int] = mapped_column(Integer)

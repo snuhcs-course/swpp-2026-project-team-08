@@ -9,7 +9,7 @@ from app.core.timezone import now_kst
 
 
 class Suggestion(Base):
-    __tablename__ = "suggestions"
+    __tablename__ = "legacy_suggestions"
 
     id: Mapped[str] = mapped_column(String(80), primary_key=True)
     child_id: Mapped[str] = mapped_column(String(80), index=True)

@@ -4,12 +4,13 @@ from datetime import datetime
 
 from sqlalchemy import (
     BigInteger,
+    CheckConstraint,
     DateTime,
     ForeignKey,
     ForeignKeyConstraint,
     Identity,
     Integer,
-    String,
+    Text,
     UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column
@@ -21,6 +22,11 @@ from app.core.timezone import now_kst
 class SuggestionMealLink(Base):
     __tablename__ = "suggestion_meal_links"
     __table_args__ = (
+        CheckConstraint("id > 0", name="ck_suggestion_meal_links_id_positive"),
+        CheckConstraint(
+            "feedback IS NULL OR feedback IN ('helpful','not_helpful','not_sure')",
+            name="ck_suggestion_meal_links_feedback",
+        ),
         ForeignKeyConstraint(
             ["meal_id", "food_id"],
             ["meal_foods.meal_id", "meal_foods.id"],
@@ -46,8 +52,10 @@ class SuggestionMealLink(Base):
     meal_id: Mapped[int] = mapped_column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=False
     )
-    suggestion_id: Mapped[str] = mapped_column(
-        String(80), ForeignKey("suggestions.id", onupdate="CASCADE", ondelete="CASCADE")
+    suggestion_id: Mapped[int] = mapped_column(
+        BigInteger().with_variant(Integer, "sqlite"),
+        ForeignKey("suggestions.id", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
     )
     food_id: Mapped[int] = mapped_column(BigInteger().with_variant(Integer, "sqlite"))
     ingredient_id: Mapped[int | None] = mapped_column(
@@ -55,7 +63,7 @@ class SuggestionMealLink(Base):
         ForeignKey("ingredients.id", onupdate="CASCADE", ondelete="CASCADE"),
         nullable=True,
     )
-    feedback: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    feedback: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False
     )

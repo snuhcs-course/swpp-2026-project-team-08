@@ -6,7 +6,7 @@ ORM 클래스가 도메인 객체를 겸한다. 요청/응답 모양은 각 기�
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, Identity, Integer, String
+from sqlalchemy import BigInteger, DateTime, Identity, Index, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -15,6 +15,7 @@ from app.core.timezone import now_kst
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = (Index("uq_users_email_lower", text("lower(email)"), unique=True),)
 
     id: Mapped[int] = mapped_column(
         BigInteger().with_variant(Integer, "sqlite"), Identity(), primary_key=True

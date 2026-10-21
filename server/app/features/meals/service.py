@@ -8,7 +8,7 @@ from app.core.errors import AppError
 from app.core.timezone import now_kst
 from app.features.ingredients.queries import resolve_ingredient
 from app.features.meals.data import MealData
-from app.models import FoodItem, Meal, MealFoodIngredient, Suggestion, SuggestionMealLink
+from app.models import FoodItem, Meal, MealFoodIngredient, SuggestionMealLink, UserSuggestion
 
 
 class IngredientNotFoundError(AppError):
@@ -72,11 +72,11 @@ class MealService:
                 and int(link.ingredient_id) not in ingredients_by_food[link.food_id]
             ):
                 raise InvalidSuggestionLinkError()
-            suggestion = await self._session.get(Suggestion, link.suggestion_id)
+            suggestion = await self._session.get(UserSuggestion, int(link.suggestion_id))
             if (
                 suggestion is None
-                or suggestion.child_id != str(user_id)
-                or suggestion.saved_at is None
+                or suggestion.user_id != user_id
+                or suggestion.status != "saved"
             ):
                 raise InvalidSuggestionLinkError()
             linked_suggestions.add(link.suggestion_id)
@@ -113,7 +113,7 @@ class MealService:
             self._session.add(
                 SuggestionMealLink(
                     meal_id=meal.id,
-                    suggestion_id=link.suggestion_id,
+                    suggestion_id=int(link.suggestion_id),
                     food_id=int(link.food_id),
                     ingredient_id=int(link.ingredient_id) if link.ingredient_id else None,
                 )

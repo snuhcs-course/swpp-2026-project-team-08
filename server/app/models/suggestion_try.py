@@ -14,7 +14,7 @@ class SuggestionTry(Base):
     __table_args__ = (UniqueConstraint("suggestion_id", "meal_id", "target_id"),)
     id: Mapped[str] = mapped_column(String(80), primary_key=True)
     suggestion_id: Mapped[str] = mapped_column(
-        ForeignKey("suggestions.id", onupdate="CASCADE", ondelete="CASCADE"), index=True
+        ForeignKey("legacy_suggestions.id", onupdate="CASCADE", ondelete="CASCADE"), index=True
     )
     meal_id: Mapped[str] = mapped_column(String(80), index=True)
     target_id: Mapped[str] = mapped_column(String(200))

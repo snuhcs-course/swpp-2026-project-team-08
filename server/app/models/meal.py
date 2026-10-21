@@ -3,7 +3,17 @@
 from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, Date, DateTime, ForeignKey, Identity, Integer, String, Text
+from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
+    Date,
+    DateTime,
+    ForeignKey,
+    Identity,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -15,6 +25,15 @@ if TYPE_CHECKING:
 
 class Meal(Base):
     __tablename__ = "meals"
+    __table_args__ = (
+        CheckConstraint("id > 0", name="ck_meals_id_positive"),
+        CheckConstraint(
+            "meal_type IN ('breakfast','lunch','dinner','snack')", name="ck_meals_meal_type"
+        ),
+        CheckConstraint(
+            "setting IN ('home','restaurant','school','others')", name="ck_meals_setting"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(
         BigInteger().with_variant(Integer, "sqlite"), Identity(), primary_key=True

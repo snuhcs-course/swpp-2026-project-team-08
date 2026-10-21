@@ -13,11 +13,14 @@ from app.models.meal_food_ingredient import MealFoodIngredient
 from app.models.meal_log import MealLog
 from app.models.meal_review import MealReview
 from app.models.meal_suggestion import MealSuggestion
+from app.models.review_food_result import ReviewFoodResult
+from app.models.review_ingredient_result import ReviewIngredientResult
 from app.models.safe_food import SafeFood
 from app.models.user import User
 from app.models.user_consent import UserConsent
 from app.models.user_profile import UserProfile
 from app.models.user_profile_choice import UserProfileChoice
+from app.models.user_suggestion import UserSuggestion
 
 __all__ = ["User", "MealLog", "MealFood", "MealReview", "MealSuggestion"]
 
@@ -33,3 +36,4 @@ __all__ += ["Ingredient"]
 __all__ += ["MealFoodIngredient"]
 __all__ += ["Meal", "FoodItem"]
 __all__ += ["SuggestionMealLink"]
+__all__ += ["ReviewFoodResult", "ReviewIngredientResult", "UserSuggestion"]

@@ -23,13 +23,14 @@ export function LoginScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | undefined>();
 
-  if (auth.status === 'loading' || !onboarding.ready) {
+  if (auth.status === 'loading' || profile.status === 'loading' || !onboarding.ready) {
     return (
       <SafeAreaView style={styles.root}>
         <ActivityIndicator color={colors.onboardingPrimary} />
       </SafeAreaView>
     );
   }
+  if (auth.session && profile.status === 'error') return <Redirect href="/" />;
   if (auth.session && profile.profile) return <Redirect href="/home" />;
   if (auth.session && !profile.profile) {
     return <Redirect href={{ pathname: '/onboarding/[step]', params: { step: onboarding.hasDraft ? onboarding.draft.step : 'consent' } }} />;
@@ -47,8 +48,6 @@ export function LoginScreen() {
           : s.onboarding.signupFailed);
       return;
     }
-    if (profile.profile) router.replace('/home');
-    else router.replace({ pathname: '/onboarding/[step]', params: { step: onboarding.hasDraft ? onboarding.draft.step : 'consent' } });
   };
 
   return (

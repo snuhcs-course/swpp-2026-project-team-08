@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
@@ -7,13 +7,9 @@ import { fonts } from '../../../util/fonts';
 export const suggestionStyles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.homeBackground },
   content: { padding: 24, gap: 18, flexGrow: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   title: { fontFamily: fonts.poppinsSemiBold, fontSize: 20, color: colors.homeText },
-  headerTitle: { flex: 1 },
-  savedHeader: { height: 84, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 24 },
-  savedBack: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   savedTitle: { flexShrink: 1, fontFamily: fonts.poppinsSemiBold, fontSize: 17, lineHeight: 26, color: colors.homeText },
-  savedListContent: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 24, gap: 16 },
+  savedListContent: { ...topBarStyles.content, paddingBottom: 24, gap: 16 },
   savedIntro: { fontFamily: fonts.poppinsRegular, fontSize: 14, lineHeight: 19, color: colors.suggestionMuted },
   savedCard: { padding: 16, gap: 8, borderRadius: 16, borderWidth: 1, borderColor: colors.homeBorder, backgroundColor: colors.surface },
   savedCardHeading: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 },
@@ -23,7 +19,7 @@ export const suggestionStyles = StyleSheet.create({
   savedCardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   savedDate: { flexShrink: 1, fontFamily: fonts.poppinsMedium, fontSize: 12, lineHeight: 18, color: colors.suggestionMuted },
   recommendationFooter: { paddingHorizontal: 24, paddingBottom: 20, gap: 10 },
-  recommendationContent: { flex: 1, paddingHorizontal: 24, paddingTop: 4, paddingBottom: 16, gap: 20 },
+  recommendationContent: { flex: 1, ...topBarStyles.content, paddingBottom: 16, gap: 20 },
   mealContextDate: { fontFamily: fonts.poppinsMedium, fontSize: 16, lineHeight: 21, color: colors.homeText },
   targetSection: { gap: 10, paddingHorizontal: 4 },
   changeFoodsLabel: { fontFamily: fonts.poppinsMedium, fontSize: 14, lineHeight: 24, color: colors.homePrimary },
@@ -157,7 +153,7 @@ export const suggestionStyles = StyleSheet.create({
   methodRow: { minHeight: 44, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   methodLabel: { fontFamily: fonts.poppinsMedium, fontSize: 15, lineHeight: 19, color: colors.homeText },
   menuDismiss: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 },
-  flowContent: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 24, gap: 16 },
+  flowContent: { ...topBarStyles.content, paddingBottom: 24, gap: 16 },
   flowRecord: { padding: 16, borderRadius: 16, borderWidth: 1, borderColor: colors.homeBorder, backgroundColor: colors.surface, gap: 7 },
   recordTitle: { fontFamily: fonts.poppinsSemiBold, fontSize: 14, lineHeight: 19, color: colors.homeText },
   radio: { width: 17, height: 17, borderWidth: 1, borderRadius: 9, borderColor: colors.suggestionMuted, alignItems: 'center', justifyContent: 'center' },

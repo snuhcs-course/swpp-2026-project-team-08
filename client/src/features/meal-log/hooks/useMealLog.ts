@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { validDate } from '../../../util/date';
 import { useMealList } from '../../../data/queries/mealLogQueries';
 import { useMealDraft } from '../../../data/queries/mealQueries';
-import { filterMeals, monthKey, shiftMonth, sortMealsLatestFirst } from '../rules';
+import { filterMealDetails, monthKey, shiftMonth, sortMealDetailsLatestFirst } from '../rules';
 
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 export function useMealLog(childId: string, initialDate?: string) {
@@ -31,7 +31,7 @@ export function useMealLog(childId: string, initialDate?: string) {
     return next;
   }, [list.data, monthValue]);
   const meals = useMemo(
-    () => sortMealsLatestFirst(filterMeals(
+    () => sortMealDetailsLatestFirst(filterMealDetails(
       (list.data ?? []).filter((meal) => !selectedDate || meal.mealDate === selectedDate),
       query,
       unreviewedOnly,
@@ -88,7 +88,7 @@ export function useMealLog(childId: string, initialDate?: string) {
     hasMeals: (list.data ?? []).length > 0,
     draft: draftQuery.data?.step !== 'complete' ? (draftQuery.data ?? null) : null,
     loading: list.isPending && !list.data,
-    error: list.isError && !(list.data && list.data.length),
+    error: list.isError,
     refreshing: list.isFetching && !list.isPending,
     goMonth,
     setMonthYear,

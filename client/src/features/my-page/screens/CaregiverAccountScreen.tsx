@@ -39,11 +39,6 @@ export function CaregiverAccountScreen() {
     try {
       const user = await updateCurrentName(next);
       await auth.replaceUser(user);
-      await appProfile.commitProfile({
-        ...profile,
-        caregiverName: user.fullName,
-        updatedAt: new Date().toISOString(),
-      });
       return true;
     } catch {
       setSaveError(true);
@@ -74,12 +69,6 @@ export function CaregiverAccountScreen() {
     try {
       const user = await confirmEmailChange(newEmail.trim(), code);
       await auth.replaceUser(user);
-      await appProfile.commitProfile({
-        ...profile,
-        caregiverName: name.trim() || user.fullName,
-        caregiverEmail: user.email,
-        updatedAt: new Date().toISOString(),
-      });
       setUpdated(true);
       setMode('account');
       setCode('');

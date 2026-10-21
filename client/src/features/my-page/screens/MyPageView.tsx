@@ -1,7 +1,6 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader } from '../../../components/AppHeader';
 import Feather from '@expo/vector-icons/Feather';
-import { Image } from 'expo-image';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
@@ -10,13 +9,12 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { styles } from './myPageStyles';
 
 export function MyPageView({
-  language, childName, ageLabel, photoUri, caregiver, deleteError,
+  language, childName, ageLabel, caregiver, deleteError,
   confirm, busy, onViewProfile, onCaregiver, onLogOut, onDelete, onConfirm, onCancelConfirm,
 }: {
   language: Language;
   childName: string;
   ageLabel: string;
-  photoUri: string | null;
   caregiver: string;
   deleteError: boolean;
   confirm: 'logout' | 'delete' | null;
@@ -31,15 +29,13 @@ export function MyPageView({
   const m = copyFor(language).myPage;
   return (
     <View style={styles.root}>
-      <ScrollView contentContainerStyle={[styles.page, styles.content]} keyboardShouldPersistTaps="handled">
-        <Text accessibilityRole="header" style={styles.title}>{m.title}</Text>
+      <AppHeader title={m.title} />
+      <ScrollView contentContainerStyle={[styles.body, styles.content]} keyboardShouldPersistTaps="handled">
         <Text style={styles.sectionLabel}>{m.childProfileSection}</Text>
         <Pressable accessibilityRole="button" onPress={onViewProfile} style={styles.card}>
           <View style={styles.childRow}>
             <View style={styles.avatar}>
-              {photoUri
-                ? <Image source={{ uri: photoUri }} style={styles.avatarImage} />
-                : <Feather name="user" size={22} color={colors.homePrimary} />}
+              <Feather name="user" size={22} color={colors.homePrimary} />
             </View>
             <View style={styles.childCopy}>
               <Text style={styles.childName}>{childName}</Text>

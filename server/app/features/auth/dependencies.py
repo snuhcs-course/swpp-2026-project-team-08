@@ -6,7 +6,7 @@
 토큰 해석은 여기서만 하고, service 는 토큰을 모른 채 `User`(또는 `user_id`)를 인자로 받는다.
 """
 
-import uuid
+import re
 from typing import Annotated
 
 import jwt
@@ -40,7 +40,12 @@ async def get_current_user(
 
     try:
         payload = decode_token(credentials.credentials)
-        user_id = uuid.UUID(payload["sub"])
+        subject = payload["sub"]
+        if not isinstance(subject, str) or re.fullmatch(r"[1-9][0-9]*", subject) is None:
+            raise ValueError("Invalid user ID")
+        user_id = int(subject)
+        if user_id > 2**63 - 1:
+            raise ValueError("User ID exceeds BIGINT")
     except (jwt.PyJWTError, KeyError, ValueError):
         raise UnauthenticatedError() from None
 

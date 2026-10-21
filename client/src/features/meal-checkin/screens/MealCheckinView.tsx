@@ -1,4 +1,5 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader } from '../../../components/AppHeader';
 import { fonts } from "../../../util/fonts";
 import { colors } from "../../../util/colors";
 import { useState } from "react";
@@ -12,7 +13,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppButton } from "../../../components/AppButton";
-import { AppIcon } from "../../../components/AppIcon";
 import { UiAssetIcon } from "../../../components/UiAssetIcon";
 import { MealFoodEditorDialog } from "../../../components/MealFoodEditorDialog";
 import { formStyles as ui } from "../../../components/formStyles";
@@ -70,60 +70,44 @@ export function MealCheckinView(p: MealCheckinViewProps) {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <View style={styles.header}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={s.common.back}
-            disabled={p.saving}
-            onPress={p.onBack}
-            style={styles.back}
-          >
-            <AppIcon name="back" size={18} />
-          </Pressable>
-          <View style={styles.headerCopy}>
-            <Text style={ui.heading}>{emptyManual ? m.addFoodsTitle : d.step === "complete" ? a.mealCheckinHeader : m.titles[d.step]}</Text>
-            {d.step === "preview" && (
-              <Text style={styles.headerNote}>{m.draftLabel}</Text>
-            )}
-          </View>
-        </View>
-        {p.tryingSuggestion && d.step !== 'complete' && <Pressable
-          accessibilityRole="checkbox" accessibilityState={{ checked: p.tryingSuggestion.checked }}
-          disabled={p.saving} onPress={p.tryingSuggestion.onToggle} style={styles.header}>
-          <Text style={ui.text}>{p.tryingSuggestion.checked ? '☑' : '☐'} {suggestionCopyFor(p.language).trying}</Text>
-        </Pressable>}
-        <View
-          accessibilityRole="progressbar"
-          accessibilityValue={{ min: 1, max: 5, now: segment + 1 }}
-          style={styles.progress}
-        >
-          {[0, 1, 2, 3, 4].map((i) => (
-            <View
-              key={i}
-              style={[
-                styles.segment,
-                d.step === "photo" && styles.photoSegment,
-                i <= segment && styles.activeSegment,
-              ]}
-            />
-          ))}
-        </View>
-        {review && !emptyManual && (
-          <View style={styles.reviewIntro}>
-            <Text style={styles.reviewIntroTitle}>
-              {m.foodCount(d.foods.length)}
-            </Text>
-          </View>
-        )}
+        <AppHeader title={emptyManual ? m.addFoodsTitle : d.step === 'complete' ? a.mealCheckinHeader : m.titles[d.step]} backLabel={s.common.back} onBack={p.onBack} disabled={p.saving} />
         <View style={{ flex: 1 }} pointerEvents={p.saving ? "none" : "auto"}>
           <ScrollView
             contentContainerStyle={[
               styles.content,
-              review && !emptyManual && { paddingTop: 4 },
               d.step === "photo" && styles.photoContent,
             ]}
             keyboardShouldPersistTaps="handled"
           >
+            {d.step === 'preview' && <Text style={styles.headerNote}>{m.draftLabel}</Text>}
+            {p.tryingSuggestion && d.step !== 'complete' && <Pressable
+              accessibilityRole="checkbox" accessibilityState={{ checked: p.tryingSuggestion.checked }}
+              disabled={p.saving} onPress={p.tryingSuggestion.onToggle} style={styles.header}>
+              <Text style={ui.text}>{p.tryingSuggestion.checked ? '☑' : '☐'} {suggestionCopyFor(p.language).trying}</Text>
+            </Pressable>}
+            <View
+              accessibilityRole="progressbar"
+              accessibilityValue={{ min: 1, max: 5, now: segment + 1 }}
+              style={styles.progress}
+            >
+              {[0, 1, 2, 3, 4].map((i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.segment,
+                    d.step === "photo" && styles.photoSegment,
+                    i <= segment && styles.activeSegment,
+                  ]}
+                />
+              ))}
+            </View>
+            {review && !emptyManual && (
+              <View style={styles.reviewIntro}>
+                <Text style={styles.reviewIntroTitle}>
+                  {m.foodCount(d.foods.length)}
+                </Text>
+              </View>
+            )}
             {d.step === "details" && (
               <>
                 <MealDetailsStepView
@@ -280,6 +264,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             meal={m}
             common={s.common}
             {...p.foodInput}
+            ingredientOptions={p.ingredientOptions}
             onChange={p.onChangeFood}
             onSave={p.onSaveFood}
             onCancel={() => p.onUpdate({ editingFood: null })}

@@ -5,7 +5,6 @@
 이 파일에서 정한다. DTO 가 여러 기능에서 재사용되거나 길어지면 dto.py 로 분리한다.
 """
 
-import uuid
 from datetime import datetime
 from typing import Annotated
 
@@ -31,6 +30,7 @@ from app.features.auth.service import (
     EmailAlreadyExistsError,
     InvalidCredentialsError,
     InvalidEmailCodeError,
+    InvalidRefreshTokenError,
     SameEmailError,
 )
 
@@ -99,7 +99,7 @@ class SignUpRequest(BaseModel):
     @field_validator("full_name")
     @classmethod
     def _check_full_name(cls, value: str) -> str:
-        if not _FULL_NAME_MIN_LENGTH <= len(value) <= _FULL_NAME_MAX_LENGTH:
+        if not value.strip() or not _FULL_NAME_MIN_LENGTH <= len(value) <= _FULL_NAME_MAX_LENGTH:
             raise FullNameLengthError(value)
         return value
 
@@ -107,10 +107,15 @@ class SignUpRequest(BaseModel):
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: uuid.UUID
+    id: str
     email: EmailStr
     full_name: str
     created_at: datetime
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def _stringify_id(cls, value: int) -> str:
+        return str(value)
 
 
 class LoginRequest(BaseModel):
@@ -124,13 +129,17 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+
 class UpdateNameRequest(BaseModel):
     full_name: str
 
     @field_validator("full_name")
     @classmethod
     def _check_full_name(cls, value: str) -> str:
-        if not _FULL_NAME_MIN_LENGTH <= len(value) <= _FULL_NAME_MAX_LENGTH:
+        if not value.strip() or not _FULL_NAME_MIN_LENGTH <= len(value) <= _FULL_NAME_MAX_LENGTH:
             raise FullNameLengthError(value)
         return value
 
@@ -200,6 +209,10 @@ LOGIN_ERRORS = {
     InvalidCredentialsError: ErrorSpec(status_code=401, error_code="INVALID_CREDENTIALS"),
 }
 
+REFRESH_ERRORS = {
+    InvalidRefreshTokenError: ErrorSpec(status_code=401, error_code="INVALID_REFRESH_TOKEN"),
+}
+
 UPDATE_NAME_ERRORS = {
     FullNameLengthError: ErrorSpec(
         status_code=422,
@@ -265,6 +278,16 @@ async def login(
         access_token=tokens.access_token,
         refresh_token=tokens.refresh_token,
     )
+
+
+@router.post("/refresh", response_model=TokenResponse, summary="로그인 토큰 재발급")
+@error_specs(REFRESH_ERRORS)
+async def refresh(
+    payload: RefreshRequest,
+    service: Annotated[AuthService, Depends(get_auth_service)],
+) -> TokenResponse:
+    tokens = await service.refresh_tokens(payload.refresh_token)
+    return TokenResponse(access_token=tokens.access_token, refresh_token=tokens.refresh_token)
 
 
 @router.get(

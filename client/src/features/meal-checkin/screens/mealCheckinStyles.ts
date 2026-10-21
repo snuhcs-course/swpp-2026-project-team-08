@@ -1,6 +1,5 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../util/colors';
 import { formStyles as ui } from '../../../components/formStyles';
@@ -15,36 +14,21 @@ export const styles = StyleSheet.create({
   photoRoot: { backgroundColor: colors.mealReviewBackground },
   reviewRoot: { backgroundColor: colors.mealReviewBackground },
   header: {
-    paddingHorizontal: 24,
-    paddingTop: 8,
-    paddingBottom: 10,
+    paddingTop: 0,
+    paddingBottom: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  back: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surface,
-    shadowColor: colors.navy,
-    shadowOpacity: 0.07,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 24,
-    elevation: 2,
-  },
-  headerCopy: { flex: 1 },
   headerNote: { color: colors.homeMuted, fontSize: 10, fontFamily: fonts.poppinsRegular, marginTop: 1 },
-  reviewIntro: { paddingTop: 10, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingBottom: 8, gap: 8 },
+  reviewIntro: { paddingTop: 10, flexDirection: 'row', alignItems: 'center', paddingBottom: 8, gap: 8 },
   reviewIntroTitle: { color: colors.homeText, fontSize: 14, fontFamily: fonts.poppinsSemiBold },
   reviewIntroText: { color: colors.homeMuted, fontSize: 9, fontFamily: fonts.poppinsRegular },
   reviewBadge: { borderRadius: 999, backgroundColor: colors.homeSelected, paddingHorizontal: 8, paddingVertical: 5 },
   reviewBadgeText: { color: colors.homePrimary, fontSize: 8, fontFamily: fonts.poppinsSemiBold },
   confirmHint: { color: colors.homeMuted, fontSize: 9, fontFamily: fonts.poppinsRegular },
   draftNote: { color: colors.homeMuted, fontSize: 9, fontFamily: fonts.poppinsRegular, textAlign: 'center' },
-  progress: { flexDirection: 'row', gap: 6, marginHorizontal: 24 },
+  progress: { flexDirection: 'row', gap: 6 },
   segment: {
     flex: 1,
     height: 4,
@@ -53,7 +37,7 @@ export const styles = StyleSheet.create({
   },
   photoSegment: { backgroundColor: colors.mealReviewBorder },
   activeSegment: { backgroundColor: colors.homePrimary },
-  content: { paddingHorizontal: 24, paddingVertical: 14, gap: 10, flexGrow: 1 },
+  content: { ...topBarStyles.content, paddingBottom: 14, gap: 10, flexGrow: 1 },
   photoContent: { gap: 16 },
   footer: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 16, gap: 10 },
   photo: {

@@ -22,8 +22,12 @@ let cached: AuthSession | null | undefined;
 const record = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value);
 
+export const isUserId = (value: unknown): value is string =>
+  typeof value === 'string' && /^[1-9][0-9]*$/.test(value)
+  && BigInt(value) <= 9223372036854775807n;
+
 function parseUser(value: unknown): AuthUser | null {
-  if (!record(value) || typeof value.id !== 'string' || typeof value.email !== 'string'
+  if (!record(value) || !isUserId(value.id) || typeof value.email !== 'string'
     || typeof value.fullName !== 'string') return null;
   return { id: value.id, email: value.email, fullName: value.fullName };
 }
@@ -113,6 +117,10 @@ export async function readSession(): Promise<AuthSession | null> {
     return cached;
   }
   cached = await migrateLegacySession();
+  if (!cached && (accessToken || refreshToken || await AsyncStorage.getItem(USER_KEY))) {
+    await clearSession();
+    cached = null;
+  }
   return cached;
 }
 

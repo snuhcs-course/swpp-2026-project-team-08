@@ -8,11 +8,14 @@
 from fastapi import APIRouter
 
 from app.features.auth.router import router as auth_router
-from app.features.meal_logs.router import router as meal_logs_router
+from app.features.ingredients.router import router as ingredients_router
+from app.features.meals.router import router as meals_router
+from app.features.onboarding.router import router as onboarding_router
 from app.features.suggestions.router import router as suggestions_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
 api_v1_router.include_router(auth_router)
-api_v1_router.include_router(meal_logs_router)
-
+api_v1_router.include_router(onboarding_router)
+api_v1_router.include_router(ingredients_router)
+api_v1_router.include_router(meals_router)
 api_v1_router.include_router(suggestions_router)

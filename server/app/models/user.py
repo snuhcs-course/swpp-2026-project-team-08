@@ -4,10 +4,9 @@
 ORM 클래스가 도메인 객체를 겸한다. 요청/응답 모양은 각 기능의 router.py(DTO)가 맡는다.
 """
 
-import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, Uuid
+from sqlalchemy import BigInteger, DateTime, Identity, Index, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -16,8 +15,11 @@ from app.core.timezone import now_kst
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = (Index("uq_users_email_lower", text("lower(email)"), unique=True),)
 
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    id: Mapped[int] = mapped_column(
+        BigInteger().with_variant(Integer, "sqlite"), Identity(), primary_key=True
+    )
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(100), nullable=False)

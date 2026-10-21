@@ -1,7 +1,7 @@
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import Constants from 'expo-constants';
-import { readSession } from '../storage/authStorage';
+import { readSession, saveSession, type AuthSession } from '../storage/authStorage';
 
 export class ApiError extends Error {
   status: number;
@@ -40,6 +40,33 @@ export function apiBaseUrl(): string {
   return `http://${host ?? 'localhost'}:8000`;
 }
 
+let refreshInFlight: Promise<AuthSession> | null = null;
+
+async function refreshSession(session: AuthSession): Promise<AuthSession> {
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      const response = await fetch(`${apiBaseUrl()}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: session.refreshToken }),
+      });
+      if (!response.ok) throw new ApiError(response.status, 'UNAUTHENTICATED');
+      const tokens: unknown = await response.json();
+      if (!tokens || typeof tokens !== 'object' || !('access_token' in tokens)
+        || !('refresh_token' in tokens) || typeof tokens.access_token !== 'string'
+        || typeof tokens.refresh_token !== 'string') throw new Error('Invalid refresh response');
+      const current = await readSession();
+      if (!current || current.user.id !== session.user.id || current.refreshToken !== session.refreshToken) {
+        throw new ApiError(401, 'UNAUTHENTICATED');
+      }
+      const next = { ...current, accessToken: tokens.access_token, refreshToken: tokens.refresh_token };
+      await saveSession(next);
+      return next;
+    })().finally(() => { refreshInFlight = null; });
+  }
+  return refreshInFlight;
+}
+
 export async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set('Accept', 'application/json');
@@ -48,11 +75,14 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
   if (session?.accessToken && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${session.accessToken}`);
   }
-  let response: Response;
-  try {
+  let response = await fetch(`${apiBaseUrl()}${path}`, { ...init, headers });
+  if (response.status === 401 && session && path !== '/api/v1/auth/refresh'
+    && path !== '/api/v1/auth/login' && path !== '/api/v1/auth/signup') {
+    const current = await readSession();
+    const renewed = current?.accessToken !== session.accessToken && current
+      ? current : await refreshSession(session);
+    headers.set('Authorization', `Bearer ${renewed.accessToken}`);
     response = await fetch(`${apiBaseUrl()}${path}`, { ...init, headers });
-  } catch (error) {
-    throw error;
   }
   if (response.status === 204) return undefined as T;
   const text = await response.text();

@@ -1,7 +1,7 @@
 // AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 
 import { ApiError, apiRequest } from '../network/apiClient';
-import type { AuthUser } from '../storage/authStorage';
+import { isUserId, type AuthUser } from '../storage/authStorage';
 
 export type AuthFailure = 'invalid-credentials' | 'email-taken' | 'invalid-email-code' | 'network' | 'unknown';
 export type TokenPair = { accessToken: string; refreshToken: string };
@@ -24,7 +24,7 @@ export async function signUpAccount(input: { email: string; password: string; fu
     method: 'POST',
     body: JSON.stringify({ email: input.email, password: input.password, full_name: input.fullName }),
   });
-  if (!record(value) || typeof value.id !== 'string' || typeof value.email !== 'string' || typeof value.full_name !== 'string') {
+  if (!record(value) || !isUserId(value.id) || typeof value.email !== 'string' || typeof value.full_name !== 'string') {
     throw new Error('Invalid signup response');
   }
   return { id: value.id, email: value.email, fullName: value.full_name };
@@ -42,7 +42,7 @@ export async function loginAccount(input: { email: string; password: string }): 
 }
 
 function asUser(value: unknown): AuthUser {
-  if (!record(value) || typeof value.id !== 'string' || typeof value.email !== 'string' || typeof value.full_name !== 'string') {
+  if (!record(value) || !isUserId(value.id) || typeof value.email !== 'string' || typeof value.full_name !== 'string') {
     throw new Error('Invalid user response');
   }
   return { id: value.id, email: value.email, fullName: value.full_name };

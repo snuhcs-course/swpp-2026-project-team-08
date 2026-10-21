@@ -1,28 +1,13 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
 
 export const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.homeBackground },
-  page: { flex: 1, paddingHorizontal: 20, paddingTop: 8 },
+  body: { ...topBarStyles.content },
   content: { paddingBottom: 28, gap: 12 },
-  title: {
-    color: colors.homeText,
-    fontSize: 28,
-    fontFamily: fonts.poppinsBold,
-    marginBottom: 8,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 44,
-    gap: 4,
-    marginBottom: 8,
-  },
-  back: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { color: colors.homeText, fontSize: 22, fontFamily: fonts.poppinsSemiBold },
   sectionLabel: {
     color: colors.homeText,
     fontSize: 12,
@@ -48,7 +33,6 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  avatarImage: { width: 48, height: 48, borderRadius: 24 },
   childCopy: { flex: 1, gap: 2 },
   childName: { color: colors.homeText, fontSize: 16, fontFamily: fonts.poppinsSemiBold },
   childAge: { color: colors.homeMuted, fontSize: 13, fontFamily: fonts.poppinsRegular },
@@ -126,8 +110,6 @@ export const styles = StyleSheet.create({
     marginTop: 10,
   },
   saveLabel: { color: colors.surface, fontSize: 14, fontFamily: fonts.poppinsSemiBold },
-  uploadRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
-  uploadLabel: { flex: 1, color: colors.homePrimary, fontSize: 15, fontFamily: fonts.poppinsSemiBold },
   ageOptions: {
     borderWidth: 1,
     borderColor: colors.homeBorder,
@@ -207,34 +189,4 @@ export const styles = StyleSheet.create({
   dialogSplit: { borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: colors.homeBorder },
   dialogCancel: { color: colors.homePrimary, fontSize: 16, fontFamily: fonts.poppinsSemiBold },
   dialogDanger: { color: colors.error, fontSize: 16, fontFamily: fonts.poppinsSemiBold },
-  photoScrim: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'flex-end',
-    paddingHorizontal: 16,
-    paddingBottom: 28,
-    gap: 10,
-  },
-  photoDismiss: { flex: 1 },
-  photoRow: {
-    minHeight: 64,
-    borderRadius: 18,
-    backgroundColor: colors.surface,
-    paddingHorizontal: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  photoIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: colors.homeSelected,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  photoCopy: { flex: 1, gap: 2 },
-  photoLabel: { color: colors.homeText, fontSize: 15, fontFamily: fonts.poppinsSemiBold },
-  photoHint: { color: colors.homeMuted, fontSize: 12, fontFamily: fonts.poppinsRegular },
-  photoError: { color: colors.error, fontSize: 12, fontFamily: fonts.poppinsRegular, marginTop: 8 },
 });

@@ -16,8 +16,7 @@ export async function readProfile(): Promise<ChildProfile | null> {
     || typeof profile.ageRange !== 'string' || typeof profile.updatedAt !== 'string'
     || !Array.isArray(profile.allergies) || !Array.isArray(profile.restrictions)
     || !Array.isArray(profile.safeFoods)) throw new Error('Invalid profile');
-  const photoUri = typeof profile.photoUri === 'string' ? profile.photoUri : null;
-  return { ...(parsed as ChildProfile), photoUri };
+  return parsed as ChildProfile;
 }
 
 export async function saveProfile(profile: ChildProfile): Promise<void> {

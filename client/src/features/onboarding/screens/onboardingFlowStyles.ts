@@ -1,7 +1,5 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; matched onboarding Figma typography and spacing
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { topBarLayout, topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
@@ -20,10 +18,10 @@ export const styles = StyleSheet.create({
   title: { color: colors.onboardingText, fontSize: 20, fontFamily: fonts.poppinsBold, marginTop: 16, lineHeight: 21.6 },
   sensoryTitle: { color: colors.onboardingText, fontSize: 16, fontFamily: fonts.poppinsBold, marginTop: 5, lineHeight: 17 },
   subtitle: { color: colors.onboardingMuted, fontSize: 13, fontFamily: fonts.poppinsRegular, lineHeight: 18, marginTop: 6 },
-  content: { paddingHorizontal: 22, paddingTop: 10, paddingBottom: 8 },
+  content: { ...topBarStyles.content, paddingBottom: 8 },
   saveExit: { marginTop: 16 },
   retry: { marginTop: 10 },
-  footer: { flexDirection: 'row', gap: 8, paddingHorizontal: 22, paddingTop: 14, paddingBottom: 20, minHeight: 80, alignItems: 'center', backgroundColor: colors.onboardingBackground, borderTopLeftRadius: 20, borderTopRightRadius: 20 },
+  footer: { flexDirection: 'row', gap: 8, paddingHorizontal: topBarLayout.inset, paddingTop: 14, paddingBottom: 20, minHeight: 80, alignItems: 'center', backgroundColor: colors.onboardingBackground, borderTopLeftRadius: 20, borderTopRightRadius: 20 },
   previous: { width: 96, height: 46 },
   next: { flex: 1, height: 46 },
 });

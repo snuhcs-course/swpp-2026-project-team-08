@@ -25,14 +25,20 @@ import {
 } from '../rules';
 
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
-export function useMealCheckin(childId: string, startAfterMealId?: string, freshAfterComplete = false, suggestions: readonly MealSuggestionOption[] = []) {
+export function useMealCheckin(childId: string, startAfterMealId?: string, freshAfterComplete = false, suggestions: readonly MealSuggestionOption[] = [], initialSuggestionId = '') {
   const [draft, setDraft] = useState<MealDraft | null>(null);
   // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
   const [linkStep, setLinkStep] = useState<0 | 1 | 2>(0);
-  const [suggestionId, setSuggestionId] = useState('');
+  const [suggestionId, setSuggestionId] = useState(initialSuggestionId);
   const [targetId, setTargetId] = useState('');
   const resumeLink = useRef(false);
   const selectedSuggestion = suggestions.find((item) => item.id === suggestionId);
+  const canLinkToFood = (suggestion: MealSuggestionOption, food: FoodItem) => {
+    if (suggestion.ingredientId == null) return true;
+    const targetName = suggestion.ingredientName;
+    return !!targetName && food.ingredients.some((name) =>
+      name.toLocaleLowerCase() === targetName.toLocaleLowerCase());
+  };
   useEffect(() => {
     if (!draft?.editingFood && resumeLink.current) {
       resumeLink.current = false;
@@ -174,9 +180,30 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       }
     }
   };
-  const save = async () => {
+  const save = async (linkSuggestionId?: string) => {
     if (!current.current || busy.current) return null;
-    const value = current.current;
+    let value = current.current;
+    if (linkSuggestionId && !(value.suggestionLinks ?? []).some((link) => link.suggestionId === linkSuggestionId)) {
+      const selected = suggestions.find((item) => item.id === linkSuggestionId);
+      if (!selected) {
+        setError('save');
+        return null;
+      }
+      if (value.foods.length !== 1 || !canLinkToFood(selected, value.foods[0])) {
+        setSuggestionId(linkSuggestionId);
+        setLinkStep(2);
+        return null;
+      }
+      value = {
+        ...value,
+        suggestionLinks: [
+          ...(value.suggestionLinks ?? []),
+          { suggestionId: selected.id, foodId: value.foods[0].id, ingredientId: selected.ingredientId,
+            title: selected.title,
+            description: selected.description, servingTip: selected.servingTip },
+        ],
+      };
+    }
     let meal;
     try {
       meal = mealFromDraft(value);
@@ -193,6 +220,9 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       if (mounted.current) {
         const complete: MealDraft = {
           ...value,
+          id: result.id,
+          foods: result.foods,
+          suggestionLinks: result.suggestionLinks,
           step: 'complete',
           savedMealId: result.id,
         };
@@ -252,7 +282,8 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       step: linkStep,
       selectedSuggestion,
       selectedFoodId: targetId,
-      canContinue: !!selectedSuggestion && (linkStep === 1 || !!draft?.foods.some((food) => food.id === targetId)),
+      canContinue: !!selectedSuggestion && (linkStep === 1 || !!draft?.foods.some((food) =>
+        food.id === targetId && canLinkToFood(selectedSuggestion, food))),
       onOpen: () => setLinkStep(1),
       onBack: () => setLinkStep(linkStep === 2 ? 1 : 0),
       onSelectSuggestion: (id) => { setSuggestionId(id); setTargetId(''); },
@@ -261,10 +292,12 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
         const value = current.current;
         if (!value || busy.current || !selectedSuggestion) return;
         if (linkStep === 1) { setLinkStep(2); return; }
-        if (linkStep !== 2 || !value.foods.some((food) => food.id === targetId)) return;
+        if (linkStep !== 2 || !value.foods.some((food) =>
+          food.id === targetId && canLinkToFood(selectedSuggestion, food))) return;
         update({ suggestionLinks: [
           ...(value.suggestionLinks ?? []).filter((link) => link.suggestionId !== selectedSuggestion.id),
-          { suggestionId: selectedSuggestion.id, foodId: targetId, title: selectedSuggestion.title,
+          { suggestionId: selectedSuggestion.id, foodId: targetId,
+            ingredientId: selectedSuggestion.ingredientId, title: selectedSuggestion.title,
             description: selectedSuggestion.description, servingTip: selectedSuggestion.servingTip },
         ] });
         setLinkStep(0);

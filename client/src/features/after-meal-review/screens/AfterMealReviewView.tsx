@@ -1,4 +1,5 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { topBarStyles } from '../../../components/AppHeader';
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -101,7 +102,7 @@ export function AfterMealReviewView(
         <ScrollView
           pointerEvents={p.saving ? "none" : "auto"}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={[styles.content, p.draft.step === "difficulties" && { paddingHorizontal: 18 }]}
+          contentContainerStyle={[styles.content, p.draft.step === "difficulties" && { paddingHorizontal: 24 }]}
         >
           {photoStep && (
             <AfterMealPhotoStepsView
@@ -164,7 +165,7 @@ export function AfterMealReviewView(
         {["outcomes", "difficulties"].includes(
           p.draft.step,
         ) && (
-          <View style={[styles.footer, p.draft.step === "difficulties" && { paddingHorizontal: 18, backgroundColor: colors.difficultyBackground }]}>
+          <View style={[styles.footer, p.draft.step === "difficulties" && { paddingHorizontal: 24, backgroundColor: colors.difficultyBackground }]}>
             {p.draft.step === "outcomes" && (
               <AppButton
                 variant="meal"
@@ -255,8 +256,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.afterMealBackground },
   flex: { flex: 1 },
   content: {
-    paddingHorizontal: 24,
-    paddingTop: 8,
+    ...topBarStyles.content,
     paddingBottom: 26,
     flexGrow: 1,
   },
@@ -277,10 +277,10 @@ const styles = StyleSheet.create({
   statusError: { color: colors.error },
   mealCaption: {
     color: colors.mealReviewMuted,
-    paddingHorizontal: 18,
+    paddingHorizontal: 24,
     paddingBottom: 4,
     fontSize: 9,
     fontFamily: fonts.interMedium,
   },
-  retry: { paddingHorizontal: 18, paddingBottom: 5 },
+  retry: { paddingHorizontal: 24, paddingBottom: 5 },
 });

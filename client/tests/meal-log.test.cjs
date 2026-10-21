@@ -38,9 +38,9 @@ const {
   calendarCells, countsByDate, densityLevel, filterMeals, foodResponseCards,
   isoDate, matchesMealQuery, mealDateParts, mealThumbnail, monthKey, shiftMonth,
   sortMealsLatestFirst,
+  filterMealDetails, foodResponseCardsFromDetail, sortMealDetailsLatestFirst,
 } = require('../src/features/meal-log/rules.ts');
 const { mealToUpsertBody, reviewToBody, suggestionToBody } = require('../src/data/api/mealLogApi.ts');
-const { demoMealCounts, demoMealDetail, demoMealList, mergeDemoMealList } = require('../src/data/api/mealLogFixtures.ts');
 const { applySuggestionSaved } = require('../src/data/storage/homeStorage.ts');
 
 const rice = {
@@ -95,6 +95,45 @@ test('frontend search matches food names or ingredients and can hide reviewed me
   assert.deepEqual(filterMeals([rice, soup], 'rice', false).map((meal) => meal.id), ['food-1']);
   assert.deepEqual(filterMeals([rice, soup], '', true).map((meal) => meal.id), ['food-1']);
   assert.deepEqual(filterMeals([rice, soup], 'soup', true), []);
+});
+
+test('server meal details drive history search, review filter, and linked suggestion cards', () => {
+  const reviewed = {
+    id: '8', userId: '2', mealDate: '2026-10-12', mealType: 'lunch', setting: 'home',
+    beforePhotoUri: null, afterPhotoUri: null, savedAt: '2026-10-12T12:00:00Z',
+    foods: [{ id: '4', mealId: '8', name: 'Rice', cookingMethod: null, servingNote: null,
+      acceptance: null, ingredients: [{ id: '3', name: 'Egg' }] }],
+    review: { foodResults: [{ foodId: '4', outcome: 'tasted', difficulties: [] }],
+      ingredientResults: [{ foodId: '4', ingredientId: '3', outcome: 'eaten', difficulties: [] }] },
+    suggestionLinks: [{ id: '10', suggestionId: '20', mealId: '8', foodId: '4', ingredientId: '3',
+      suggestion: { whatToTry: 'Try egg', whyThisMayHelp: 'Familiar food', servingTip: 'Small piece' } }],
+  };
+  const pending = { ...reviewed, id: '9', review: null, suggestionLinks: [] };
+  assert.deepEqual(sortMealDetailsLatestFirst([reviewed, pending]).map((meal) => meal.id), ['9', '8']);
+  assert.deepEqual(filterMealDetails([reviewed, pending], 'egg', true).map((meal) => meal.id), ['9']);
+  const cards = foodResponseCardsFromDetail(reviewed);
+  assert.deepEqual(cards.map((card) => [card.kind, card.outcome]), [['food', 'tasted'], ['ingredient', 'eaten']]);
+  assert.equal(cards[1].suggestion.title, 'Try egg');
+  assert.equal(cards[1].suggestion.description, 'Familiar food');
+});
+
+test('meal history requests use the authenticated v1 collection and delete route', async () => {
+  const api = require('../src/data/network/apiClient.ts');
+  const { listMealDetails } = require('../src/data/api/mealReadApi.ts');
+  const { deleteMealRecord } = require('../src/data/api/mealHistoryApi.ts');
+  const original = api.apiRequest;
+  const calls = [];
+  api.apiRequest = async (path, init) => {
+    calls.push([path, init?.method ?? 'GET']);
+    return path === '/api/v1/meals' ? [] : undefined;
+  };
+  try {
+    assert.deepEqual(await listMealDetails(), []);
+    await deleteMealRecord('42');
+    assert.deepEqual(calls, [['/api/v1/meals', 'GET'], ['/api/v1/meals/42', 'DELETE']]);
+  } finally {
+    api.apiRequest = original;
+  }
 });
 
 test('food cards join stored outcomes, difficulties, and linked suggestions', () => {
@@ -169,25 +208,6 @@ test('upsert, review, and suggestion bodies use the server field names', () => {
   });
   assert.equal(suggestion.food_id, 'food-1');
   assert.equal(suggestion.serving_tip, 'Keep the form');
-});
-
-test('demo meals vary by day so the calendar can show different densities', () => {
-  const counts = demoMealCounts('2026-10');
-  assert.equal(counts['2026-10-09'], 1);
-  assert.equal(counts['2026-10-12'], 2);
-  assert.equal(counts['2026-10-16'], 2);
-  assert.equal(counts['2026-10-17'], 3);
-  assert.equal(counts['2026-10-21'], 1);
-  assert.equal(counts['2026-10-24'], 3);
-  assert.equal(demoMealList('2026-10-16').map((meal) => meal.mealType).sort().join(','), 'dinner,lunch');
-  assert.equal(demoMealList('2026-10-17').length, 3);
-  const remote = [{ ...rice, id: 'demo-2026-10-16-lunch', mealDate: '2026-10-16' }];
-  assert.equal(mergeDemoMealList(remote, '2026-10-16').length, 2);
-  const dinner = demoMealDetail('child-1', 'demo-2026-10-16-dinner');
-  assert.equal(dinner.suggestions[0].id, 'sug-2026-10-16-dinner');
-  assert.equal(dinner.suggestions[0].foodId, 'food-omelet');
-  assert.equal(dinner.suggestions[0].title, 'Offer a smaller piece beside a familiar food.');
-  assert.equal(dinner.suggestions[0].servingTip, 'Keep the slices thin and serve warm.');
 });
 
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim

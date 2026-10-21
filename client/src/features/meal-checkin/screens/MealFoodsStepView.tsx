@@ -1,13 +1,5 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; place unset acceptance beside its label
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; restore separate saved-suggestion record linking
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match missing-photo card and removal feedback
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; aligned ABC button typography
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
-
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { useState } from "react";
 import { Image } from "expo-image";
 import {
@@ -22,7 +14,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AppButton } from "../../../components/AppButton";
 import { UiAssetIcon } from "../../../components/UiAssetIcon";
 import { displayDate } from "../../../util/date";
-import { AppIcon } from "../../../components/AppIcon";
 import { colors } from "../../../util/colors";
 import { fonts } from "../../../util/fonts";
 import { abcCopyFor, copyFor } from "../../../util/strings";
@@ -242,9 +233,8 @@ export function MealFoodsStepView({ p }: { p: Props }) {
         onRequestClose={p.suggestionLinking.onBack}
       >
         <SafeAreaView style={styles.modal}>
-          <View style={styles.linkHeader}>
-            <Pressable accessibilityRole="button" accessibilityLabel={s.common.back} onPress={p.suggestionLinking.onBack} style={styles.linkBack}><AppIcon name="back" size={18} /></Pressable>
-            <Text style={styles.modalTitle}>{linkStep === 1 ? a.previousSuggestion : a.selectFood}</Text>
+          <AppHeader title={linkStep === 1 ? a.previousSuggestion : a.selectFood} backLabel={s.common.back} onBack={p.suggestionLinking.onBack} />
+          <View style={topBarStyles.details}>
             <Text style={[styles.muted, { fontSize: linkStep === 1 ? 14 : 10 }]}>{p.childName} · {displayDate(d.mealDate, p.language)} · {d.mealType ? m.types[d.mealType] : ""} · {d.setting ? m.settings[d.setting] : ""}</Text>
             <View style={styles.linkProgress}>{[0,1,2,3,4].map(i => <View key={i} style={[styles.linkSegment, i < 4 && { backgroundColor: colors.homePrimary }]} />)}</View>
           </View>
@@ -276,6 +266,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
                   >
                     <View style={styles.linkCardHeading}><Text style={styles.suggestionName}>{item.title}</Text><View style={[styles.linkRadio, item.id === suggestion?.id && styles.linkRadioSelected]}>{item.id === suggestion?.id && <View style={styles.linkRadioDot} />}</View></View>
                     <Text style={styles.suggestionBody}>{item.description}</Text>
+                    {item.ingredientName && <Text style={styles.suggestionDate}>{item.ingredientName}</Text>}
                     {sourceMeal(item) && <Text style={styles.suggestionDate}>{sourceMeal(item)}</Text>}
                   </Pressable>
                 ))
@@ -290,6 +281,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
                   <Text style={styles.suggestionBody}>
                     {suggestion?.description}
                   </Text>
+                  {suggestion?.ingredientName && <Text style={styles.suggestionDate}>{suggestion.ingredientName}</Text>}
                   {suggestion && sourceMeal(suggestion) && <Text style={styles.suggestionDate}>{sourceMeal(suggestion)}</Text>}
                 </View>
                 <Text style={styles.linkSection}>{a.foodList}</Text>
@@ -323,8 +315,6 @@ export function MealFoodsStepView({ p }: { p: Props }) {
 const styles = StyleSheet.create({
   suggestionCard: { padding: 15, borderRadius: 18, gap: 8 },
   suggestionDate: { color: colors.mealReviewMuted, fontSize: 13, fontFamily: fonts.poppinsMedium },
-  linkHeader: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 14, gap: 10 },
-  linkBack: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   linkProgress: { flexDirection: 'row', gap: 6 },
   linkSegment: { flex: 1, height: 4, borderRadius: 999, backgroundColor: colors.mealReviewBorder },
   linkBadges: { flexDirection: 'row', gap: 6 },
@@ -347,11 +337,6 @@ const styles = StyleSheet.create({
   modal: { flex: 1, backgroundColor: colors.mealReviewBackground },
   modalContent: { paddingHorizontal: 24, paddingTop: 0, paddingBottom: 12, gap: 12 },
   modalFooter: { paddingHorizontal: 24, paddingBottom: 16, paddingTop: 8, gap: 8 },
-  modalTitle: {
-    fontSize: 17,
-    color: colors.homeText,
-    fontFamily: fonts.poppinsSemiBold,
-  },
   photoCard: {
     minHeight: 54,
     backgroundColor: colors.surface,

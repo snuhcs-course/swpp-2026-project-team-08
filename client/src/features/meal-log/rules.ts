@@ -2,6 +2,7 @@
 import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { FoodItem } from '../../types/meal';
 import type { FoodResponseCard, MealRecord } from './types';
+import type { MealDetail } from '../../types/mealRecord';
 
 export function monthKey(year: number, monthIndex: number): string {
   return `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
@@ -68,6 +69,58 @@ export function filterMeals(meals: MealRecord[], query: string, unreviewedOnly: 
     if (unreviewedOnly && meal.reviewStatus !== 'awaiting_review') return false;
     return matchesMealQuery(meal, query);
   });
+}
+
+export function sortMealDetailsLatestFirst(meals: MealDetail[]): MealDetail[] {
+  return [...meals].sort((a, b) => {
+    const byDate = b.mealDate.localeCompare(a.mealDate);
+    if (byDate) return byDate;
+    const aId = BigInt(a.id);
+    const bId = BigInt(b.id);
+    return bId > aId ? 1 : bId < aId ? -1 : 0;
+  });
+}
+
+export function filterMealDetails(meals: MealDetail[], query: string, unreviewedOnly: boolean): MealDetail[] {
+  const needle = query.trim().toLocaleLowerCase();
+  return meals.filter((meal) => (!unreviewedOnly || meal.review === null)
+    && (!needle || meal.foods.some((food) => food.name.toLocaleLowerCase().includes(needle)
+      || food.ingredients.some((ingredient) => ingredient.name.toLocaleLowerCase().includes(needle)))));
+}
+
+export function foodResponseCardsFromDetail(meal: MealDetail): FoodResponseCard[] {
+  const cards: FoodResponseCard[] = [];
+  for (const food of meal.foods) {
+    const result = meal.review?.foodResults.find((item) => item.foodId === food.id);
+    const link = meal.suggestionLinks.find((item) => item.foodId === food.id && item.ingredientId === null);
+    cards.push({
+      foodId: food.id, kind: 'food', parentName: null, name: food.name,
+      ingredients: food.ingredients.map((ingredient) => ingredient.name),
+      preparation: food.cookingMethod ?? '', servingNote: food.servingNote ?? '',
+      outcome: result?.outcome ?? null,
+      reasons: (result?.difficulties ?? []).map((item) => ({ category: item.category, value: item.value })),
+      suggestion: link ? { id: link.suggestionId, title: link.suggestion.whatToTry,
+        description: link.suggestion.whyThisMayHelp, servingTip: link.suggestion.servingTip } : null,
+    });
+    for (const ingredient of food.ingredients) {
+      const ingredientResult = meal.review?.ingredientResults.find((item) => item.foodId === food.id
+        && item.ingredientId === ingredient.id);
+      const ingredientLink = meal.suggestionLinks.find((item) => item.foodId === food.id
+        && item.ingredientId === ingredient.id);
+      if (!ingredientResult && !ingredientLink) continue;
+      cards.push({
+        foodId: `${food.id}:${ingredient.id}`, kind: 'ingredient', parentName: food.name,
+        name: ingredient.name, ingredients: [], preparation: '', servingNote: '',
+        outcome: ingredientResult?.outcome ?? null,
+        reasons: (ingredientResult?.difficulties ?? []).map((item) => ({ category: item.category, value: item.value })),
+        suggestion: ingredientLink ? { id: ingredientLink.suggestionId,
+          title: ingredientLink.suggestion.whatToTry,
+          description: ingredientLink.suggestion.whyThisMayHelp,
+          servingTip: ingredientLink.suggestion.servingTip } : null,
+      });
+    }
+  }
+  return cards;
 }
 
 export function countsByDate(days: { date: string; count: number }[]): Record<string, number> {

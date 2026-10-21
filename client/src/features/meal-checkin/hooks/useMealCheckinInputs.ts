@@ -55,6 +55,12 @@ export function useMealCheckinInputs({
     }
     setIngredient('');
   };
+  const selectIngredient = (name: string) => {
+    if (draft?.editingFood && !draft.editingFood.ingredients.includes(name)) {
+      onChangeFood({ ingredients: [...draft.editingFood.ingredients, name] });
+    }
+    setIngredient('');
+  };
   const removeIngredient = (value: string) => {
     if (!draft?.editingFood) return;
     onChangeFood({ ingredients: draft.editingFood.ingredients.filter((item) => item !== value) });
@@ -75,6 +81,7 @@ export function useMealCheckinInputs({
       ingredient,
       onIngredientChange: setIngredient,
       onAddIngredient: addIngredient,
+      onSelectIngredient: selectIngredient,
       onRemoveIngredient: removeIngredient,
     },
   };

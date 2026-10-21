@@ -32,6 +32,5 @@ export type ChildProfile = {
   familiarity: string;
   safeFoods: SafeFood[];
   noSafeFoods: boolean;
-  photoUri?: string | null;
   updatedAt: string;
 };

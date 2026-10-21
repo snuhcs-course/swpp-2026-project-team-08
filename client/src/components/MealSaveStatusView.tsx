@@ -1,9 +1,9 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader, topBarStyles } from './AppHeader';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MealSavedPanel } from './MealSavedPanel';
 import { AppButton } from './AppButton';
-import { AppIcon } from './AppIcon';
 import { abcCopyFor, copyFor } from '../util/strings';
 import { colors } from '../util/colors';
 import { fonts } from '../util/fonts';
@@ -18,8 +18,8 @@ export function MealSaveStatusView({ status, review = false, language, photos, m
 }) {
   const s=copyFor(language), a=abcCopyFor(language), failed=status==='error';
   return <SafeAreaView style={styles.root} edges={['top','bottom']}>
-    <View style={styles.header}>
-      <View style={styles.navigation}><Pressable accessibilityRole="button" accessibilityLabel={s.common.back} onPress={onReturn} style={styles.back}><AppIcon name="back" size={18} /></Pressable><Text style={styles.headerTitle}>{review?a.reviewSavedHeader:a.saveCheckinHeader}</Text></View>
+    <AppHeader title={review ? a.reviewSavedHeader : a.saveCheckinHeader} backLabel={s.common.back} onBack={onReturn} />
+    <View style={topBarStyles.details}>
       <View style={styles.progress}>{[0,1,2,3,4].map(i=><View key={i} style={styles.segment}/>)}</View>
     </View>
     <ScrollView contentContainerStyle={styles.content}>
@@ -34,12 +34,9 @@ export function MealSaveStatusView({ status, review = false, language, photos, m
   </SafeAreaView>;
 }
 const styles=StyleSheet.create({
-  root:{flex:1,backgroundColor:colors.afterMealBackground},
-  header:{paddingHorizontal:24,paddingTop:8,gap:12},navigation:{flexDirection:'row',alignItems:'center',gap:12},
-  back:{width:36,height:36,borderRadius:18,backgroundColor:colors.surface,alignItems:'center',justifyContent:'center'},
-  headerTitle:{fontSize:17,fontFamily:fonts.poppinsSemiBold,color:colors.homeText},progress:{flexDirection:'row',gap:6},
+  root:{flex:1,backgroundColor:colors.afterMealBackground},progress:{flexDirection:'row',gap:6},
   segment:{height:4,flex:1,borderRadius:999,backgroundColor:colors.homePrimary},
-  content:{paddingHorizontal:24,paddingTop:14,paddingBottom:16,flexGrow:1},
+  content:{...topBarStyles.content,paddingBottom:16,flexGrow:1},
   button:{minHeight:48},buttonText:{fontSize:16},savingButton:{opacity:1,backgroundColor:colors.editorDisabled},savingText:{color:colors.mealReviewMuted,opacity:1},
   textButton:{borderWidth:0,backgroundColor:colors.transparent},kept:{textAlign:'center',fontSize:11,lineHeight:16,fontFamily:fonts.poppinsRegular,color:colors.mealReviewMuted,marginBottom:4},
 });

@@ -49,7 +49,7 @@ export function FoodResponseCard({
             <Feather name="chevron-down" size={16} color={colors.homeMuted} />
             <Text style={styles.suggestionTitle}>{card.name}</Text>
           </View>
-          <Pressable
+          {onToggleSaved && <Pressable
             accessibilityRole="button"
             accessibilityLabel={isSaved ? m.unsaveSuggestion : m.saveSuggestion}
             accessibilityState={{ selected: isSaved }}
@@ -66,7 +66,7 @@ export function FoodResponseCard({
               size={22}
               color={isSaved ? colors.bookmarkSaved : colors.homePrimary}
             />
-          </Pressable>
+          </Pressable>}
         </View>
         <View style={styles.suggestionBlock}>
           <Text style={styles.suggestionLabel}>{m.whatToTry}</Text>

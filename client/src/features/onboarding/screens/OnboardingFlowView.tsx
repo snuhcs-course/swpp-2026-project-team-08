@@ -1,7 +1,5 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; matched onboarding Figma typography and spacing
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -44,7 +42,8 @@ export function OnboardingFlowView({
   return (
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.header}>
+        <AppHeader title={title} />
+        <View style={topBarStyles.details}>
           <View style={styles.progressRow}>
             <Text style={styles.progressText}>{s.onboarding.progress(designStepNumber[step], 18)}</Text>
             <View style={styles.headerRight}>
@@ -56,9 +55,7 @@ export function OnboardingFlowView({
               </Text>
             </View>
           </View>
-          {sensory && <Text style={styles.sensoryTitle}>{title}</Text>}
           <View style={styles.track}><View style={[styles.fill, { width: `${(designStepNumber[step] / 18) * 100}%` }]} /></View>
-          {!sensory && <Text style={styles.title}>{title}</Text>}
           {!sensory && <Text style={styles.subtitle}>{step === "safe-foods" ? s.onboarding.safeFoodsDescription(childName || s.onboarding.childFallback) : s.onboarding.subtitles[step]}</Text>}
         </View>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>

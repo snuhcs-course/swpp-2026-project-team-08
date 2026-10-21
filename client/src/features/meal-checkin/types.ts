@@ -5,6 +5,8 @@ export type MealSuggestionOption = {
   title: string;
   description: string;
   servingTip?: string;
+  ingredientId?: string | null;
+  ingredientName?: string;
   mealDate?: string;
   mealType?: string;
 };

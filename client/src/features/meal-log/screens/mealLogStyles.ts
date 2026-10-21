@@ -1,26 +1,12 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
 
 export const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.surface },
-  content: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 28, gap: 12 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 44,
-    marginBottom: 4,
-  },
-  headerSide: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    color: colors.homeText,
-    fontSize: 17,
-    fontFamily: fonts.poppinsSemiBold,
-  },
+  content: { ...topBarStyles.content, paddingBottom: 28, gap: 12 },
   sectionLabel: { color: colors.homeText, fontSize: 16, fontFamily: fonts.poppinsSemiBold },
   continueBlock: { gap: 8 },
   continueCard: {
@@ -67,21 +53,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 12,
     gap: 8,
   },
-  monthRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 },
-  monthPickers: { flex: 1, flexDirection: 'row', gap: 8 },
-  picker: {
-    flex: 1,
-    minHeight: 36,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.homeBorder,
-    backgroundColor: colors.surface,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-  },
-  pickerLabel: { color: colors.homeText, fontSize: 14, fontFamily: fonts.poppinsMedium },
+  monthRow: { zIndex: 20, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 },
   nav: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
   weekRow: { flexDirection: 'row', paddingHorizontal: 2 },
   weekLabel: { flex: 1, textAlign: 'center', color: colors.homeMuted, fontSize: 11, fontFamily: fonts.poppinsRegular },
@@ -106,24 +78,6 @@ export const styles = StyleSheet.create({
   dayText: { color: colors.homeText, fontSize: 13, fontFamily: fonts.poppinsMedium },
   dayMuted: { color: '#C5CDD8' },
   dayOnDark: { color: colors.surface },
-  pickerSheet: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'flex-end',
-  },
-  pickerCard: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 28,
-    maxHeight: '50%',
-    gap: 8,
-  },
-  pickerOption: { paddingVertical: 12 },
-  pickerOptionText: { color: colors.homeText, fontSize: 16, fontFamily: fonts.poppinsMedium },
-  pickerOptionOn: { color: colors.homePrimary, fontFamily: fonts.poppinsSemiBold },
   search: {
     flexDirection: 'row',
     alignItems: 'center',

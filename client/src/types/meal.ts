@@ -17,6 +17,7 @@ export type PhotoSource = 'camera' | 'gallery' | 'files';
 export type MealSuggestionLink = {
   suggestionId: string;
   foodId: string;
+  ingredientId?: string | null;
   title: string;
   description: string;
   servingTip?: string;

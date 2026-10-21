@@ -13,7 +13,9 @@ export function useSuggestion(profile: ChildProfile, id: string, mealId?: string
   const item = query.data && meals.data
     ? visibleHomeData(query.data, profile, meals.data).suggestions.find((suggestion) => suggestion.id === id)
     : undefined;
-  const fromMeal = linked.data?.suggestions.find((suggestion) => suggestion.id === id);
+  const link = linked.data?.suggestionLinks.find((suggestion) => suggestion.suggestionId === id);
+  const fromMeal = link && { title: link.suggestion.whatToTry,
+    description: link.suggestion.whyThisMayHelp, servingTip: link.suggestion.servingTip };
   return {
     item,
     linked: fromMeal ?? null,

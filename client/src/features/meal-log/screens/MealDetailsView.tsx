@@ -1,5 +1,5 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+import { AppHeader } from '../../../components/AppHeader';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useState } from 'react';
@@ -25,12 +25,8 @@ type Props = {
   error: boolean;
   deleting: boolean;
   deleteError: boolean;
-  suggestionSaveError?: boolean;
-  savingSuggestion?: boolean;
-  savedSuggestionIds: string[];
   onBack: () => void;
   onContinueReview: () => void;
-  onToggleSaved: (card: Card, saved: boolean) => void;
   onRetry: () => void;
   onDelete: () => void;
 };
@@ -56,15 +52,11 @@ export function MealDetailsView(p: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   return (
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <Pressable accessibilityRole="button" accessibilityLabel={s.common.back} onPress={p.onBack} style={styles.iconButton}>
-          <Feather name="chevron-left" size={22} color={colors.homeText} />
-        </Pressable>
-        <Text accessibilityRole="header" style={styles.headerTitle}>{m.mealDetails}</Text>
+      <AppHeader title={m.mealDetails} backLabel={s.common.back} onBack={p.onBack} accessory={
         <Pressable accessibilityRole="button" accessibilityLabel={m.more} onPress={() => setMenuOpen(true)} style={styles.iconButton}>
           <Feather name="more-vertical" size={18} color={colors.homeText} />
         </Pressable>
-      </View>
+      } />
       {p.loading ? (
         <View style={styles.state}>
           <ActivityIndicator color={colors.homePrimary} />
@@ -95,16 +87,12 @@ export function MealDetailsView(p: Props) {
             <PhotoTile uri={p.afterUri} label={m.afterImage} />
           </View>
           <Text style={styles.foodsLabel}>{m.foodsAndResponses}</Text>
-          {p.suggestionSaveError && <Text accessibilityRole="alert" style={styles.deleteBody}>{s.common.saveFailed}</Text>}
           {p.cards.map((card, index) => (
             <FoodResponseCard
               key={card.foodId}
               card={card}
               language={p.language}
-              disabled={p.savingSuggestion}
               defaultOpen={index === 0}
-              saved={!!card.suggestion && p.savedSuggestionIds.includes(card.suggestion.id)}
-              onToggleSaved={card.suggestion ? (saved) => p.onToggleSaved(card, saved) : undefined}
             />
           ))}
         </ScrollView>

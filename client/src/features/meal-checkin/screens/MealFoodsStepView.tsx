@@ -266,6 +266,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
                   >
                     <View style={styles.linkCardHeading}><Text style={styles.suggestionName}>{item.title}</Text><View style={[styles.linkRadio, item.id === suggestion?.id && styles.linkRadioSelected]}>{item.id === suggestion?.id && <View style={styles.linkRadioDot} />}</View></View>
                     <Text style={styles.suggestionBody}>{item.description}</Text>
+                    {item.ingredientName && <Text style={styles.suggestionDate}>{item.ingredientName}</Text>}
                     {sourceMeal(item) && <Text style={styles.suggestionDate}>{sourceMeal(item)}</Text>}
                   </Pressable>
                 ))
@@ -280,6 +281,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
                   <Text style={styles.suggestionBody}>
                     {suggestion?.description}
                   </Text>
+                  {suggestion?.ingredientName && <Text style={styles.suggestionDate}>{suggestion.ingredientName}</Text>}
                   {suggestion && sourceMeal(suggestion) && <Text style={styles.suggestionDate}>{sourceMeal(suggestion)}</Text>}
                 </View>
                 <Text style={styles.linkSection}>{a.foodList}</Text>

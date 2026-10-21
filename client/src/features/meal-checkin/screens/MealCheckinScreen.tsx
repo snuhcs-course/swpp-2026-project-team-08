@@ -30,9 +30,9 @@ export function MealCheckinScreen({
   tryingSuggestionId?: string;
 }) {
   const profile = useProfile().profile;
-  const saved = useMealSuggestions(childId, profile);
+  const saved = useMealSuggestions(childId);
   // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
-  const model = useMealCheckin(childId, startAfterMealId, !!tryingSuggestionId, saved.suggestions);
+  const model = useMealCheckin(childId, startAfterMealId, !!tryingSuggestionId, saved.suggestions, tryingSuggestionId);
   const [trying, setTrying] = useState(true);
   const [languageError, setLanguageError] = useState(false);
   const inputs = useMealCheckinInputs({
@@ -64,11 +64,9 @@ export function MealCheckinScreen({
   const afterMeal = (mealId: string) =>
     router.replace({ pathname: '/after-meal-review', params: { mealId } });
   const saveCheckin = () => {
-    void model.save().then((id) => {
+    void model.save(trying ? tryingSuggestionId : undefined).then((id) => {
       if (!id) return;
-      if (trying && tryingSuggestionId) {
-        router.replace({ pathname: '/suggestion/[id]', params: { id: tryingSuggestionId, tryMealId: id } });
-      } else if (afterMealIntent) afterMeal(id);
+      if (afterMealIntent) afterMeal(id);
     });
   };
   if (!model.draft)
@@ -117,6 +115,7 @@ export function MealCheckinScreen({
       removedName={model.removed?.food.name}
       onUndoRemove={model.undoRemove}
       suggestions={saved.suggestions}
+      ingredientOptions={saved.ingredientOptions}
       suggestionLinking={model.suggestionLinking}
       suggestionsLoading={saved.loading}
       suggestionsError={saved.error}

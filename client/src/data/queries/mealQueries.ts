@@ -3,10 +3,12 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { upsertMeal } from '../api/mealLogApi';
+import { writeMeal } from '../api/mealWriteApi';
 import { readMeal, readMealDraft, readMeals, saveMeal, updateMealFoods } from '../storage/mealStorage';
 import type { FoodItem } from '../../types/meal';
 import { homeKeys } from './homeQueries';
 import { mealKeys, mealLogKeys } from './mealQueryKeys';
+import { checkinReferenceKeys } from './checkinReferenceQueries';
 
 export { mealKeys } from './mealQueryKeys';
 
@@ -48,8 +50,8 @@ export function useSaveMeal() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: async (meal: Parameters<typeof saveMeal>[0]) => {
-      const saved = await saveMeal(meal);
-      await upsertMeal(saved);
+      const saved = await writeMeal(meal);
+      await saveMeal(saved);
       return saved;
     },
     retry: false,
@@ -61,6 +63,7 @@ export function useSaveMeal() {
       });
       void client.invalidateQueries({ queryKey: mealKeys.draft(meal.childId) });
       void client.invalidateQueries({ queryKey: mealLogKeys.all(meal.childId) });
+      void client.invalidateQueries({ queryKey: checkinReferenceKeys.meals(meal.childId) });
     },
   });
 }

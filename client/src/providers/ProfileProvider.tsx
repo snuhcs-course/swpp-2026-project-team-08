@@ -4,6 +4,7 @@ import { getLocales } from 'expo-localization';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { fromOnboardingResponse, readOnboarding, writeOnboarding } from '../data/api/onboardingApi';
 import { readLanguage, saveLanguage } from '../data/storage/languageStorage';
+import { ApiError } from '../data/network/apiClient';
 import { clearProfile, saveProfile } from '../data/storage/profileStorage';
 import type { ChildProfile, Language } from '../types/profile';
 import { useAuth } from './AuthProvider';
@@ -26,6 +27,7 @@ function deviceLanguage(): Language {
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const auth = useAuth();
+  const { signOut } = auth;
   const user = auth.session?.user ?? null;
   const userId = user?.id ?? null;
   const [loadedStatus, setLoadedStatus] = useState<ProfileContextValue['status']>('loading');
@@ -58,13 +60,17 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       setLoadedUserId(user.id);
       setLoadedStatus('ready');
       if (next) void saveProfile(next).catch(() => undefined);
-    } catch {
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        await signOut();
+        return;
+      }
       if (mounted.current && sequence === loadSequence.current) {
         setLoadedUserId(userId);
         setLoadedStatus('error');
       }
     }
-  }, [auth.status, user, userId]);
+  }, [auth.status, signOut, user, userId]);
   const retryLoad = useCallback(() => {
     return load();
   }, [load]);

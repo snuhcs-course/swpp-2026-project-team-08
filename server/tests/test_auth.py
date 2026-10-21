@@ -400,3 +400,30 @@ async def test_delete_me_removes_user_and_owned_meals_and_suggestions(client: As
         json={"email": SIGNUP_PAYLOAD["email"], "password": SIGNUP_PAYLOAD["password"]},
     )
     assert login.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_refresh_issues_new_access_token(client: AsyncClient) -> None:
+    tokens = await _sign_up_and_login(client)
+    response = await client.post(
+        "/api/v1/auth/refresh", json={"refresh_token": tokens["refresh_token"]}
+    )
+    assert response.status_code == 200
+    renewed = response.json()
+    assert renewed["token_type"] == "bearer"
+    assert decode_token(renewed["access_token"])["type"] == "access"
+    assert decode_token(renewed["refresh_token"])["type"] == "refresh"
+    me = await client.get(
+        "/api/v1/auth/me", headers={"Authorization": f"Bearer {renewed['access_token']}"}
+    )
+    assert me.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_refresh_rejects_access_token(client: AsyncClient) -> None:
+    tokens = await _sign_up_and_login(client)
+    response = await client.post(
+        "/api/v1/auth/refresh", json={"refresh_token": tokens["access_token"]}
+    )
+    assert response.status_code == 401
+    assert response.json()["error_code"] == "INVALID_REFRESH_TOKEN"

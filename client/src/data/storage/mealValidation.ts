@@ -46,7 +46,7 @@ export function isDraft(v: unknown, childId: string): v is MealDraft {
     v.foods.every(isFood) &&
     new Set(v.foods.map((food) => food.id)).size === v.foods.length &&
     (v.editingFood === null || isFood(v.editingFood)) &&
-    (v.suggestionLinks === undefined || (Array.isArray(v.suggestionLinks) && v.suggestionLinks.every((link) => record(link) && typeof link.suggestionId === 'string' && typeof link.foodId === 'string' && typeof link.title === 'string' && typeof link.description === 'string' && (link.servingTip === undefined || typeof link.servingTip === 'string') && v.foods instanceof Array && v.foods.some((food: FoodItem) => food.id === link.foodId)) && new Set(v.suggestionLinks.map((link) => link.suggestionId)).size === v.suggestionLinks.length)) &&
+    (v.suggestionLinks === undefined || (Array.isArray(v.suggestionLinks) && v.suggestionLinks.every((link) => record(link) && typeof link.suggestionId === 'string' && typeof link.foodId === 'string' && (link.ingredientId === undefined || link.ingredientId === null || typeof link.ingredientId === 'string') && typeof link.title === 'string' && typeof link.description === 'string' && (link.servingTip === undefined || typeof link.servingTip === 'string') && v.foods instanceof Array && v.foods.some((food: FoodItem) => food.id === link.foodId)) && new Set(v.suggestionLinks.map((link) => link.suggestionId)).size === v.suggestionLinks.length)) &&
     (v.savedMealId === null || v.savedMealId === v.id)
   );
 }

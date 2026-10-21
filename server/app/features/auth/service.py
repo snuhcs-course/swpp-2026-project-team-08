@@ -7,9 +7,11 @@ features/auth/security.py 를 사용한다. HTTP 와 DTO 는 모른다: 실패�
 트랜잭션 커밋은 세션 의존성(get_session)이 담당하므로 여기서는 flush 까지만 한다.
 """
 
+import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
+import jwt
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,6 +22,7 @@ from app.features.auth.queries import delete_user_owned_rows
 from app.features.auth.security import (
     create_access_token,
     create_refresh_token,
+    decode_token,
     hash_password,
     verify_password,
 )
@@ -48,6 +51,10 @@ class EmailAlreadyExistsError(AppError):
 
 class InvalidCredentialsError(AppError):
     """이메일 또는 비밀번호가 올바르지 않다 (둘 중 무엇이 틀렸는지는 구분하지 않는다)."""
+
+
+class InvalidRefreshTokenError(AppError):
+    """재발급 토큰이 만료되었거나 올바르지 않다."""
 
 
 class SameEmailError(AppError):
@@ -96,6 +103,23 @@ class AuthService:
             raise InvalidCredentialsError()
 
         subject = str(user.id)
+        return TokenPair(
+            access_token=create_access_token(subject),
+            refresh_token=create_refresh_token(subject),
+        )
+
+    async def refresh_tokens(self, refresh_token: str) -> TokenPair:
+        try:
+            payload = decode_token(refresh_token)
+            subject = payload["sub"]
+            if payload.get("type") != "refresh" or not isinstance(subject, str):
+                raise ValueError()
+            if re.fullmatch(r"[1-9][0-9]*", subject) is None or int(subject) > 2**63 - 1:
+                raise ValueError()
+        except (jwt.PyJWTError, KeyError, ValueError):
+            raise InvalidRefreshTokenError() from None
+        if await self._session.get(User, int(subject)) is None:
+            raise InvalidRefreshTokenError()
         return TokenPair(
             access_token=create_access_token(subject),
             refresh_token=create_refresh_token(subject),

@@ -685,6 +685,7 @@ Food는 수정 가능, Meal 정보는 수정 불가능. 따라서 Food Snapshot�
 |---|---|---|---|
 | `POST /api/v1/auth/signup` | `SignUpRequest` | `201`, `UserResponse` | 불필요 |
 | `POST /api/v1/auth/login` | `LoginRequest` | `200`, `TokenResponse` | 불필요 |
+| `POST /api/v1/auth/refresh` | `RefreshRequest` | `200`, `TokenResponse` | 요청 본문의 refresh token |
 | `GET /api/v1/auth/me` | 본문 없음 | `200`, `UserResponse` | Bearer 토큰 |
 | `GET /api/v1/onboarding` | 본문 없음 | `200`, `OnboardingResponse` | Bearer 토큰; 본인 데이터 |
 | `PUT /api/v1/onboarding` | `OnboardingWriteRequest` | `200`, `OnboardingResponse` | Bearer 토큰; 본인 데이터 |
@@ -722,6 +723,13 @@ Food는 수정 가능, Meal 정보는 수정 불가능. 따라서 Food Snapshot�
 
 - 응답
   - `TokenResponse`: `{ access_token: string, refresh_token: string, token_type: "bearer" }`. 이후 인증이 필요한 API에는 access token을 Bearer 토큰으로 보낸다.
+
+#### `POST /api/v1/auth/refresh`
+
+- 요청
+  - `RefreshRequest`: `{ refresh_token: string }`.
+- 응답
+  - 로그인 응답과 같은 `TokenResponse`. 만료되거나 올바르지 않은 refresh token은 `401 INVALID_REFRESH_TOKEN`을 반환한다.
 
 #### `GET /api/v1/auth/me`
 

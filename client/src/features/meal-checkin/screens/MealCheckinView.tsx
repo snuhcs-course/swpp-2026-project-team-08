@@ -264,6 +264,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             meal={m}
             common={s.common}
             {...p.foodInput}
+            ingredientOptions={p.ingredientOptions}
             onChange={p.onChangeFood}
             onSave={p.onSaveFood}
             onCancel={() => p.onUpdate({ editingFood: null })}

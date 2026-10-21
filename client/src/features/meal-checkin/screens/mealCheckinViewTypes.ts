@@ -18,6 +18,7 @@ type FoodInput = {
   ingredient: string;
   onIngredientChange: (value: string) => void;
   onAddIngredient: () => void;
+  onSelectIngredient: (name: string) => void;
   onRemoveIngredient: (value: string) => void;
 };
 
@@ -29,6 +30,7 @@ export type MealCheckinViewProps = {
   onUndoRemove: () => void;
   // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
   suggestions: MealSuggestionOption[];
+  ingredientOptions: string[];
   suggestionLinking: MealSuggestionLinking;
   suggestionsLoading: boolean;
   suggestionsError: boolean;

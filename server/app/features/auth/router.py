@@ -30,6 +30,7 @@ from app.features.auth.service import (
     EmailAlreadyExistsError,
     InvalidCredentialsError,
     InvalidEmailCodeError,
+    InvalidRefreshTokenError,
     SameEmailError,
 )
 
@@ -128,6 +129,10 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+
 class UpdateNameRequest(BaseModel):
     full_name: str
 
@@ -204,6 +209,10 @@ LOGIN_ERRORS = {
     InvalidCredentialsError: ErrorSpec(status_code=401, error_code="INVALID_CREDENTIALS"),
 }
 
+REFRESH_ERRORS = {
+    InvalidRefreshTokenError: ErrorSpec(status_code=401, error_code="INVALID_REFRESH_TOKEN"),
+}
+
 UPDATE_NAME_ERRORS = {
     FullNameLengthError: ErrorSpec(
         status_code=422,
@@ -269,6 +278,16 @@ async def login(
         access_token=tokens.access_token,
         refresh_token=tokens.refresh_token,
     )
+
+
+@router.post("/refresh", response_model=TokenResponse, summary="로그인 토큰 재발급")
+@error_specs(REFRESH_ERRORS)
+async def refresh(
+    payload: RefreshRequest,
+    service: Annotated[AuthService, Depends(get_auth_service)],
+) -> TokenResponse:
+    tokens = await service.refresh_tokens(payload.refresh_token)
+    return TokenResponse(access_token=tokens.access_token, refresh_token=tokens.refresh_token)
 
 
 @router.get(

@@ -98,7 +98,7 @@ class SignUpRequest(BaseModel):
     @field_validator("full_name")
     @classmethod
     def _check_full_name(cls, value: str) -> str:
-        if not _FULL_NAME_MIN_LENGTH <= len(value) <= _FULL_NAME_MAX_LENGTH:
+        if not value.strip() or not _FULL_NAME_MIN_LENGTH <= len(value) <= _FULL_NAME_MAX_LENGTH:
             raise FullNameLengthError(value)
         return value
 
@@ -134,7 +134,7 @@ class UpdateNameRequest(BaseModel):
     @field_validator("full_name")
     @classmethod
     def _check_full_name(cls, value: str) -> str:
-        if not _FULL_NAME_MIN_LENGTH <= len(value) <= _FULL_NAME_MAX_LENGTH:
+        if not value.strip() or not _FULL_NAME_MIN_LENGTH <= len(value) <= _FULL_NAME_MAX_LENGTH:
             raise FullNameLengthError(value)
         return value
 

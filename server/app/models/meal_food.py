@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class MealFood(Base):
-    __tablename__ = "meal_foods"
+    __tablename__ = "legacy_meal_foods"
 
     id: Mapped[str] = mapped_column(String(80), primary_key=True)
     meal_id: Mapped[str] = mapped_column(

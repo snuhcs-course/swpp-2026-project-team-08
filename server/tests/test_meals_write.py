@@ -12,7 +12,7 @@ from sqlalchemy import create_engine, select, text
 
 from app.core.database import get_session
 from app.main import app
-from app.models import Ingredient, Meal, MealFoodIngredient, Suggestion, SuggestionMealLink
+from app.models import Ingredient, Meal, MealFoodIngredient, SuggestionMealLink, UserSuggestion
 
 
 def test_meal_migration_keeps_legacy_food_rows() -> None:
@@ -149,21 +149,25 @@ async def test_write_meal_links_saved_suggestion_to_selected_ingredient(
     headers = await auth_headers(client, "meal@example.com")
     async for session in app.dependency_overrides[get_session]():
         session.add(
-            Suggestion(
-                id="301",
-                child_id="1",
-                batch_id="batch-1",
-                meal_id="old-meal",
-                food_id="old-food",
-                revision="first",
-                content={},
+            UserSuggestion(
+                id=301,
+                user_id=1,
+                meal_id=1,
+                food_id=1,
+                food_snapshot={},
+                what_to_try="감자 조리법 바꾸기",
+                why_this_may_help="새로운 식감 제공",
                 status="saved",
                 saved_at=datetime.now(UTC),
             )
         )
     payload = meal_payload(ingredient_id="999")
     payload["suggestion_links"] = [
-        {"suggestion_id": "301", "food_id": "1", "ingredient_id": "212"}
+        {
+            "suggestion_id": "301",
+            "food_id": "1",
+            "ingredient_id": "212",
+        }
     ]
     response = await client.put("/api/v1/meals", headers=headers, json=payload)
     assert response.status_code == 200, response.text
@@ -171,5 +175,5 @@ async def test_write_meal_links_saved_suggestion_to_selected_ingredient(
         links = (await session.scalars(select(SuggestionMealLink))).all()
         assert len(links) == 1
         assert links[0].meal_id == int(response.json()["id"])
-        assert links[0].suggestion_id == "301"
+        assert links[0].suggestion_id == 301
         assert links[0].ingredient_id == 212

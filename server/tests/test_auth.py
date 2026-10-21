@@ -86,9 +86,7 @@ async def test_signup_empty_full_name_rejected(client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_signup_whitespace_full_name_rejected(client: AsyncClient) -> None:
-    response = await client.post(
-        "/api/v1/auth/signup", json={**SIGNUP_PAYLOAD, "full_name": "   "}
-    )
+    response = await client.post("/api/v1/auth/signup", json={**SIGNUP_PAYLOAD, "full_name": "   "})
     assert response.status_code == 422
     assert response.json()["error_code"] == "INVALID_FULL_NAME_LENGTH"
 

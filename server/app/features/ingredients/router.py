@@ -34,9 +34,11 @@ async def list_ingredients(
 
 
 @router.post("/resolve", response_model=IngredientResponse)
-@error_specs({
-    IngredientNotFoundError: ErrorSpec(status_code=404, error_code="INGREDIENT_NOT_FOUND"),
-})
+@error_specs(
+    {
+        IngredientNotFoundError: ErrorSpec(status_code=404, error_code="INGREDIENT_NOT_FOUND"),
+    }
+)
 async def resolve_ingredient(
     payload: IngredientResolveRequest,
     _current_user: CurrentUser,

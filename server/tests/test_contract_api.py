@@ -7,6 +7,7 @@ from httpx import AsyncClient
 
 from app.core.database import get_session
 from app.core.timezone import now_kst
+from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
 from app.main import app
 from app.models import Ingredient
 
@@ -32,14 +33,17 @@ async def test_meal_review_suggestion_and_history_flow(
     async for session in app.dependency_overrides[get_session]():
         session.add_all([Ingredient(id=182, name="당근"), Ingredient(id=212, name="감자")])
 
-    async def fake_generate(inputs: list[dict]) -> list[dict]:
+    async def fake_generate(
+        inputs: list[FoodInput], _restrictions: object
+    ) -> list[GeneratedSuggestion]:
         return [
-            {
-                "food_id": item["id"],
-                "what_to_try": f"{item['name']} 소량 제공",
-                "why_this_may_help": "익숙한 형태로 제공",
-                "serving_tip": "작게 잘라 제공",
-            }
+            GeneratedSuggestion(
+                food_id=item.id,
+                what_to_try=f"{item.name} 소량 제공",
+                why_this_may_help="익숙한 형태로 제공",
+                serving_tip="작게 잘라 제공",
+                used_ingredients=(),
+            )
             for item in inputs
         ]
 

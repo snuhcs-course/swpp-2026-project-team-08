@@ -35,8 +35,10 @@ def upgrade() -> None:
     )
     op.bulk_insert(
         ingredients,
-        [dict(id=ingredient_id, name=name, created_at=now, updated_at=now)
-         for ingredient_id, name in names],
+        [
+            dict(id=ingredient_id, name=name, created_at=now, updated_at=now)
+            for ingredient_id, name in names
+        ],
     )
 
 

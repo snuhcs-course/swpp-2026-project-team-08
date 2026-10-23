@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "policy_version": "restriction-policy-1.4",
+  "restrictions": [
+    {
+      "id": "peanut",
+      "name": "땅콩",
+      "type": "ALLERGY"
+    },
+    {
+      "id": "tree-nut",
+      "name": "견과류",
+      "type": "ALLERGY"
+    },
+    {
+      "id": "milk",
+      "name": "우유 / 유제품",
+      "type": "ALLERGY"
+    },
+    {
+      "id": "egg",
+      "name": "달걀",
+      "type": "ALLERGY"
+    },
+    {
+      "id": "soy",
+      "name": "대두",
+      "type": "ALLERGY"
+    },
+    {
+      "id": "wheat",
+      "name": "밀",
+      "type": "ALLERGY"
+    },
+    {
+      "id": "fish",
+      "name": "생선",
+      "type": "ALLERGY"
+    },
+    {
+      "id": "shellfish",
+      "name": "갑각류",
+      "type": "ALLERGY"
+    },
+    {
+      "id": "sesame",
+      "name": "참깨",
+      "type": "ALLERGY"
+    },
+    {
+      "id": "gluten-free",
+      "name": "글루텐 제한",
+      "type": "DIET"
+    },
+    {
+      "id": "lactose-free",
+      "name": "유당 제한",
+      "type": "DIET"
+    },
+    {
+      "id": "casein-free",
+      "name": "카제인 제한",
+      "type": "DIET"
+    },
+    {
+      "id": "gluten-casein-free",
+      "name": "글루텐·카제인 제한",
+      "type": "APPROACH"
+    },
+    {
+      "id": "no-added-sugar",
+      "name": "첨가당 없음 / 인공첨가물 제한",
+      "type": "APPROACH"
+    },
+    {
+      "id": "low-fructose",
+      "name": "저과당식",
+      "type": "APPROACH"
+    },
+    {
+      "id": "low-sodium",
+      "name": "저염식",
+      "type": "APPROACH"
+    },
+    {
+      "id": "ketogenic",
+      "name": "케톤 식이",
+      "type": "APPROACH"
+    }
+  ]
+}

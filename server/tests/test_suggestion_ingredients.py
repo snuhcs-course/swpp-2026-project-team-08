@@ -1,7 +1,9 @@
-# AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """재료 카탈로그 조회와 제한 판정 (`ingredients.py`) 단위 테스트."""
 
 import json
+import re
+from pathlib import Path
 
 import pytest
 
@@ -20,8 +22,20 @@ def restrictions(*ids: str) -> ChildRestrictions:
     return ChildRestrictions(ids=frozenset(RestrictionId(i) for i in ids))
 
 
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 def test_restriction_ids_match_client_profile_ids():
-    assert len(RestrictionId) == 20
+    root = Path(__file__).resolve().parents[2]
+    client = (root / "client/src/util/strings.ts").read_text()
+    expected = {}
+    for group, kind in (("allergies", "ALLERGY"), ("restrictions", "DIET"),
+                        ("approaches", "APPROACH")):
+        block = re.search(r"^  " + group + r": \[(.*?)\n  \]\.map", client, re.M | re.S)
+        assert block is not None
+        for rid, _en, ko in re.findall(r"\['([^']+)', '([^']+)', '([^']+)'\]", block[1]):
+            expected.setdefault(rid, {"id": rid, "name": ko, "type": kind})
+    assert set(expected) == set(RestrictionId)
+    dataset = json.loads((root / "data/ingredient_db/restrictions.json").read_text())
+    assert dataset["restrictions"] == list(expected.values())
     assert RestrictionId("tree-nut") is RestrictionId.TREE_NUT
 
 
@@ -68,3 +82,10 @@ def test_usable_ingredient_names_without_candidates_lists_catalog():
     assert "rice" in names
     assert "milk" not in names and "cheese" not in names
     assert len(names) == len(set(names))
+
+
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+def test_search_catalog_values_are_not_fixed_restrictions():
+    for term in ("lupin", "lupin-flour", "lupin-seed", "mediterranean"):
+        with pytest.raises(ValueError):
+            RestrictionId(term)

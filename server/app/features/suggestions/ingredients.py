@@ -1,4 +1,4 @@
-# AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """재료 카탈로그와 아이의 제한(알러지 · 식이 제한) 판정.
 
 `search_available_ingredients` 도구와 `validation.py`가 같은 카탈로그와 규칙을 쓰도록 한곳에 모았다.
@@ -15,12 +15,13 @@ CATALOG_PATH = Path(__file__).parent / "mock_ingredients.json"
 
 
 class RestrictionId(StrEnum):
-    """제한 id. 값은 클라이언트 프로필의 allergies · restrictions 값과 같아야 한다.
+    """제한 id. 값은 클라이언트 프로필의 알레르기·식이 제한·식단 방식 값과 같아야 한다.
 
     클라이언트 id를 바꾸면 이 enum도 함께 고친다 (`docs/food-ingredient-restriction-ids.md`).
     """
 
-    # 알러지
+    # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+    # ChoiceStepView 기본 선택 버튼만 고정 ID로 등록한다. Catalog는 재료/기타 검색이다.
     PEANUT = "peanut"
     TREE_NUT = "tree-nut"
     MILK = "milk"
@@ -30,18 +31,14 @@ class RestrictionId(StrEnum):
     FISH = "fish"
     SHELLFISH = "shellfish"
     SESAME = "sesame"
-    LUPIN = "lupin"
-    COCONUT = "coconut"
-    BUCKWHEAT = "buckwheat"
-    KIWI = "kiwi"
-    STRAWBERRY = "strawberry"
-    # 식이 제한
     GLUTEN_FREE = "gluten-free"
     LACTOSE_FREE = "lactose-free"
     CASEIN_FREE = "casein-free"
+    GLUTEN_CASEIN_FREE = "gluten-casein-free"
+    NO_ADDED_SUGAR = "no-added-sugar"
     LOW_FRUCTOSE = "low-fructose"
-    NO_PORK = "no-pork"
-    NO_BEEF = "no-beef"
+    LOW_SODIUM = "low-sodium"
+    KETOGENIC = "ketogenic"
 
 
 @dataclass(frozen=True)

@@ -23,10 +23,16 @@
 
 사람이 815개 질문을 다시 검토할 필요 없이 우선 이 목록을 사용해 보고, 검색되지 않거나 이름이 어색한 사례를 원본 코드와 함께 고치면 된다.
 
+## 제한 관계 작업
+
+제한 ID 17개는 [restrictions.json](restrictions.json)에 고정했다. 판정값과 제한별 범위는 [제한 판정 기준](docs/restriction-policy.md)을 따른다. 저과당·저염·케톤의 100g 비교 기준과 지정 첨가물 목록을 문서에 정리했다. 실제 섭취량 평가와 재료 관계 생성은 별도다. 아직 재료별 관계를 생성하지 않았다.
+
 ## 파일 위치와 역할
 
 | 위치 | 역할 |
 |---|---|
+| [restrictions.json](restrictions.json) | 제한 17개의 ID·이름·타입 |
+| [docs/restriction-policy.md](docs/restriction-policy.md) | 판정 의미와 제한별 기준 |
 | [ingredients-reviewed.json](ingredients-reviewed.json) | **사용 시험 진입점**. Sol 검토를 반영한 1,593개 재료 |
 | [reviews/sol-review.json](reviews/sol-review.json) | GPT-6 Sol의 코드별 재검토 결정과 이유 |
 | [docs/classification-policy.md](docs/classification-policy.md) | 어떤 항목을 포함하고 어떤 이름으로 합칠지에 대한 기준 |

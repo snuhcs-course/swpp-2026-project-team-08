@@ -45,3 +45,9 @@ python3 -m unittest discover -s data/ingredient_db/tests -p 'test_*.py' -v
 ## 확인하지 않는 것
 
 이 테스트는 Gemini의 실제 응답 품질, 3,366행의 포함·제외 판단, 한국어·영어 이름의 정확성, 사람의 병합 승인, DB 적재를 확인하지 않는다. 실제 API 실행은 별도 작업이며, 데이터 정확성은 RDA 원본과 에이전트 결과를 사람이 대조해야 한다.
+
+## 클라이언트와 제한 목록 일치 검사
+
+서버의 `test_restriction_ids_match_client_profile_ids`는 온보딩 기본 버튼 세 그룹(allergies·restrictions·approaches)의 ID·한국어 이름·타입을 서버 enum 및 JSON과 비교한다. 같은 ID는 한 번만 둔다.
+
+`test_search_catalog_values_are_not_fixed_restrictions`는 루핀·루핀 가루·루핀 씨앗·지중해식 같은 Other 검색 후보가 고정 restriction으로 등록되지 않는지 확인한다. 서버에서 `uv run pytest`로 실행한다.

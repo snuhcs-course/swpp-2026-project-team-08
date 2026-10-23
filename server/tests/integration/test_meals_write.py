@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """Authenticated meal write and ingredient ID resolution."""
 
 from datetime import UTC, datetime
@@ -13,12 +14,13 @@ from sqlalchemy import create_engine, select, text
 from app.core.database import get_session
 from app.main import app
 from app.models import Ingredient, Meal, MealFoodIngredient, SuggestionMealLink, UserSuggestion
+from tests.helpers.auth import auth_headers
 
 
 def test_meal_migration_keeps_legacy_food_rows() -> None:
     migration = run_path(
         str(
-            Path(__file__).resolve().parents[1]
+            Path(__file__).resolve().parents[2]
             / "migrations/versions/20261021_1400_authenticated_meals.py"
         )
     )
@@ -39,17 +41,6 @@ def test_meal_migration_keeps_legacy_food_rows() -> None:
             ("old-meal", "old-food")
         ]
     engine.dispose()
-
-
-async def auth_headers(client: AsyncClient, email: str) -> dict[str, str]:
-    await client.post(
-        "/api/v1/auth/signup",
-        json={"email": email, "password": "supersecret", "full_name": "보호자"},
-    )
-    response = await client.post(
-        "/api/v1/auth/login", json={"email": email, "password": "supersecret"}
-    )
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
 
 
 async def seed_ingredients() -> None:
@@ -284,3 +275,43 @@ async def test_update_foods_deletes_omitted_food(client: AsyncClient) -> None:
     )
     assert response.status_code == 200, response.text
     assert [food["id"] for food in response.json()["foods"]] == ["1"]
+
+
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+@pytest.mark.asyncio
+async def test_unknown_ingredient_update_preserves_existing_meal(client):
+    await seed_ingredients()
+    headers = await auth_headers(client, "recover@example.com")
+    saved = await client.put("/api/v1/meals", headers=headers, json=meal_payload())
+    assert saved.status_code == 200
+    url = f"/api/v1/meals/{saved.json()['id']}"
+    before = (await client.get(url, headers=headers)).json()
+    invalid = meal_payload(ingredient_name="없는 재료")
+    invalid["foods"][0]["name"] = "Must not persist"
+    rejected = await client.put(f"{url}/foods", headers=headers, json={"foods": invalid["foods"]})
+    assert rejected.status_code == 404
+    assert rejected.json()["error_code"] == "INGREDIENT_NOT_FOUND"
+    assert (await client.get(url, headers=headers)).json() == before
+
+
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+@pytest.mark.asyncio
+async def test_invalid_replacement_review_preserves_previous_review(client):
+    await seed_ingredients()
+    headers = await auth_headers(client, "review-recover@example.com")
+    saved = await client.put("/api/v1/meals", headers=headers, json=meal_payload())
+    assert saved.status_code == 200
+    url = f"/api/v1/meals/{saved.json()['id']}"
+    review = {
+        "after_photo_uri": None,
+        "food_results": [
+            {"food_id": "1", "outcome": "eaten", "difficulties": [], "ingredient_outcomes": []}
+        ],
+    }
+    written = await client.put(f"{url}/review", headers=headers, json=review)
+    assert written.status_code == 200
+    before = (await client.get(url, headers=headers)).json()
+    review["food_results"][0]["food_id"] = "999"
+    rejected = await client.put(f"{url}/review", headers=headers, json=review)
+    assert rejected.status_code == 422
+    assert (await client.get(url, headers=headers)).json() == before

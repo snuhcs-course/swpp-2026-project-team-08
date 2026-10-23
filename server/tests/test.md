@@ -11,7 +11,8 @@
 | E2E | 실행 중인 시스템을 통한 전체 사용자 흐름 | 실제 앱에서 가입 → 식사 기록 → 기록 확인 |
 
 **파일 개수, 비동기 여부, HTTP 호출 여부만으로 분류하지 않는다.** 실제 코드로 연결해 확인하는 책임으로 판단한다. 서비스 하나를 실행하면서 의존성을 모두 대체하면 Unit이고, 실제 서비스와 DB를 함께 확인하면 Integration이다.
-현재 파일은 `tests/test_*.py`에 둔다. 새 폴더나 종류별 실행 명령을 전제로 하지 않는다.
+Unit은 `tests/unit/`, Integration은 `tests/integration/`에 둔다. 공통 준비 함수는 `tests/helpers/`, 독립적인 요청 데이터는 `tests/fixtures/`에 둔다.
+오프라인 마이그레이션 SQL 생성 검사는 Unit, 실제 테스트 DB에 적용해 결과를 확인하는 검사는 Integration이다.
 
 ## 공통 작성 규칙
 
@@ -43,7 +44,7 @@
 ## 새 테스트 추가 순서
 
 1. **조건 → 기대 결과**를 한 문장으로 적고 Unit 또는 Integration을 고른다.
-2. 같은 기능의 `test_*.py`에 추가하거나 새 파일을 만든다. 한 파일에서 두 종류를 다루면 구역·설명으로 구분한다.
+2. 선택한 종류의 폴더에서 같은 기능의 `test_*.py`에 추가하거나 새 파일을 만든다. 한 파일에 두 종류를 섞지 않는다.
 3. 파일 상단에 검사 대상 또는 연결한 모듈과 mock 범위를 짧게 적는다. 복잡한 테스트는 준비·실행·검증을 주석으로 구분한다.
 4. 아래 fixture/helper를 재사용한다. `monkeypatch`로 바꾼 값은 자동 복원되게 하고, 직접 추가한 override·리소스는 fixture의 종료 처리로 복원한다.
 5. 요구사항에 맞는 기대값을 명시한다. 기대값을 검사 대상 함수로 다시 계산하지 않는다. 회귀 테스트는 가능하면 수정 전 실패하는 사례로 작성한다.
@@ -53,12 +54,15 @@
 
 | 필요한 작업 | 사용할 도구·참고 파일 |
 | --- | --- |
-| API·서비스·DB 연결 | [`conftest.py`](conftest.py)의 `client` fixture: 테스트별 SQLite 생성, `get_session` override, 세션 commit/rollback |
+| API·서비스·DB 연결 | [`conftest.py`](integration/conftest.py)의 `client` fixture: 테스트별 SQLite 생성, `get_session` override, 세션 commit/rollback |
+| 가입·로그인 | [`helpers/auth.py`](helpers/auth.py)의 `auth_headers` |
+| 온보딩 요청 데이터 | [`fixtures/onboarding.py`](fixtures/onboarding.py)의 `request_body`: 호출마다 새 객체 |
+| 추천 API의 가짜 LLM 설정 | [`helpers/suggestions.py`](helpers/suggestions.py)의 `install_model`: 생성 함수·그래프는 실제 구현 유지 |
 | 외부 의존성 대체 | pytest의 `monkeypatch`, `unittest.mock`의 `Mock` / `AsyncMock` |
-| LLM 응답·도구 호출 순서 제어 | [`fake_chat_model.py`](fake_chat_model.py)의 `ScriptedChatModel` |
-| Unit 작성 예 | [`test_suggestion_validation.py`](test_suggestion_validation.py): 입력과 생성 결과의 검증 |
-| API Integration 작성 예 | [`test_auth.py`](test_auth.py): 가입·로그인·인증과 DB 연결 |
-| 그래프 Integration 작성 예 | [`test_suggestion_workflow.py`](test_suggestion_workflow.py): 실제 그래프와 가짜 LLM 연결 |
+| LLM 응답·도구 호출 순서 제어 | [`fake_chat_model.py`](helpers/fake_chat_model.py)의 `ScriptedChatModel` |
+| Unit 작성 예 | [`test_suggestion_validation.py`](unit/test_suggestion_validation.py): 입력과 생성 결과의 검증 |
+| API Integration 작성 예 | [`test_auth.py`](integration/test_auth.py): 가입·로그인·인증과 DB 연결 |
+| 그래프 Integration 작성 예 | [`test_suggestion_workflow.py`](integration/test_suggestion_workflow.py): 실제 그래프와 가짜 LLM 연결 |
 
 ## 실행과 검토
 
@@ -66,7 +70,9 @@
 
 ```sh
 uv sync
-uv run pytest tests/test_suggestion_validation.py
+uv run pytest tests/unit/test_suggestion_validation.py
+uv run pytest tests/unit
+uv run pytest tests/integration
 uv run pytest
 uv run ruff check .
 ```

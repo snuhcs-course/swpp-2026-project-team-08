@@ -1,5 +1,5 @@
-# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
-"""Check migration history and generated SQL without connecting to a database."""
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+"""Unit: 마이그레이션의 이력·SQL 생성 계약. DB 적용이나 Postgres 동작은 검사하지 않는다."""
 
 from io import StringIO
 from pathlib import Path
@@ -9,7 +9,7 @@ from alembic.migration import MigrationContext
 from alembic.operations import Operations
 from alembic.script import ScriptDirectory
 
-MIGRATIONS = Path(__file__).resolve().parents[1] / "migrations"
+MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 
 
 # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo

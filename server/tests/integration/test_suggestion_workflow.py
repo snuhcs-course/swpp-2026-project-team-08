@@ -1,4 +1,4 @@
-# AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """제안 생성 워크플로 테스트. 가짜 모델로 그래프 전체를 실행하고 LLM은 호출하지 않는다."""
 
 import pytest
@@ -9,7 +9,7 @@ from app.features.suggestions.ingredients import ChildRestrictions, RestrictionI
 from app.features.suggestions.workflow.nodes import MAX_ATTEMPTS
 from app.features.suggestions.workflow.schemas import SuggestionDraft, SuggestionsDraft
 from app.features.suggestions.workflow.state import FoodInput
-from tests.fake_chat_model import ScriptedChatModel
+from tests.helpers.fake_chat_model import ScriptedChatModel
 
 FOODS = [FoodInput(id="f1", name="Broccoli"), FoodInput(id="f2", name="Egg")]
 RESTRICTIONS = ChildRestrictions(ids=frozenset({RestrictionId.PEANUT}))

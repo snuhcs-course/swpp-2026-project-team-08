@@ -1,4 +1,4 @@
-# AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """재료 카탈로그 조회와 제한 판정 (`ingredients.py`) 단위 테스트."""
 
 import json

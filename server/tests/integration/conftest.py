@@ -1,4 +1,4 @@
-# AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """테스트 픽스처: 인메모리 SQLite + get_session 오버라이드.
 
 실제 Postgres 없이 라우터~서비스~모델 전 계층을 검증한다.
@@ -7,6 +7,7 @@ StaticPool 로 단일 커넥션을 공유해 :memory: 스키마가 유지되게 
 
 from collections.abc import AsyncGenerator
 
+import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -39,11 +40,22 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
                 await session.rollback()
                 raise
 
+    previous_overrides = app.dependency_overrides.copy()
     app.dependency_overrides[get_session] = _override_get_session
 
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
+    try:
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            yield ac
+    finally:
+        app.dependency_overrides.clear()
+        app.dependency_overrides.update(previous_overrides)
+        await engine.dispose()
 
-    app.dependency_overrides.clear()
-    await engine.dispose()
+
+@pytest.fixture(autouse=True)
+def forbid_live_llm(monkeypatch):
+    def forbidden():
+        raise AssertionError("Install ScriptedChatModel; live LLM calls are not allowed")
+
+    monkeypatch.setattr("app.features.suggestions.generator.build_chat_model", forbidden)

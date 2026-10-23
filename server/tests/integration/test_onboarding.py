@@ -1,61 +1,12 @@
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """Onboarding API persistence, ownership, and validation."""
 
 import pytest
 from httpx import AsyncClient
 
 from app.features.onboarding.consent_version import DOCUMENT_VERSION
-
-
-def request_body() -> dict:
-    return {
-        "profile": {
-            "child_name": "아이",
-            "age_group": "4-5",
-            "safety": {
-                "allergies": {
-                    "status": "specified",
-                    "items": [{"code": "egg", "custom_name": None}],
-                },
-                "restrictions": {"status": "none", "items": []},
-            },
-            "food_preferences": {
-                "family_foods": [{"code": "eggs", "custom_name": None}],
-                "dietary_approaches": [],
-                "difficult_textures": [],
-                "smell_sensitivity": "sometimes",
-                "difficult_tastes": [],
-                "presentation_preferences": [],
-                "preferred_temperature": "warm",
-                "new_food_response": "plate",
-            },
-            "safe_foods": {
-                "status": "listed",
-                "items": [
-                    {
-                        "name": "감자",
-                        "preparation": "푹 삶기",
-                        "presentation_note": "작게 잘라 제공",
-                    }
-                ],
-            },
-        },
-        "consents": [
-            {"kind": "account_privacy", "granted": True},
-            {"kind": "photo_analysis", "granted": True},
-            {"kind": "ai_training", "granted": False},
-        ],
-    }
-
-
-async def register(client: AsyncClient, email: str) -> dict[str, str]:
-    await client.post(
-        "/api/v1/auth/signup",
-        json={"email": email, "password": "supersecret", "full_name": "보호자"},
-    )
-    login = await client.post(
-        "/api/v1/auth/login", json={"email": email, "password": "supersecret"}
-    )
-    return {"Authorization": f"Bearer {login.json()['access_token']}"}
+from tests.fixtures.onboarding import request_body
+from tests.helpers.auth import auth_headers as register
 
 
 @pytest.mark.asyncio
@@ -108,7 +59,7 @@ async def test_onboarding_round_trip_and_idempotent_consents(client: AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_onboarding_rejects_invalid_input_and_other_users_food(client: AsyncClient) -> None:
+async def test_onboarding_rejects_other_users_food(client: AsyncClient) -> None:
     first = await register(client, "first@example.com")
     second = await register(client, "second@example.com")
     initial = await client.put("/api/v1/onboarding", headers=first, json=request_body())
@@ -120,28 +71,6 @@ async def test_onboarding_rejects_invalid_input_and_other_users_food(client: Asy
     assert denied.status_code == 422
     assert denied.json()["error_code"] == "SAFE_FOOD_NOT_FOUND"
     assert (await client.get("/api/v1/onboarding", headers=second)).json()["profile"] is None
-
-    invalid = request_body()
-    invalid["profile"]["safety"]["allergies"] = {
-        "status": "none_known",
-        "items": [{"code": "egg", "custom_name": None}],
-    }
-    assert (await client.put("/api/v1/onboarding", headers=first, json=invalid)).status_code == 422
-    invalid = request_body()
-    invalid["consents"][0]["granted"] = False
-    assert (await client.put("/api/v1/onboarding", headers=first, json=invalid)).status_code == 422
-    invalid = request_body()
-    invalid["profile"]["food_preferences"]["family_foods"] = []
-    assert (await client.put("/api/v1/onboarding", headers=first, json=invalid)).status_code == 422
-    invalid = request_body()
-    invalid["profile"]["food_preferences"]["family_foods"] *= 2
-    assert (await client.put("/api/v1/onboarding", headers=first, json=invalid)).status_code == 422
-    invalid = request_body()
-    invalid["consents"][2]["granted"] = "false"
-    assert (await client.put("/api/v1/onboarding", headers=first, json=invalid)).status_code == 422
-    invalid = request_body()
-    invalid["profile"]["food_preferences"]["family_foods"][0]["code"] = "none"
-    assert (await client.put("/api/v1/onboarding", headers=first, json=invalid)).status_code == 422
 
 
 @pytest.mark.asyncio

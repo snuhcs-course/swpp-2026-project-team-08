@@ -1,5 +1,7 @@
-# AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """생성 결과 검증 (`validation.py`) 단위 테스트. 그래프 없이 값만으로 확인한다."""
+
+import pytest
 
 from app.features.suggestions.ingredients import ChildRestrictions, RestrictionId
 from app.features.suggestions.validation import ValidationProblem, find_problems
@@ -39,10 +41,12 @@ def test_missing_unexpected_and_duplicate_foods():
     ]
 
 
-def test_blank_text_field():
-    results = [suggestion("f1", serving_tip="   "), suggestion("f2")]
+@pytest.mark.parametrize("field", ["what_to_try", "why_this_may_help", "serving_tip"])
+@pytest.mark.parametrize("value", ["", "   ", "\t\n"], ids=["empty", "spaces", "whitespace"])
+def test_blank_text_field(field, value):
+    results = [suggestion("f1", **{field: value}), suggestion("f2")]
     assert find_problems(FOODS, results, RESTRICTIONS) == [
-        ValidationProblem(kind="blank_field", food_id="f1", field="serving_tip")
+        ValidationProblem(kind="blank_field", food_id="f1", field=field)
     ]
 
 

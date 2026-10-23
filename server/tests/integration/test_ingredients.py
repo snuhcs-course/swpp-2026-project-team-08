@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """Shared ingredient catalog and name-based recovery."""
 
 from pathlib import Path
@@ -12,11 +13,12 @@ from sqlalchemy import create_engine, text
 from app.core.database import get_session
 from app.main import app
 from app.models.ingredient import Ingredient
+from tests.helpers.auth import auth_headers
 
 
 def test_mock_catalog_migration_seeds_stable_ids() -> None:
     migration_path = (
-        Path(__file__).resolve().parents[1]
+        Path(__file__).resolve().parents[2]
         / "migrations/versions/20261021_1300_mock_ingredients.py"
     )
     migration = run_path(str(migration_path))
@@ -36,17 +38,6 @@ def test_mock_catalog_migration_seeds_stable_ids() -> None:
 async def seed_catalog() -> None:
     async for session in app.dependency_overrides[get_session]():
         session.add_all([Ingredient(id=182, name="당근"), Ingredient(id=212, name="감자")])
-
-
-async def auth_headers(client: AsyncClient, email: str) -> dict[str, str]:
-    await client.post(
-        "/api/v1/auth/signup",
-        json={"email": email, "password": "supersecret", "full_name": "보호자"},
-    )
-    response = await client.post(
-        "/api/v1/auth/login", json={"email": email, "password": "supersecret"}
-    )
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
 
 
 @pytest.mark.asyncio

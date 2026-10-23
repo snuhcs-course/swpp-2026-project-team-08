@@ -80,3 +80,32 @@ uv run ruff check .
 - 실패·건너뜀은 이유와 함께 보고한다. 실패한 테스트를 삭제하거나 검증을 약화해서 통과시키지 않는다.
 - 커버리지는 테스트가 불러오지 않은 코드도 포함하고, 라우터·서비스·검증·데이터 접근 등 책임별로 확인한다. 대상·제외 범위와 목표를 먼저 정하며 임의의 수치 목표를 두지 않는다.
 - 테스트 개수·전체 평균만으로 완료를 판단하지 않는다. 중요한 권한 검사·실패 복구가 빠졌는지 함께 검토한다.
+
+
+### 커버리지 측정
+
+`server/`에서 `uv run python scripts/coverage_report.py`를 실행한다. 이 명령은 Unit,
+Integration, 전체 테스트를 각각 새 coverage 데이터로 실행하고 HTML·JSON 보고서를 생성한다.
+통합 결과는 두 종류를 함께 실행한 결과이며, 두 퍼센트의 평균이 아니다.
+
+- 대상: `app/**/*.py` 전체. 불러오지 않은 모듈과 `__init__.py` 없는 폴더도 포함한다.
+- 제외: 대상 밖인 tests, scripts, migrations, 의존성, 생성 보고서. 앱 내부 실행 코드는 별도로 제외하지 않는다.
+- Lines는 실행 가능한 문장 줄, Branches는 가능한 분기 경로를 기준으로 계산한다.
+- Layer 분류는 아래 순서로 적용한다. 한 파일은 한 Layer에만 들어간다.
+
+| Layer | 파일 기준 |
+| --- | --- |
+| Services and database | `service.py`, `queries.py`, `database.py`, `app/models/**` |
+| Recommendation workflow | `generator.py`, `workflow/**` |
+| API and authentication | `main.py`, `router.py`, `dependencies.py`, `security.py`, `app/api/**` |
+| Validation and utilities | 나머지 파일: DTO, 순수 검증, 설정, 응답 변환, 상수 등 |
+
+파일 단위 분류이므로 `auth/router.py` 안의 DTO도 API Layer로 집계된다. 파일별 상세 결과를 함께 확인한다.
+스크립트는 모든 소스 파일의 포함 여부와 Layer별 합계가 전체 합계와 같은지 검증한다.
+수치 목표는 아직 정하지 않았으며, 첫 결과는 기준선으로 기록한다.
+
+보고서 위치:
+- `coverage/{unit,integration,combined}/html/index.html`: 파일·줄·분기 상세
+- `coverage/{unit,integration,combined}/coverage.json`: 원본 수치
+- `coverage/layers.html`: 세 실행의 Layer별 결과와 상세 보고서 링크 (캡처용)
+- `coverage/layers.json`: Layer별 집계와 각 파일의 소속

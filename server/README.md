@@ -32,6 +32,7 @@ uv run uvicorn app.main:app --reload     # 서버 실행 → http://localhost:80
 | 작업 | 명령어 |
 |---|---|
 | 테스트 (인메모리 SQLite, Postgres 불필요) | `uv run pytest` |
+| Unit·Integration·통합 커버리지 | `uv run python scripts/coverage_report.py` ([범위·Layer 기준](tests/test.md#커버리지-측정)) |
 | 린트 / 포맷 | `uv run ruff check .` / `uv run ruff format .` |
 | 의존성 추가 / 제거 | `uv add <package>` / `uv remove <package>` (dev 는 `--dev`) |
 | 마이그레이션 생성 | `uv run alembic revision --autogenerate -m "설명"` |

@@ -127,8 +127,11 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 다단계 워크플로는 새 계층이 아니라 **해당 기능 서비스의 구현 수단**이다. 다른 기능에서 LangGraph를 추가할 때는
 `features/suggestions/`를 기준 구현으로 삼아 본뜬다.
 
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim -->
 ```
 features/suggestions/
+├── queries.py            # 아이 정보 조회 (프로필 · 잘 먹는 음식 · 지난 식사 기록) → dataclass
+├── inputs.py             # 선택한 target과 리뷰 기록 → 워크플로 입력(FoodInput)
 ├── generator.py          # 서비스가 부르는 단일 진입점 (그래프 실행, 검증 실패 시 예외)
 ├── validation.py         # 결과 검증 — 순수 함수, 문제 목록을 반환
 ├── ingredients.py        # 재료 카탈로그 · 제한 판정 — 순수 함수
@@ -139,11 +142,12 @@ features/suggestions/
     ├── prompts.py        # 프롬프트
     ├── schemas.py        # LLM 구조화 출력 스키마 (Pydantic)
     ├── llm.py            # 이 기능의 LLM 클라이언트 생성
-    └── tools.py          # LLM이 호출하는 도구 (필요할 때만)
+    └── tools.py          # (현재 없음) LLM이 호출하는 도구가 필요할 때만 더한다
 ```
 
-- 진입점은 서비스 하나다. 서비스가 입력을 모으고 `generator.py`의 함수를 불러 결과를 저장한다. `router`나
-  서비스가 그래프를 직접 다루지 않는다. 타임아웃과 에러 변환(`AppError`)은 서비스가 맡는다.
+- 진입점은 서비스 하나다. 서비스가 DB에서 입력을 모으고(`queries.py` · `inputs.py`) `generator.py`의 함수를 불러
+  결과를 저장한다. `router`나 서비스가 그래프를 직접 다루지 않는다. 타임아웃과 에러 변환(`AppError`)은 서비스가
+  맡는다. 다른 기능의 데이터는 그 기능의 `service.py`가 아니라 모델을 직접 조회해 읽는다.
 - **상태는 입력 · 출력 · 전체로 나눈다.** `InputState`(호출할 때 넘기는 값), `OutputState`(끝났을 때 돌려주는 값),
   `GraphState`(둘을 상속하고 `messages` 같은 내부 값을 더한 노드 간 전체 상태)를 `TypedDict`로 정의한다.
   내부 값은 첫 노드(`prepare`)가 초기화한다.

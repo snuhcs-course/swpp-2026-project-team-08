@@ -159,8 +159,9 @@ async def test_suggestion_target_validation_and_generation_failure_are_atomic(
         )
     ).status_code == 422
 
+    # AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim
     async def invalid_generator(
-        _: list[FoodInput], _restrictions: object
+        _: list[FoodInput], _restrictions: object, _child: object
     ) -> list[GeneratedSuggestion]:
         return []
 
@@ -179,7 +180,10 @@ async def test_saved_filter_decision_validation_and_undo(
     meal_id = await save_meal(client, owner, "2026-10-20")
     assert (await review_meal(client, owner, meal_id)).status_code == 200
 
-    async def generator(items: list[FoodInput], _restrictions: object) -> list[GeneratedSuggestion]:
+    # AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim
+    async def generator(
+        items: list[FoodInput], _restrictions: object, _child: object
+    ) -> list[GeneratedSuggestion]:
         return [
             GeneratedSuggestion(
                 food_id=item.id,

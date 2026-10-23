@@ -12,8 +12,9 @@ from app.core.errors import AppError
 from app.core.timezone import now_kst
 from app.features.meals.queries import meal_records, owned_meal
 from app.features.suggestions.generator import generate_suggestions
-from app.features.suggestions.mock_profile import MOCK_RESTRICTIONS
-from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
+from app.features.suggestions.inputs import build_food_inputs
+from app.features.suggestions.queries import load_child_data
+from app.features.suggestions.workflow.state import GeneratedSuggestion
 from app.models import UserSuggestion
 
 
@@ -104,20 +105,16 @@ class UserSuggestionService:
             ):
                 raise InvalidSuggestionTargetError()
 
-        inputs: list[FoodInput] = []
-        for index, target in enumerate(targets):
-            snapshot = reviewed_foods[target.food_id].food_snapshot
-            name = snapshot["name"]
-            if target.ingredient_id is not None:
-                name = next(
-                    item["name"]
-                    for item in snapshot["ingredients"]
-                    if int(item["id"]) == target.ingredient_id
-                )
-            inputs.append(FoodInput(id=str(index), name=name))
+        # AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim
+        inputs = build_food_inputs(
+            [(target.food_id, target.ingredient_id) for target in targets],
+            reviewed_foods,
+            records.ingredient_results,
+        )
+        child = await load_child_data(self._session, user_id)
         try:
             async with asyncio.timeout(60):
-                generated = await generate_suggestions(inputs, MOCK_RESTRICTIONS)
+                generated = await generate_suggestions(inputs, child.restrictions, child.context)
         except Exception as error:
             raise GenerationFailedError() from error
         if (

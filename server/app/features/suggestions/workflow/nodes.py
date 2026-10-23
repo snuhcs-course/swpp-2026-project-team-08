@@ -9,11 +9,11 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import END
 from langgraph.runtime import Runtime
 
+from app.features.suggestions.ingredients import usable_ingredient_names
 from app.features.suggestions.validation import find_problems
 from app.features.suggestions.workflow import prompts
 from app.features.suggestions.workflow.schemas import SuggestionsDraft
 from app.features.suggestions.workflow.state import GraphState, InputState, SuggestionContext
-from app.features.suggestions.workflow.tools import TOOLS
 
 # compose(작성)를 최대 몇 번 실행하는가. 처음 한 번 + 재시도 2번.
 MAX_ATTEMPTS = 3
@@ -21,12 +21,14 @@ MAX_ATTEMPTS = 3
 Update = dict[str, object]
 
 
+# AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim
 def prepare(state: InputState) -> Update:
-    """입력 음식으로 첫 대화를 만들고 내부 값을 초기화한다."""
+    """입력으로 첫 대화를 만들고 내부 값을 초기화한다. 쓸 수 있는 재료 목록도 여기서 싣는다."""
+    usable = usable_ingredient_names(state["restrictions"])
     return {
         "messages": [
             SystemMessage(prompts.SYSTEM_PROMPT),
-            HumanMessage(prompts.build_user_prompt(state["foods"])),
+            HumanMessage(prompts.build_user_prompt(state["foods"], state["child"], usable)),
         ],
         "results": [],
         "problems": [],
@@ -34,17 +36,10 @@ def prepare(state: InputState) -> Update:
     }
 
 
-async def agent(state: GraphState, runtime: Runtime[SuggestionContext]) -> Update:
-    """도구를 바인딩한 LLM이 도구를 호출하거나 확인을 마치는 노드."""
-    llm_with_tools = runtime.context.llm.bind_tools(TOOLS)
-    reply = await llm_with_tools.ainvoke(state["messages"])
-    return {"messages": [reply]}
-
-
 async def compose(state: GraphState, runtime: Runtime[SuggestionContext]) -> Update:
     """대화 내용을 바탕으로 구조화된 제안을 작성하는 노드. 직전 검증 문제가 있으면 함께 알린다."""
     structured = runtime.context.llm.with_structured_output(SuggestionsDraft)
-    messages = [*state["messages"], HumanMessage(prompts.COMPOSE_INSTRUCTION)]
+    messages = list(state["messages"])
     if state["problems"]:
         messages.append(HumanMessage(prompts.build_retry_message(state["problems"])))
     draft = await structured.ainvoke(messages)

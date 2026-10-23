@@ -18,7 +18,8 @@ class SuggestionDraft(BaseModel):
     why_this_may_help: str = Field(description="이 시도가 도움이 될 수 있는 이유.")
     serving_tip: str = Field(description="음식을 내놓을 때의 팁.")
     used_ingredients: list[str] = Field(
-        description="제안하는 음식에 들어가는 재료. 도구가 허용한 이름 그대로 적는다."
+        # AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim
+        description="제안하는 음식에 들어가는 재료. 쓸 수 있는 재료 목록의 이름 그대로 적는다."
     )
 
 

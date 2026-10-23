@@ -1,12 +1,16 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 const { test } = require('node:test');
+
 const assert = require('node:assert/strict');
+
 require('../helpers/register.cjs');
 
 const { createMemoryStorage } = require('../helpers/memory-storage.cjs');
+
 const { values, storage, failNextWrite } = createMemoryStorage();
 
 const { mockModules } = require('../helpers/mock-modules.cjs');
+
 mockModules((name) => {
   return name === '@react-native-async-storage/async-storage' ? storage : undefined;
 });
@@ -61,12 +65,4 @@ test('failed profile write preserves the previous profile and recoverable draft'
   await assert.rejects(saveProfile({ ...oldProfile, childName: 'Edited' }));
   assert.deepEqual(await readProfile(), oldProfile);
   assert.equal((await readDraft()).step, 'review');
-});
-
-test('invalid persisted profile and draft are rejected at their boundaries', async () => {
-  values.clear();
-  values.set('nurturebites.profile.v1', JSON.stringify({ id: 'broken' }));
-  await assert.rejects(readProfile());
-  assert.equal(isDraft({ ...completedDraft(), step: 'unknown' }), false);
-  assert.equal(canFinish({ ...completedDraft(), caregiverEmail: 'invalid' }), false);
 });

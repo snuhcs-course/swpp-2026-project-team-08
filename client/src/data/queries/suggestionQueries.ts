@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 
 import { useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -60,7 +60,7 @@ export function useSuggestionActions(child: string, meal = '') {
     };
   }, [child]);
   const update = async (item: Suggestion) => {
-    if (!scope.current.active || scope.current.child !== child) return;
+    if (!scope.current.active || scope.current.child !== child || item.child_id !== child) return;
     client.setQueryData(suggestionKeys.detail(child, item.id), item);
     client.setQueryData<SuggestionBatch>(
       suggestionKeys.batch(child, meal || item.meal_id),

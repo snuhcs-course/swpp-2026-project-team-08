@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
 
-const React = require('react');
+const { React, act, renderHook } = require('../helpers/react-harness.cjs');
 
 const { renderToStaticMarkup } = require('react-dom/server');
 
@@ -215,27 +215,25 @@ test('pressing a pending home card passes the existing meal ID without creating 
  const card=walk(root);assert.ok(card);assert.equal(opened,undefined);card.props.onPress();assert.equal(opened,'existing-meal');
 });
 
-test('difficulty Continue and Skip save directly without a suggestion confirmation step', () => {
+test('difficulty Continue and Skip save directly without a suggestion confirmation step', async (t) => {
   const { AfterMealReviewView } = require('../../src/features/after-meal-review/screens/AfterMealReviewView.tsx');
   const { AppButton } = require('../../src/components/AppButton.tsx');
-  const useState = React.useState;
-  React.useState = (initial) => [initial, noop];
-  try {
+
     let saves = 0;
     const transitions = [];
-    const tree = AfterMealReviewView({ language:'en', draft:{step:'difficulties'}, meal:{foods:[]},
-      canContinueOutcomes:true, saving:false, saveStatus:'saved', onSave:()=>saves++, onGo:step=>transitions.push(step) });
+    const harness = await renderHook(t, () => AfterMealReviewView({ language:'en', draft:{step:'difficulties'}, meal:{foods:[]},
+      canContinueOutcomes:true, saving:false, saveStatus:'saved', onSave:()=>saves++, onGo:step=>transitions.push(step) }));
     const buttons = [];
     function visit(node) {
       if (!node || typeof node !== 'object') return;
       if (node.type === AppButton) buttons.push(node);
       React.Children.forEach(node.props?.children, visit);
     }
-    visit(tree);
+    visit(harness.current);
     for (const label of [s.common.continue, s.afterMealReview.skip]) {
       const button = buttons.find(item=>item.props.label === label);
-      assert.ok(button, label); button.props.onPress();
+      assert.ok(button, label); await act(async () => button.props.onPress());
     }
     assert.equal(saves, 2); assert.deepEqual(transitions, []);
-  } finally { React.useState = useState; }
+
 });

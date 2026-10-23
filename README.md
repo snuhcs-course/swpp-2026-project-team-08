@@ -1,11 +1,4 @@
 <!-- AI-generated with Cursor Grok 4.6, 2026-10-23, reviewed by moonmoonboop -->
-
-# SNU-SWPP-Template
-
-You can use the README file to showcase and promote your mobile app. The template provided below is just a starting point. Feel free to craft your README as you see fit. 
-
-Please note that the README doesn't affect your grade and is not included in documentation(Wiki).
-
 # NurtureBites
 
 NurtureBites is a meal tracker and planning app for caregivers of autistic children with sensory-selective eating. Caregivers record what was served and what happened after the meal, then get small, restriction-aware ideas for what to try next.

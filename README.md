@@ -10,7 +10,6 @@ Please note that the README doesn't affect your grade and is not included in doc
 
 NurtureBites is a meal tracker and planning app for caregivers of autistic children with sensory-selective eating. Caregivers record what was served and what happened after the meal, then get small, restriction-aware ideas for what to try next.
 
-<!-- AI-generated with Cursor Grok 4.6, 2026-10-23, reviewed by moonmoonboop -->
 ## Features
 
 - **Caregiver accounts:** Sign up, log in, and keep access/refresh tokens in Expo SecureStore.
@@ -23,7 +22,6 @@ NurtureBites is a meal tracker and planning app for caregivers of autistic child
 - **My Page:** Caregiver account (name, email, delete account) and child profile editing.
 - **Korean and English** UI copy.
 
-<!-- AI-generated with Cursor Grok 4.6, 2026-10-23, reviewed by moonmoonboop -->
 ## Iteration 2 Progress
 
 Iteration 2 moved NurtureBites from a local prototype to a client–server app aligned with the newly edited version of Figma and product requirement document. Merged work on [the team repository](https://github.com/snuhcs-course/swpp-2026-project-team-08):
@@ -38,8 +36,12 @@ Iteration 2 moved NurtureBites from a local prototype to a client–server app a
 (the bugs listed below will be fixed for iteration 3)
 - After you take the before meal picture, when you try to 'review food item' by adding food, when trying to type the food's ingredient name, the add button might not work
 
+###small things to implement for iteration 3(that has not been implemented yet) 
+- sending emails for the verification code (if one wants to change the caregiver's email in the profile)
+- uploading photos from gallery / file (only can take photos for now in the demo)
+- profile's tutorial guide
+- profile's data policy and privacy guideline
 
-<!-- AI-generated with Cursor Grok 4.6, 2026-10-23, reviewed by moonmoonboop -->
 ## Setup and Execution
 
 This repository has two parts: a FastAPI backend in `server/` and an Expo / React Native app in `client/`. Start the server first, then the app.

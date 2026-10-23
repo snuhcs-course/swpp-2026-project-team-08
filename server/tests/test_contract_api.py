@@ -33,8 +33,9 @@ async def test_meal_review_suggestion_and_history_flow(
     async for session in app.dependency_overrides[get_session]():
         session.add_all([Ingredient(id=182, name="당근"), Ingredient(id=212, name="감자")])
 
+    # AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim
     async def fake_generate(
-        inputs: list[FoodInput], _restrictions: object
+        inputs: list[FoodInput], _restrictions: object, _child: object
     ) -> list[GeneratedSuggestion]:
         return [
             GeneratedSuggestion(

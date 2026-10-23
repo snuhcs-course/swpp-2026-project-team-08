@@ -2,17 +2,23 @@
 """제안 생성 워크플로 테스트. 가짜 모델로 그래프 전체를 실행하고 LLM은 호출하지 않는다."""
 
 import pytest
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.messages import HumanMessage
 
 from app.features.suggestions.generator import GenerationRejectedError, generate_suggestions
 from app.features.suggestions.ingredients import ChildRestrictions, RestrictionId
 from app.features.suggestions.workflow.nodes import MAX_ATTEMPTS
 from app.features.suggestions.workflow.schemas import SuggestionDraft, SuggestionsDraft
-from app.features.suggestions.workflow.state import FoodInput
+from app.features.suggestions.workflow.state import (
+    ChildContext,
+    Difficulty,
+    FoodInput,
+    SafeFoodInfo,
+)
 from tests.fake_chat_model import ScriptedChatModel
 
 FOODS = [FoodInput(id="f1", name="Broccoli"), FoodInput(id="f2", name="Egg")]
 RESTRICTIONS = ChildRestrictions(ids=frozenset({RestrictionId.PEANUT}))
+CHILD = ChildContext()
 
 
 def draft(food_id: str, ingredients: list[str]) -> SuggestionDraft:
@@ -31,46 +37,72 @@ def drafts(*per_food: list[str]) -> SuggestionsDraft:
     )
 
 
-def tool_call(candidates: list[str]) -> AIMessage:
-    return AIMessage(
-        content="",
-        tool_calls=[
-            {
-                "name": "search_available_ingredients",
-                "args": {"candidates": candidates},
-                "id": "call-1",
-            }
-        ],
-    )
-
-
 def text_of(messages) -> str:
     return "\n".join(str(message.content) for message in messages)
 
 
-async def test_tool_is_called_then_valid_result_is_returned():
-    llm = ScriptedChatModel(
-        replies=[tool_call(["땅콩버터", "carrot"]), AIMessage(content="확인 끝")],
-        drafts=[drafts(["carrot"], ["rice"])],
-    )
+async def test_valid_result_is_returned():
+    llm = ScriptedChatModel(drafts=[drafts(["carrot"], ["rice"])])
 
-    results = await generate_suggestions(FOODS, RESTRICTIONS, llm=llm)
+    results = await generate_suggestions(FOODS, RESTRICTIONS, CHILD, llm=llm)
 
     assert [r.food_id for r in results] == ["f1", "f2"]
     assert results[0].used_ingredients == ("carrot",)
     assert len(llm.compose_inputs) == 1
-    # 도구는 땅콩 제한이 있는 아이에게 쓸 수 있는 재료만 돌려준다.
-    tool_messages = [m for m in llm.compose_inputs[0] if isinstance(m, ToolMessage)]
-    assert [m.content for m in tool_messages] == ['["carrot"]']
+
+
+async def test_prompt_lists_usable_ingredients_child_info_and_targets():
+    child = ChildContext(
+        age_group="4-5",
+        difficult_textures=("slimy",),
+        other_restrictions=("kiwi-like fruit",),
+        safe_foods=(SafeFoodInfo(name="Plain rice", preparation="steamed"),),
+        refused_foods=("Spinach soup",),
+        refused_ingredients=("Mushroom",),
+    )
+    foods = [
+        FoodInput(
+            id="0",
+            name="Carrot stir-fry",
+            ingredients=("Carrot", "Potato"),
+            cooking_method="stir_fried",
+            outcome="untouched",
+            difficulties=(Difficulty("texture", "hardness", "hard"),),
+        ),
+        FoodInput(id="1", name="Carrot", parent_food="Carrot stir-fry"),
+    ]
+    llm = ScriptedChatModel(
+        drafts=[
+            SuggestionsDraft(suggestions=[draft("0", ["carrot"]), draft("1", ["carrot"])]),
+        ]
+    )
+
+    await generate_suggestions(foods, RESTRICTIONS, child, llm=llm)
+
+    prompt = text_of(llm.compose_inputs[0])
+    for expected in (
+        "Plain rice",
+        "steamed",
+        "Spinach soup",
+        "Mushroom",
+        "slimy",
+        "kiwi-like fruit",
+        "Carrot stir-fry",
+        "stir_fried",
+        "hardness/hard",
+        "들어 있던 음식: Carrot stir-fry",
+    ):
+        assert expected in prompt
+    # 땅콩 제한이 있는 아이의 목록에는 땅콩 재료가 없고, 쓸 수 있는 재료는 들어 있다.
+    usable_section = prompt.split("[쓸 수 있는 재료")[1]
+    assert "carrot" in usable_section
+    assert "peanut butter" not in usable_section.lower()
 
 
 async def test_invalid_result_is_retried_with_feedback():
-    llm = ScriptedChatModel(
-        replies=[AIMessage(content="확인 끝")],
-        drafts=[drafts(["땅콩버터"], ["rice"]), drafts(["carrot"], ["rice"])],
-    )
+    llm = ScriptedChatModel(drafts=[drafts(["땅콩버터"], ["rice"]), drafts(["carrot"], ["rice"])])
 
-    results = await generate_suggestions(FOODS, RESTRICTIONS, llm=llm)
+    results = await generate_suggestions(FOODS, RESTRICTIONS, CHILD, llm=llm)
 
     assert results[0].used_ingredients == ("carrot",)
     assert len(llm.compose_inputs) == 2
@@ -82,13 +114,10 @@ async def test_invalid_result_is_retried_with_feedback():
 
 
 async def test_rejected_after_attempts_are_exhausted():
-    llm = ScriptedChatModel(
-        replies=[AIMessage(content="확인 끝")],
-        drafts=[drafts(["땅콩버터"], ["rice"])] * MAX_ATTEMPTS,
-    )
+    llm = ScriptedChatModel(drafts=[drafts(["땅콩버터"], ["rice"])] * MAX_ATTEMPTS)
 
     with pytest.raises(GenerationRejectedError) as raised:
-        await generate_suggestions(FOODS, RESTRICTIONS, llm=llm)
+        await generate_suggestions(FOODS, RESTRICTIONS, CHILD, llm=llm)
 
     assert len(llm.compose_inputs) == MAX_ATTEMPTS
     assert [(p.kind, p.food_id, p.ingredient) for p in raised.value.problems] == [
@@ -98,11 +127,9 @@ async def test_rejected_after_attempts_are_exhausted():
 
 async def test_missing_food_is_rejected():
     only_first = SuggestionsDraft(suggestions=[draft("f1", ["carrot"])])
-    llm = ScriptedChatModel(
-        replies=[AIMessage(content="확인 끝")], drafts=[only_first] * MAX_ATTEMPTS
-    )
+    llm = ScriptedChatModel(drafts=[only_first] * MAX_ATTEMPTS)
 
     with pytest.raises(GenerationRejectedError) as raised:
-        await generate_suggestions(FOODS, RESTRICTIONS, llm=llm)
+        await generate_suggestions(FOODS, RESTRICTIONS, CHILD, llm=llm)
 
     assert [(p.kind, p.food_id) for p in raised.value.problems] == [("missing_food", "f2")]

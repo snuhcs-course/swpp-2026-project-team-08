@@ -1,7 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 """재료 카탈로그와 아이의 제한(알러지 · 식이 제한) 판정.
 
-`search_available_ingredients` 도구와 `validation.py`가 같은 카탈로그와 규칙을 쓰도록 한곳에 모았다.
+프롬프트의 쓸 수 있는 재료 목록과 `validation.py`가 같은 카탈로그와 규칙을 쓰도록 한곳에 모았다.
 지금 카탈로그는 `mock_ingredients.json`이며, 실제 출처로 바꿀 때는 `load_catalog`만 교체한다.
 """
 
@@ -92,17 +92,8 @@ def conflicting_restrictions(
     return sorted(ingredient.restrictions & restrictions.ids)
 
 
-def usable_ingredient_names(restrictions: ChildRestrictions, candidates: list[str]) -> list[str]:
-    """후보 중 이 아이가 쓸 수 있는 재료 이름만 반환한다.
-
-    후보가 비어 있으면 카탈로그 전체에서 쓸 수 있는 재료의 대표 이름(첫 번째 이름)을 반환한다.
-    """
-    if not candidates:
-        unique = {id(i): i for i in load_catalog().values()}.values()
-        return [i.names[0] for i in unique if not conflicting_restrictions(i, restrictions)]
-    usable = []
-    for name in candidates:
-        ingredient = find_ingredient(name)
-        if ingredient is not None and not conflicting_restrictions(ingredient, restrictions):
-            usable.append(name)
-    return usable
+# AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim
+def usable_ingredient_names(restrictions: ChildRestrictions) -> list[str]:
+    """카탈로그에서 이 아이가 쓸 수 있는 재료의 대표 이름(첫 번째 이름)을 반환한다."""
+    unique = {id(i): i for i in load_catalog().values()}.values()
+    return [i.names[0] for i in unique if not conflicting_restrictions(i, restrictions)]

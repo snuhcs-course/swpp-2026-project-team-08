@@ -4,8 +4,7 @@
 from typing import Any
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage
-from langchain_core.outputs import ChatGeneration, ChatResult
+from langchain_core.messages import BaseMessage
 from langchain_core.runnables import Runnable, RunnableLambda
 from pydantic import Field
 
@@ -13,12 +12,11 @@ from app.features.suggestions.workflow.schemas import SuggestionsDraft
 
 
 class ScriptedChatModel(BaseChatModel):
-    """`agent`가 받을 응답(`replies`)과 `compose`가 받을 초안(`drafts`)을 순서대로 돌려준다.
+    """`compose`가 받을 초안(`drafts`)을 순서대로 돌려준다.
 
     `compose_inputs`에는 compose가 모델에 보낸 메시지들이 호출 순서대로 쌓인다.
     """
 
-    replies: list[AIMessage] = Field(default_factory=list)
     drafts: list[SuggestionsDraft] = Field(default_factory=list)
     compose_inputs: list[list[BaseMessage]] = Field(default_factory=list)
 
@@ -27,10 +25,7 @@ class ScriptedChatModel(BaseChatModel):
         return "scripted"
 
     def _generate(self, messages: list[BaseMessage], stop=None, run_manager=None, **kwargs: Any):
-        return ChatResult(generations=[ChatGeneration(message=self.replies.pop(0))])
-
-    def bind_tools(self, tools: Any, **kwargs: Any) -> Runnable:
-        return self
+        raise NotImplementedError("이 가짜 모델은 구조화 출력(compose)만 지원한다")
 
     def with_structured_output(self, schema: Any, **kwargs: Any) -> Runnable:
         def next_draft(messages: list[BaseMessage]) -> SuggestionsDraft:

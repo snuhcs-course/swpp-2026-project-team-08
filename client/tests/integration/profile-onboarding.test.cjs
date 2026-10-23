@@ -1,37 +1,25 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const ts = require('typescript');
-const Module = require('node:module');
+require('../helpers/register.cjs');
 
-require.extensions['.ts'] = (module, filename) => module._compile(
-  ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
-  }).outputText,
-  filename,
-);
+const { createMemoryStorage } = require('../helpers/memory-storage.cjs');
+const { values, storage, failNextWrite } = createMemoryStorage();
 
-const values = new Map();
-let failedKey = null;
-const storage = {
-  async getItem(key) { return values.get(key) ?? null; },
-  async setItem(key, value) {
-    if (key === failedKey) { failedKey = null; throw new Error('Disk full'); }
-    values.set(key, value);
-  },
-  async removeItem(key) { values.delete(key); },
-};
-const originalLoad = Module._load;
-Module._load = function (name, ...args) {
-  return name === '@react-native-async-storage/async-storage' ? storage : originalLoad.call(this, name, ...args);
-};
+const { mockModules } = require('../helpers/mock-modules.cjs');
+mockModules((name) => {
+  return name === '@react-native-async-storage/async-storage' ? storage : undefined;
+});
 
-const { emptyDraft } = require('../src/features/onboarding/types.ts');
-const { canFinish, isDraft } = require('../src/features/onboarding/rules.ts');
-const { readProfile, saveProfile } = require('../src/data/storage/profileStorage.ts');
-const { readDraft, saveDraft, clearDraft } = require('../src/data/storage/onboardingDraftStorage.ts');
-const { readLanguage, saveLanguage } = require('../src/data/storage/languageStorage.ts');
+const { emptyDraft } = require('../../src/features/onboarding/types.ts');
+
+const { canFinish, isDraft } = require('../../src/features/onboarding/rules.ts');
+
+const { readProfile, saveProfile } = require('../../src/data/storage/profileStorage.ts');
+
+const { readDraft, saveDraft, clearDraft } = require('../../src/data/storage/onboardingDraftStorage.ts');
+
+const { readLanguage, saveLanguage } = require('../../src/data/storage/languageStorage.ts');
 
 function completedDraft() {
   return {
@@ -69,7 +57,7 @@ test('failed profile write preserves the previous profile and recoverable draft'
   delete oldProfile.safeFoodInput;
   await saveProfile(oldProfile);
   await saveDraft({ ...draft, step: 'review' });
-  failedKey = 'nurturebites.profile.v1';
+  failNextWrite('nurturebites.profile.v1');
   await assert.rejects(saveProfile({ ...oldProfile, childName: 'Edited' }));
   assert.deepEqual(await readProfile(), oldProfile);
   assert.equal((await readDraft()).step, 'review');

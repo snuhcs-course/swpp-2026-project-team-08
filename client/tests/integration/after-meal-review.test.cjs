@@ -1,92 +1,24 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const ts = require('typescript');
-const Module = require('node:module');
+require('../helpers/register.cjs');
+const { savedMeal } = require('../fixtures/after-meal-review.cjs');
 
-require.extensions['.ts'] = (module, filename) => module._compile(
-  ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
-  }).outputText,
-  filename,
-);
-const values = new Map();
-let failedKey = null;
-const storage = {
-  async getItem(key) { return values.get(key) ?? null; },
-  async setItem(key, value) {
-    if (key === failedKey) { failedKey = null; throw new Error('Disk full'); }
-    values.set(key, value);
-  },
-  async removeItem(key) { values.delete(key); },
-};
-const originalLoad = Module._load;
-Module._load = function (name, ...args) {
-  return name === '@react-native-async-storage/async-storage' ? storage : originalLoad.call(this, name, ...args);
-};
+const { createMemoryStorage } = require('../helpers/memory-storage.cjs');
+const { values, storage, failNextWrite } = createMemoryStorage();
 
-const { newDraft, mealFromDraft } = require('../src/features/meal-checkin/rules.ts');
-const { newFood } = require('../src/rules/foodDraft.ts');
-const { saveMeal, readMeal, updateMealFoods } = require('../src/data/storage/mealStorage.ts');
+const { mockModules } = require('../helpers/mock-modules.cjs');
+mockModules((name) => {
+  return name === '@react-native-async-storage/async-storage' ? storage : undefined;
+});
+
+const { saveMeal, readMeal, updateMealFoods } = require('../../src/data/storage/mealStorage.ts');
+
 const { readAfterMealDraft, readAfterMealReview, saveAfterMealDraft, saveAfterMealReview } =
-  require('../src/data/storage/afterMealReviewStorage.ts');
-const { newReviewDraft, reconcileOutcomes, setOutcome, applySuggestions, allOutcomesConfirmed, addDifficulty, reviewFromDraft, toggleIngredient, canAddDifficulty } =
-  require('../src/features/after-meal-review/rules.ts');
+  require('../../src/data/storage/afterMealReviewStorage.ts');
 
-function savedMeal(childId) {
-  const draft = newDraft(childId);
-  draft.mealType = 'lunch'; draft.setting = 'home';
-  draft.photo = { id: 'before', uri: 'file:///before.png', mimeType: 'image/png' };
-  draft.foods = [{ ...newFood(), confirmed: true, id: 'food-1', name: 'Rice', ingredients: ['Carrot', 'Egg'] }];
-  draft.step = 'foods';
-  return mealFromDraft(draft);
-}
-
-test('AI suggestions remain separate from independently confirmed food and ingredient outcomes', () => {
-  const meal = savedMeal('outcomes');
-  let draft = newReviewDraft(meal);
-  const ingredient = draft.outcomes[0].ingredients[0].id;
-  draft.outcomes = applySuggestions(draft.outcomes, [{ foodId: 'food-1', outcome: 'eaten' }, { foodId: 'food-1', ingredientId: ingredient, outcome: 'eaten' }]);
-  assert.equal(allOutcomesConfirmed(draft.outcomes), false);
-  draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'tasted');
-  draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'untouched', ingredient);
-  assert.equal(draft.outcomes[0].decision.confirmed, 'tasted');
-  assert.equal(draft.outcomes[0].ingredients[0].decision.confirmed, 'untouched');
-  assert.equal(draft.outcomes[0].ingredients[1].decision.confirmed, null);
-  assert.equal(allOutcomesConfirmed(draft.outcomes), true);
-  draft.outcomes = toggleIngredient(draft.outcomes, 'food-1', draft.outcomes[0].ingredients[1].id);
-  assert.equal(allOutcomesConfirmed(draft.outcomes), false);
-  draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'unclear', draft.outcomes[0].ingredients[1].id);
-  assert.equal(allOutcomesConfirmed(draft.outcomes), true);
-  assert.equal(reviewFromDraft(draft, meal).afterPhoto, null);
-  draft.afterPhoto = { id: 'after', uri: 'file:///after.png', mimeType: 'image/png' };
-  assert.equal(reviewFromDraft(draft, meal).outcomes[0].ingredients[1].decision.confirmed, 'unclear');
-});
-
-test('food edits retain matching ingredient IDs and drop removed ingredient outcomes', () => {
-  const meal = savedMeal('editing');
-  const original = newReviewDraft(meal).outcomes;
-  const carrotId = original[0].ingredients[0].id;
-  const answered = setOutcome(original, 'food-1', 'eaten', carrotId);
-  const edited = reconcileOutcomes(answered, [{ ...meal.foods[0], ingredients: ['Carrot', 'Potato'] }]);
-  assert.equal(edited[0].ingredients[0].id, carrotId);
-  assert.equal(edited[0].ingredients[0].decision.confirmed, 'eaten');
-  assert.equal(edited[0].ingredients[1].decision.confirmed, null);
-  assert.equal(edited[0].ingredients.some((item) => item.name === 'Egg'), false);
-  const repeated = reconcileOutcomes([], [{ ...meal.foods[0], ingredients: ['Egg', 'egg'] }]);
-  assert.notEqual(repeated[0].ingredients[0].id, repeated[0].ingredients[1].id);
-});
-
-test('difficulty tags keep multiple values but replace single-choice categories', () => {
-  let tags = addDifficulty([], 'texture', 'soft');
-  tags = addDifficulty(tags, 'texture', 'crunchy');
-  tags = addDifficulty(tags, 'smell', 'strong');
-  tags = addDifficulty(tags, 'smell', 'mild');
-  assert.deepEqual(tags.filter((tag) => tag.category === 'texture').map((tag) => tag.value), ['soft', 'crunchy']);
-  assert.deepEqual(tags.filter((tag) => tag.category === 'smell').map((tag) => tag.value), ['mild']);
-  assert.equal(addDifficulty(tags, 'texture', '  ').length, tags.length);
-});
+const { newReviewDraft, reconcileOutcomes, setOutcome, allOutcomesConfirmed, addDifficulty, reviewFromDraft, toggleIngredient, canAddDifficulty } =
+  require('../../src/features/after-meal-review/rules.ts');
 
 test('stored after-meal draft and result are tied to one meal and preserve the before photo', async () => {
   values.clear();
@@ -107,7 +39,7 @@ test('stored after-meal draft and result are tied to one meal and preserve the b
   draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'eaten');
   for (const ingredient of draft.outcomes[0].ingredients) draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'tasted', ingredient.id);
   const result = reviewFromDraft(draft, updated);
-  failedKey = `nurturebites.after-meal.${meal.childId}.${meal.id}.result.v1`;
+  failNextWrite(`nurturebites.after-meal.${meal.childId}.${meal.id}.result.v1`);
   await assert.rejects(saveAfterMealReview(result));
   assert.equal((await readAfterMealDraft(meal.childId, meal.id)).step, 'preview');
   await saveAfterMealReview(result);
@@ -115,7 +47,6 @@ test('stored after-meal draft and result are tied to one meal and preserve the b
   assert.equal((await readAfterMealReview(meal.childId, meal.id)).afterPhoto.id, 'after');
   assert.equal((await readAfterMealDraft(meal.childId, meal.id)).step, 'complete');
 });
-
 
 test('final review follows pending autosaves and rejects unanswered results', async () => {
   values.clear();
@@ -130,7 +61,6 @@ test('final review follows pending autosaves and rejects unanswered results', as
   assert.equal((await readAfterMealDraft(meal.childId, meal.id)).step, 'complete');
   assert.equal((await readAfterMealReview(meal.childId, meal.id)).outcomes[0].decision.confirmed, 'eaten');
 });
-
 
 test('photo-free review saves only opted-in ingredients and preserves answers when toggled', async () => {
   const meal = savedMeal('photo-free');
@@ -173,13 +103,6 @@ test('texture dimensions survive storage while smell and arrangement replace onl
   assert.deepEqual(loaded.difficulties['food-1'].map(tag => tag.subcategory), ['hardness', 'moisture', undefined, undefined]);
 });
 
-test('legacy follow-up drafts resume at difficulties without changing current steps', () => {
-  const { normalizeReviewStep } = require('../src/features/after-meal-review/rules.ts');
-  assert.equal(normalizeReviewStep('suggestions'), 'difficulties');
-  for (const step of ['photo', 'preview', 'compare', 'outcomes', 'difficulties', 'complete']) assert.equal(normalizeReviewStep(step), step);
-});
-
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 test('legacy reviews resume safely and omit retired feedback from saved results', async () => {
   const meal = savedMeal('retired-feedback');
   const draft = newReviewDraft(meal);
@@ -196,7 +119,6 @@ test('legacy reviews resume safely and omit retired feedback from saved results'
   assert.deepEqual(await readAfterMealReview(meal.childId, meal.id), review);
 });
 
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 test('feedback uses a strict boolean property and migrates both legacy answers', async () => {
   const meal = savedMeal('boolean-feedback');
   const draft = newReviewDraft(meal);

@@ -1,27 +1,27 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const ts = require('typescript');
-const Module = require('node:module');
+require('../helpers/register.cjs');
 
-require.extensions['.ts'] = (module, filename) => module._compile(
-  ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
-  }).outputText, filename,
-);
+const { createMemoryStorage } = require('../helpers/memory-storage.cjs');
+const { values, storage } = createMemoryStorage();
 
-const values = new Map();
 let saveRemoteReview;
+
 let pickPhoto;
+
 let meal;
+
 let detail;
+
 let slots;
+
 let cursor;
+
 let effects;
+
 const queryClient = { setQueryData() {}, invalidateQueries() {} };
-// Run the production Hook with deterministic state, effects, and deferred device calls.
+
 const react = {
   useState(initial) {
     const index = cursor++;
@@ -43,12 +43,10 @@ const react = {
     }
   },
 };
-const originalLoad = Module._load;
-Module._load = function (name, ...args) {
-  if (name === '@react-native-async-storage/async-storage') return {
-    getItem: async (key) => values.get(key) ?? null,
-    setItem: async (key, value) => { values.set(key, value); },
-  };
+
+const { mockModules } = require('../helpers/mock-modules.cjs');
+mockModules((name) => {
+  if (name === '@react-native-async-storage/async-storage') return storage;
   if (name === 'react') return react;
   if (name === '@tanstack/react-query') return {
     useQueryClient: () => queryClient,
@@ -59,7 +57,7 @@ Module._load = function (name, ...args) {
   if (name === './mealLogQueries') return { mealLogKeys: { all: (id) => ['meal-log', id] } };
   if (name === './checkinReferenceQueries') return { checkinReferenceKeys: { meals: (id) => ['meal-details-v1', id] } };
   if (name.endsWith('/mealQueries')) return {
-    mealKeys: require('../src/data/queries/mealQueryKeys.ts').mealKeys,
+    mealKeys: require('../../src/data/queries/mealQueryKeys.ts').mealKeys,
     useSaveMeal: () => ({ isPending: false }),
     useMeal: () => ({ data: meal, isSuccess: true }),
     useMealDetail: () => ({ data: detail, isSuccess: true }),
@@ -68,18 +66,26 @@ Module._load = function (name, ...args) {
   if (name.endsWith('/mealPhotoPicker')) return {
     pickMealPhoto: (...args) => pickPhoto(...args), PhotoError: class PhotoError extends Error {},
   };
-  return originalLoad.call(this, name, ...args);
-};
+  return undefined;
+});
 
-const { newDraft, mealFromDraft } = require('../src/features/meal-checkin/rules.ts');
-const { newFood } = require('../src/rules/foodDraft.ts');
-const { saveMeal, saveMealDraft, readMealDraft } = require('../src/data/storage/mealStorage.ts');
-const { readHomeMeals } = require('../src/data/storage/homeMealStorage.ts');
-const { readAfterMealDraft, readAfterMealReview, saveAfterMealDraft } = require('../src/data/storage/afterMealReviewStorage.ts');
-const { newReviewDraft, reviewFromDraft, setOutcome } = require('../src/features/after-meal-review/rules.ts');
-const { useSaveAfterMealReview } = require('../src/data/queries/afterMealReviewQueries.ts');
-const { useAfterMealReview } = require('../src/features/after-meal-review/hooks/useAfterMealReview.ts');
-const { useMealCheckin } = require('../src/features/meal-checkin/hooks/useMealCheckin.ts');
+const { newDraft, mealFromDraft } = require('../../src/features/meal-checkin/rules.ts');
+
+const { newFood } = require('../../src/rules/foodDraft.ts');
+
+const { saveMeal, saveMealDraft, readMealDraft } = require('../../src/data/storage/mealStorage.ts');
+
+const { readHomeMeals } = require('../../src/data/storage/homeMealStorage.ts');
+
+const { readAfterMealDraft, readAfterMealReview, saveAfterMealDraft } = require('../../src/data/storage/afterMealReviewStorage.ts');
+
+const { newReviewDraft, reviewFromDraft, setOutcome } = require('../../src/features/after-meal-review/rules.ts');
+
+const { useSaveAfterMealReview } = require('../../src/data/queries/afterMealReviewQueries.ts');
+
+const { useAfterMealReview } = require('../../src/features/after-meal-review/hooks/useAfterMealReview.ts');
+
+const { useMealCheckin } = require('../../src/features/meal-checkin/hooks/useMealCheckin.ts');
 
 function createMeal(childId) {
   return mealFromDraft({ ...newDraft(childId), mealType: 'lunch', setting: 'home',
@@ -149,7 +155,6 @@ test('skipping a delayed photo ignores its result without cancelling a newer pho
   assert.equal(model.picking, false);
 });
 
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 test('meal check-in Hook owns linking, cancellation, editing return, and unlinking', async () => {
   values.clear();
   slots = []; cursor = 0; effects = [];

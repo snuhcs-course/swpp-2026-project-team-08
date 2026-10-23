@@ -1,17 +1,9 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const ts = require('typescript');
+require('../helpers/register.cjs');
 
-require.extensions['.ts'] = (module, filename) => module._compile(
-  ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  }).outputText,
-  filename,
-);
-
-const { visibleHomeData } = require('../src/features/home/rules.ts');
+const { visibleHomeData } = require('../../src/features/home/rules.ts');
 
 test('legacy suggestions without verifiable food-form evidence stay out of actionable Home cards', () => {
   const profile = { id: 'child-1', updatedAt: 'v1', allergies: [], restrictions: [] };

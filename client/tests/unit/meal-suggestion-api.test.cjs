@@ -1,24 +1,21 @@
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const ts = require('typescript');
-const Module = require('node:module');
+require('../helpers/register.cjs');
 
-require.extensions['.ts'] = (module, filename) => module._compile(
-  ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  }).outputText,
-  filename,
-);
 let request;
-const originalLoad = Module._load;
-Module._load = function (name, ...args) {
+
+const { mockModules } = require('../helpers/mock-modules.cjs');
+const restoreMocks = mockModules((name) => {
   if (name.endsWith('/network/apiClient')) return { apiRequest: (...params) => request(...params) };
-  return originalLoad.call(this, name, ...args);
-};
-const api = require('../src/data/api/mealSuggestionApi.ts');
-const { reviewedSuggestionTargets, unGeneratedTargets } = require('../src/features/suggestions/rules.ts');
-Module._load = originalLoad;
+  return undefined;
+});
+
+const api = require('../../src/data/api/mealSuggestionApi.ts');
+
+const { reviewedSuggestionTargets, unGeneratedTargets } = require('../../src/features/suggestions/rules.ts');
+
+restoreMocks();
 
 const suggestion = {
   id: '31', user_id: '1', meal_id: '8', food_id: '2', ingredient_id: '212',

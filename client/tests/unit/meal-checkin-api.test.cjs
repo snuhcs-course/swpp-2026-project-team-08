@@ -1,27 +1,23 @@
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const ts = require('typescript');
-const Module = require('node:module');
+require('../helpers/register.cjs');
 
-require.extensions['.ts'] = (module, filename) => module._compile(
-  ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  }).outputText,
-  filename,
-);
-
-const originalLoad = Module._load;
 let request;
-Module._load = function (name, ...args) {
-  if (name.endsWith('/network/apiClient')) return { apiRequest: (...params) => request(...params) };
-  return originalLoad.call(this, name, ...args);
-};
 
-const { prepareMealWrite, writeMeal } = require('../src/data/api/mealWriteApi.ts');
-const { listIngredientCatalog } = require('../src/data/api/ingredientCatalogApi.ts');
-const { listSavedSuggestions } = require('../src/data/api/savedSuggestionListApi.ts');
-const { listMealDetails } = require('../src/data/api/mealReadApi.ts');
+const { mockModules } = require('../helpers/mock-modules.cjs');
+mockModules((name) => {
+  if (name.endsWith('/network/apiClient')) return { apiRequest: (...params) => request(...params) };
+  return undefined;
+});
+
+const { prepareMealWrite, writeMeal } = require('../../src/data/api/mealWriteApi.ts');
+
+const { listIngredientCatalog } = require('../../src/data/api/ingredientCatalogApi.ts');
+
+const { listSavedSuggestions } = require('../../src/data/api/savedSuggestionListApi.ts');
+
+const { listMealDetails } = require('../../src/data/api/mealReadApi.ts');
 
 const meal = {
   id: 'local-draft', childId: '1', mealDate: '2026-10-21', mealType: 'lunch',

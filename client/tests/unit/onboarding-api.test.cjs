@@ -1,33 +1,28 @@
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const ts = require('typescript');
-const Module = require('node:module');
-
-require.extensions['.ts'] = (module, filename) => module._compile(
-  ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
-  }).outputText,
-  filename,
-);
+require('../helpers/register.cjs');
 
 let response;
+
 let request;
-const originalLoad = Module._load;
-Module._load = function (name, ...args) {
+
+const { mockModules } = require('../helpers/mock-modules.cjs');
+mockModules((name) => {
   if (name === '../network/apiClient') return {
     apiRequest: async (path, init) => { request = { path, init }; return response; },
   };
   if (name === '../storage/authStorage') return {
     isUserId: (value) => typeof value === 'string' && /^[1-9][0-9]*$/.test(value),
   };
-  return originalLoad.call(this, name, ...args);
-};
+  return undefined;
+});
 
 const { toOnboardingWrite, fromOnboardingResponse, readOnboarding, writeOnboarding } =
-  require('../src/data/api/onboardingApi.ts');
+  require('../../src/data/api/onboardingApi.ts');
 
 const account = { id: '12', email: 'parent@example.com', fullName: 'Parent' };
+
 const profile = {
   id: '12', caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
   childName: 'Child', ageRange: '4-5',

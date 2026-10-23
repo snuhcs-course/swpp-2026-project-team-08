@@ -1,4 +1,4 @@
-<!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
+<!-- AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung -->
 
 # Meal Check-in implementation plan
 
@@ -37,4 +37,4 @@ Run `npm run lint` and `npx tsc --noEmit`. Cover date validation, food confirmat
 - Fixed an RN Web compatibility error in image validation by using the supported `Image.getSize` callback overload.
 - Native camera/gallery permissions and document copying require physical-device or simulator QA. No iOS simulator tooling is available in this environment. The recognition backend and After-meal Review form remain separate, unimplemented features; the prototype UI explicitly labels both boundaries.
 - Additional runtime checks: photo-free manual food entry, unsaved food editor restore, and reloading the completion screen with its saved Meal ID all passed.
-- Final checks: TypeScript and lint pass; all 7 regression tests pass. Run the suite with `npm run test:meal-checkin` from `client/`.
+- Final checks: TypeScript and lint pass; all 7 regression tests pass. The current test entry point is `npm test` from `client/`, which runs all Unit and Integration tests.

@@ -1,22 +1,14 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const ts = require('typescript');
-const Module = require('node:module');
+require('../helpers/register.cjs');
 
-require.extensions['.ts'] = (module, filename) => module._compile(
-  ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
-  }).outputText,
-  filename,
-);
-const originalLoad = Module._load;
-Module._load = function (name, ...args) {
+const { mockModules } = require('../helpers/mock-modules.cjs');
+mockModules((name) => {
   if (name === '@react-native-async-storage/async-storage') {
     return { getItem: async () => null, setItem: async () => undefined, removeItem: async () => undefined };
   }
-  // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+
   if (name === 'expo-secure-store') {
     const store = {
       WHEN_UNLOCKED: 1,
@@ -31,17 +23,19 @@ Module._load = function (name, ...args) {
     const constants = { expoConfig: { hostUri: '127.0.0.1:8081' } };
     return { __esModule: true, default: constants, ...constants };
   }
-  return originalLoad.call(this, name, ...args);
-};
+  return undefined;
+});
 
 const {
   calendarCells, countsByDate, densityLevel, filterMeals, foodResponseCards,
   isoDate, matchesMealQuery, mealDateParts, mealThumbnail, monthKey, shiftMonth,
   sortMealsLatestFirst,
   filterMealDetails, foodResponseCardsFromDetail, sortMealDetailsLatestFirst,
-} = require('../src/features/meal-log/rules.ts');
-const { mealToUpsertBody, reviewToBody, suggestionToBody } = require('../src/data/api/mealLogApi.ts');
-const { applySuggestionSaved } = require('../src/data/storage/homeStorage.ts');
+} = require('../../src/features/meal-log/rules.ts');
+
+const { mealToUpsertBody, reviewToBody, suggestionToBody } = require('../../src/data/api/mealLogApi.ts');
+
+const { applySuggestionSaved } = require('../../src/data/storage/homeStorage.ts');
 
 const rice = {
   id: 'food-1',
@@ -53,6 +47,7 @@ const rice = {
   foods: [{ name: 'Kimchi fried rice', ingredients: ['rice', 'kimchi'] }],
   reviewStatus: 'awaiting_review',
 };
+
 const soup = {
   id: 'food-2',
   mealDate: '2026-10-12',
@@ -118,9 +113,9 @@ test('server meal details drive history search, review filter, and linked sugges
 });
 
 test('meal history requests use the authenticated v1 collection and delete route', async () => {
-  const api = require('../src/data/network/apiClient.ts');
-  const { listMealDetails } = require('../src/data/api/mealReadApi.ts');
-  const { deleteMealRecord } = require('../src/data/api/mealHistoryApi.ts');
+  const api = require('../../src/data/network/apiClient.ts');
+  const { listMealDetails } = require('../../src/data/api/mealReadApi.ts');
+  const { deleteMealRecord } = require('../../src/data/api/mealHistoryApi.ts');
   const original = api.apiRequest;
   const calls = [];
   api.apiRequest = async (path, init) => {
@@ -186,7 +181,7 @@ test('upsert, review, and suggestion bodies use the server field names', () => {
   assert.equal(Object.hasOwn(body.foods[0], 'history'), false);
   assert.equal(Object.hasOwn(body.foods[0], 'traits'), false);
   assert.equal(body.foods[0].serving_note, 'small bowl');
-  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+
   assert.equal(body.foods[0].source, 'ai');
   assert.equal(body.foods[0].confirmed, true);
   assert.equal(Object.hasOwn(body.foods[0], 'origin'), false);
@@ -210,7 +205,6 @@ test('upsert, review, and suggestion bodies use the server field names', () => {
   assert.equal(suggestion.serving_tip, 'Keep the form');
 });
 
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 test('bookmarking a linked suggestion toggles the saved flag without dropping it on a later unsave', () => {
   const records = { meals: [], suggestions: [] };
   const draft = {
@@ -228,8 +222,6 @@ test('bookmarking a linked suggestion toggles the saved flag without dropping it
   assert.equal(records.suggestions[0].id, 'sug-2026-10-16-dinner');
 });
 
-
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 test('meal history food and ingredient cards preserve managed suggestion routing', () => {
   const food = {
     id: 'food-managed', name: 'Omelet', ingredients: ['Egg'], preparation: 'pan-fried',
@@ -250,10 +242,9 @@ test('meal history food and ingredient cards preserve managed suggestion routing
   assert.equal(cards[1].outcome, 'eaten');
 });
 
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 test('meal detail responses preserve boolean feedback and reject invalid values', async () => {
-  const api = require('../src/data/network/apiClient.ts');
-  const { getMealDetail } = require('../src/data/api/mealLogApi.ts');
+  const api = require('../../src/data/network/apiClient.ts');
+  const { getMealDetail } = require('../../src/data/api/mealLogApi.ts');
   const original = api.apiRequest;
   const response = {
     id: 'boolean-feedback-meal', child_id: 'boolean-feedback-child', meal_date: '2026-10-19',

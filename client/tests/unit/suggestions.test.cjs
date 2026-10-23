@@ -1,26 +1,16 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const ts = require('typescript');
-const Module = require('node:module');
-require.extensions['.ts'] = (module, filename) =>
-  module._compile(
-    ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true,
-      },
-    }).outputText,
-    filename,
-  );
-const originalLoad = Module._load;
+require('../helpers/register.cjs');
+
 let request;
-Module._load = function (name, ...args) {
+
+const { mockModules } = require('../helpers/mock-modules.cjs');
+mockModules((name) => {
   if (name.endsWith('/network/apiClient')) return { apiRequest: (...args) => request(...args) };
-  return originalLoad.call(this, name, ...args);
-};
+  return undefined;
+});
+
 const {
   parseSuggestion,
   parseBatch,
@@ -29,7 +19,8 @@ const {
   eligibleMeals,
   recordSuggestionTry,
   parseTry,
-} = require('../src/data/api/suggestionApi.ts');
+} = require('../../src/data/api/suggestionApi.ts');
+
 const {
   canUpdateFoods,
   toggleFood,
@@ -37,7 +28,8 @@ const {
   latestLinkedTry,
   suggestionTryChips,
   suggestionPreview,
-} = require('../src/features/suggestions/rules.ts');
+} = require('../../src/features/suggestions/rules.ts');
+
 const suggestion = {
   id: 's1',
   child_id: 'child',
@@ -72,6 +64,7 @@ test('food changes enforce one to three distinct choices and compare sets', () =
   assert.deepEqual(toggleFood(['a', 'b', 'c'], 'd'), ['a', 'b', 'c']);
   assert.deepEqual(toggleFood(['a', 'b', 'c'], 'b'), ['a', 'c']);
 });
+
 test('resumes the next pending card, with terminal completion persisted in statuses', () => {
   const batch = { items: [{ ...suggestion, id: 'old', status: 'saved' }, suggestion] };
   assert.equal(nextSuggestion(batch).id, 's1');
@@ -80,6 +73,7 @@ test('resumes the next pending card, with terminal completion persisted in statu
     null,
   );
 });
+
 test('rejects incomplete, duplicate, mismatched, and empty generator responses', () => {
   const batch = { revision: 'v1', selected_food_ids: ['food'], items: [suggestion] };
   assert.equal(parseBatch(batch).items.length, 1);
@@ -92,6 +86,7 @@ test('rejects incomplete, duplicate, mismatched, and empty generator responses',
     parseSuggestion({ ...suggestion, content: { ...suggestion.content, serving_tip: ' ' } }),
   );
 });
+
 test('saved queries reject another child, and network failures remain visible', async () => {
   request = async () => [{ ...suggestion, saved_at: suggestion.created_at, child_id: 'other' }];
   await assert.rejects(savedSuggestions('child'));
@@ -101,6 +96,7 @@ test('saved queries reject another child, and network failures remain visible', 
   await assert.rejects(savedSuggestions('child'), /offline/);
   await assert.rejects(eligibleMeals('child', 's1'), /offline/);
 });
+
 test('generation has cancellation and preserves selected IDs at the API boundary', async () => {
   let body;
   request = async (url, init) => {
@@ -121,6 +117,7 @@ test('generation has cancellation and preserves selected IDs at the API boundary
     /aborted/,
   );
 });
+
 test('try requests carry exactly one food or tracked ingredient target', async () => {
   request = async (_, init) => {
     assert.deepEqual(JSON.parse(init.body), {
@@ -142,6 +139,7 @@ test('try requests carry exactly one food or tracked ingredient target', async (
     'try1',
   );
 });
+
 test('saved list date ignores deleted meals and previews only the first sentence', () => {
   const item = {
     ...suggestion,

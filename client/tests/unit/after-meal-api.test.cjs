@@ -1,27 +1,25 @@
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const ts = require('typescript');
-const Module = require('node:module');
+require('../helpers/register.cjs');
 
-require.extensions['.ts'] = (module, filename) => module._compile(
-  ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  }).outputText,
-  filename,
-);
 let request;
-const originalLoad = Module._load;
-Module._load = function (name, ...args) {
+
+const { mockModules } = require('../helpers/mock-modules.cjs');
+const restoreMocks = mockModules((name) => {
   if (name.endsWith('/network/apiClient')) return { apiRequest: (...params) => request(...params) };
-  return originalLoad.call(this, name, ...args);
-};
-const { toMealDetail } = require('../src/data/dto/mealDto.ts');
-const { toLegacyMeal } = require('../src/data/dto/mealLegacyDto.ts');
-const { getMealDetail } = require('../src/data/api/mealReadApi.ts');
-const { updateReviewMealFoods } = require('../src/data/api/mealFoodsApi.ts');
-const { prepareReviewWrite, writeMealReview } = require('../src/data/api/mealReviewApi.ts');
-Module._load = originalLoad;
+  return undefined;
+});
+
+const { toLegacyMeal } = require('../../src/data/dto/mealLegacyDto.ts');
+
+const { getMealDetail } = require('../../src/data/api/mealReadApi.ts');
+
+const { updateReviewMealFoods } = require('../../src/data/api/mealFoodsApi.ts');
+
+const { prepareReviewWrite, writeMealReview } = require('../../src/data/api/mealReviewApi.ts');
+
+restoreMocks();
 
 const response = {
   id: '8', user_id: '1', meal_date: '2026-10-21', meal_type: 'lunch', setting: 'home',

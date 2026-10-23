@@ -7,7 +7,10 @@ const ts = require('typescript');
 for (const extension of ['.ts', '.tsx']) {
   require.extensions[extension] = (module, filename) => module._compile(
     ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
+      fileName: filename,
       compilerOptions: {
+        inlineSourceMap: true,
+        inlineSources: true,
         module: ts.ModuleKind.CommonJS,
         target: ts.ScriptTarget.ES2022,
         jsx: ts.JsxEmit.ReactJSX,

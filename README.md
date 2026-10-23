@@ -24,7 +24,7 @@ NurtureBites is a meal tracker and planning app for caregivers of autistic child
 
 ## Iteration 2 Progress
 
-Iteration 2 moved NurtureBites from a local prototype to a client–server app aligned with the newly edited version of Figma and product requirement document. Merged work on [the team repository](https://github.com/snuhcs-course/swpp-2026-project-team-08):
+Iteration 2 moved NurtureBites from a local prototype to a client–server app aligned with the newly edited version of Figma and product requirement document. A lot of medical research has been done to change the guideline of "what made the child not eat this food" to fulfill the autistic caregiver's needs. Out of the 3 AI implementation ideas, 2 of them were dropped (with TA's confirmation). Merged work on [the team repository](https://github.com/snuhcs-course/swpp-2026-project-team-08):
 
 - **Backend foundation ([#5](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/5), [#6](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/6)):** FastAPI + Postgres, auth, meal APIs, and meal history/details screens.
 - **CI/CD ([#8](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/8)):** GitHub Actions lint/test, Docker image build, and deploy to AWS (ECR, EC2, CloudFront).
@@ -40,6 +40,7 @@ Iteration 2 moved NurtureBites from a local prototype to a client–server app a
 - sending emails for the verification code (if one wants to change the caregiver's email in the profile)
 - uploading photos from gallery / file (only can take photos for now in the demo)
 - profile's tutorial guide
+- the login screen design is not aesthetically appealing so the design will be modified 
 - profile's data policy and privacy guideline
 
 ## Setup and Execution

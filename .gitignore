@@ -19,6 +19,8 @@
 *.pem
 .DS_Store
 **/.env*.local
+/.env
+/data/ingredient_db/.env
 *.tsbuildinfo
 npm-debug.*
 yarn-debug.*

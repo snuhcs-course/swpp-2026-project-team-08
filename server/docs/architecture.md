@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim -->
 
 # server — 아키텍처
@@ -165,7 +166,7 @@ features/suggestions/
 - **도구(`tools.py`)는 LLM이 상황에 따라 직접 조회해야 할 때만 둔다.** 항상 필요한 데이터는 도구가 아니라 서비스가
   입력으로 넘긴다. 도구는 읽기 전용이고 세션을 열지 않으며, `child_id`나 제한 목록 같은 식별자 · 권한 값은 LLM
   인자로 받지 않고 `InjectedState`로 상태에서 주입한다 (LLM이 다른 값을 지어내지 못하도록).
-- 테스트에서는 LLM 클라이언트만 가짜로 바꿔 그래프 전체를 실행한다 (`tests/fake_chat_model.py`). 테스트에서 실제 LLM을
+- 테스트에서는 LLM 클라이언트만 가짜로 바꿔 그래프 전체를 실행한다 (`tests/helpers/fake_chat_model.py`). 테스트에서 실제 LLM을
   호출하지 않는다.
 - LangSmith 추적은 코드를 바꾸지 않고 환경변수로 켤 수 있다. 프롬프트에 아이의 식사 정보가 들어가므로, 운영에서
   켜기 전에 외부 서비스로 보내도 되는지 팀이 정한다.
@@ -330,7 +331,7 @@ async def sign_up(...): ...
 **왜 `ErrorMappedRoute`인가.** Pydantic 검증은 엔드포인트 함수가 호출되기 *전에* 일어나므로 함수를 감싸는
 데코레이터로는 검증 실패를 잡을 수 없다. 라우트 핸들러를 감싸면 서비스 에러와 검증 에러를 한 곳에서 같은 방식으로
 처리할 수 있다. 모든 라우터는 `APIRouter(route_class=ErrorMappedRoute)`로 만들어야 하고, 빠뜨리면 선언이
-적용되지 않으므로 `tests/test_errors.py`가 모든 v1 라우트를 검사한다.
+적용되지 않으므로 `tests/integration/test_errors.py`가 모든 v1 라우트를 검사한다.
 
 **선언이 저장되는 곳.** `include_router`는 라우트 객체의 커스텀 속성을 복사하지 않지만 엔드포인트 함수는
 그대로 보존한다. 그래서 `@error_specs`는 선언을 함수에 저장한다.
@@ -365,7 +366,7 @@ async def sign_up(...): ...
   import한다 (§3).
 - 다른 기능의 테이블은 ID + FK 문자열로만 참조하고 FK는 한쪽에만 건다 (§3).
 - 에러는 `AppError` 하위 클래스를 던지기만 한다. 상태 코드 · `error_code` · `details`는 `router.py`의 `@error_specs`에서만 정한다 (§5).
-- 새 모델은 `models/__init__.py`에 추가한다. `migrations/env.py`와 `tests/conftest.py`는 `app.models`를 import하므로 따로 고칠 필요가 없다.
+- 새 모델은 `models/__init__.py`에 추가한다. `migrations/env.py`와 `tests/integration/conftest.py`는 `app.models`를 import하므로 따로 고칠 필요가 없다.
 - 이름: DTO는 `*Request` / `*Response`, 모델 클래스는 접미사 없이 단수형(`User`).
 
 ## 7. 새 기능 추가하기

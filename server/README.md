@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung -->
 <!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 
 # server
@@ -31,6 +32,7 @@ uv run uvicorn app.main:app --reload     # 서버 실행 → http://localhost:80
 | 작업 | 명령어 |
 |---|---|
 | 테스트 (인메모리 SQLite, Postgres 불필요) | `uv run pytest` |
+| Unit·Integration·통합 커버리지 | `uv run python scripts/coverage_report.py` ([범위·Layer 기준](tests/test.md#커버리지-측정)) |
 | 린트 / 포맷 | `uv run ruff check .` / `uv run ruff format .` |
 | 의존성 추가 / 제거 | `uv add <package>` / `uv remove <package>` (dev 는 `--dev`) |
 | 마이그레이션 생성 | `uv run alembic revision --autogenerate -m "설명"` |
@@ -119,10 +121,12 @@ server/
 │           ├── dependencies.py   # CurrentUser (로그인한 사용자) — 다른 기능도 가져다 쓴다
 │           └── security.py   #   비밀번호 해싱(argon2) + JWT(PyJWT)
 └── tests/
-    ├── conftest.py           # 인메모리 SQLite + get_session 오버라이드
-    ├── test_auth.py          # 가입/로그인/내 정보 happy-path + 에러 케이스
-    ├── test_core.py          # 헬스체크 · 설정 검증 · KST
-    └── test_errors.py        # 에러 응답 처리 + /docs 문서 생성
+    ├── test.md              # 분류 · 작성 · 실행 기준
+    ├── unit/                # DTO · 검증 · 설정 등 단일 책임
+    ├── integration/         # 실제 API/서비스/DB · 추천 그래프 연결
+    │   └── conftest.py      # SQLite 격리 · override 정리 · 실제 LLM 호출 차단
+    ├── helpers/             # 가입/로그인 · 가짜 모델 설정
+    └── fixtures/            # 호출마다 독립적인 요청 데이터
 ```
 
 ## 용어 설명
@@ -160,13 +164,13 @@ server/
    ```
 
 5. **등록하기.** `app/api/v1.py`에서 `api_v1_router.include_router(...)`로 새 라우터를 등록한다.
-6. **테스트 쓰기.** `tests/test_meal_logs.py`에 정상 동작과 주요 에러 케이스를 추가하고,
+6. **테스트 쓰기.** `tests/test.md` 기준에 따라 Unit은 `tests/unit/`, Integration은 `tests/integration/`에 둔다. `tests/integration/test_meals_write.py`에 정상 동작과 주요 에러 케이스를 추가하고,
    `uv run pytest`와 `uv run ruff check .`가 통과하는지 확인한다.
 
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 기능에 LangGraph 같은 다단계 LLM 워크플로가 필요하면 `app/features/suggestions/`를 기준 구현으로 삼아
 본뜬다 (구조와 규칙은 [`docs/architecture.md`](docs/architecture.md) §2.5). 서비스는 `generator.py` 같은
-단일 진입점만 부르고, 테스트에서는 실제 LLM 대신 `tests/fake_chat_model.py`의 가짜 모델을 쓴다. LLM을 쓰려면
+단일 진입점만 부르고, 테스트에서는 실제 LLM 대신 `tests/helpers/fake_chat_model.py`의 가짜 모델을 쓴다. LLM을 쓰려면
 `.env`에 `OPENROUTER_API_KEY`가 필요하다 (비어 있으면 서버는 뜨지만 생성 요청이 실패한다).
 
 ## 에러 처리

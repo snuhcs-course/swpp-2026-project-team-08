@@ -36,7 +36,7 @@ Iteration 2 moved NurtureBites from a local prototype to a client–server app a
 (the bugs listed below will be fixed for iteration 3)
 - After you take the before meal picture, when you try to 'review food item' by adding food, when trying to type the food's ingredient name, the add button might not work
 
-###small things to implement for iteration 3(that has not been implemented yet) 
+### Small things to implement for iteration 3(that has not been implemented yet) 
 - sending emails for the verification code (if one wants to change the caregiver's email in the profile)
 - uploading photos from gallery / file (only can take photos for now in the demo)
 - profile's tutorial guide

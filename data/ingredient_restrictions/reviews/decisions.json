@@ -47826,5 +47826,40 @@
       "group": "감자류 및 전분류",
       "why_unresolved": "자연 당·전분·나트륨의 종류별 차이와 사용량을 이름으로 확정하기 어려움"
     }
-  ]
+  ],
+  "name_conflict_disagreement_review": {
+    "reviewer": "GPT-6",
+    "review_type": "AI_REVIEW",
+    "date": "2026-10-24",
+    "decisions": [
+      {
+        "ingredient_key": "문어",
+        "restriction_id": "ketogenic",
+        "relation": null,
+        "review_status": "UNRESOLVED",
+        "reason": "정책 1.6 §4.1에 따라 순수 수산물이라는 이유만으로 NEVER를 부여할 수 없음. 탄수화물 함량·섭취량 자료가 없으므로 B의 보류 판단을 채택. 수치 추정은 하지 않음."
+      },
+      {
+        "ingredient_key": "문어",
+        "restriction_id": "low-fructose",
+        "relation": null,
+        "review_status": "UNRESOLVED",
+        "reason": "정책 1.6 §4.1에 따라 순수 수산물이라는 이유만으로 NEVER를 부여할 수 없음. 과당 함량·섭취량 자료가 없으므로 B의 보류 판단을 채택. 수치 추정은 하지 않음."
+      },
+      {
+        "ingredient_key": "미더덕",
+        "restriction_id": "ketogenic",
+        "relation": null,
+        "review_status": "UNRESOLVED",
+        "reason": "정책 1.6 §4.1에 따라 순수 수산물이라는 이유만으로 NEVER를 부여할 수 없음. 탄수화물 함량·섭취량 자료가 없으므로 B의 보류 판단을 채택. 수치 추정은 하지 않음."
+      },
+      {
+        "ingredient_key": "미더덕",
+        "restriction_id": "low-fructose",
+        "relation": null,
+        "review_status": "UNRESOLVED",
+        "reason": "정책 1.6 §4.1에 따라 순수 수산물이라는 이유만으로 NEVER를 부여할 수 없음. 과당 함량·섭취량 자료가 없으므로 B의 보류 판단을 채택. 수치 추정은 하지 않음."
+      }
+    ]
+  }
 }

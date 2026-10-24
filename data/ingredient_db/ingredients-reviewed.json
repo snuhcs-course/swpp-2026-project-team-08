@@ -417,6 +417,24 @@
       "ai_reviewed_source_codes": []
     },
     {
+      "kor_name": "갈색양송이버섯",
+      "eng_name": "Brown button mushroom",
+      "english_options": [
+        "Button mushroom(Yangsongi-beoseot), Brown, Blanched",
+        "Button mushroom(Yangsongi-beoseot), Brown, Raw"
+      ],
+      "source_codes": [
+        "G0180010000a",
+        "G0180010009c"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "G0180010000a",
+        "G0180010009c"
+      ]
+    },
+    {
       "kor_name": "갈색팽이버섯",
       "eng_name": "Brown Enoki Mushroom",
       "english_options": [
@@ -1088,6 +1106,24 @@
       "english_name_conflict": false,
       "ai_reviewed_source_codes": [
         "H0760000799a"
+      ]
+    },
+    {
+      "kor_name": "검은비늘버섯",
+      "eng_name": "Pholiota adiposa mushroom",
+      "english_options": [
+        "Mushroom, Geomeunbineul-beoseot, Dried",
+        "Mushroom, Geomeunbineul-beoseot, Raw"
+      ],
+      "source_codes": [
+        "G0010000000a",
+        "G0010000001a"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "G0010000000a",
+        "G0010000001a"
       ]
     },
     {
@@ -2815,6 +2851,30 @@
       "ai_reviewed_source_codes": []
     },
     {
+      "kor_name": "꽃송이버섯",
+      "eng_name": "Cauliflower mushroom",
+      "english_options": [
+        "Cauliflower Mushroom, Blanched",
+        "Cauliflower Mushroom, Dried",
+        "Cauliflower Mushroom, Raw",
+        "Cauliflower Mushroom, Sun-dried"
+      ],
+      "source_codes": [
+        "G0310000000a",
+        "G0310000001a",
+        "G0310000009c",
+        "G031000000Xa"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "G0310000000a",
+        "G0310000001a",
+        "G0310000009c",
+        "G031000000Xa"
+      ]
+    },
+    {
       "kor_name": "꾸지뽕",
       "eng_name": "Silkworm thorn fruit",
       "english_options": [
@@ -2895,6 +2955,24 @@
       "review_required": false,
       "english_name_conflict": false,
       "ai_reviewed_source_codes": []
+    },
+    {
+      "kor_name": "나도팽나무버섯",
+      "eng_name": "Nameko mushroom",
+      "english_options": [
+        "Mushroom, Nadopangnamu-beoseot, Dried",
+        "Mushroom, Nadopangnamu-beoseot, Raw"
+      ],
+      "source_codes": [
+        "G0020000000a",
+        "G0020000001a"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "G0020000000a",
+        "G0020000001a"
+      ]
     },
     {
       "kor_name": "나박김치",
@@ -3238,6 +3316,27 @@
       "review_required": false,
       "english_name_conflict": false,
       "ai_reviewed_source_codes": []
+    },
+    {
+      "kor_name": "노루궁뎅이버섯",
+      "eng_name": "Lion's mane mushroom",
+      "english_options": [
+        "Mushroom, Norugungdengi-beoseot, Blanched",
+        "Mushroom, Norugungdengi-beoseot, Dried",
+        "Mushroom, Norugungdengi-beoseot, Raw"
+      ],
+      "source_codes": [
+        "G0030000000a",
+        "G0030000001a",
+        "G0030000009c"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "G0030000000a",
+        "G0030000001a",
+        "G0030000009c"
+      ]
     },
     {
       "kor_name": "녹두",
@@ -6311,6 +6410,24 @@
       ]
     },
     {
+      "kor_name": "라즈베리",
+      "eng_name": "Raspberry",
+      "english_options": [
+        "Raspberry, Frozen, Unsweetened",
+        "Raspberry, Raw"
+      ],
+      "source_codes": [
+        "H1150000000a",
+        "H1150000007a"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "H1150000000a",
+        "H1150000007a"
+      ]
+    },
+    {
       "kor_name": "락교",
       "eng_name": "Pickled scallion",
       "english_options": [
@@ -6727,6 +6844,24 @@
       "review_required": false,
       "english_name_conflict": false,
       "ai_reviewed_source_codes": []
+    },
+    {
+      "kor_name": "만가닥버섯",
+      "eng_name": "Beech mushroom",
+      "english_options": [
+        "Beech mushroom(Mangadak-beoseot), Blanched",
+        "Beech mushroom(Mangadak-beoseot), Raw"
+      ],
+      "source_codes": [
+        "G0070000000a",
+        "G0070000009c"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "G0070000000a",
+        "G0070000009c"
+      ]
     },
     {
       "kor_name": "만새기",
@@ -8291,6 +8426,30 @@
       ]
     },
     {
+      "kor_name": "목이버섯",
+      "eng_name": "Wood ear mushroom",
+      "english_options": [
+        "Wood ear mushroom(Moki-beoseot), Blanched",
+        "Wood ear mushroom(Moki-beoseot), Dried",
+        "Wood ear mushroom(Moki-beoseot), Raw",
+        "Wood ear mushroom(Moki-beoseot), Sun-dried"
+      ],
+      "source_codes": [
+        "G0080000000a",
+        "G0080000001a",
+        "G0080000009c",
+        "G008000000Xa"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "G0080000000a",
+        "G0080000001a",
+        "G0080000009c",
+        "G008000000Xa"
+      ]
+    },
+    {
       "kor_name": "목탁가오리",
       "eng_name": "Thorn back ray",
       "english_options": [
@@ -8486,6 +8645,33 @@
       "english_name_conflict": false,
       "ai_reviewed_source_codes": [
         "H036000000Ra"
+      ]
+    },
+    {
+      "kor_name": "문어",
+      "eng_name": "Octopus",
+      "english_options": [
+        "Common octopus, Raw",
+        "Giant octopus, Boiled",
+        "Giant octopus, Raw",
+        "North pacific giant octopus, Dried",
+        "North pacific giant octopus, Raw"
+      ],
+      "source_codes": [
+        "K6110000000a",
+        "K6110000001a",
+        "K6110000009b",
+        "K6110010000a",
+        "K6110030000a"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "K6110000000a",
+        "K6110000001a",
+        "K6110000009b",
+        "K6110010000a",
+        "K6110030000a"
       ]
     },
     {
@@ -8718,6 +8904,24 @@
       "english_name_conflict": false,
       "ai_reviewed_source_codes": [
         "F194004C040a"
+      ]
+    },
+    {
+      "kor_name": "미더덕",
+      "eng_name": "Sea squirt",
+      "english_options": [
+        "Warty sea squirt, Raw",
+        "Wrinkled sea squirt, Raw"
+      ],
+      "source_codes": [
+        "K6120000000a",
+        "K6120010000a"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "K6120000000a",
+        "K6120010000a"
       ]
     },
     {
@@ -9032,6 +9236,30 @@
       "review_required": false,
       "english_name_conflict": false,
       "ai_reviewed_source_codes": []
+    },
+    {
+      "kor_name": "바닷가재류",
+      "eng_name": "Lobster varieties",
+      "english_options": [
+        "Japanese fan lobster, Raw",
+        "Japanese spear lobster, Raw",
+        "Red-banded lobster, Raw",
+        "Spiny lobster, Raw"
+      ],
+      "source_codes": [
+        "K6130010000a",
+        "K6130060000a",
+        "K6130120000a",
+        "K6130170000a"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "K6130010000a",
+        "K6130060000a",
+        "K6130120000a",
+        "K6130170000a"
+      ]
     },
     {
       "kor_name": "바비큐 소스",
@@ -11985,6 +12213,78 @@
       "ai_reviewed_source_codes": []
     },
     {
+      "kor_name": "새우",
+      "eng_name": "Shrimp and prawns",
+      "english_options": [
+        "Akiami paste shrimp, Raw",
+        "Coonstriped shrimp, Raw",
+        "Fleshy prawn, Dried",
+        "Fleshy prawn, Raw",
+        "Giant red shrimp, Raw",
+        "Kuruma prawn, Boiled",
+        "Kuruma prawn, Raw",
+        "Morotoge shrimp, Raw",
+        "Oriental river prawn, Raw",
+        "Shiba shrimp, Boiled and dried",
+        "Shiba shrimp, Canned",
+        "Shiba shrimp, Raw",
+        "Siberian shrimp, Raw",
+        "Southern rough shrimp, Boiled and dried",
+        "Southern rough shrimp, Frozen",
+        "Southern rough shrimp, Raw",
+        "Southern rough shrimp, Steamed",
+        "Whiteleg shrimp, Frozen",
+        "Whiteleg shrimp, Frozen, Boiled",
+        "Whiteleg shrimp, Raw"
+      ],
+      "source_codes": [
+        "K6130030000a",
+        "K6130040000a",
+        "K6130050000a",
+        "K6130050003a",
+        "K6130050007a",
+        "K6130050009e",
+        "K6130070000a",
+        "K6130070001a",
+        "K6130090000a",
+        "K6130110000a",
+        "K6130110009b",
+        "K6130130000a",
+        "K6130130003a",
+        "K613013000Ra",
+        "K6130140000a",
+        "K6130150000a",
+        "K6130160000a",
+        "K6130180000a",
+        "K6130180007a",
+        "K6130180007b"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "K6130030000a",
+        "K6130040000a",
+        "K6130050000a",
+        "K6130050003a",
+        "K6130050007a",
+        "K6130050009e",
+        "K6130070000a",
+        "K6130070001a",
+        "K6130090000a",
+        "K6130110000a",
+        "K6130110009b",
+        "K6130130000a",
+        "K6130130003a",
+        "K613013000Ra",
+        "K6130140000a",
+        "K6130150000a",
+        "K6130160000a",
+        "K6130180000a",
+        "K6130180007a",
+        "K6130180007b"
+      ]
+    },
+    {
       "kor_name": "새우 껍질",
       "eng_name": "Shrimp skin",
       "english_options": [
@@ -12278,6 +12578,27 @@
       "review_required": false,
       "english_name_conflict": false,
       "ai_reviewed_source_codes": []
+    },
+    {
+      "kor_name": "성게",
+      "eng_name": "Sea urchin",
+      "english_options": [
+        "Purple sea urchin, Raw",
+        "Sea urchin, Canned",
+        "Sea urchin, Raw"
+      ],
+      "source_codes": [
+        "K6180000000a",
+        "K618000000Ra",
+        "K6180010000a"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "K6180000000a",
+        "K618000000Ra",
+        "K6180010000a"
+      ]
     },
     {
       "kor_name": "성게 알",
@@ -12712,6 +13033,39 @@
       ]
     },
     {
+      "kor_name": "소고기 목심",
+      "eng_name": "Beef chuck",
+      "english_options": [
+        "Beef meat, Hanwoo(1 grade), Chuck roll(Moksim), Raw",
+        "Beef meat, Hanwoo(1+ grade), Chuck roll(Moksim), Raw",
+        "Beef meat, Hanwoo(1++ grade), Chuck roll(Moksim), Raw",
+        "Beef meat, Hanwoo(2 grade), Chuck roll(Moksim), Raw",
+        "Beef meat, Hanwoo(3 grade), Chuck roll(Moksim), Raw",
+        "Beef meat, Imported, Chuck, Boiled",
+        "Beef meat, Imported, Chuck, Raw"
+      ],
+      "source_codes": [
+        "I027001D130a",
+        "I027001D139b",
+        "I027004D130a",
+        "I027005D130a",
+        "I027006D130a",
+        "I027007D130a",
+        "I027008D130a"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "I027001D130a",
+        "I027001D139b",
+        "I027004D130a",
+        "I027005D130a",
+        "I027006D130a",
+        "I027007D130a",
+        "I027008D130a"
+      ]
+    },
+    {
       "kor_name": "소고기 뭉치사태",
       "eng_name": "Beef heel meat",
       "english_options": [
@@ -12946,6 +13300,54 @@
         "I027004D190a",
         "I027006D190a",
         "I027007D190a"
+      ]
+    },
+    {
+      "kor_name": "소고기 설도",
+      "eng_name": "Beef round cuts",
+      "english_options": [
+        "Beef meat, Hanwoo(1 grade), Bottom round(Seoldo), Raw",
+        "Beef meat, Hanwoo(1+ grade), Bottom round(Seoldo), Raw",
+        "Beef meat, Hanwoo(1++ grade), Bottom round(Seoldo), Raw",
+        "Beef meat, Hanwoo(2 grade), Bottom round(Knuckle), Raw",
+        "Beef meat, Hanwoo(2 grade), Bottom round(Outside round head), Raw",
+        "Beef meat, Hanwoo(2 grade), Bottom round(Outside round), Raw",
+        "Beef meat, Hanwoo(2 grade), Bottom round(Rump), Raw",
+        "Beef meat, Hanwoo(2 grade), Bottom round(Seoldo), Raw",
+        "Beef meat, Hanwoo(2 grade), Bottom round(Tri-tip), Raw",
+        "Beef meat, Hanwoo(3 grade), Bottom round(Outside round), Raw",
+        "Beef meat, Hanwoo(3 grade), Bottom round(Rump), Raw",
+        "Beef meat, Imported, Rump, Grill-roasted"
+      ],
+      "source_codes": [
+        "I027001D179h",
+        "I027004D170a",
+        "I027005D180a",
+        "I027005D190a",
+        "I027006D170a",
+        "I027007D170a",
+        "I027008D170a",
+        "I027008D180a",
+        "I027008D190a",
+        "I027008D950a",
+        "I027008D960a",
+        "I027008D970a"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "I027001D179h",
+        "I027004D170a",
+        "I027005D180a",
+        "I027005D190a",
+        "I027006D170a",
+        "I027007D170a",
+        "I027008D170a",
+        "I027008D180a",
+        "I027008D190a",
+        "I027008D950a",
+        "I027008D960a",
+        "I027008D970a"
       ]
     },
     {
@@ -13783,6 +14185,24 @@
       ]
     },
     {
+      "kor_name": "송이버섯",
+      "eng_name": "Matsutake mushroom",
+      "english_options": [
+        "Pine mushroom(Songi-beoseot), Blanched",
+        "Pine mushroom(Songi-beoseot), Raw"
+      ],
+      "source_codes": [
+        "G0140000000a",
+        "G0140000009c"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "G0140000000a",
+        "G0140000009c"
+      ]
+    },
+    {
       "kor_name": "송화가루",
       "eng_name": "Pine pollen powder",
       "english_options": [
@@ -14317,6 +14737,24 @@
       "review_required": false,
       "english_name_conflict": false,
       "ai_reviewed_source_codes": []
+    },
+    {
+      "kor_name": "싸리버섯",
+      "eng_name": "Cauliflower coral mushroom",
+      "english_options": [
+        "Cauliflower coral mushroom, Dried",
+        "Cauliflower coral mushroom, Raw"
+      ],
+      "source_codes": [
+        "G0150000000a",
+        "G0150000001a"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "G0150000000a",
+        "G0150000001a"
+      ]
     },
     {
       "kor_name": "쌀 조청",
@@ -15245,6 +15683,30 @@
         "F1010050000a",
         "F1010070000a",
         "F1010120000a"
+      ]
+    },
+    {
+      "kor_name": "양송이버섯",
+      "eng_name": "White button mushroom",
+      "english_options": [
+        "Button mushroom(Yangsongi-beoseot), White, Blanched",
+        "Button mushroom(Yangsongi-beoseot), White, Dried",
+        "Button mushroom(Yangsongi-beoseot), White, Raw",
+        "Button mushroom(Yangsongi-beoseot), White, Sun-dried"
+      ],
+      "source_codes": [
+        "G0180000000a",
+        "G0180000001a",
+        "G0180000009c",
+        "G018000000Xa"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "G0180000000a",
+        "G0180000001a",
+        "G0180000009c",
+        "G018000000Xa"
       ]
     },
     {
@@ -16740,6 +17202,24 @@
       "review_required": false,
       "english_name_conflict": false,
       "ai_reviewed_source_codes": []
+    },
+    {
+      "kor_name": "용과",
+      "eng_name": "Dragon fruit",
+      "english_options": [
+        "Dragon fruit, Red, Raw",
+        "Dragon fruit, White, Raw"
+      ],
+      "source_codes": [
+        "H0770010000a",
+        "H0770020000a"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "H0770010000a",
+        "H0770020000a"
+      ]
     },
     {
       "kor_name": "용치놀래기",
@@ -19925,6 +20405,24 @@
       "review_required": false,
       "english_name_conflict": false,
       "ai_reviewed_source_codes": []
+    },
+    {
+      "kor_name": "체리 통조림",
+      "eng_name": "Canned cherries",
+      "english_options": [
+        "Cherry, Canned, Solid, Dark",
+        "Cherry, Canned, Solid, Red"
+      ],
+      "source_codes": [
+        "H112000251Ra",
+        "H112001251Ra"
+      ],
+      "review_required": false,
+      "english_name_conflict": false,
+      "ai_reviewed_source_codes": [
+        "H112000251Ra",
+        "H112001251Ra"
+      ]
     },
     {
       "kor_name": "초고추장",
@@ -23565,368 +24063,260 @@
       "reason": "홍삼 추출물의 농도나 용도가 불분명하여 U01에 해당함 근거: 인삼, 홍삼, 추출 / Korean ginseng, Red ginseng, Extract / 국가표준식품성분 Database 10.4!row=3361;appendix_index=3263"
     }
   ],
-  "unresolved_name_groups": [
-    {
-      "kor_name": "갈색양송이버섯",
-      "eng_name": null,
-      "english_options": [
-        "Button mushroom, Brown, Blanched",
-        "Button mushroom, Brown, Raw"
-      ],
-      "source_codes": [
-        "G0180010000a",
-        "G0180010009c"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "검은비늘버섯",
-      "eng_name": null,
-      "english_options": [
-        "Pholiota adiposa, Dried",
-        "Pholiota adiposa, Raw"
-      ],
-      "source_codes": [
-        "G0010000000a",
-        "G0010000001a"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "꽃송이버섯",
-      "eng_name": null,
-      "english_options": [
-        "Cauliflower Mushroom, Blanched",
-        "Cauliflower Mushroom, Dried",
-        "Cauliflower Mushroom, Raw",
-        "Cauliflower Mushroom, Sun-dried"
-      ],
-      "source_codes": [
-        "G0310000000a",
-        "G0310000001a",
-        "G0310000009c",
-        "G031000000Xa"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "나도팽나무버섯",
-      "eng_name": null,
-      "english_options": [
-        "Pholiota nameko, Dried",
-        "Pholiota nameko, Raw"
-      ],
-      "source_codes": [
-        "G0020000000a",
-        "G0020000001a"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "노루궁뎅이버섯",
-      "eng_name": null,
-      "english_options": [
-        "Hericium erinaceum, Blanched",
-        "Hericium erinaceum, Dried",
-        "Hericium erinaceum, Raw"
-      ],
-      "source_codes": [
-        "G0030000000a",
-        "G0030000001a",
-        "G0030000009c"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "라즈베리",
-      "eng_name": null,
-      "english_options": [
-        "Raspberries",
-        "Raspberry"
-      ],
-      "source_codes": [
-        "H1150000000a",
-        "H1150000007a"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "만가닥버섯",
-      "eng_name": null,
-      "english_options": [
-        "Beech mushroom, Blanched",
-        "Beech mushroom, Raw"
-      ],
-      "source_codes": [
-        "G0070000000a",
-        "G0070000009c"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "목이버섯",
-      "eng_name": null,
-      "english_options": [
-        "Wood ear mushroom, Blanched",
-        "Wood ear mushroom, Dried",
-        "Wood ear mushroom, Raw",
-        "Wood ear mushroom, Sun-dried"
-      ],
-      "source_codes": [
-        "G0080000000a",
-        "G0080000001a",
-        "G0080000009c",
-        "G008000000Xa"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "문어",
-      "eng_name": null,
-      "english_options": [
-        "Common octopus",
-        "Giant octopus",
-        "North pacific giant octopus"
-      ],
-      "source_codes": [
-        "K6110000000a",
-        "K6110000001a",
-        "K6110000009b",
-        "K6110010000a",
-        "K6110030000a"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "미더덕",
-      "eng_name": null,
-      "english_options": [
-        "Warty sea squirt",
-        "Wrinkled sea squirt"
-      ],
-      "source_codes": [
-        "K6120000000a",
-        "K6120010000a"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "새우",
-      "eng_name": null,
-      "english_options": [
-        "Akiami paste shrimp",
-        "Coonstriped shrimp",
-        "Fleshy prawn",
-        "Giant red shrimp",
-        "Japanese fan lobster",
-        "Japanese spear lobster",
-        "Kuruma prawn",
-        "Morotoge shrimp",
-        "Oriental river prawn",
-        "Red-banded lobster",
-        "Shiba shrimp",
-        "Siberian shrimp",
-        "Southern rough shrimp",
-        "Spiny lobster",
-        "Whiteleg shrimp"
-      ],
-      "source_codes": [
-        "K6130010000a",
-        "K6130030000a",
-        "K6130040000a",
-        "K6130050000a",
-        "K6130050003a",
-        "K6130050007a",
-        "K6130050009e",
-        "K6130060000a",
-        "K6130070000a",
-        "K6130070001a",
-        "K6130090000a",
-        "K6130110000a",
-        "K6130110009b",
-        "K6130120000a",
-        "K6130130000a",
-        "K6130130003a",
-        "K613013000Ra",
-        "K6130140000a",
-        "K6130150000a",
-        "K6130160000a",
-        "K6130170000a",
-        "K6130180000a",
-        "K6130180007a",
-        "K6130180007b"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "성게",
-      "eng_name": null,
-      "english_options": [
-        "Purple sea urchin",
-        "Sea urchin"
-      ],
-      "source_codes": [
-        "K6180000000a",
-        "K618000000Ra",
-        "K6180010000a"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "소고기 목심",
-      "eng_name": null,
-      "english_options": [
-        "Beef chuck",
-        "Beef chuck roll"
-      ],
-      "source_codes": [
-        "I027001D130a",
-        "I027001D139b",
-        "I027004D130a",
-        "I027005D130a",
-        "I027006D130a",
-        "I027007D130a",
-        "I027008D130a"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": [
-        "I027004D130a",
-        "I027006D130a",
-        "I027007D130a"
-      ]
-    },
-    {
-      "kor_name": "소고기 설도",
-      "eng_name": null,
-      "english_options": [
-        "Beef bottom round",
-        "Beef rump"
-      ],
-      "source_codes": [
-        "I027001D179h",
-        "I027004D170a",
-        "I027005D180a",
-        "I027005D190a",
-        "I027006D170a",
-        "I027007D170a",
-        "I027008D170a",
-        "I027008D180a",
-        "I027008D190a",
-        "I027008D950a",
-        "I027008D960a",
-        "I027008D970a"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": [
-        "I027004D170a",
-        "I027006D170a",
-        "I027007D170a"
-      ]
-    },
-    {
-      "kor_name": "송이버섯",
-      "eng_name": null,
-      "english_options": [
-        "Pine mushroom, Blanched",
-        "Pine mushroom, Raw"
-      ],
-      "source_codes": [
-        "G0140000000a",
-        "G0140000009c"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "싸리버섯",
-      "eng_name": null,
-      "english_options": [
-        "Cauliflower coral mushroom, Dried",
-        "Cauliflower coral mushroom, Raw"
-      ],
-      "source_codes": [
-        "G0150000000a",
-        "G0150000001a"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "양송이버섯",
-      "eng_name": null,
-      "english_options": [
-        "Button mushroom, White, Blanched",
-        "Button mushroom, White, Dried",
-        "Button mushroom, White, Raw",
-        "Button mushroom, White, Sun-dried"
-      ],
-      "source_codes": [
-        "G0180000000a",
-        "G0180000001a",
-        "G0180000009c",
-        "G018000000Xa"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "용과",
-      "eng_name": null,
-      "english_options": [
-        "Red dragon fruit",
-        "White dragon fruit"
-      ],
-      "source_codes": [
-        "H0770010000a",
-        "H0770020000a"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    },
-    {
-      "kor_name": "체리 통조림",
-      "eng_name": null,
-      "english_options": [
-        "Canned cherry",
-        "Canned dark cherry"
-      ],
-      "source_codes": [
-        "H112000251Ra",
-        "H112001251Ra"
-      ],
-      "review_required": true,
-      "english_name_conflict": true,
-      "ai_reviewed_source_codes": []
-    }
-  ]
+  "unresolved_name_groups": [],
+  "name_conflict_resolution": {
+    "reviewer_model": "GPT-6",
+    "review_type": "AI_REVIEW_NOT_HUMAN_APPROVAL",
+    "source_rows": 86,
+    "groups_resolved": 19,
+    "ingredients_added": 20,
+    "decisions": [
+      {
+        "from_group": "갈색양송이버섯",
+        "kor_name": "갈색양송이버섯",
+        "eng_name": "Brown button mushroom",
+        "source_codes": [
+          "G0180010000a",
+          "G0180010009c"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "검은비늘버섯",
+        "kor_name": "검은비늘버섯",
+        "eng_name": "Pholiota adiposa mushroom",
+        "source_codes": [
+          "G0010000000a",
+          "G0010000001a"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "꽃송이버섯",
+        "kor_name": "꽃송이버섯",
+        "eng_name": "Cauliflower mushroom",
+        "source_codes": [
+          "G0310000000a",
+          "G0310000001a",
+          "G0310000009c",
+          "G031000000Xa"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "나도팽나무버섯",
+        "kor_name": "나도팽나무버섯",
+        "eng_name": "Nameko mushroom",
+        "source_codes": [
+          "G0020000000a",
+          "G0020000001a"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "노루궁뎅이버섯",
+        "kor_name": "노루궁뎅이버섯",
+        "eng_name": "Lion's mane mushroom",
+        "source_codes": [
+          "G0030000000a",
+          "G0030000001a",
+          "G0030000009c"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "라즈베리",
+        "kor_name": "라즈베리",
+        "eng_name": "Raspberry",
+        "source_codes": [
+          "H1150000000a",
+          "H1150000007a"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "만가닥버섯",
+        "kor_name": "만가닥버섯",
+        "eng_name": "Beech mushroom",
+        "source_codes": [
+          "G0070000000a",
+          "G0070000009c"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "목이버섯",
+        "kor_name": "목이버섯",
+        "eng_name": "Wood ear mushroom",
+        "source_codes": [
+          "G0080000000a",
+          "G0080000001a",
+          "G0080000009c",
+          "G008000000Xa"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "문어",
+        "kor_name": "문어",
+        "eng_name": "Octopus",
+        "source_codes": [
+          "K6110000000a",
+          "K6110000001a",
+          "K6110000009b",
+          "K6110010000a",
+          "K6110030000a"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "미더덕",
+        "kor_name": "미더덕",
+        "eng_name": "Sea squirt",
+        "source_codes": [
+          "K6120000000a",
+          "K6120010000a"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "새우",
+        "kor_name": "새우",
+        "eng_name": "Shrimp and prawns",
+        "source_codes": [
+          "K6130030000a",
+          "K6130040000a",
+          "K6130050000a",
+          "K6130050003a",
+          "K6130050007a",
+          "K6130050009e",
+          "K6130070000a",
+          "K6130070001a",
+          "K6130090000a",
+          "K6130110000a",
+          "K6130110009b",
+          "K6130130000a",
+          "K6130130003a",
+          "K613013000Ra",
+          "K6130140000a",
+          "K6130150000a",
+          "K6130160000a",
+          "K6130180000a",
+          "K6130180007a",
+          "K6130180007b"
+        ],
+        "reason": "새우류와 영어명이 lobster인 원본 행을 분리"
+      },
+      {
+        "from_group": "새우",
+        "kor_name": "바닷가재류",
+        "eng_name": "Lobster varieties",
+        "source_codes": [
+          "K6130010000a",
+          "K6130060000a",
+          "K6130120000a",
+          "K6130170000a"
+        ],
+        "reason": "새우류와 영어명이 lobster인 원본 행을 분리"
+      },
+      {
+        "from_group": "성게",
+        "kor_name": "성게",
+        "eng_name": "Sea urchin",
+        "source_codes": [
+          "K6180000000a",
+          "K618000000Ra",
+          "K6180010000a"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "소고기 목심",
+        "kor_name": "소고기 목심",
+        "eng_name": "Beef chuck",
+        "source_codes": [
+          "I027001D130a",
+          "I027001D139b",
+          "I027004D130a",
+          "I027005D130a",
+          "I027006D130a",
+          "I027007D130a",
+          "I027008D130a"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "소고기 설도",
+        "kor_name": "소고기 설도",
+        "eng_name": "Beef round cuts",
+        "source_codes": [
+          "I027001D179h",
+          "I027004D170a",
+          "I027005D180a",
+          "I027005D190a",
+          "I027006D170a",
+          "I027007D170a",
+          "I027008D170a",
+          "I027008D180a",
+          "I027008D190a",
+          "I027008D950a",
+          "I027008D960a",
+          "I027008D970a"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "송이버섯",
+        "kor_name": "송이버섯",
+        "eng_name": "Matsutake mushroom",
+        "source_codes": [
+          "G0140000000a",
+          "G0140000009c"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "싸리버섯",
+        "kor_name": "싸리버섯",
+        "eng_name": "Cauliflower coral mushroom",
+        "source_codes": [
+          "G0150000000a",
+          "G0150000001a"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "양송이버섯",
+        "kor_name": "양송이버섯",
+        "eng_name": "White button mushroom",
+        "source_codes": [
+          "G0180000000a",
+          "G0180000001a",
+          "G0180000009c",
+          "G018000000Xa"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "용과",
+        "kor_name": "용과",
+        "eng_name": "Dragon fruit",
+        "source_codes": [
+          "H0770010000a",
+          "H0770020000a"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      },
+      {
+        "from_group": "체리 통조림",
+        "kor_name": "체리 통조림",
+        "eng_name": "Canned cherries",
+        "source_codes": [
+          "H112000251Ra",
+          "H112001251Ra"
+        ],
+        "reason": "RDA의 생·건조·데침·냉동·품종 표기를 대표 이름으로 통합"
+      }
+    ]
+  }
 }

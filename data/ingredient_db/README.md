@@ -9,23 +9,23 @@
 
 ## 핵심 요약
 
-1. 실제 사용 시험에는 [ingredients-reviewed.json](ingredients-reviewed.json)의 `ingredients` 1,593개를 사용한다.
-2. GPT-6 Sol이 검토 대상 원본 1,077행을 재판단했다. 기존 A/B 합의 2,289행은 유지했다.
-3. 판단 보류 28행과 이름 충돌 19묶음(86행)은 시험용 목록에서 제외하고 같은 JSON 안에 보존했다.
+1. 실제 사용 시험에는 [ingredients-reviewed.json](ingredients-reviewed.json)의 `ingredients` 1,613개를 사용한다.
+2. 원본 3,366행의 선정 상태는 포함 2,752행·제외 586행·보류 28행이다.
+3. 재료마다 한국어 이름·영어 이름·RDA 원본 코드가 있으며, 검토 근거는 별도 JSON에 있다.
 
 ## 검토 결과와 사용 방법
 
-[Sol 검토 기록](reviews/sol-review.json)에 코드별 포함 여부·한영 이름·판단 이유를 남겼다. Astra의 부분 초안을 참고한 뒤 Sol이 전체 검토 범위를 다시 확인했다. 검토 표기는 **GPT-6 Sol / AI 검토**이며 사람 승인으로 표시하지 않는다.
+[Sol 검토 기록](reviews/sol-review.json)은 원본 1,077행의 포함 여부·한영 이름·판단 이유를 담는다. 나머지 2,289행은 A/B 합의 대상이다. 검토 표기는 **GPT-6 Sol / AI 검토**다.
 
-`ingredients-reviewed.json`의 `ingredients`에는 `kor_name`, `eng_name`, `source_codes`가 있다. 최종 DB ID는 아직 부여하지 않았다. `ai_reviewed_source_codes`는 그 후보에 연결된 원본 중 Sol이 재검토한 코드다. `review`에는 모델·검토 범위·결정 파일 해시를 기록한다.
+`ingredients-reviewed.json`의 `ingredients`는 `kor_name`, `eng_name`, `source_codes`를 제공한다. DB ID는 적재 시 관리한다. `ai_reviewed_source_codes`는 AI 검토 대상 원본 코드이며, `review`는 모델·검토 범위·결정 파일 해시다.
 
-원본 3,366행의 판단은 포함 2,752행·제외 586행·보류 28행이다. 포함 중 한영 이름 충돌 86행은 19묶음으로 `unresolved_name_groups`에 따로 남겼으므로 실제 사용 목록에는 들어가지 않는다. `unresolved`는 판단 보류 28행의 코드와 이유다. 원료 구분이 불분명한 충돌을 임의로 합치지 않았다.
+`name_conflict_resolution`은 한영 이름 충돌 19묶음(86행)에 대응하는 재료 20개의 이름과 원본 코드별 결정이다. 처리 상태 차이는 대표 이름으로 통합하며 새우류와 바닷가재류는 별도 재료다. `unresolved`는 판단 보류 28행의 코드와 이유다.
 
-사람이 815개 질문을 다시 검토할 필요 없이 우선 이 목록을 사용해 보고, 검색되지 않거나 이름이 어색한 사례를 원본 코드와 함께 고치면 된다.
+사용 중 검색되지 않거나 이름이 어색한 사례는 원본 코드와 함께 검토한다.
 
 ## 제한 관계 작업
 
-제한 ID 17개는 [restrictions.json](restrictions.json)에 고정했다. [이름 기반 판정 기준](docs/restriction-policy.md)으로 A/B 분류를 완료하고 일반 사용 기준으로 추가 검토했다. 최신 결과는 [relations-reviewed.json](../ingredient_restrictions/relations-reviewed.json)의 27,081쌍이며 2,656쌍은 보류다. 실제 DB와 서버 LLM에는 아직 연결하지 않았다.
+[restrictions.json](restrictions.json)은 제한 ID 17개를 정의한다. 분류 기준은 [이름 기반 판정 기준](docs/restriction-policy.md)이다. [relations-reviewed.json](../ingredient_restrictions/relations-reviewed.json)은 27,421쌍 중 확정 판정 24,714쌍과 보류 2,707쌍을 담는다. 로컬 DB에는 확정 판정만 저장하며, 보류 쌍은 추천에서 허용되지 않는다.
 
 ## 파일 위치와 역할
 
@@ -33,7 +33,8 @@
 |---|---|
 | [restrictions.json](restrictions.json) | 제한 17개의 ID·이름·타입 |
 | [docs/restriction-policy.md](docs/restriction-policy.md) | 판정 의미와 제한별 기준 |
-| [ingredients-reviewed.json](ingredients-reviewed.json) | **사용 시험 진입점**. Sol 검토를 반영한 1,593개 재료 |
+| [ingredients-reviewed.json](ingredients-reviewed.json) | **사용 시험 진입점**. Sol 검토와 이름 충돌 해결을 반영한 1,613개 재료 |
+| [code/resolve_name_conflicts.py](code/resolve_name_conflicts.py) | RDA 코드별 영어 이름 충돌 해결·새 재료 등록·미판정 관계 생성 |
 | [reviews/sol-review.json](reviews/sol-review.json) | GPT-6 Sol의 코드별 재검토 결정과 이유 |
 | [docs/classification-policy.md](docs/classification-policy.md) | 어떤 항목을 포함하고 어떤 이름으로 합칠지에 대한 기준 |
 | [docs/agent-workflow.md](docs/agent-workflow.md) | 단계별 처리 내용, 담당 코드, 실행 명령과 실제 에이전트 지시 |
@@ -42,7 +43,7 @@
 | [code/call_gemini_agent.py](code/call_gemini_agent.py) | Gemini 키 읽기·API 호출·오류 재시도 |
 | [code/agent_prompt.py](code/agent_prompt.py) | 정책·지시문·RDA 행을 Gemini 프롬프트로 구성 |
 | [code/build_ingredient_draft.py](code/build_ingredient_draft.py) | Sol 검토 결정과 A/B 합의 행으로 시험용 JSON 생성 |
-| [tests/test.md](tests/test.md) | 16개 테스트의 입력·기대 동작·필요성 설명 |
+| [tests/test.md](tests/test.md) | 테스트의 입력·기대 동작·필요성 설명 |
 | `tests/test_*.py` | 가짜 입력과 API 응답으로 실행하는 자동 테스트 |
 | `build/` | 작업 입력·A/B 원문·비교 결과·실행 당시 정책. Git 제외 |
 | `.env` | 개인 Gemini API 키. Git 제외 |

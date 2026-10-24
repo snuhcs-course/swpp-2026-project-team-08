@@ -1,4 +1,4 @@
-<!-- AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung -->
+<!-- AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung -->
 # Ingredient DB 작업 안내
 
 ## 목차
@@ -25,7 +25,7 @@
 
 ## 제한 관계 작업
 
-제한 ID 17개는 [restrictions.json](restrictions.json)에 고정했다. 판정값과 제한별 범위는 [제한 판정 기준](docs/restriction-policy.md)을 따른다. 저과당·저염·케톤의 100g 비교 기준과 지정 첨가물 목록을 문서에 정리했다. 실제 섭취량 평가와 재료 관계 생성은 별도다. 아직 재료별 관계를 생성하지 않았다.
+제한 ID 17개는 [restrictions.json](restrictions.json)에 고정했다. [이름 기반 판정 기준](docs/restriction-policy.md)으로 A/B 분류를 완료하고 일반 사용 기준으로 추가 검토했다. 최신 결과는 [relations-reviewed.json](../ingredient_restrictions/relations-reviewed.json)의 27,081쌍이며 2,656쌍은 보류다. 실제 DB와 서버 LLM에는 아직 연결하지 않았다.
 
 ## 파일 위치와 역할
 
@@ -58,3 +58,5 @@ python3 -m unittest discover -s data/ingredient_db/tests -p 'test_*.py' -v
 ```
 
 테스트는 API를 실제로 호출하지 않는다. 재료 이름이나 판단의 사실 여부는 사람이 검토한다.
+
+제한 관계 분류 실행은 별도 [ingredient_restrictions 워크플로](../ingredient_restrictions/README.md)에서 진행한다. 이 폴더의 재료 생성 실행과 작업·결과 폴더를 공유하지 않는다.

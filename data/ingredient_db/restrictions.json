@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "policy_version": "restriction-policy-1.4",
+  "policy_version": "restriction-policy-1.6",
   "restrictions": [
     {
       "id": "peanut",

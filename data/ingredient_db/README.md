@@ -34,7 +34,6 @@
 | [restrictions.json](restrictions.json) | 제한 17개의 ID·이름·타입 |
 | [docs/restriction-policy.md](docs/restriction-policy.md) | 판정 의미와 제한별 기준 |
 | [ingredients-reviewed.json](ingredients-reviewed.json) | **사용 시험 진입점**. Sol 검토와 이름 충돌 해결을 반영한 1,613개 재료 |
-| [code/resolve_name_conflicts.py](code/resolve_name_conflicts.py) | RDA 코드별 영어 이름 충돌 해결·새 재료 등록·미판정 관계 생성 |
 | [reviews/sol-review.json](reviews/sol-review.json) | GPT-6 Sol의 코드별 재검토 결정과 이유 |
 | [docs/classification-policy.md](docs/classification-policy.md) | 어떤 항목을 포함하고 어떤 이름으로 합칠지에 대한 기준 |
 | [docs/agent-workflow.md](docs/agent-workflow.md) | 단계별 처리 내용, 담당 코드, 실행 명령과 실제 에이전트 지시 |

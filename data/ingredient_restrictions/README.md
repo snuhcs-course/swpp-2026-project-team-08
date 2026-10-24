@@ -57,6 +57,12 @@ uv run python ../data/ingredient_restrictions/import_to_db.py --apply-local # �
 
 로컬 DB의 확정 판정 24,714쌍은 결과 파일과 일치하며 보류 2,707쌍은 미적재 상태다. 추천 테스트는 가짜 LLM을 사용해 NEVER 저장과 보류 거절을 검사한다.
 
+### 운영 DB 반영
+
+운영 이미지는 최종 재료·제한·판정 JSON과 적재 CLI를 포함한다. 배포 스크립트는 마이그레이션 → `python -m data.ingredient_restrictions.import_to_db --apply-production` → 컨테이너 교체 순서로 실행한다. 적재 실패 시 기존 컨테이너를 유지한다.
+
+`--apply-production`은 `ENVIRONMENT=production`에서만 허용하며 서버 환경변수로 접속한다. 기본 실행은 파일 검증만 수행한다. 적재 범위는 재료 카탈로그와 해당 제한 관계이며 보류 쌍의 기존 관계는 제거한다. 운영 실행 절차는 [배포 가이드](../../server/docs/deploy.md)를 따른다.
+
 ## 기준과 실행
 정책은 `../ingredient_db/docs/restriction-policy.md`의 1.6 버전이다.
 모든 응답은 ingredient_key, restriction_id, relation, review_status, reason, evidence_ids만 사용한다.
@@ -80,8 +86,7 @@ run에 --dry-run을 붙이면 API 호출 없이 남은 요청 수를 확인한�
 ## 파일 역할
 | 파일 | 역할 |
 |---|---|
-| import_to_db.py | 검토 파일 검증 및 로컬 DB 적재 |
-| merge_name_conflict_results.py | 새 재료 340쌍의 A/B 결과를 기존 판정에 병합 |
+| import_to_db.py | 검토 파일 검증 및 로컬·운영 DB 적재 |
 | run_workflow.py | 준비·실행·병합 CLI와 응답 검증 |
 | batch_runner.py | 미완료 쌍 묶기·병렬 요청·응답 저장·재개 |
 | prompt.md | 모델의 판단 지시 |

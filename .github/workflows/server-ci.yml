@@ -1,4 +1,5 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
 # server/ 가 바뀐 PR 에서 린트와 테스트를 실행한다.
 name: Server CI
 
@@ -6,6 +7,10 @@ on:
   pull_request:
     paths:
       - "server/**"
+      - "data/ingredient_db/ingredients-reviewed.json"
+      - "data/ingredient_db/restrictions.json"
+      - "data/ingredient_restrictions/relations-reviewed.json"
+      - "data/ingredient_restrictions/import_to_db.py"
       - ".github/workflows/server-ci.yml"
 
 permissions:

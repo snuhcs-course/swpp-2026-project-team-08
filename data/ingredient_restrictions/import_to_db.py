@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
-"""검토 데이터 검증 및 로컬 PostgreSQL 적재. 기본 실행은 검증만 한다."""
+"""검토 데이터 검증 및 PostgreSQL 적재. 기본 실행은 검증만 한다."""
 
 import argparse
 import asyncio
@@ -120,28 +120,32 @@ async def import_dataset(session, dataset: Dataset) -> None:
 
 async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--apply-local", action="store_true")
+    target = parser.add_mutually_exclusive_group()
+    target.add_argument("--apply-local", action="store_true")
+    target.add_argument("--apply-production", action="store_true")
     args = parser.parse_args()
     dataset = read_dataset()
     print(
         f"ingredients={len(dataset.ingredients)}, restrictions={len(dataset.restrictions)}, "
         f"decisions={len(dataset.decisions)}, omitted={dataset.omitted}"
     )
-    if not args.apply_local:
-        print("Validation only; use --apply-local to import.")
+    if not (args.apply_local or args.apply_production):
+        print("Validation only; use --apply-local or --apply-production to import.")
         return
     settings = Settings(_env_file=ROOT / "server/.env")
-    if settings.ENVIRONMENT != "local" or settings.POSTGRES_HOST not in {
+    if args.apply_local and (settings.ENVIRONMENT != "local" or settings.POSTGRES_HOST not in {
         "localhost",
         "127.0.0.1",
         "::1",
-    }:
+    }):
         raise ValueError("Only local PostgreSQL is supported")
+    if args.apply_production and settings.ENVIRONMENT != "production":
+        raise ValueError("--apply-production requires ENVIRONMENT=production")
     engine = create_async_engine(settings.database_url)
     try:
         async with async_sessionmaker(engine).begin() as session:
             await import_dataset(session, dataset)
-        print("Imported into local DB in one transaction.")
+        print(f"Imported into {settings.ENVIRONMENT} DB in one transaction.")
     finally:
         await engine.dispose()
 

@@ -1,5 +1,6 @@
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim -->
-
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+<!-- AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung -->
 # server — 아키텍처
 
 > 범위: 백엔드 서버(`server/`)의 **아키텍처** — 구조의 의도 · 영역별 설계와 근거 · 에러 처리 · 코드 배치 규칙 · 버전 관리 전략
@@ -46,7 +47,6 @@ app/
 
 위 두 파일 외에, 각 파일이 길어지거나 기능에 따라 추가 파일이 필요하면 다음 예시와 같이 파일을 더할 수 있다.
 
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 | 파일 | 언제 | 역할 |
 |---|---|---|
 | `dto.py` | DTO가 다른 기능에서 재사용되거나 `router.py`가 길어질 때 | DTO를 `router.py`에서 분리 |
@@ -106,7 +106,6 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 
 특정 기능을 모르는 횡단 기술 관심사를 담는다.
 
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 | 파일 | 역할 |
 |---|---|
 | `config.py` | pydantic-settings 설정 (싱글턴). `.env`/환경변수 타입 안전 로딩 |
@@ -123,7 +122,6 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 
 ### 2.5 워크플로 (LangGraph 등)
 
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 다단계 워크플로는 새 계층이 아니라 **해당 기능 서비스의 구현 수단**이다. 다른 기능에서 LangGraph를 추가할 때는
 `features/suggestions/`를 기준 구현으로 삼아 본뜬다.
 
@@ -131,7 +129,8 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 features/suggestions/
 ├── generator.py          # 서비스가 부르는 단일 진입점 (그래프 실행, 검증 실패 시 예외)
 ├── validation.py         # 결과 검증 — 순수 함수, 문제 목록을 반환
-├── ingredients.py        # 재료 카탈로그 · 제한 판정 — 순수 함수
+├── ingredients.py        # 재료 카탈로그 · NEVER 확인 — 순수 함수
+├── queries.py            # DB 재료 판정을 입력 값으로 조회
 └── workflow/
     ├── state.py          # InputState · OutputState · GraphState, 입출력 dataclass, 컨텍스트
     ├── nodes.py          # 노드 (얇게)
@@ -165,6 +164,7 @@ features/suggestions/
 - **도구(`tools.py`)는 LLM이 상황에 따라 직접 조회해야 할 때만 둔다.** 항상 필요한 데이터는 도구가 아니라 서비스가
   입력으로 넘긴다. 도구는 읽기 전용이고 세션을 열지 않으며, `child_id`나 제한 목록 같은 식별자 · 권한 값은 LLM
   인자로 받지 않고 `InjectedState`로 상태에서 주입한다 (LLM이 다른 값을 지어내지 못하도록).
+- 추천 서비스는 `queries.py`로 DB 재료별 NEVER 판정을 읽어 상태에 넣는다. 제한 목록은 기존 `mock_profile.py`를 사용하며 사용자 프로필은 아직 연결하지 않는다. 검색과 최종 검증 모두 고정 제한 전체에 NEVER가 있어야 허용한다. 관계 누락은 차단하며 재료 카탈로그를 mock으로 대체하지 않는다.
 - 테스트에서는 LLM 클라이언트만 가짜로 바꿔 그래프 전체를 실행한다 (`tests/fake_chat_model.py`). 테스트에서 실제 LLM을
   호출하지 않는다.
 - LangSmith 추적은 코드를 바꾸지 않고 환경변수로 켤 수 있다. 프롬프트에 아이의 식사 정보가 들어가므로, 운영에서

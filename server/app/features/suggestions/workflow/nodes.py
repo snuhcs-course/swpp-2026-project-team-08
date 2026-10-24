@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 """그래프의 노드.
 
@@ -53,7 +54,11 @@ async def compose(state: GraphState, runtime: Runtime[SuggestionContext]) -> Upd
 
 def validate(state: GraphState) -> Update:
     """결과를 요청과 아이의 제한에 비춰 검증하는 노드 (순수 함수 호출)."""
-    return {"problems": find_problems(state["foods"], state["results"], state["restrictions"])}
+    return {
+        "problems": find_problems(
+            state["foods"], state["results"], state["restrictions"], state["catalog"]
+        )
+    }
 
 
 def route_after_validate(state: GraphState) -> str:

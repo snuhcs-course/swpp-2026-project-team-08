@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 """제안 생성 워크플로 테스트. 가짜 모델로 그래프 전체를 실행하고 LLM은 호출하지 않는다."""
 
@@ -10,6 +11,7 @@ from app.features.suggestions.workflow.nodes import MAX_ATTEMPTS
 from app.features.suggestions.workflow.schemas import SuggestionDraft, SuggestionsDraft
 from app.features.suggestions.workflow.state import FoodInput
 from tests.fake_chat_model import ScriptedChatModel
+from tests.suggestion_catalog import CATALOG
 
 FOODS = [FoodInput(id="f1", name="Broccoli"), FoodInput(id="f2", name="Egg")]
 RESTRICTIONS = ChildRestrictions(ids=frozenset({RestrictionId.PEANUT}))
@@ -54,7 +56,7 @@ async def test_tool_is_called_then_valid_result_is_returned():
         drafts=[drafts(["carrot"], ["rice"])],
     )
 
-    results = await generate_suggestions(FOODS, RESTRICTIONS, llm=llm)
+    results = await generate_suggestions(FOODS, RESTRICTIONS, catalog=CATALOG, llm=llm)
 
     assert [r.food_id for r in results] == ["f1", "f2"]
     assert results[0].used_ingredients == ("carrot",)
@@ -70,7 +72,7 @@ async def test_invalid_result_is_retried_with_feedback():
         drafts=[drafts(["땅콩버터"], ["rice"]), drafts(["carrot"], ["rice"])],
     )
 
-    results = await generate_suggestions(FOODS, RESTRICTIONS, llm=llm)
+    results = await generate_suggestions(FOODS, RESTRICTIONS, catalog=CATALOG, llm=llm)
 
     assert results[0].used_ingredients == ("carrot",)
     assert len(llm.compose_inputs) == 2
@@ -88,7 +90,7 @@ async def test_rejected_after_attempts_are_exhausted():
     )
 
     with pytest.raises(GenerationRejectedError) as raised:
-        await generate_suggestions(FOODS, RESTRICTIONS, llm=llm)
+        await generate_suggestions(FOODS, RESTRICTIONS, catalog=CATALOG, llm=llm)
 
     assert len(llm.compose_inputs) == MAX_ATTEMPTS
     assert [(p.kind, p.food_id, p.ingredient) for p in raised.value.problems] == [
@@ -103,6 +105,6 @@ async def test_missing_food_is_rejected():
     )
 
     with pytest.raises(GenerationRejectedError) as raised:
-        await generate_suggestions(FOODS, RESTRICTIONS, llm=llm)
+        await generate_suggestions(FOODS, RESTRICTIONS, catalog=CATALOG, llm=llm)
 
     assert [(p.kind, p.food_id) for p in raised.value.problems] == [("missing_food", "f2")]

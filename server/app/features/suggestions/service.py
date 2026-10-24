@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
 """Suggestions owned by the authenticated user."""
 
 import asyncio
@@ -12,7 +13,9 @@ from app.core.errors import AppError
 from app.core.timezone import now_kst
 from app.features.meals.queries import meal_records, owned_meal
 from app.features.suggestions.generator import generate_suggestions
+from app.features.suggestions.ingredients import usable_ingredient_names
 from app.features.suggestions.mock_profile import MOCK_RESTRICTIONS
+from app.features.suggestions.queries import load_catalog
 from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
 from app.models import UserSuggestion
 
@@ -117,7 +120,11 @@ class UserSuggestionService:
             inputs.append(FoodInput(id=str(index), name=name))
         try:
             async with asyncio.timeout(60):
-                generated = await generate_suggestions(inputs, MOCK_RESTRICTIONS)
+                restrictions = MOCK_RESTRICTIONS
+                catalog = await load_catalog(self._session)
+                if not usable_ingredient_names(restrictions, [], catalog):
+                    raise GenerationFailedError()
+                generated = await generate_suggestions(inputs, restrictions, catalog=catalog)
         except Exception as error:
             raise GenerationFailedError() from error
         if (

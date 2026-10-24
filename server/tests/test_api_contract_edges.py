@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
 """Contract edge cases for authenticated meals, reviews, and suggestions."""
 
 from datetime import timedelta
@@ -10,11 +11,14 @@ from app.core.timezone import now_kst
 from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
 from app.main import app
 from app.models import Ingredient
+from tests.suggestion_catalog import seed_mock_allowed_ingredient
 
 
 def test_only_current_tables_and_routes_are_registered() -> None:
     assert set(Base.metadata.tables) == {
         "ingredients",
+        "restrictions",
+        "ingredient_restrictions",
         "meals",
         "meal_foods",
         "meal_food_ingredients",
@@ -109,6 +113,9 @@ async def review_meal(
 
 @pytest.mark.asyncio
 async def test_meal_history_review_replacement_and_ownership(client: AsyncClient) -> None:
+    async for session in app.dependency_overrides[get_session]():
+        session.add(Ingredient(id=182, name="당근"))
+        await seed_mock_allowed_ingredient(session, 182)
     owner = await login(client, "owner@example.com")
     other = await login(client, "other@example.com")
     older = await save_meal(client, owner, "2026-10-19")
@@ -139,6 +146,9 @@ async def test_suggestion_target_validation_and_generation_failure_are_atomic(
 ) -> None:
     async for session in app.dependency_overrides[get_session]():
         session.add(Ingredient(id=212, name="감자"))
+    async for session in app.dependency_overrides[get_session]():
+        session.add(Ingredient(id=182, name="당근"))
+        await seed_mock_allowed_ingredient(session, 182)
     owner = await login(client, "owner@example.com")
     other = await login(client, "other@example.com")
     meal_id = await save_meal(client, owner, "2026-10-20", ingredient=True)
@@ -160,7 +170,7 @@ async def test_suggestion_target_validation_and_generation_failure_are_atomic(
     ).status_code == 422
 
     async def invalid_generator(
-        _: list[FoodInput], _restrictions: object
+        _: list[FoodInput], _restrictions: object, *, catalog: object
     ) -> list[GeneratedSuggestion]:
         return []
 
@@ -174,12 +184,17 @@ async def test_suggestion_target_validation_and_generation_failure_are_atomic(
 async def test_saved_filter_decision_validation_and_undo(
     client: AsyncClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    async for session in app.dependency_overrides[get_session]():
+        session.add(Ingredient(id=182, name="당근"))
+        await seed_mock_allowed_ingredient(session, 182)
     owner = await login(client, "owner@example.com")
     other = await login(client, "other@example.com")
     meal_id = await save_meal(client, owner, "2026-10-20")
     assert (await review_meal(client, owner, meal_id)).status_code == 200
 
-    async def generator(items: list[FoodInput], _restrictions: object) -> list[GeneratedSuggestion]:
+    async def generator(
+        items: list[FoodInput], _restrictions: object, *, catalog: object
+    ) -> list[GeneratedSuggestion]:
         return [
             GeneratedSuggestion(
                 food_id=item.id,

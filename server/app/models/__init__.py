@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
 # AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 """모든 테이블 모델.
 
@@ -7,8 +8,10 @@
 
 from app.models.food_item import FoodItem
 from app.models.ingredient import Ingredient
+from app.models.ingredient_restriction import IngredientRestriction
 from app.models.meal import Meal
 from app.models.meal_food_ingredient import MealFoodIngredient
+from app.models.restriction import Restriction
 from app.models.review_food_result import ReviewFoodResult
 from app.models.review_ingredient_result import ReviewIngredientResult
 from app.models.safe_food import SafeFood
@@ -28,3 +31,6 @@ __all__ += ["MealFoodIngredient"]
 __all__ += ["Meal", "FoodItem"]
 __all__ += ["SuggestionMealLink"]
 __all__ += ["ReviewFoodResult", "ReviewIngredientResult", "UserSuggestion"]
+
+
+__all__ += ["IngredientRestriction", "Restriction"]

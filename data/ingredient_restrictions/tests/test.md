@@ -38,3 +38,17 @@ python3 -m unittest discover -s data/ingredient_restrictions/tests -v
 
 | 503 자동 재개 | 가짜 실행이 503 네 번 후 성공 | 60·120·240·300초 대기를 요청하고 동일 명령 재개 후 병합. 실제 대기·API 호출 없음 |
 | 다른 오류 중단 | 429 또는 응답 검증 오류 | 자동 대기·반복·병합 없이 실패 반환 |
+
+
+## DB 연결·추천 차단 테스트
+
+서버에서 `uv run pytest`로 실행한다. LLM은 가짜 모델을 사용한다.
+
+| 서버 테스트 파일 | 확인하는 사례 |
+|---|---|
+| `test_suggestion_db.py` | NEVER만 허용, ALWAYS·제품별·누락·없는 이름 차단, 복수 제한 모두 확인, 빈 DB의 임시 데이터 대체 금지, 관계 값·PK·FK 제약, 모호한 영어 별칭 제외, LLM에 권한·카탈로그 인자 숨김 |
+| `test_suggestion_ingredients.py` | 클라이언트와 제한 17개 일치, 이름 정규화·별칭 조회, 후보 및 전체 목록 필터 |
+| `test_suggestion_validation.py` | 음식 누락·중복·추가, 빈 문구·재료, 미등록·미허용 재료 거절 |
+| `test_suggestion_workflow.py` | 도구 호출 후 허용 제안, 오류 피드백 후 수정, 3회 실패 시 거절, 음식 누락 거절 |
+
+로컬 PostgreSQL 확인은 별도로 실제 적재 데이터 전체와 비교하고, API에서 허용 제안 저장·보류 제안 미저장을 확인했다. 임시 검증 데이터는 rollback했다.

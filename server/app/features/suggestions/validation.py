@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 """생성 결과가 요청과 아이의 제한에 맞는지 판단하는 순수 함수.
 
@@ -7,6 +8,7 @@
 from collections import Counter
 
 from app.features.suggestions.ingredients import (
+    Catalog,
     ChildRestrictions,
     conflicting_restrictions,
     find_ingredient,
@@ -24,6 +26,7 @@ def find_problems(
     foods: list[FoodInput],
     results: list[GeneratedSuggestion],
     restrictions: ChildRestrictions,
+    catalog: Catalog,
 ) -> list[ValidationProblem]:
     """요청한 음식 · 아이의 제한과 결과를 비교해 문제 목록을 반환한다. 문제가 없으면 빈 리스트."""
     problems: list[ValidationProblem] = []
@@ -45,12 +48,12 @@ def find_problems(
                 problems.append(
                     ValidationProblem(kind="blank_field", food_id=result.food_id, field=field)
                 )
-        problems.extend(_ingredient_problems(result, restrictions))
+        problems.extend(_ingredient_problems(result, restrictions, catalog))
     return problems
 
 
 def _ingredient_problems(
-    result: GeneratedSuggestion, restrictions: ChildRestrictions
+    result: GeneratedSuggestion, restrictions: ChildRestrictions, catalog: Catalog
 ) -> list[ValidationProblem]:
     """제안 하나의 `used_ingredients`를 카탈로그와 아이의 제한에 비춰 본다."""
     names = [name for name in result.used_ingredients if name.strip()]
@@ -59,7 +62,7 @@ def _ingredient_problems(
 
     problems = []
     for name in names:
-        ingredient = find_ingredient(name)
+        ingredient = find_ingredient(name, catalog)
         if ingredient is None:
             problems.append(
                 ValidationProblem(

@@ -1,11 +1,12 @@
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim -->
+<!-- AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung -->
 # 서버 배포 가이드
 
 서버(`server/`)를 AWS에 배포하는 구조와 설정 방법을 설명합니다. 코드 구조는 [architecture.md](architecture.md), 로컬 실행은 [README](../README.md)를 참고하세요.
 
 ## 1. 개요
 
-`main` 브랜치에 `server/` 변경이 머지되면 GitHub Actions가 Docker 이미지를 만들어 AWS ECR에 올리고, EC2에서 새 이미지를 실행합니다. 데이터베이스는 RDS의 PostgreSQL입니다.
+`main` 브랜치에 `server/` 또는 최종 재료·제한·판정 데이터와 적재 코드 변경이 머지되면 GitHub Actions가 Docker 이미지를 만들어 AWS ECR에 올리고, EC2에서 새 이미지를 실행합니다. 데이터베이스는 RDS의 PostgreSQL입니다.
 
 ```mermaid
 flowchart LR
@@ -39,8 +40,8 @@ EC2의 8000번 포트는 CloudFront에서 오는 요청만 받도록 보안그�
 
 | 워크플로 | 파일 | 실행 시점 | 하는 일 |
 | --- | --- | --- | --- |
-| Server CI | `.github/workflows/server-ci.yml` | `server/`가 바뀐 PR | 코드 검사와 테스트 |
-| Server Deploy | `.github/workflows/server-deploy.yml` | `main`에 `server/` 변경 머지 (수동 실행도 가능) | 이미지 빌드와 EC2 배포 |
+| Server CI | `.github/workflows/server-ci.yml` | 서버·적재 데이터가 바뀐 PR | 코드 검사와 테스트 |
+| Server Deploy | `.github/workflows/server-deploy.yml` | `main`에 서버·적재 데이터 변경 머지 (수동 실행도 가능) | 이미지 빌드와 EC2 배포 |
 
 ### 2.1 CI (PR)
 
@@ -68,6 +69,7 @@ sequenceDiagram
   EC2->>PS: 환경변수 읽기
   EC2->>ECR: 이미지 pull
   EC2->>DB: alembic upgrade head
+  EC2->>DB: 재료·제한 판정 적재
   EC2->>EC2: 컨테이너 교체, /health 확인
   EC2-->>GH: 성공 또는 실패
 ```
@@ -83,9 +85,10 @@ EC2에서 `deploy.sh`가 하는 일은 이렇습니다.
 1. SSM Parameter Store의 `/nurturebites/prod/*` 값을 읽어 임시 환경변수 파일을 만듭니다. 필수 파라미터(`ENVIRONMENT`, `JWT_SECRET_KEY`, `POSTGRES_HOST`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`)가 하나라도 없거나 비어 있거나, `ENVIRONMENT`가 `production`이 아니면 중단합니다.
 2. 새 이미지를 pull합니다.
 3. 새 이미지로 `alembic upgrade head`를 실행해 DB 마이그레이션을 적용합니다.
-4. 실행 중인 컨테이너를 지우고 새 컨테이너를 띄웁니다.
-5. `/health`가 응답하는지 최대 60초 동안 확인합니다. 응답하면 배포 성공입니다.
-6. 응답하지 않으면 컨테이너 로그를 남기고 **이전 이미지로 되돌린 뒤** 배포를 실패 처리합니다.
+4. 같은 이미지로 `python -m data.ingredient_restrictions.import_to_db --apply-production`을 실행합니다. 확정 판정만 한 트랜잭션으로 적재하며 기존 재료 ID를 보존하고 보류 관계는 제거합니다. 실패하면 기존 컨테이너를 유지합니다.
+5. 실행 중인 컨테이너를 지우고 새 컨테이너를 띄웁니다.
+6. `/health`가 응답하는지 최대 60초 동안 확인합니다. 응답하면 배포 성공입니다.
+7. 응답하지 않으면 컨테이너 로그를 남기고 **이전 이미지로 되돌린 뒤** 배포를 실패 처리합니다.
 
 한 번에 배포는 하나만 실행됩니다. 앞선 배포가 끝나기 전에 또 머지되면 뒤의 배포가 기다렸다가 실행됩니다.
 
@@ -214,7 +217,15 @@ psql -h <RDS 엔드포인트> -U <사용자> -d <DB 이름>   # 비밀번호는 
 | CloudFront → EC2 구간은 HTTP | 앱과 CloudFront 사이는 HTTPS이지만, CloudFront에서 EC2까지는 HTTP(8000번)로 전달됩니다. 이 구간까지 암호화하려면 EC2에 nginx와 인증서가 필요합니다. 도메인이 생기면 CloudFront에 대체 도메인과 인증서를 붙일 수 있습니다. |
 | 배포 중 짧은 중단 | 서버가 1대라서 컨테이너를 교체하는 몇 초 동안 요청이 실패할 수 있습니다. |
 | 단일 장애 지점 | EC2와 RDS가 각각 1대(단일 AZ)입니다. 장애가 나면 수동으로 복구해야 합니다. |
-| Dockerfile 검증 시점 | CI는 이미지를 빌드하지 않습니다. `Dockerfile`을 고친 PR의 빌드 오류는 머지 후 배포 단계에서야 드러나므로, 고쳤다면 로컬에서 `docker build server`로 먼저 확인하세요. |
+| Dockerfile 검증 시점 | CI는 이미지를 빌드하지 않습니다. `Dockerfile`을 고친 PR의 빌드 오류는 머지 후 배포 단계에서야 드러나므로, 고쳤다면 로컬에서 `docker build -f server/Dockerfile .`로 먼저 확인하세요. |
 | DB 비밀번호 문자 제한 | `database_url`이 비밀번호를 URL 인코딩하지 않아서, 특수문자가 있으면 접속 주소가 깨집니다. 그래서 비밀번호를 영문과 숫자로만 만듭니다. |
 | DB 접속 암호화 미강제 | 접속 설정에 `sslmode`가 없어 기본값(`prefer`)으로 동작합니다. 연결은 되지만 암호화를 강제하지 않습니다. |
 | 공개 전 확인 | CORS가 모든 출처를 허용(`allow_origins=["*"]`)합니다. `meal_logs` 엔드포인트는 현재 로그인 검사(`CurrentUser`)를 받지 않습니다. 외부에 공개하기 전에 팀에서 정리가 필요합니다. |
+
+## 6. 재료 데이터 적재
+
+Docker 빌드 컨텍스트는 저장소 루트이며 `server/Dockerfile.dockerignore`가 서버 소스와 최종 적재 파일만 허용합니다. API 키·원본 RDA·검토 기록·에이전트 코드는 이미지에 포함하지 않습니다.
+
+기본 CLI는 파일 검증만 수행합니다. `--apply-local`은 로컬 DB, `--apply-production`은 `ENVIRONMENT=production` 설정에서만 쓰기를 허용합니다. 운영 접속 정보는 배포와 같은 서버 환경변수를 사용하며 추가 환경변수는 없습니다.
+
+배포 순서는 스키마 적용 → 데이터 적재 → 서버 교체입니다. 운영 DB 쓰기는 팀 확인 후 배포 절차로 실행합니다. 데이터 적재는 사용자·식사 데이터와 카탈로그 밖 재료를 유지합니다. 서버 이미지 rollback은 이미 커밋된 판정 데이터를 되돌리지 않습니다. 데이터 복구는 원하는 데이터 버전을 포함한 이미지로 명시적으로 적재합니다.

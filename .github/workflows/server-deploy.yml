@@ -1,5 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
-# main 에 server/ 변경이 머지되면 이미지를 ECR 에 올리고 EC2 에 배포한다.
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
+# main 에 서버·적재 데이터 변경이 머지되면 이미지를 ECR 에 올리고 EC2 에 배포한다.
 # AWS 인증은 OIDC 로 하며, 비밀 값은 GitHub 에 두지 않는다 (DB/JWT 값은 EC2 가 SSM 에서 읽는다).
 name: Server Deploy
 
@@ -8,6 +9,10 @@ on:
     branches: [main]
     paths:
       - "server/**"
+      - "data/ingredient_db/ingredients-reviewed.json"
+      - "data/ingredient_db/restrictions.json"
+      - "data/ingredient_restrictions/relations-reviewed.json"
+      - "data/ingredient_restrictions/import_to_db.py"
       - ".github/workflows/server-deploy.yml"
   workflow_dispatch:
 
@@ -41,7 +46,7 @@ jobs:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
         run: |
           IMAGE="$REGISTRY/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}"
-          docker build -t "$IMAGE" server
+          docker build -f server/Dockerfile -t "$IMAGE" .
           docker push "$IMAGE"
           echo "name=$IMAGE" >> "$GITHUB_OUTPUT"
 

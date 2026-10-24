@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 """서비스가 부르는 제안 생성의 단일 진입점.
 
@@ -9,7 +10,7 @@ import logging
 from langchain_core.language_models.chat_models import BaseChatModel
 
 from app.core.errors import AppError
-from app.features.suggestions.ingredients import ChildRestrictions
+from app.features.suggestions.ingredients import Catalog, ChildRestrictions
 from app.features.suggestions.workflow.graph import graph
 from app.features.suggestions.workflow.llm import build_chat_model
 from app.features.suggestions.workflow.state import (
@@ -37,6 +38,7 @@ async def generate_suggestions(
     foods: list[FoodInput],
     restrictions: ChildRestrictions,
     *,
+    catalog: Catalog,
     llm: BaseChatModel | None = None,
 ) -> list[GeneratedSuggestion]:
     """음식마다 제안을 만든다. 검증을 통과하지 못하면 `GenerationRejectedError`를 던진다.
@@ -44,7 +46,7 @@ async def generate_suggestions(
     `llm`을 넘기지 않으면 설정에서 모델을 만든다 (테스트는 가짜 모델을 넘긴다).
     """
     output = await graph.ainvoke(
-        {"foods": foods, "restrictions": restrictions},
+        {"foods": foods, "restrictions": restrictions, "catalog": catalog},
         context=SuggestionContext(llm=llm or build_chat_model()),
         config={"recursion_limit": RECURSION_LIMIT},
     )

@@ -1,5 +1,6 @@
 #!/bin/bash
 # AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
 # EC2 에서 실행되는 배포 스크립트. GitHub Actions 가 SSM(AWS-RunShellScript)으로 보낸다.
 #
 # 호출하는 쪽이 아래 환경변수를 먼저 설정해 준다.
@@ -7,7 +8,7 @@
 #   REGISTRY ECR 레지스트리 주소
 #   REGION   AWS 리전
 #
-# 순서: 설정 읽기 → 이미지 pull → DB 마이그레이션 → 컨테이너 교체 → 헬스체크 → 실패 시 롤백
+# 순서: 설정 읽기 → 이미지 pull → DB 마이그레이션 → 재료 적재 → 컨테이너 교체 → 헬스체크
 set -euo pipefail
 
 PARAM_PATH="/nurturebites/prod"
@@ -56,6 +57,10 @@ PREVIOUS="$(docker inspect --format '{{.Config.Image}}' "$CONTAINER" 2>/dev/null
 
 # 4. DB 마이그레이션. 새 이미지로 한 번 실행하고 끝난다.
 docker run --rm --env-file "$ENV_FILE" "$IMAGE" alembic upgrade head
+
+# 같은 이미지의 확정 판정을 한 트랜잭션으로 적재한다. 실패하면 컨테이너를 교체하지 않는다.
+docker run --rm --env-file "$ENV_FILE" "$IMAGE" \
+  python -m data.ingredient_restrictions.import_to_db --apply-production
 
 # 5. 컨테이너 교체.
 start_container() {

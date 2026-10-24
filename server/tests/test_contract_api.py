@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
 """End-to-end behavior for the documented meal, review, and suggestion routes."""
 
 from datetime import timedelta
@@ -10,6 +11,7 @@ from app.core.timezone import now_kst
 from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
 from app.main import app
 from app.models import Ingredient
+from tests.suggestion_catalog import seed_mock_allowed_ingredient
 
 
 async def auth_headers(client: AsyncClient, email: str) -> dict[str, str]:
@@ -32,9 +34,10 @@ async def test_meal_review_suggestion_and_history_flow(
 ) -> None:
     async for session in app.dependency_overrides[get_session]():
         session.add_all([Ingredient(id=182, name="당근"), Ingredient(id=212, name="감자")])
+        await seed_mock_allowed_ingredient(session, 182)
 
     async def fake_generate(
-        inputs: list[FoodInput], _restrictions: object
+        inputs: list[FoodInput], _restrictions: object, *, catalog: object
     ) -> list[GeneratedSuggestion]:
         return [
             GeneratedSuggestion(

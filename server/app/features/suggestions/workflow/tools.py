@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 """LLM이 호출하는 도구.
 
@@ -11,13 +12,14 @@ from typing import Annotated
 from langchain_core.tools import tool
 from langgraph.prebuilt import InjectedState
 
-from app.features.suggestions.ingredients import ChildRestrictions, usable_ingredient_names
+from app.features.suggestions.ingredients import Catalog, ChildRestrictions, usable_ingredient_names
 
 
 @tool
 def search_available_ingredients(
     candidates: list[str],
     restrictions: Annotated[ChildRestrictions, InjectedState("restrictions")],
+    catalog: Annotated[Catalog, InjectedState("catalog")],
 ) -> list[str]:
     """이 아이가 쓸 수 있는 재료만 골라서 돌려준다.
 
@@ -25,7 +27,7 @@ def search_available_ingredients(
     candidates를 빈 목록으로 부르면 쓸 수 있는 재료 전체를 반환한다.
     반환되지 않은 재료는 이 아이에게 쓸 수 없거나 알 수 없는 재료이므로 제안에 쓰지 않는다.
     """
-    return usable_ingredient_names(restrictions, candidates)
+    return usable_ingredient_names(restrictions, candidates, catalog)
 
 
 TOOLS = [search_available_ingredients]

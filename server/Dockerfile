@@ -1,6 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
-# 운영 배포용 이미지. 빌드 컨텍스트는 server/ 디렉터리다.
-#   docker build -t nurturebites-server server/
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
+# 운영 배포용 이미지. 빌드 컨텍스트는 저장소 루트다.
+#   docker build -f server/Dockerfile -t nurturebites-server .
 # 설정은 이미지에 넣지 않고 실행할 때 환경변수(--env-file)로 주입한다.
 FROM python:3.12-slim
 
@@ -15,12 +16,14 @@ ENV UV_COMPILE_BYTECODE=1 \
 WORKDIR /app
 
 # 의존성을 먼저 설치해 소스만 바뀐 빌드에서는 이 레이어를 캐시로 재사용한다.
-COPY pyproject.toml uv.lock ./
+COPY server/pyproject.toml server/uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
-COPY alembic.ini ./
-COPY migrations ./migrations
-COPY app ./app
+COPY server/alembic.ini ./
+COPY server/migrations ./migrations
+COPY server/app ./app
+COPY data/ingredient_db/ingredients-reviewed.json data/ingredient_db/restrictions.json ./data/ingredient_db/
+COPY data/ingredient_restrictions/relations-reviewed.json data/ingredient_restrictions/import_to_db.py ./data/ingredient_restrictions/
 
 # root 가 아닌 사용자로 실행한다.
 RUN useradd --create-home --uid 1000 appuser

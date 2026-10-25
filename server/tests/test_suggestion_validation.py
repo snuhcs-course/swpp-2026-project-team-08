@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: ingredients 구조 bootstrap
+
 """생성 결과 검증 (`validation.py`) 단위 테스트. 그래프 없이 값만으로 확인한다."""
 
 from app.features.suggestions.ingredients import ChildRestrictions, RestrictionId

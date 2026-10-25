@@ -1,4 +1,11 @@
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim -->
+<!-- Changed: server bootstraping -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim -->
+<!-- Changed: deploy 관련 문서 추가 -->
 <!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
+<!-- Changed: 화면 디자인 및 식사 흐름 개선 -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+<!-- Changed: suggestion 관련 문서 업데이트 -->
 
 # server
 
@@ -60,7 +67,6 @@ an empty JSON object for each food without recovering removed traits. Existing
 saved suggestions remain stored; recommendation generation uses revisions based
 on the remaining food fields and may regenerate suggestions on the next request.
 
-<!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 Migration `0009_food_confirmation` replaces food `origin` with a strict boolean
 `confirmed`. `source` now always records provenance (`ai` or `parent`); confirming
 or editing a food preserves it. Existing rows derive confirmation from the old
@@ -163,7 +169,6 @@ server/
 6. **테스트 쓰기.** `tests/test_meal_logs.py`에 정상 동작과 주요 에러 케이스를 추가하고,
    `uv run pytest`와 `uv run ruff check .`가 통과하는지 확인한다.
 
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 기능에 LangGraph 같은 다단계 LLM 워크플로가 필요하면 `app/features/suggestions/`를 기준 구현으로 삼아
 본뜬다 (구조와 규칙은 [`docs/architecture.md`](docs/architecture.md) §2.5). 서비스는 `generator.py` 같은
 단일 진입점만 부르고, 테스트에서는 실제 LLM 대신 `tests/fake_chat_model.py`의 가짜 모델을 쓴다. LLM을 쓰려면

@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+
 """core 계층 테스트: 헬스체크 / 설정 검증 / KST 시각."""
 
 import pytest

@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: add suggestion LLM workflow
+
 """LLM 구조화 출력 스키마.
 
 LLM이 돌려주는 값은 외부에서 온 값이므로 Pydantic으로 파싱한다. 파싱한 뒤에는

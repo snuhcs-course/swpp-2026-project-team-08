@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: LangChain LLM 설정
+
 """제안 워크플로가 쓰는 채팅 모델 생성.
 
 이 기능만 쓰는 LLM 클라이언트이므로 `core/`가 아니라 기능 폴더에 둔다.

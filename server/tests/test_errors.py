@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+
 """에러 포장 테스트: 서비스/검증기가 던진 AppError 가 router 선언대로 응답으로 바뀌는지.
 
 실제 라우터와 분리하기 위해 이 파일 안에서 작은 앱을 만들어 `ErrorMappedRoute` 를 검증한다.

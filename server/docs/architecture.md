@@ -1,4 +1,7 @@
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim -->
+<!-- Changed: server bootstraping -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+<!-- Changed: suggestion 관련 문서 업데이트 -->
 
 # server — 아키텍처
 
@@ -46,7 +49,6 @@ app/
 
 위 두 파일 외에, 각 파일이 길어지거나 기능에 따라 추가 파일이 필요하면 다음 예시와 같이 파일을 더할 수 있다.
 
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 | 파일 | 언제 | 역할 |
 |---|---|---|
 | `dto.py` | DTO가 다른 기능에서 재사용되거나 `router.py`가 길어질 때 | DTO를 `router.py`에서 분리 |
@@ -106,7 +108,6 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 
 특정 기능을 모르는 횡단 기술 관심사를 담는다.
 
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 | 파일 | 역할 |
 |---|---|
 | `config.py` | pydantic-settings 설정 (싱글턴). `.env`/환경변수 타입 안전 로딩 |
@@ -123,7 +124,6 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 
 ### 2.5 워크플로 (LangGraph 등)
 
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 다단계 워크플로는 새 계층이 아니라 **해당 기능 서비스의 구현 수단**이다. 다른 기능에서 LangGraph를 추가할 때는
 `features/suggestions/`를 기준 구현으로 삼아 본뜬다.
 

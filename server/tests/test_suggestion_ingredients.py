@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: ingredients 구조 bootstrap
+
 """재료 카탈로그 조회와 제한 판정 (`ingredients.py`) 단위 테스트."""
 
 import json

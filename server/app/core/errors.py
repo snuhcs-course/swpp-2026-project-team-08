@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+
 """애플리케이션 공통 에러의 베이스 (HTTP 를 모르는 순수 파이썬).
 
 서비스와 Pydantic 검증기는 에러 클래스를 `raise` 하기만 한다. 상태 코드 · error_code ·

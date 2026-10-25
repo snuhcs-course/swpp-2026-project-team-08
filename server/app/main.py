@@ -1,4 +1,8 @@
+# AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
 # AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+# Changed: 식사 기록·로그인 기능 추가
+
 """FastAPI 앱 팩토리 / 엔트리포인트.
 
 실행:  uv run uvicorn app.main:app --reload

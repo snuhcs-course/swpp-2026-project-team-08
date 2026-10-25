@@ -1,4 +1,8 @@
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim -->
+<!-- Changed: deploy 관련 문서 추가 -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+<!-- Changed: suggestion 관련 문서 업데이트 -->
+
 # 서버 배포 가이드
 
 서버(`server/`)를 AWS에 배포하는 구조와 설정 방법을 설명합니다. 코드 구조는 [architecture.md](architecture.md), 로컬 실행은 [README](../README.md)를 참고하세요.
@@ -116,7 +120,6 @@ DB 비밀번호나 JWT 키 같은 비밀 값은 GitHub에 없고, EC2가 배포�
 
 파라미터 이름의 **마지막 부분이 환경변수 이름**이 됩니다. 예를 들어 `/nurturebites/prod/POSTGRES_HOST`는 `POSTGRES_HOST`로 컨테이너에 전달됩니다.
 
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim (OPENROUTER_API_KEY · SUGGESTION_MODEL 행) -->
 | 이름 | 종류 | 설명 |
 | --- | --- | --- |
 | `ENVIRONMENT` | String | 운영에서는 `production`. `local`이 아니면 기본 JWT 키로는 서버가 기동하지 않습니다. |

@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+
 """테스트 픽스처: 인메모리 SQLite + get_session 오버라이드.
 
 실제 Postgres 없이 라우터~서비스~모델 전 계층을 검증한다.

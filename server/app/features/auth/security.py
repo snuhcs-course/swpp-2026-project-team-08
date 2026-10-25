@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+
 """비밀번호 해싱 + JWT 발급/검증 (인프라 프리미티브).
 
 - 비밀번호: pwdlib (argon2). FastAPI 공식 보안 튜토리얼이 권장하는 라이브러리.

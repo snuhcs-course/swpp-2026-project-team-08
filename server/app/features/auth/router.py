@@ -1,4 +1,8 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+# AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+# Changed: 마이페이지·자녀 프로필 추가
+
 """인증 HTTP 라우터: /auth/signup, /auth/login.
 
 요청/응답 DTO(v1 클라이언트 계약)와, 서비스 에러를 어떤 응답으로 포장할지(`@error_specs`)를
@@ -301,7 +305,6 @@ async def read_me(current_user: CurrentUser) -> UserResponse:
     return UserResponse.model_validate(current_user)
 
 
-# AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 @router.patch(
     "/me",
     response_model=UserResponse,
@@ -329,7 +332,6 @@ async def request_email_change(
     current_user: CurrentUser,
     service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> EmailChangeSentResponse:
-    # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
     code = await service.request_email_change(current_user, email=payload.email)
     if get_settings().ENVIRONMENT == "local":
         return EmailChangeSentResponse(dev_code=code)

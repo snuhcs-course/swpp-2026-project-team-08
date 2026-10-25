@@ -2,6 +2,8 @@
 <!-- Changed: deploy 관련 문서 추가 -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 <!-- Changed: suggestion 관련 문서 업데이트 -->
+<!-- AI-generated with GPT-6, 2026-10-26, reviewed by Haechan Jung -->
+<!-- Changed: 식사 API 인증 설명 수정 -->
 
 # 서버 배포 가이드
 
@@ -220,4 +222,4 @@ psql -h <RDS 엔드포인트> -U <사용자> -d <DB 이름>   # 비밀번호는 
 | Dockerfile 검증 시점 | CI는 이미지를 빌드하지 않습니다. `Dockerfile`을 고친 PR의 빌드 오류는 머지 후 배포 단계에서야 드러나므로, 고쳤다면 로컬에서 `docker build server`로 먼저 확인하세요. |
 | DB 비밀번호 문자 제한 | `database_url`이 비밀번호를 URL 인코딩하지 않아서, 특수문자가 있으면 접속 주소가 깨집니다. 그래서 비밀번호를 영문과 숫자로만 만듭니다. |
 | DB 접속 암호화 미강제 | 접속 설정에 `sslmode`가 없어 기본값(`prefer`)으로 동작합니다. 연결은 되지만 암호화를 강제하지 않습니다. |
-| 공개 전 확인 | CORS가 모든 출처를 허용(`allow_origins=["*"]`)합니다. `meal_logs` 엔드포인트는 현재 로그인 검사(`CurrentUser`)를 받지 않습니다. 외부에 공개하기 전에 팀에서 정리가 필요합니다. |
+| 공개 전 확인 | CORS가 모든 출처를 허용(`allow_origins=["*"]`)합니다. 식사 API는 `CurrentUser`로 로그인 사용자를 확인합니다. 허용할 CORS 출처는 운영 요구사항에 맞게 검토해야 합니다. |

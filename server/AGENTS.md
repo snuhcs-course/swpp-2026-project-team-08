@@ -1,4 +1,11 @@
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim -->
+<!-- Changed: 배포 관련 문서 추가 -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+<!-- Changed: ingredient 관련 문서 작성 -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+<!-- Changed: suggestion 관련 문서 업데이트 -->
+<!-- AI-generated with GPT-6, 2026-10-25, reviewed by Haechan Jung -->
+<!-- Changed: AI 주석 규칙 정리 -->
 
 이 디렉터리는 FastAPI + Postgres 백엔드 서버다. 이 문서는 **LLM이 특히 지켜야 할 규칙**만 담는다.
 설치·실행·테스트·일반 규칙은 `README.md`, 아키텍처는 `docs/architecture.md`, 배포는 `docs/deploy.md`에 있다.
@@ -8,23 +15,18 @@
 - `README.md`(작업 규칙 · 컨벤션)와 `docs/architecture.md`를 먼저 읽는다.
 - `Dockerfile`, `deploy/`, `.github/workflows/`, 환경변수를 다루는 작업이면 [`docs/deploy.md`](docs/deploy.md)도
   먼저 읽어야 한다.
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 - 알러지 · 식이 제한 id(`RestrictionId`)나 재료 카탈로그를 다루는 작업이면
   [`../docs/food-ingredient-restriction-ids.md`](../docs/food-ingredient-restriction-ids.md)도 먼저 읽어야 한다.
   클라이언트와 id가 같아야 한다.
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 - LangGraph 같은 LLM 워크플로를 만들거나 고치는 작업이면 `docs/architecture.md` §2.5와 기준 구현인
   `app/features/suggestions/`를 먼저 읽고 그 구조를 따라야 한다.
 - 기존 코드와 패턴을 먼저 확인하고, 필요한 파일만 추가한다.
 
 ## AI 생성 코드 표기
 
-LLM이 작성한 코드에는 저장소 루트 [`AGENTS.md`](../AGENTS.md)의 **AI 생성 코드 표기** 규칙에 따라
-`AI-generated with <Model Name>, <Date>, reviewed by <User Name>` 주석을 단다.
+루트 [`AGENTS.md`](../AGENTS.md)의 **AI 생성 코드 표기** 규칙을 따른다.
 이 디렉터리에서 주석 문법은 Python · TOML · YAML · `.env.example` · `.ini`는 `#`, Markdown은 `<!-- -->`이며,
 Python 파일의 모듈 docstring이 있으면 그 앞(맨 위)에 둔다.
-다만, 이미 동작하고 있는 Python 파일의 일부를 수정하는 상황이라면 모듈 docstring의 AI 생성 코드 표기와 별개로
-해당 수정 부분에 주석을 단다.
 
 ## 하지 말 것
 
@@ -39,7 +41,6 @@ Python 파일의 모듈 docstring이 있으면 그 앞(맨 위)에 둔다.
   응답 포장(상태 코드 · `error_code` · `details`)은 `router.py`의 `@error_specs`에서만 정한다.
 - 키가 여러 개인 복잡한 값을 반환하거나 주고받는 경우, `dict`를 사용하기보다는 `dataclass`를
   쓴다. API 요청/응답 모양은 `dict`나 `dataclass`가 아니라 Pydantic DTO로 정의한다.
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 - 테스트에서 실제 LLM API를 호출하지 않는다. LLM만 가짜 모델로 바꿔 그래프를 실행한다.
 - LLM 도구(tool)의 인자로 `child_id`나 제한 목록 같은 식별자 · 권한 값을 LLM이 넘기게 하지 않는다.
   `InjectedState`로 상태에서 주입한다.

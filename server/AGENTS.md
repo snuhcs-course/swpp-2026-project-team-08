@@ -4,15 +4,17 @@
 <!-- Changed: ingredient 관련 문서 작성 -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 <!-- Changed: suggestion 관련 문서 업데이트 -->
-<!-- AI-generated with GPT-6, 2026-10-25, reviewed by Haechan Jung -->
-<!-- Changed: AI 주석 규칙 정리 -->
+<!-- AI-generated with GPT-6, 2026-10-26, reviewed by Haechan Jung -->
+<!-- Changed: AI 주석 규칙 및 문서 정리 -->
 
 이 디렉터리는 FastAPI + Postgres 백엔드 서버다. 이 문서는 **LLM이 특히 지켜야 할 규칙**만 담는다.
-설치·실행·테스트·일반 규칙은 `README.md`, 아키텍처는 `docs/architecture.md`, 배포는 `docs/deploy.md`에 있다.
+설치·실행·검사 명령은 `README.md`, 아키텍처는 `docs/architecture.md`, 배포는 `docs/deploy.md`에 있다.
 
 ## 작업 전에
 
-- `README.md`(작업 규칙 · 컨벤션)와 `docs/architecture.md`를 먼저 읽는다.
+이 디렉터리에서 작업할 때도 루트 [`AGENTS.md`](../AGENTS.md)의 공통 규칙을 함께 따른다.
+
+- `README.md`(실행 환경 · 기술 구성)와 `docs/architecture.md`를 먼저 읽는다.
 - `Dockerfile`, `deploy/`, `.github/workflows/`, 환경변수를 다루는 작업이면 [`docs/deploy.md`](docs/deploy.md)도
   먼저 읽어야 한다.
 - 알러지 · 식이 제한 id(`RestrictionId`)나 재료 카탈로그를 다루는 작업이면
@@ -30,23 +32,10 @@ Python 파일의 모듈 docstring이 있으면 그 앞(맨 위)에 둔다.
 
 ## 하지 말 것
 
-- 실패하는 테스트를 지우거나 약화해서 통과시키지 않는다. 원인을 고친다.
-- 검증하지 않고 "완료"라고 하지 않는다. 끝내기 전에 `uv run pytest`와 `uv run ruff check .`를 실행하고,
-  실패했거나 실행하지 못했으면 그대로 보고한다.
-- `.env`나 비밀값을 읽어 출력하거나 커밋하지 않는다.
-- `docs/architecture.md`의 구조 · 의존성 규칙과 어긋나는 변경을 조용히 하지 않는다. 필요하면
-  문서를 먼저 고치자고 제안한다.
-- 요청 범위를 넘어 리팩터링하지 않는다.
-- 에러 클래스에 자연어 메시지나 HTTP 상태 코드를 넣지 않는다. 에러는 클래스와 데이터(속성)만 갖고,
-  응답 포장(상태 코드 · `error_code` · `details`)은 `router.py`의 `@error_specs`에서만 정한다.
-- 키가 여러 개인 복잡한 값을 반환하거나 주고받는 경우, `dict`를 사용하기보다는 `dataclass`를
-  쓴다. API 요청/응답 모양은 `dict`나 `dataclass`가 아니라 Pydantic DTO로 정의한다.
 - 테스트에서 실제 LLM API를 호출하지 않는다. LLM만 가짜 모델로 바꿔 그래프를 실행한다.
 - LLM 도구(tool)의 인자로 `child_id`나 제한 목록 같은 식별자 · 권한 값을 LLM이 넘기게 하지 않는다.
   `InjectedState`로 상태에서 주입한다.
 - 검증을 통과하지 못한 LLM 결과를 저장하지 않는다. 재시도를 소진하면 예외로 끝낸다.
-- 다른 기능의 `service.py`를 호출하지 않는다. 로직을 재사용해야 하면 함수 모듈(`queries.py` 등)로 분리해
-  양쪽 서비스가 import한다.
 
 ## DB에 영향을 주는 작업은 반드시 사용자 확인
 
@@ -74,10 +63,34 @@ DB를 바꾸지 않으므로 확인 없이 해도 된다.
   - 운영 RDS에 접속하거나 데이터를 바꾸는 작업
   - 배포를 일으키는 동작 (`main` 머지, Server Deploy 수동 실행)
 
-## 코드 품질 우선순위
 
-코드를 작성 · 수정할 때는 다음 순서로 판단한다 (`README.md`의 코드 품질 기준과 같다).
+## 기능 간 규칙
 
-1. **단일 책임 원칙.** 파일 · 클래스 · 함수가 하나의 역할만 맡게 한다.
-2. **사람이 이해하고 유지보수할 수 있는가.** 역할별로 잘 나뉘어 이름만 보고 예측하고 이해할 수 있어야 하고,
-   쉽게 수정할 수 있어야 한다. 영리하거나 짧은 코드보다 읽기 쉬운 코드를 택한다.
+기능(`features/` 아래 폴더) 하나가 다른 기능을 쓸 때 지킬 규칙이다. 기능끼리 얽히면 한 곳을 고칠 때 어디가
+깨지는지 알기 어려워지므로, 의존하는 방향을 한쪽으로 제한한다.
+
+**다른 기능의 `service.py`는 호출하지 않는다.** 서비스끼리 서로 부르기 시작하면 어떤 기능이 어떤 기능의
+데이터를 바꾸는지 따라가기 어렵다. 다른 기능의 로직을 재사용하고 싶으면 그 로직을 `service.py` 밖의 함수
+모듈(예: `queries.py`)로 분리하고, 원래 기능의 `service.py`와 그것을 쓰려는 다른 기능의 `service.py`가 **둘 다
+그 모듈을 import**한다. 분리한 모듈은 그 로직을 주로 쓰는 기능 폴더에 둔다.
+
+**다른 기능에서 import해도 되는 것**
+- `models/`의 모델 (읽기 용도). 예: 추천 기능이 식사 기록을 조회하려고 `MealLog`를 import한다.
+- 다른 기능이 공개한 `dependencies.py` (예: `auth`의 `CurrentUser`)
+- 위에서 분리한 함수 모듈
+
+**기능끼리 서로 import하는 순환은 만들지 않는다.** A가 B를 쓰면 B는 A를 쓰지 않는다.
+
+**다른 기능의 테이블을 참조할 때**
+- ID 컬럼과 `ForeignKey("테이블.id", ...)`로만 가리킨다. `ForeignKey`는 테이블 이름을 문자열로 적으므로 그 기능의
+  파일을 import하지 않아도 된다.
+- 기능 사이에는 SQLAlchemy `relationship`을 걸지 않는다. 필요하면 ID로 직접 조회한다.
+- 두 테이블이 서로 가리킬 때는 `ForeignKey`를 한쪽에만 건다. 양쪽에 걸면 마이그레이션이 꼬인다.
+
+**여러 기능의 데이터를 합친 화면**(홈 화면 등)은 조합 전용 기능(예: `features/home/`)을 만든다. 그
+기능의 `service.py`가 각 기능에서 분리된 함수 모듈을 호출해 조합한다.
+
+## 필수 검증
+
+커밋·PR 전 서버 테스트·린트·포맷 검사가 모두 통과해야 한다.
+실행 명령은 [`README.md`](README.md)의 명령어 표를 따른다.

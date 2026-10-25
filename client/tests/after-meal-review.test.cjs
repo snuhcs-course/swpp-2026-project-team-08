@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -179,7 +181,6 @@ test('legacy follow-up drafts resume at difficulties without changing current st
   for (const step of ['photo', 'preview', 'compare', 'outcomes', 'difficulties', 'complete']) assert.equal(normalizeReviewStep(step), step);
 });
 
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 test('legacy reviews resume safely and omit retired feedback from saved results', async () => {
   const meal = savedMeal('retired-feedback');
   const draft = newReviewDraft(meal);
@@ -196,7 +197,6 @@ test('legacy reviews resume safely and omit retired feedback from saved results'
   assert.deepEqual(await readAfterMealReview(meal.childId, meal.id), review);
 });
 
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 test('feedback uses a strict boolean property and migrates both legacy answers', async () => {
   const meal = savedMeal('boolean-feedback');
   const draft = newReviewDraft(meal);

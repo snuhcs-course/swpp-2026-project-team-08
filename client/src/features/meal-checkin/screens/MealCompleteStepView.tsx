@@ -1,5 +1,7 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match saved check-in layout
 // This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 import { AppButton } from '../../../components/AppButton';
 import { MealSavedPanel } from '../../../components/MealSavedPanel';
 import { displayDate } from '../../../util/date';

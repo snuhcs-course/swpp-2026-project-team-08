@@ -1,4 +1,10 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -17,7 +23,6 @@ Module._load = function (name, ...args) {
   if (name === '@react-native-async-storage/async-storage') {
     return { getItem: async () => null, setItem: async () => undefined, removeItem: async () => undefined };
   }
-  // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
   if (name === 'expo-secure-store') {
     const store = {
       WHEN_UNLOCKED: 1,
@@ -57,7 +62,6 @@ function mealWithBeforePhoto(childId = 'child-photo') {
 
 
 
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 test('saving a meal keeps the before photo; manual after-meal review may omit its photo', () => {
   const meal = mealWithBeforePhoto();
   assert.equal(meal.photo.uri, PNG);

@@ -1,4 +1,5 @@
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+// Changed: 마이페이지·자녀 프로필 추가
 
 import type { Language, SafeFood } from '../../types/profile';
 import { copyFor, labelFor, type OptionGroup } from '../../util/strings';

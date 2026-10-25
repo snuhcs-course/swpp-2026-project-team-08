@@ -1,4 +1,12 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+// Changed: 식사 기록 화면 디자인 개선
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+
 import { AppHeader } from '../../../components/AppHeader';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -44,7 +52,6 @@ function PhotoTile({ uri, label }: { uri: string | null; label: string }) {
   );
 }
 
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 export function MealDetailsView(p: Props) {
   const s = copyFor(p.language);
   const m = s.mealLog;

@@ -1,4 +1,8 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { useState } from "react";
 import { Image } from "expo-image";
@@ -41,7 +45,6 @@ type Props = Pick<
 
 export function MealFoodsStepView({ p }: { p: Props }) {
   const [expanded, setExpanded] = useState<string | null>(p.draft.foods[0]?.id ?? null);
-  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
   const { step: linkStep, selectedSuggestion: suggestion, selectedFoodId: targetId } = p.suggestionLinking;
   const s = copyFor(p.language);
   const m = s.mealCheckin;

@@ -1,4 +1,8 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -11,7 +15,6 @@ for (const ext of ['.ts', '.tsx']) require.extensions[ext] = (m, file) => m._com
 }).outputText, file);
 for (const ext of ['.svg', '.png']) require.extensions[ext] = (m, file) => { m.exports = file; };
 const flatten = (value) => Object.assign({}, ...[value].flat(Infinity).filter(Boolean));
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 function primitive(tag) { return function Primitive({ children, style, accessibilityLabel, accessibilityState, accessibilityRole, testID, onPress, onChangeText, value, placeholder, ...props }) {
   const css = flatten(typeof style === 'function' ? style({ pressed: false }) : style);
   const safeProps = { style: css, role: accessibilityRole, 'aria-label': accessibilityLabel, 'data-testid': testID };
@@ -37,7 +40,6 @@ const { Dialog } = require('../src/components/Dialog.tsx');
 const { AfterMealPhotoStepsView } = require('../src/features/after-meal-review/screens/AfterMealPhotoStepsView.tsx');
 const { HeightFitPhoto } = require('../src/components/HeightFitPhoto.tsx');
 const s=copyFor('en'), a=abcCopyFor('en'), noop=()=>{};
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 const closedLinking = { step: 0, selectedFoodId: '', canContinue: false, onOpen: noop, onBack: noop,
   onSelectSuggestion: noop, onSelectFood: noop, onContinue: noop, onUnlink: noop };
 function editor(food=newFood(), mode='add') {
@@ -95,7 +97,6 @@ test('save failure has a dedicated retry screen with the same meal and no extra 
   assert.doesNotMatch(html,/Rolled omelet/);
 });
 test('draft suggestion linking opens explicitly and shows actual source meal metadata', () => {
-  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
   const p={draft:{...newDraft('test'),step:'foods',foods:[{...newFood(),name:'Soup'}]},language:'en',suggestions:[{id:'real-id',title:'Actual idea',description:'Try it small',mealDate:'2026-10-11',mealType:'lunch'}],suggestionLinking:closedLinking,onEdit:noop};
   const closed=renderToStaticMarkup(React.createElement(MealFoodsStepView,{p}));
   assert.match(closed,/Are you trying a previous suggestion/);

@@ -1,6 +1,6 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; fill photo frame height without vertical margins
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised manual after-meal flow
 // This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 
 import { HeightFitPhoto } from '../../../components/HeightFitPhoto';
 import { Pressable, StyleSheet, Text, View } from 'react-native';

@@ -1,4 +1,12 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+// Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 import type { Language } from '../types/profile';
 
 const en = {
@@ -773,7 +781,6 @@ export function labelFor(group: OptionGroup, id: string, language: Language): st
     ?? id;
 }
 
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 const suggestionCopy = {
   en: {
     generatingDetail: 'Using your meal review to find something to try next.', generationTitle: 'Couldn’t load suggestions', generationDetail: 'Something went wrong. Please try again in a moment.',

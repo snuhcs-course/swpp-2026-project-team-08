@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';

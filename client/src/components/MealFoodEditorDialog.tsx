@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
 
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -12,12 +12,13 @@ import { DropdownChoice } from './DropdownChoice';
 import { FormField } from './FormField';
 
 type Labels = { cooking: string; detail: string; acceptance: string; selectCooking: string; cookingOptions: readonly string[] };
-export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingredient, ingredientOptions, onIngredientChange, onAddIngredient, onSelectIngredient, onRemoveIngredient, onChange, onSave, onCancel }: {
+export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingredient, ingredientChoices, canAddIngredient, ingredientFeedback, onRetryIngredients, onIngredientChange, onAddIngredient, onSelectIngredient, onRemoveIngredient, onChange, onSave, onCancel }: {
   food: FoodItem; mode: 'add' | 'edit'; meal: ReturnType<typeof copyFor>['mealCheckin'];
-  common: Pick<ReturnType<typeof copyFor>['common'], 'add' | 'remove' | 'close'>;
-  labels: Labels; ingredient: string; ingredientOptions?: string[]; onIngredientChange: (value: string) => void;
-  onAddIngredient: () => void; onRemoveIngredient: (value: string) => void;
-  onSelectIngredient?: (value: string) => void;
+  common: Pick<ReturnType<typeof copyFor>['common'], 'add' | 'remove' | 'close' | 'retry'>;
+  labels: Labels; ingredient: string; ingredientChoices?: string[]; onIngredientChange: (value: string) => void;
+  canAddIngredient?: boolean; ingredientFeedback?: string; onRetryIngredients?: () => void;
+  onAddIngredient: () => boolean | void; onRemoveIngredient: (value: string) => void;
+  onSelectIngredient?: (value: string) => boolean | void;
   onChange: (value: Partial<FoodItem>) => void; onSave: () => void; onCancel: () => void;
 }) {
   const [ingredientOpen, setIngredientOpen] = useState(false);
@@ -36,16 +37,17 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
       </View>
       {ingredientOpen && <View style={styles.ingredientInput}>
         <View style={styles.column}><FormField variant="editor" label={m.addIngredient} hideLabel value={ingredient} onChangeText={onIngredientChange} placeholder={m.addIngredient} /></View>
-        <AppButton compact label={common.add} disabled={!ingredient.trim() || (!!ingredientOptions?.length && !ingredientOptions.some((name) => name.toLocaleLowerCase() === ingredient.trim().toLocaleLowerCase()))} onPress={() => { onAddIngredient(); setIngredientOpen(false); }} />
+        <AppButton compact label={common.add} disabled={canAddIngredient === undefined ? !ingredient.trim() : !canAddIngredient} onPress={() => { if (onAddIngredient() !== false) setIngredientOpen(false); }} />
       </View>}
-      {ingredientOpen && ingredientOptions && onSelectIngredient && ingredient.trim().length > 0 && (
+      {ingredientOpen && !!ingredientFeedback && <Text accessibilityLiveRegion="polite" style={styles.ingredientFeedback}>{ingredientFeedback}</Text>}
+      {ingredientOpen && onRetryIngredients && <AppButton compact secondary label={common.retry} onPress={onRetryIngredients} />}
+      {ingredientOpen && ingredientChoices && onSelectIngredient && (
         <View style={styles.ingredientChoices}>
-          {ingredientOptions.filter((name) => name.toLocaleLowerCase().includes(ingredient.trim().toLocaleLowerCase())
-            && !food.ingredients.includes(name)).slice(0, 6).map((name) => (
-              <Pressable key={name} accessibilityRole="button" onPress={() => { onSelectIngredient(name); setIngredientOpen(false); }} style={styles.ingredientChoice}>
-                <Text style={styles.tagText}>{name}</Text>
-              </Pressable>
-            ))}
+          {ingredientChoices.map((name) => (
+            <Pressable key={name} accessibilityRole="button" onPress={() => { if (onSelectIngredient(name) !== false) setIngredientOpen(false); }} style={styles.ingredientChoice}>
+              <Text style={styles.tagText}>{name}</Text>
+            </Pressable>
+          ))}
         </View>
       )}
     </View>
@@ -69,6 +71,7 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
   </Dialog>;
 }
 const styles = StyleSheet.create({
+  ingredientFeedback: { color: colors.editorMuted, fontFamily: fonts.poppinsRegular, fontSize: 12, lineHeight: 18 },
   ingredientChoices: { gap: 2 },
   ingredientChoice: { minHeight: 30, paddingHorizontal: 8, justifyContent: 'center', backgroundColor: colors.foodIngredientBackground, borderRadius: 8 },
   label: { color: colors.editorMuted, fontFamily: fonts.poppinsSemiBold, fontSize: 11, lineHeight: 16 },

@@ -1,8 +1,8 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
 import type { FoodItem, MealDraft, MealStep, PhotoSource } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
-import type { MealSuggestionLinking, MealSuggestionOption } from '../types';
+// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+import type { IngredientInputStatus, MealSuggestionLinking, MealSuggestionOption } from '../types';
 
 type DateInput = {
   parts: [number, number, number];
@@ -16,9 +16,12 @@ type DateInput = {
 
 type FoodInput = {
   ingredient: string;
+  ingredientStatus: IngredientInputStatus;
+  ingredientChoices: string[];
+  canAddIngredient: boolean;
   onIngredientChange: (value: string) => void;
-  onAddIngredient: () => void;
-  onSelectIngredient: (name: string) => void;
+  onAddIngredient: () => boolean;
+  onSelectIngredient: (name: string) => boolean;
   onRemoveIngredient: (value: string) => void;
 };
 
@@ -30,7 +33,7 @@ export type MealCheckinViewProps = {
   onUndoRemove: () => void;
   // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
   suggestions: MealSuggestionOption[];
-  ingredientOptions: string[];
+  onRetryIngredients: () => void;
   suggestionLinking: MealSuggestionLinking;
   suggestionsLoading: boolean;
   suggestionsError: boolean;

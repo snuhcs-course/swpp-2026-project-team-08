@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
 import type { Language } from '../types/profile';
 
 const en = {
@@ -144,6 +144,12 @@ const en = {
     usingSuggestion: 'Using a saved suggestion?', chooseSuggestion: 'Choose a suggestion', moreAboutMeal: 'More about this meal',
     aiNote: 'AI suggestions are never confirmed until you review them.', empty: 'Add a food item to continue.', addFood: 'Add food item', saveFood: 'Save food',
     name: 'Food name', ingredients: 'Ingredients', addIngredient: 'Add ingredient', preparation: 'Presentation', servingNote: 'Serving note',
+    // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+    ingredientFeedback: {
+      loading: 'Loading ingredients…', error: 'Could not load ingredients. Retry to add an ingredient.',
+      empty: 'Type an ingredient name, then choose a match.', choose: 'Choose an ingredient from the suggestions.',
+      'no-match': 'No matching ingredient. Try another name.', duplicate: 'This ingredient is already added.', ready: '',
+    },
     editFoodTitle: (name: string) => `Edit ${name}`, reviewFood: (name: string) => `Review ${name}`, reviewItemHint: 'Confirm or adjust what was served before saving.',
     foodNamePlaceholder: 'Enter food name', detailPlaceholder: 'Add detail', addFoodHint: 'Please click ‘save food’ to save',
     optional: 'Optional',
@@ -469,6 +475,12 @@ const ko = {
     usingSuggestion: '저장한 제안을 사용했나요?', chooseSuggestion: '제안 선택', moreAboutMeal: '이 식사에 대해 더 보기',
     aiNote: 'AI 제안은 보호자가 확인하기 전까지 확정되지 않습니다.', empty: '계속하려면 음식을 추가해 주세요.', addFood: '음식 항목 추가', saveFood: '음식 저장',
     name: '음식 이름', ingredients: '재료', addIngredient: '재료 추가', preparation: '제공 형태', servingNote: '제공 메모',
+    // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+    ingredientFeedback: {
+      loading: '재료를 불러오는 중…', error: '재료를 불러오지 못했습니다. 재료를 추가하려면 다시 시도해 주세요.',
+      empty: '재료 이름을 입력한 뒤 일치하는 항목을 선택해 주세요.', choose: '검색 결과에서 재료를 선택해 주세요.',
+      'no-match': '일치하는 재료가 없습니다. 다른 이름으로 검색해 주세요.', duplicate: '이미 추가한 재료입니다.', ready: '',
+    },
     editFoodTitle: (name: string) => `${name} 수정`, reviewFood: (name: string) => `${name} 확인`, reviewItemHint: '저장하기 전에 실제로 제공한 내용을 확인하거나 수정하세요.',
     foodNamePlaceholder: '음식 이름 입력', detailPlaceholder: '설명 추가', addFoodHint: '저장하려면 음식 저장을 눌러 주세요.',
     optional: '선택',

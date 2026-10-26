@@ -1,7 +1,9 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
 import { useState } from 'react';
 import type { FoodItem, MealDraft } from '../../../types/meal';
 import { localDate } from '../../../util/date';
+import { getIngredientInput } from '../rules';
+import type { IngredientCatalogStatus } from '../types';
 
 type DateParts = [number, number, number];
 type DateFieldIndex = 0 | 1 | 2 | null;
@@ -11,11 +13,15 @@ export function useMealCheckinInputs({
   onUpdate,
   onEditFood,
   onChangeFood,
+  ingredientOptions,
+  ingredientCatalogStatus,
 }: {
   draft: MealDraft | null;
   onUpdate: (value: Partial<MealDraft>) => void;
   onEditFood: (food?: FoodItem) => void;
   onChangeFood: (value: Partial<FoodItem>) => void;
+  ingredientOptions: string[];
+  ingredientCatalogStatus: IngredientCatalogStatus;
 }) {
   const [dateOpen, setDateOpen] = useState(false);
   const [dateField, setDateField] = useState<DateFieldIndex>(null);
@@ -48,18 +54,18 @@ export function useMealCheckinInputs({
     setDateField(null);
     setDateOpen(false);
   };
-  const addIngredient = () => {
-    const value = ingredient.trim();
-    if (value && draft?.editingFood && !draft.editingFood.ingredients.includes(value)) {
-      onChangeFood({ ingredients: [...draft.editingFood.ingredients, value] });
-    }
+  // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+  const ingredientInput = getIngredientInput(
+    ingredient, draft?.editingFood?.ingredients ?? [], ingredientOptions, ingredientCatalogStatus,
+  );
+  const addIngredient = (name: string): boolean => {
+    const food = draft?.editingFood;
+    if (!food) return false;
+    const result = getIngredientInput(name, food.ingredients, ingredientOptions, ingredientCatalogStatus);
+    if (!result.canAdd || !result.match) return false;
+    onChangeFood({ ingredients: [...food.ingredients, result.match] });
     setIngredient('');
-  };
-  const selectIngredient = (name: string) => {
-    if (draft?.editingFood && !draft.editingFood.ingredients.includes(name)) {
-      onChangeFood({ ingredients: [...draft.editingFood.ingredients, name] });
-    }
-    setIngredient('');
+    return true;
   };
   const removeIngredient = (value: string) => {
     if (!draft?.editingFood) return;
@@ -79,9 +85,12 @@ export function useMealCheckinInputs({
     },
     food: {
       ingredient,
+      ingredientStatus: ingredientInput.status,
+      ingredientChoices: ingredientInput.choices,
+      canAddIngredient: ingredientInput.canAdd,
       onIngredientChange: setIngredient,
-      onAddIngredient: addIngredient,
-      onSelectIngredient: selectIngredient,
+      onAddIngredient: () => addIngredient(ingredient),
+      onSelectIngredient: addIngredient,
       onRemoveIngredient: removeIngredient,
     },
   };

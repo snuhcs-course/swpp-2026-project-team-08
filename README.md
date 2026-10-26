@@ -107,6 +107,7 @@ Useful client commands (from `client/`):
 | Tests | `npm test` |
 
 <!-- AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo -->
+<!-- AI-generated with Cursor Grok 4.6, 2026-10-23, reviewed by moonmoonboop -->
 ## Development Environment
 
 The client targets Expo SDK 58. Upgrade validation used Node.js 24.12.0 and npm 11.6.2; the other entries describe the existing development environment.

@@ -1,4 +1,5 @@
 // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 
 export type IngredientCatalogStatus = 'loading' | 'error' | 'ready';
 export type IngredientInputStatus = IngredientCatalogStatus | 'empty' | 'choose' | 'no-match' | 'duplicate';

@@ -1,4 +1,5 @@
 // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
 import { AppButton } from './AppButton';

@@ -2,6 +2,7 @@
 import type { FoodItem, MealDraft, MealStep, PhotoSource } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
 // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 import type { IngredientInputStatus, MealSuggestionLinking, MealSuggestionOption } from '../types';
 
 type DateInput = {

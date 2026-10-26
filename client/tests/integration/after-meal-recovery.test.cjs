@@ -19,7 +19,7 @@ const { readHomeMeals } = require('../../src/data/storage/homeMealStorage.ts');
 const { readAfterMealDraft, readAfterMealReview, saveAfterMealDraft } = require('../../src/data/storage/afterMealReviewStorage.ts');
 const { newReviewDraft, reviewFromDraft, setOutcome } = require('../../src/features/after-meal-review/rules.ts');
 const { afterMealKeys, useSaveAfterMealReview } = require('../../src/data/queries/afterMealReviewQueries.ts');
-const { homeKeys, useHomeMeals } = require('../../src/data/queries/homeQueries.ts');
+const { useMealList } = require('../../src/data/queries/mealLogQueries.ts');
 const { mealKeys, mealLogKeys } = require('../../src/data/queries/mealQueryKeys.ts');
 const { checkinReferenceKeys } = require('../../src/data/queries/checkinReferenceQueries.ts');
 const { useAfterMealReview } = require('../../src/features/after-meal-review/hooks/useAfterMealReview.ts');
@@ -41,18 +41,25 @@ test('failed review preserves the draft; retry updates storage, detail cache, an
   const review = reviewFromDraft(draft, meal);
   let fails = true;
   let requests = 0;
-  t.mock.method(global, 'fetch', async (url, init) => {
+  let listRequests = 0;
+  let serverMeal = response;
+  t.mock.method(global, 'fetch', async (url, init = {}) => {
+    if (new URL(url).pathname === '/api/v1/meals' && !init.method) {
+      listRequests++;
+      return new Response(JSON.stringify([serverMeal]));
+    }
     assert.equal(new URL(url).pathname, '/api/v1/meals/10/review');
     assert.equal(init.method, 'PUT');
     const body = JSON.parse(init.body);
     assert.equal(body.food_results[0].outcome, 'tasted');
     requests++;
+    if (!fails) serverMeal = { ...response, review: reviewResponse(response, body) };
     return new Response(JSON.stringify(fails ? { error_code: 'UNAVAILABLE' } : reviewResponse(response, body)),
       { status: fails ? 503 : 200 });
   });
-  const harness = await renderHook(t, () => ({ mutation: useSaveAfterMealReview(), home: useHomeMeals('1') }));
+  const harness = await renderHook(t, () => ({ mutation: useSaveAfterMealReview(), home: useMealList('1', null) }));
   await waitFor(() => harness.current.home.isSuccess);
-  assert.equal(harness.current.home.data[0].reviewed, false);
+  assert.equal(harness.current.home.data[0].review, null);
   const staleKeys = [mealLogKeys.all('1'), checkinReferenceKeys.meals('1'), ['suggestions', '1']];
   harness.client.setQueryData(mealKeys.detail('1', '10'), detail);
   for (const key of staleKeys) harness.client.setQueryData(key, []);
@@ -63,11 +70,12 @@ test('failed review preserves the draft; retry updates storage, detail cache, an
   assert.equal(await readAfterMealReview('1', '10'), null);
   assert.equal((await readAfterMealDraft('1', '10')).step, 'difficulties');
   assert.equal(harness.client.getQueryData(mealKeys.detail('1', '10')).review, null);
-  assert.equal(harness.current.home.data[0].reviewed, false);
+  assert.equal(harness.current.home.data[0].review, null);
   for (const key of staleKeys) assert.equal(harness.client.getQueryState(key).isInvalidated, false);
   fails = false;
   await act(async () => { await harness.current.mutation.mutateAsync({ review, detail }); });
-  await waitFor(() => harness.current.home.data[0].reviewed);
+  await waitFor(() => harness.current.home.data[0].review?.foodResults[0].outcome === 'tasted');
+  assert.equal(listRequests, 2);
   assert.equal(requests, 2);
   assert.equal((await readHomeMeals('1'))[0].reviewed, true);
   assert.equal((await readAfterMealDraft('1', '10')).step, 'complete');
@@ -75,7 +83,7 @@ test('failed review preserves the draft; retry updates storage, detail cache, an
   assert.deepEqual(harness.client.getQueryData(afterMealKeys.result('1', '10')), review);
   assert.equal(harness.client.getQueryData(mealKeys.detail('1', '10')).review.foodResults[0].outcome, 'tasted');
   for (const key of staleKeys) assert.equal(harness.client.getQueryState(key).isInvalidated, true);
-  assert.equal(harness.client.getQueryState(homeKeys.meals('1')).isInvalidated, false);
+  assert.equal(harness.client.getQueryState(mealLogKeys.list('1', null)).isInvalidated, false);
 });
 
 test('skipping a delayed photo preserves answers and ignores the stale selection', async (t) => {

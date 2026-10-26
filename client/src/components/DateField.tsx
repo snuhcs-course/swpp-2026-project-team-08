@@ -1,6 +1,6 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
 import { AppButton } from './AppButton';
 import { AppIcon } from './AppIcon';
 import { formStyles as styles } from './formStyles';
@@ -59,7 +59,7 @@ function DatePart({ index, value, year, month, label, locale, open, showLabel, o
   index: Part; value: number; year: number; month: number; label: string; locale: string;
   open: boolean; showLabel: boolean; onToggle: () => void; onSelect: (number: number) => void;
 }) {
-  const pickerRef = useRef<ScrollView>(null);
+  const pickerRef = useRef<ScrollViewInstance>(null);
   const inputSize = { height: size?.height ?? 44, borderRadius: size?.borderRadius ?? 10 };
   const textSize = { fontSize: size?.fontSize ?? 13 };
   const count = index === 0 ? 301 : index === 1 ? 12 : new Date(year, month, 0).getDate();

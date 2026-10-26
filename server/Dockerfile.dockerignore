@@ -1,0 +1,22 @@
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
+# 이미지 빌드에 필요한 서버 소스와 적재 파일만 전달한다.
+**
+!server/
+!server/pyproject.toml
+!server/uv.lock
+!server/alembic.ini
+!server/app/
+!server/app/**
+!server/migrations/
+!server/migrations/**
+!data/
+!data/ingredient_db/
+!data/ingredient_db/ingredients-reviewed.json
+!data/ingredient_db/restrictions.json
+!data/ingredient_restrictions/
+!data/ingredient_restrictions/relations-reviewed.json
+!data/ingredient_restrictions/import_to_db.py
+**/__pycache__/
+**/*.pyc
+**/.env
+**/.env.*

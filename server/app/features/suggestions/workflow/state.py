@@ -1,3 +1,4 @@
+# AI-generated with GPT-6, 2026-10-24, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 """워크플로의 입출력 값과 그래프 상태. ORM 객체가 아니라 평범한 값만 담는다."""
 
@@ -8,7 +9,7 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AnyMessage
 from langgraph.graph.message import add_messages
 
-from app.features.suggestions.ingredients import ChildRestrictions, RestrictionId
+from app.features.suggestions.ingredients import Catalog, ChildRestrictions, RestrictionId
 
 
 @dataclass(frozen=True)
@@ -57,6 +58,7 @@ class InputState(TypedDict):
 
     foods: list[FoodInput]
     restrictions: ChildRestrictions
+    catalog: Catalog
 
 
 class OutputState(TypedDict):

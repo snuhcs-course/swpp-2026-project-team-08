@@ -1,6 +1,6 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match allergy option explanation placement
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 
 import { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';

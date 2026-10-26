@@ -1,3 +1,9 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+// Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';

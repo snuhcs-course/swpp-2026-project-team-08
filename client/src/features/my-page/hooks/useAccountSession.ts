@@ -1,4 +1,5 @@
 // AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+// Changed: 마이페이지·자녀 프로필 추가
 
 import { router } from 'expo-router';
 import { useState } from 'react';

@@ -1,7 +1,7 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; matched onboarding Figma typography and spacing
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected Figma dialog and empty states
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; aligned ABC button typography
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// Changed: 제안 화면 버튼 스타일·접근성 지원
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: Figma 버튼 글꼴·간격 및 동작 조정
 
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';

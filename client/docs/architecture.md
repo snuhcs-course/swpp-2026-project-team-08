@@ -1,6 +1,8 @@
 <!-- This Code is generated with AI -->
+<!-- AI-generated with GPT-6, 2026-10-26, reviewed by Haechan Jung -->
+<!-- Changed: 인증·데이터 구조 현행화 및 규칙 정리 -->
 
-# React Native 개발 구조 및 작업 규칙
+# 클라이언트 아키텍처
 
 이 문서는 기능에 관계없이 적용하는 코드 배치, 의존성, 상태 소유권 규칙이다. 기능별 동작과 화면 요구사항은 해당 specification에서 정의한다.
 
@@ -48,6 +50,7 @@ src/
     network/
     device/
     api/
+    dto/
     storage/
     queries/
 
@@ -69,12 +72,13 @@ src/
 - `network`: 여러 HTTP API가 공유하는 전송 설정과 요청·응답 처리. 실제로 필요할 때만 만든다.
 - `device`: 카메라·파일 선택 등 기기 API를 감싼 함수. 서버 요청을 담당하는 `api`와 구분한다.
 - `api`: 서버 요청 함수, 요청·응답 처리와 변환.
+- `dto`: 서버 응답 타입·런타임 검증·앱 모델 변환. 여러 API가 사용하는 데이터 경계를 모은다.
 - `storage`: 기능별 로컬 저장 키, 직렬화, 읽기·쓰기.
 - `queries`: query key, 조회·mutation Hook, 캐시 갱신 규칙.
 
 API와 Storage 함수는 일반 비동기 함수로 작성한다. HTTP API는 필요하면 `data/network`의 클라이언트를 사용하고, TanStack Query Hook은 API 함수를 사용한다. Feature Hook과 Provider는 의미 있는 Query Hook·API 함수·Storage 함수를 통해 데이터에 접근하며 HTTP 클라이언트를 직접 호출하지 않는다. 데이터 접근 코드에 Navigation, 모달 표시, 입력 상태 등의 UI 동작을 넣지 않는다.
 
-서버 DTO는 API 파일 또는 인접 파일에 둔다. 서버 응답 구조와 앱의 공통 모델이 다르면 이 영역에서 변환한다. TypeScript 타입 선언만으로 외부 응답이 검증되지는 않으므로 필요한 경계에서 실제 검증을 수행한다.
+서버 DTO와 검증·변환 함수는 `data/dto` 또는 해당 API에 인접하게 둔다. 서버 응답 구조와 앱의 공통 모델이 다르면 이 영역에서 변환한다. TypeScript 타입 선언만으로 외부 응답이 검증되지는 않으므로 필요한 경계에서 실제 검증을 수행한다.
 
 ### types — 공통 데이터 타입
 
@@ -86,12 +90,19 @@ API와 Storage 함수는 일반 비동기 함수로 작성한다. HTTP API는 �
 
 ### providers — 앱 전역 상태
 
-여러 기능이 같은 기준으로 읽어야 하는 상태와 명령만 둔다. 현재의 확정된 프로필·앱 언어가 후보이며, 로그인이 추가되면 인증 초기화 상태·세션 식별 정보·로그인/로그아웃 명령도 앱 범위에서 관리한다. 서로 갱신 주기가 다른 책임은 하나의 거대한 Provider에 합치지 않고 `ProfileProvider`, `AuthProvider`처럼 나눈다.
+여러 기능이 같은 기준으로 읽어야 하는 상태와 명령만 둔다. `AuthProvider`는 세션 복원·로그인·로그아웃과
+사용자 정보를, `ProfileProvider`는 현재 계정의 자녀 프로필·언어·초기화 상태를 관리한다.
+`ProfileProvider`는 서버 온보딩 API에서 프로필을 읽고 저장하며, 로컬 프로필 사본의 저장 실패는 무시한다.
+언어는 로컬에 저장한다.
+
+인증 토큰은 `data/storage/authStorage.ts`가 SecureStore에 저장한다. 웹 등 SecureStore를 지원하지 않거나
+지원 여부 확인에 실패한 환경에서는 AsyncStorage를 사용한다. `data/network/apiClient.ts`는 인증이 필요한 요청의 401 응답에 토큰 재발급을 시도하고 요청을 다시 보낸다.
+동시 재발급 요청은 하나의 Promise를 공유한다.
 
 - Provider는 공통 타입과 `data`의 API·Storage·Query에 의존할 수 있지만 특정 Feature의 Screen·Hook·규칙에는 의존하지 않는다.
 - Feature는 Provider의 공개된 값과 `commitProfile`, `changeLanguage`, `signOut`처럼 의미가 분명한 명령을 사용한다. 다른 기능에 범용 `setState`를 노출하지 않는다.
-- 영속화할 값은 저장 성공 후 전역 상태에 반영한다. 저장 실패 시 기존 확정 상태를 유지하고 호출자에게 실패를 전달한다.
-- Feature의 작성 중 초안·단계·입력 오류, 시트 열림 상태, 서버 조회 결과를 앱 전역 Provider에 복제하지 않는다. 인증을 도입하더라도 서버 데이터는 TanStack Query의 소유권을 따른다.
+- 확정 상태는 기준 저장소의 저장 성공 후 반영한다. 로컬 사본 저장과 서버 저장의 성공 여부를 구분한다.
+- Feature의 작성 중 초안·단계·입력 오류, 시트 열림 상태, 서버 조회 결과를 앱 전역 Provider에 복제하지 않는다. 일반 서버 조회 결과는 TanStack Query가 관리하고, 현재 프로필은 위 ProfileProvider가 관리한다.
 
 ### features — 기능별 화면과 작업 흐름
 
@@ -181,7 +192,7 @@ Container / Presentational 패턴의 책임 구분을 `Screen + Custom Hook + Vi
 
 ### 일반적인 의존성 흐름
 
-화살표는 왼쪽 파일이 오른쪽 파일의 공개 API를 참조할 수 있다는 뜻이다. 데이터나 이벤트가 실제로 이동하는 방향과 구분한다. 같은 규칙을 온보딩, 식사 기록, 홈, 향후 인증이 필요한 기능에도 적용한다.
+화살표는 왼쪽 파일이 오른쪽 파일의 공개 API를 참조할 수 있다는 뜻이다. 데이터나 이벤트가 실제로 이동하는 방향과 구분한다. 같은 규칙을 온보딩, 식사 기록, 홈, 인증 기능에도 적용한다.
 
 ```mermaid
 flowchart LR
@@ -207,26 +218,11 @@ flowchart LR
 
 단순한 화면은 Screen과 View를 한 파일에 작성할 수 있다. 책임의 방향은 그대로 지킨다. 현재 일부 기존 라우트가 Feature Hook을 직접 연결하고, 상위 View가 규칙을 실행하거나 단계 View에 넓은 모델을 전달하는 부분은 새 기능과 후속 리팩토링에서 이 기준으로 정리한다.
 
-### UI 표현 계층 규칙
+### UI·Hook 책임의 기준
 
-- `screens`의 View와 공통·Feature의 `components`는 모두 UI 표현 영역이다.
-- 데이터와 동작은 props로 받는다.
-- API, Storage, 업무용 Query Hook, Feature 비즈니스 Hook을 직접 사용하지 않는다.
-- 업무 데이터를 읽기 위해 전역 상태나 기능 Context에 직접 접근하지 않는다.
-- 화면 이동은 콜백으로 요청하고 Screen에서 연결한다.
-- 접힘·펼침, 포커스, 애니메이션 같은 표시 상태는 내부에서 관리할 수 있다.
-- 음식 확인 여부, 저장 가능 조건, 편집 초안 같은 업무 상태는 Feature Hook이 관리한다.
-- 테마 등의 표현 전용 Context·Hook은 사용할 수 있다.
-
-여기서 UI 분리는 상태가 전혀 없다는 의미가 아니다. 또한 React의 렌더링 순수성 규칙과는 별개의 책임 분리 기준이다.
-
-### Hook과 규칙 함수 규칙
-
-- Feature Hook은 UI에 필요한 값과 작업 함수를 제공한다.
-- TanStack Query를 연결하는 공통 데이터 Hook은 `data/queries`에 둔다.
-- Feature Hook은 데이터 Hook을 조합하고 기능별 입력 상태와 동작을 연결한다.
-- 검증·계산·병합처럼 React 상태가 필요 없는 로직은 일반 함수로 추출한다.
-- UI가 TanStack Query의 전체 결과 객체를 알아야 하도록 만들지 않는다. 필요한 데이터·상태·콜백을 명시적으로 전달한다.
+UI·Hook·규칙 함수의 책임은 이 절의 의존성 흐름을, 참조 가능한 영역은 §5의 표를 따른다.
+데이터 Query Hook은 `data/queries`에 두며 Feature Hook이 이를 조합한다.
+UI에는 Query 결과 객체 전체 대신 필요한 데이터·상태·콜백을 전달한다.
 
 ### 연결 예시
 
@@ -311,16 +307,23 @@ export function FoodReviewView({
 
 | 상태 | 소유자 |
 | --- | --- |
-| 앱 시작 시 확정해야 하는 프로필·언어, 향후 인증 세션과 초기화 상태 | 앱 전역 Provider |
+| 현재 프로필·언어·인증 세션과 초기화 상태 | 앱 전역 Provider |
 | 서버 또는 로컬 저장소에서 비동기로 조회한 공유 데이터와 요청 상태 | TanStack Query |
 | 기능의 작성 초안·단계·저장 흐름 | 해당 Feature Hook 또는 Feature 범위 Provider |
 | 화면의 단순한 표시 상태 | 해당 View 또는 UI 조각 |
 
-전역 Provider의 초기화 상태는 `미확인`과 `확인 완료 후 값 없음`을 구분한다. Feature가 전역 값을 변경할 때는 Provider의 명시적 비동기 명령을 호출한다. Provider가 영속화에 성공한 뒤 확정 상태를 갱신하고, 실패하면 기존 상태를 유지한다. Feature는 성공 후 자신의 초안을 정리하고 Screen이 화면을 이동시킨다. 인증을 추가할 때도 같은 소유권을 적용하며, 서버 응답 전체를 Provider에 중복 저장하지 않는다.
+전역 Provider의 초기화 상태는 `미확인`과 `확인 완료 후 값 없음`을 구분한다. Feature가 전역 값을 변경할 때는 Provider의 명시적 비동기 명령을 호출한다. Provider는 기준 저장소의 저장 성공 후 확정 상태를 갱신한다. Feature는 성공 후 자신의 초안을 정리하고 Screen이 화면을 이동시킨다. 일반 서버 조회 결과를 Provider에 중복 저장하지 않는다.
 
 ### 서버 상태와 요청 상태 — TanStack Query
 
-현재 프로토타입의 일부 Query는 AsyncStorage 함수를 감싸며, 이 경우 Storage가 영속 데이터의 기준이고 Query는 조회 결과와 갱신 상태를 공유한다. 나중에 서버 API로 바뀌어도 Feature의 View가 데이터 소스를 직접 알지 않게 한다.
+현재 Query는 서버 API와 로컬 Storage를 함께 사용한다. 예를 들어 `useMealDetail`은 서버에서 식사 상세를 읽고,
+`useMealDraft`는 로컬 초안을 읽는다. 일부 기존 식사 목록·식후 결과 조회도 Storage를 사용한다.
+서버에 저장한 기록과 로컬 초안을 구분하고, 각 Query의 조회 함수가 사용하는 저장소를 기준으로 갱신한다.
+View는 데이터 소스에 직접 접근하지 않는다.
+
+`QueryScopeBoundary`는 계정이 바뀌면 진행 중인 Query를 취소하고 전체 캐시를 지운다.
+자녀만 바뀌면 query key에 이전 자녀 ID가 포함된 Query를 취소하고 제거한다.
+이전 계정·자녀의 조회 결과가 새 대상의 화면에 남지 않도록 하는 경계다.
 
 - 조회는 `useQuery`, 변경·인식·업로드 등의 작업 요청은 `useMutation`을 사용한다.
 - query key 정의는 `data/queries`에 모은다.
@@ -397,46 +400,7 @@ Navigation과 상태 변경 시 의도하지 않은 빈 화면, 다른 단계의
 
 이 기능에서는 AI 제안과 사용자 확인 결과를 구분하고, 수정 시 기존 항목 ID를 유지한다. 식전·식후 단계 사이에 작성 흐름이 종료되면 저장된 기록 ID로 데이터를 다시 조회한다. 초안을 계속 메모리에 보관해야 한다고 가정하지 않는다.
 
-## 9. Agent의 새 기능 개발 순서
-
-1. **기존 구현과 specification 확인**
-   - 관련 Feature, 공통 타입·컴포넌트, API·Query·Storage를 확인한다.
-   - 기존 의존성, 명명, Navigation 패턴을 따른다.
-   - `util/strings.ts`와 `util/colors.ts`의 기존 키·토큰을 확인한다.
-2. **데이터와 상태 구분**
-   - 서버 데이터, 편집 초안, UI 상태, 로컬 영속 데이터를 구분한다.
-   - 소유 위치, 기준 데이터, 갱신·복원 시점을 정한다.
-   - 초기 준비 상태와 백그라운드 갱신을 구분하고, 단계 전환의 준비 조건을 정한다.
-3. **파일 배치**
-   - 데이터 접근은 `data`, 공통 타입은 `types`에 둔다.
-   - 화면·작업 흐름·기능 전용 UI는 해당 Feature에 둔다.
-   - 공통 UI는 `components`, 범용 기반 도구는 `util`에 둔다.
-   - 신규 표시 문구와 색상은 각각 `strings.ts`, `colors.ts`에 추가한다.
-4. **데이터 작업과 규칙 구현**
-   - API·Storage 함수, TanStack Query Hook, 필요한 규칙 함수를 구현한다.
-5. **로직과 UI 연결**
-   - Feature Hook에서 상태와 작업 흐름을 연결한다.
-   - UI는 props와 콜백을 기준으로 구현한다.
-   - Screen에서 Hook·UI·Navigation을 연결한다.
-6. **동작 검증**
-   - 정상 동작, 입력 오류, 요청 실패, 중복 제출을 확인한다.
-   - 저장 후 관련 화면의 데이터 갱신을 확인한다.
-   - 요구되는 경우 초안 복구, 단계 이동, 이전 요청의 늦은 응답을 확인한다.
-   - 변경한 Navigation·상태 전환에서 깜빡임, 잘못된 View, remount, 레이아웃 튐이 없는지 확인한다.
-   - 프로젝트의 타입 검사·린트와 변경에 필요한 테스트를 실행한다.
-
-## 10. 완료 전 확인
-
-- UI 파일에 업무 규칙이나 데이터 접근이 섞이지 않았는가?
-- React와 무관한 규칙이 일반 함수로 분리되어 있는가?
-- 서버 상태와 편집 초안의 소유권이 명확한가?
-- query key와 저장 후 캐시 갱신이 올바른가?
-- 여러 기능·페이지에서 재사용할 가능성이 있는 UI 조각은 `src/components/`에, 기능 전용의 화면 내부 UI 조각은 `src/features/<feature>/components/`에 있는가? 화면 전체의 UI는 별도로 검토했는가?
-- 기존 항목 ID와 사용자 수정 내용이 보존되는가?
-- 불필요한 계층·라이브러리·파일을 추가하지 않았는가?
-- 표시 문구와 색상이 각각 `util/strings.ts`, `util/colors.ts`에서 관리되는가?
-- 최초 준비·빈 결과·재조회 상태가 구분되고 기존 콘텐츠가 안정적으로 유지되는가?
-- Navigation·초안 복구·상태 변경에서 잘못된 View가 순간적으로 표시되지 않는가?
+작업 순서와 완료 검증은 [클라이언트 작업 규칙](../AGENTS.md#작업-순서와-완료-검증)을 따른다.
 
 ## 참고 자료
 

@@ -1,3 +1,5 @@
+# AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """테스트 픽스처: 인메모리 SQLite + get_session 오버라이드.
 

@@ -1,3 +1,5 @@
+# AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: ingredients 구조 bootstrap
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """생성 결과 검증 (`validation.py`) 단위 테스트. 그래프 없이 값만으로 확인한다."""
 

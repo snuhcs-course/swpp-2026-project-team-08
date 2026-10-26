@@ -1,4 +1,8 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+# AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: LangChain LLM 설정
+
 """애플리케이션 설정.
 
 pydantic-settings 로 .env / 환경변수에서 설정을 읽는다.
@@ -39,7 +43,6 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 14
 
-    # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
     # ── LLM (suggestions) ──
     # 비어 있으면 앱은 기동하지만 제안 생성은 실패한다.
     OPENROUTER_API_KEY: str = ""

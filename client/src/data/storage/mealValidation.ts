@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 import {
   mealSettings,
   mealTypes,
@@ -20,7 +22,6 @@ export function isFood(v: unknown): v is FoodItem {
     !list(v.ingredients) ||
     typeof v.preparation !== 'string' ||
     typeof v.servingNote !== 'string' ||
-    // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
     typeof v.confirmed !== 'boolean' ||
     !(v.acceptance === undefined || v.acceptance === null || (typeof v.acceptance === 'number' && Number.isInteger(v.acceptance) && v.acceptance >= 0 && v.acceptance <= 3)) ||
     (v.source !== 'ai' && v.source !== 'parent')

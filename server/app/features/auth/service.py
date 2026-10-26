@@ -1,4 +1,8 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+# AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+# Changed: 마이페이지·자녀 프로필 추가
+
 """인증/회원 서비스 (유스케이스) + 이 기능의 에러.
 
 SQLAlchemy 세션으로 `User` 를 직접 조회/저장하고, 비밀번호 해싱과 토큰 발급은
@@ -31,7 +35,6 @@ from app.models import User
 _EMAIL_CODE_TTL = timedelta(minutes=10)
 
 
-# AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 def _as_kst(value: datetime) -> datetime:
     if value.tzinfo is None:
         return value.replace(tzinfo=KST)
@@ -131,7 +134,6 @@ class AuthService:
         await self._session.refresh(user)
         return user
 
-    # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
     async def request_email_change(self, user: User, *, email: str) -> str:
         if email.lower() == user.email.lower():
             raise SameEmailError(email)

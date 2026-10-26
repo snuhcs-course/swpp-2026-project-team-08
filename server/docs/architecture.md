@@ -1,10 +1,15 @@
 <!-- AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim -->
+<!-- Changed: server bootstraping -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+<!-- Changed: suggestion 관련 문서 업데이트 -->
+<!-- AI-generated with GPT-6, 2026-10-26, reviewed by Haechan Jung -->
+<!-- Changed: 아키텍처 현행화 및 문서 역할 정리 -->
 
 # server — 아키텍처
 
 > 범위: 백엔드 서버(`server/`)의 **아키텍처** — 구조의 의도 · 영역별 설계와 근거 · 에러 처리 · 코드 배치 규칙 · 버전 관리 전략
-> 디렉토리 구조, 설치/실행/테스트 명령어, 작업 규칙은 [`../README.md`](../README.md), LLM 전용 규칙은 [`../AGENTS.md`](../AGENTS.md) 참고
+> 설치·실행·검사 명령은 [README](../README.md), 작업 제약과 필수 검증은 [AGENTS](../AGENTS.md)를 따른다.
 
 ---
 
@@ -47,7 +52,6 @@ app/
 
 위 두 파일 외에, 각 파일이 길어지거나 기능에 따라 추가 파일이 필요하면 다음 예시와 같이 파일을 더할 수 있다.
 
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 | 파일 | 언제 | 역할 |
 |---|---|---|
 | `dto.py` | DTO가 다른 기능에서 재사용되거나 `router.py`가 길어질 때 | DTO를 `router.py`에서 분리 |
@@ -75,7 +79,7 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 
 - 파일은 테이블(클래스) 하나당 하나, 단수형 snake_case (`user.py`, `meal_log.py`).
 - 새 모델은 `models/__init__.py`에 import해야 `Base.metadata`에 등록된다 (Alembic · 테스트 `create_all`이 필요로 한다).
-- 모든 테이블에 `created_at` / `updated_at`, 모든 `ForeignKey`에 `onupdate="CASCADE", ondelete="CASCADE"` (README 컨벤션).
+- 모든 테이블에 `created_at` / `updated_at`, 모든 `ForeignKey`에 `onupdate="CASCADE", ondelete="CASCADE"`.
 
 **왜 한곳에 모으나.** 이 앱은 여러 테이블을 가로지르는 읽기가 많다(식사 기록 · 추천 · 재료). 모델이 기능
 폴더에 흩어져 있으면 "다른 기능의 모델을 읽어도 되는가"를 매번 따져야 한다. 한곳에 모으면 import 경로가
@@ -107,7 +111,6 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 
 특정 기능을 모르는 횡단 기술 관심사를 담는다.
 
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 | 파일 | 역할 |
 |---|---|
 | `config.py` | pydantic-settings 설정 (싱글턴). `.env`/환경변수 타입 안전 로딩 |
@@ -124,7 +127,6 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 
 ### 2.5 워크플로 (LangGraph 등)
 
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 다단계 워크플로는 새 계층이 아니라 **해당 기능 서비스의 구현 수단**이다. 다른 기능에서 LangGraph를 추가할 때는
 `features/suggestions/`를 기준 구현으로 삼아 본뜬다.
 
@@ -407,8 +409,8 @@ async def sign_up(...): ...
 - DB 스키마 변경은 Alembic 리비전(`migrations/versions/`)으로 관리한다.
 
 **앱/릴리스 버전**
-- `pyproject.toml`의 `version` + 설정 `APP_VERSION`이 단일 출처.
-  `/health` 응답과 OpenAPI(`/docs`)에 노출. 릴리스는 git 태그(`v0.1.0`, SemVer).
+- 패키지 버전은 `pyproject.toml`의 `version`, 실행 중인 API 버전은 설정 `APP_VERSION`으로 각각 정의한다.
+  두 값은 자동으로 동기화되지 않는다. `/health`와 OpenAPI(`/docs`)에는 `APP_VERSION`이 노출된다.
 
 ## 9. 기술 스택
 
@@ -423,16 +425,17 @@ async def sign_up(...): ...
 | JWT | PyJWT | access/refresh 토큰 — https://pyjwt.readthedocs.io/ |
 | 패키지/가상환경 | uv | venv 자동 관리 + 빠름 — https://docs.astral.sh/uv/ |
 
-## 10. 현재 상태 / 로드맵
+## 10. 구현된 기능
 
-**구현됨**
-- `POST /api/v1/auth/signup` — 가입, 이메일 중복 409, 입력 검증 422
-- `POST /api/v1/auth/login` — JWT access/refresh 발급, 자격 불일치 401
-- `GET /api/v1/auth/me` — 로그인한 사용자 조회 (`CurrentUser` 의존성의 예시), 토큰 오류 401
-- `GET /health` — 헬스체크 + 앱 버전
+`app/api/v1.py`가 다음 기능의 라우터를 `/api/v1` 아래에 등록한다.
 
-**다음 (auth)**
-- [ ] `POST /api/v1/auth/refresh` — refresh token으로 access 재발급
+| 기능 | 역할 |
+|---|---|
+| `auth` | 회원가입·로그인·토큰 재발급, 사용자 정보 관리 |
+| `onboarding` | 온보딩·자녀 프로필 관리 |
+| `ingredients` | 재료 카탈로그 조회 |
+| `meals` | 식사·음식·식후 기록 관리 |
+| `suggestions` | 추천 생성·조회·관리 |
 
-**향후 기능**
-- [ ] 서비스 기능 추가 (예: 식사 기록, 추천)
+정확한 요청·응답과 엔드포인트 목록은 실행 중인 서버의 `/docs`에서 확인한다.
+추천 정책은 [추천 정책 문서](recommendation-policy.md), 운영 상태 확인은 [배포 문서](deploy.md)를 따른다.

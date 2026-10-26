@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: ingredients 구조 bootstrap
+
 """생성 결과가 요청과 아이의 제한에 맞는지 판단하는 순수 함수.
 
 문제를 예외로 던지지 않고 목록으로 반환한다. 재시도 지시문은 `workflow/prompts.py`가 만든다.

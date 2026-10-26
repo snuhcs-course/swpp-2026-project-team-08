@@ -1,4 +1,6 @@
 # AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+# Changed: 화면 디자인 및 식사 흐름 개선
+
 """Preserve food acceptance and pending/confirmed suggestion links."""
 
 import sqlalchemy as sa

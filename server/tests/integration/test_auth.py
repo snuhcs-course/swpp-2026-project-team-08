@@ -1,3 +1,7 @@
+# AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+# AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+# Changed: 마이페이지·자녀 프로필 추가
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """회원가입 / 로그인 happy-path + 주요 에러 케이스."""
 
@@ -213,7 +217,6 @@ async def test_login_unknown_email_unauthorized(client: AsyncClient) -> None:
     assert res.json()["error_code"] == "INVALID_CREDENTIALS"
 
 
-# AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 def _auth_header(tokens: dict) -> dict:
     return {"Authorization": f"Bearer {tokens['access_token']}"}
 

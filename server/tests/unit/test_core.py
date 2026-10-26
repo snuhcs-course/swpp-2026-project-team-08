@@ -1,3 +1,5 @@
+# AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """Unit: 설정 검증과 KST 시각. 외부 의존성 없음."""
 

@@ -1,4 +1,10 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+// Changed: 식사 기록 화면 디자인 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { SavedSuggestion } from '../../types/home';
 import type { FoodItem, Meal } from '../../types/meal';
@@ -113,7 +119,6 @@ function parseFood(value: unknown): FoodItem {
     preparation: value.preparation,
     servingNote: value.serving_note,
     source: value.source,
-    // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
     confirmed: value.confirmed,
     acceptance: typeof value.acceptance === 'number' ? value.acceptance : null,
   };
@@ -131,7 +136,6 @@ function parseDetail(value: unknown): MealDetail {
       || !record(value.review.difficulties) || typeof value.review.saved_at !== 'string') {
       throw new Error('Invalid meal review');
     }
-    // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
     const feedback = value.review.suggestion_feedback === undefined ? {} : value.review.suggestion_feedback;
     if (!record(feedback) || !Object.values(feedback).every((choice) => record(choice) && typeof choice.tried === 'boolean')) {
       throw new Error('Invalid suggestion feedback');
@@ -185,7 +189,6 @@ export function mealToUpsertBody(meal: Meal) {
       serving_note: food.servingNote,
       source: food.source,
       acceptance: food.acceptance ?? null,
-      // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
       confirmed: food.confirmed,
     })),
   };

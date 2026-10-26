@@ -1,3 +1,5 @@
+# AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """에러 포장 테스트: 서비스/검증기가 던진 AppError 가 router 선언대로 응답으로 바뀌는지.
 

@@ -43,7 +43,6 @@ def _input(payload: OnboardingWriteRequest) -> OnboardingInput:
         ("allergy", profile.safety.allergies.items),
         ("restriction", profile.safety.restrictions.items),
         ("family_food", preferences.family_foods),
-        ("dietary_approach", preferences.dietary_approaches),
         ("difficult_texture", preferences.difficult_textures),
         ("difficult_taste", preferences.difficult_tastes),
         ("presentation_preference", preferences.presentation_preferences),
@@ -100,7 +99,6 @@ def _response(snapshot: OnboardingSnapshot) -> OnboardingResponse:
             },
             food_preferences={
                 "family_foods": groups.get("family_food", []),
-                "dietary_approaches": groups.get("dietary_approach", []),
                 "difficult_textures": groups.get("difficult_texture", []),
                 "smell_sensitivity": profile.smell_sensitivity,
                 "difficult_tastes": groups.get("difficult_taste", []),

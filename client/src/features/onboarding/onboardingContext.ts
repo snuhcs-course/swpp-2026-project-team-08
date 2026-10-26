@@ -6,7 +6,7 @@ import type { OnboardingDraft, OnboardingStep } from './types';
 
 export type SaveStatus = 'saving' | 'saved' | 'error';
 export type DraftField = keyof Pick<OnboardingDraft, 'caregiverName' | 'caregiverEmail' | 'childName' | 'ageRange' | 'smell' | 'temperature' | 'familiarity'>;
-export type ListField = keyof Pick<OnboardingDraft, 'allergies' | 'restrictions' | 'familyFoods' | 'approaches' | 'texture' | 'taste' | 'presentation'>;
+export type ListField = keyof Pick<OnboardingDraft, 'allergies' | 'restrictions' | 'familyFoods' | 'texture' | 'taste' | 'presentation'>;
 export type ConsentField = keyof OnboardingDraft['consent'];
 
 export type OnboardingContextValue = {

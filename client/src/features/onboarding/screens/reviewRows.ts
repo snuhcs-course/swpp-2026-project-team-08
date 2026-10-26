@@ -21,7 +21,6 @@ export function reviewRows(draft: OnboardingDraft, language: Language): ReviewRo
     { step: 'child', title: s.onboarding.reviewChild, value: `${draft.childName || s.common.notEntered} · ${selectedValue('age', draft.ageRange)}` },
     { step: 'allergies', title: s.onboarding.reviewSafety, value: `${s.onboarding.reviewAllergies}: ${listValue('allergies', draft.allergies)}${draft.restrictions.some((value) => value !== 'none') ? ` · ${s.onboarding.titles.restrictions}: ${listValue('restrictions', draft.restrictions)}` : ''}` },
     { step: 'family', title: s.onboarding.reviewFamily, value: listValue('family', draft.familyFoods) },
-    { step: 'approaches', title: s.onboarding.reviewApproaches, value: listValue('approaches', draft.approaches) },
     {
       step: 'safe-foods',
       title: s.onboarding.reviewSafeFoods,

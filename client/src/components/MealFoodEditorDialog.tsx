@@ -1,4 +1,5 @@
 // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';

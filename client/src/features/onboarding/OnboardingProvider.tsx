@@ -6,7 +6,7 @@ import { useAuth } from '../../providers/AuthProvider';
 import { useProfile } from '../../providers/ProfileProvider';
 import type { ChildProfile, SafeFood } from '../../types/profile';
 import { createDraftSaveGate } from './draftSaveGate';
-import { addUnique, canAddSafeFood, canContinue, canFinish, isDraft, toggleExclusive, validEmail } from './rules';
+import { addUnique, canAddSafeFood, canContinue, canFinish, restoreDraft, toggleExclusive, validEmail } from './rules';
 import { emptyDraft, type OnboardingDraft, type OnboardingStep } from './types';
 import { OnboardingContext, type ConsentField, type DraftField, type ListField, type SaveStatus } from './onboardingContext';
 
@@ -34,8 +34,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     readDraft()
       .then((storedDraft) => {
         if (!active) return;
-        if (isDraft(storedDraft)) {
-          setDraft(storedDraft);
+        const restored = restoreDraft(storedDraft);
+        if (restored) {
+          setDraft(restored);
           setHasDraft(true);
           if (profile) setEditing(true);
         }

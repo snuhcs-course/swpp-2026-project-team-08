@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { Redirect, router } from 'expo-router';
@@ -53,8 +54,8 @@ export function EntryScreen() {
         <Text style={styles.title}>{s.onboarding.titles.account}</Text>
       </View>
       <View style={styles.actions}>
-        <AppButton label={s.onboarding.start} onPress={() => router.push({ pathname: '/onboarding/[step]', params: { step: 'account' } })} />
-        <AppButton secondary label={s.onboarding.logIn} onPress={() => router.push('/login')} />
+        <AppButton label={s.onboarding.start} labelStyle={styles.actionLabel} onPress={() => router.push({ pathname: '/onboarding/[step]', params: { step: 'account' } })} />
+        <AppButton secondary label={s.onboarding.logIn} labelStyle={styles.actionLabel} onPress={() => router.push('/login')} />
       </View>
     </SafeAreaView>
   );

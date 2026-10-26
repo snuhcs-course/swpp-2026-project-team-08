@@ -15,7 +15,7 @@ MIGRATIONS = Path(__file__).resolve().parents[1] / "migrations"
 # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0014_contract_schema"]
+    assert scripts.get_heads() == ["0015_remove_dietary_approaches"]
     assert scripts.get_revision("0012_mock_ingredients").down_revision == "0011_onboarding"
     assert scripts.get_revision("0011_onboarding").down_revision == "0010_bigint_user_ids"
     assert scripts.get_revision("0010_bigint_user_ids").down_revision == "0009_food_confirmation"
@@ -23,6 +23,44 @@ def test_removal_joins_both_existing_heads():
         "0004_final_abc_fields",
         "0004_user_email_change",
     }
+
+
+def test_retired_profile_category_removal_is_scoped_and_tightens_the_constraint():
+    migration = run_path(
+        str(MIGRATIONS / "versions" / "20261026_1000_remove_dietary_approaches.py")
+    )
+    assert migration["down_revision"] == "0014_contract_schema"
+    output = StringIO()
+    context = MigrationContext.configure(
+        dialect_name="postgresql", opts={"as_sql": True, "output_buffer": output}
+    )
+    with Operations.context(context):
+        migration["upgrade"]()
+    sql = output.getvalue()
+    deletion = "DELETE FROM user_profile_choices WHERE category = 'dietary_approach'"
+    assert sql.count("DELETE FROM") == 1
+    assert deletion in sql
+    assert sql.index(deletion) < sql.index("ADD CONSTRAINT ck_user_profile_choices_category")
+    constraint = sql.split("ADD CONSTRAINT ck_user_profile_choices_category", 1)[1]
+    assert "dietary_approach" not in constraint
+    for category in (
+        "allergy",
+        "restriction",
+        "family_food",
+        "difficult_texture",
+        "difficult_taste",
+        "presentation_preference",
+    ):
+        assert f"'{category}'" in constraint
+
+    output.seek(0)
+    output.truncate()
+    with Operations.context(context):
+        migration["downgrade"]()
+    sql = output.getvalue()
+    assert "'dietary_approach'" in sql
+    assert "INSERT" not in sql
+    assert "DELETE" not in sql
 
 
 def test_bigint_user_migration_recreates_users_with_identity():

@@ -33,7 +33,7 @@ const profile = {
   childName: 'Child', ageRange: '4-5',
   consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
   allergies: ['egg', 'custom-allergen'], restrictions: ['none'], familyFoods: ['eggs'],
-  approaches: ['none'], texture: ['soft'], smell: 'sometimes', taste: [],
+  texture: ['soft'], smell: 'sometimes', taste: [],
   presentation: ['separate'], temperature: 'warm', familiarity: 'plate',
   safeFoods: [
     { id: 'local-1', name: 'Potato', preparation: 'Boiled', presentationNote: '' },
@@ -53,7 +53,7 @@ function serverResponse() {
         restrictions: { status: 'none', items: [] },
       },
       food_preferences: {
-        family_foods: [{ code: 'eggs', custom_name: null }], dietary_approaches: [],
+        family_foods: [{ code: 'eggs', custom_name: null }],
         difficult_textures: [{ code: 'soft', custom_name: null }], smell_sensitivity: 'sometimes',
         difficult_tastes: [], presentation_preferences: [{ code: 'separate', custom_name: null }],
         preferred_temperature: 'warm', new_food_response: 'plate',
@@ -78,7 +78,13 @@ test('onboarding write maps codes, custom choices, consents, and safe food IDs',
     { code: 'egg', custom_name: null }, { code: null, custom_name: 'custom-allergen' },
   ] });
   assert.deepEqual(body.profile.safety.restrictions, { status: 'none', items: [] });
-  assert.deepEqual(body.profile.food_preferences.dietary_approaches, []);
+  assert.deepEqual(body.profile.food_preferences, {
+    family_foods: [{ code: 'eggs', custom_name: null }],
+    difficult_textures: [{ code: 'soft', custom_name: null }],
+    smell_sensitivity: 'sometimes', difficult_tastes: [],
+    presentation_preferences: [{ code: 'separate', custom_name: null }],
+    preferred_temperature: 'warm', new_food_response: 'plate',
+  });
   assert.equal(body.profile.safe_foods.items[0].id, undefined);
   assert.equal(body.profile.safe_foods.items[1].id, '501');
   assert.deepEqual(body.consents.map((item) => item.granted), [true, true, false]);

@@ -14,7 +14,7 @@ class UserProfileChoice(Base):
             "(code IS NULL) <> (custom_name IS NULL)", name="ck_user_profile_choices_value"
         ),
         CheckConstraint(
-            "category IN ('allergy','restriction','family_food','dietary_approach',"
+            "category IN ('allergy','restriction','family_food',"
             "'difficult_texture','difficult_taste','presentation_preference')",
             name="ck_user_profile_choices_category",
         ),

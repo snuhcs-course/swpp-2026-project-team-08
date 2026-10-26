@@ -43,7 +43,7 @@ function fixtures(childId = 'child-d') {
   const profile = {
     id: childId, caregiverName: 'Parent', caregiverEmail: 'parent@example.com', childName: 'Child', ageRange: 'toddler',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
-    allergies: ['none'], restrictions: ['none'], familyFoods: [], approaches: ['none'], texture: [], smell: '',
+    allergies: ['none'], restrictions: ['none'], familyFoods: [], texture: [], smell: '',
     taste: [], presentation: ['separate'], temperature: '', familiarity: '', safeFoods: [], noSafeFoods: true,
     updatedAt: '2026-10-08T00:00:00.000Z',
   };

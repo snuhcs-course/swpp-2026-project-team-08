@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; carry actual source meal date into suggestion cards
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 
 import {
   useIngredientCatalog,

@@ -1,4 +1,5 @@
 // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 import { AppHeader } from '../../../components/AppHeader';
 import { fonts } from "../../../util/fonts";
 import { colors } from "../../../util/colors";

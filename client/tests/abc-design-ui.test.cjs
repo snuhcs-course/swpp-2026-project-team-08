@@ -104,13 +104,13 @@ test('draft suggestion linking opens explicitly and shows actual source meal met
   assert.match(html,/Step 1 of 2/);assert.match(html,/Oct 11, 2026/);assert.match(html,/Lunch/);assert.match(html,/Actual idea/);
 });
 
-test('onboarding review has the five Figma cards without discarding sensory answers', () => {
+test('onboarding review has the four summary cards without discarding sensory answers', () => {
   const { emptyDraft } = require('../src/features/onboarding/types.ts');
   const { reviewRows } = require('../src/features/onboarding/screens/reviewRows.ts');
   const draft={...emptyDraft(),texture:['soft'],familiarity:'familiar',allergies:['peanut'],restrictions:['gluten-free']};
   const before=JSON.stringify(draft);
   const rows=reviewRows(draft,'en');
-  assert.deepEqual(rows.map(row=>row.step),['child','allergies','family','approaches','safe-foods']);
+  assert.deepEqual(rows.map(row=>row.step),['child','allergies','family','safe-foods']);
   assert.match(rows[1].value,/Peanuts/); assert.equal(JSON.stringify(draft),before);
 });
 test('account keeps the small password helper separate from the error', () => {
@@ -127,7 +127,6 @@ test('Figma other-food catalog examples are searchable in both supported languag
   assert.deepEqual(optionsFor('allergyCatalog','en').filter(o=>o.label.toLowerCase().includes('lupin')).map(o=>o.label),['Lupin','Lupin flour','Lupin seed']);
   assert.deepEqual(optionsFor('familyCatalog','en').filter(o=>o.label.toLowerCase().includes('plant')).map(o=>o.label),['Plant-based milk','Plant-based yogurt','Plant-based cheese']);
   assert.equal(optionsFor('allergyCatalog','ko').find(o=>o.id==='lupin').label,'루핀');
-  assert.equal(optionsFor('approachCatalog','en').some(o=>o.id==='low-histamine'),true);
 });
 
 test('ongoing meal entry shows real draft metadata and only an explicit continue action', () => {

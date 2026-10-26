@@ -20,7 +20,6 @@ def request_body() -> dict:
             },
             "food_preferences": {
                 "family_foods": [{"code": "eggs", "custom_name": None}],
-                "dietary_approaches": [],
                 "difficult_textures": [],
                 "smell_sensitivity": "sometimes",
                 "difficult_tastes": [],
@@ -68,6 +67,7 @@ async def test_onboarding_round_trip_and_idempotent_consents(client: AsyncClient
     written = await client.put("/api/v1/onboarding", headers=headers, json=request_body())
     assert written.status_code == 200, written.text
     body = written.json()
+    assert body["profile"]["food_preferences"] == request_body()["profile"]["food_preferences"]
     assert body["profile"]["user_id"].isdecimal()
     assert body["profile"]["safety"]["allergies"]["items"] == [{"code": "egg", "custom_name": None}]
     food_id = body["profile"]["safe_foods"]["items"][0]["id"]

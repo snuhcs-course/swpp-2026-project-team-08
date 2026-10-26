@@ -67,6 +67,14 @@ or editing a food preserves it. Existing rows derive confirmation from the old
 `source = 'parent'` state and restore provenance from `origin` when present.
 Apply this migration explicitly before deploying the matching client and server.
 
+## Retired onboarding choices
+
+Migration `0015_remove_dietary_approaches` deletes stored selections for the retired
+onboarding step and tightens the profile-choice category constraint. Other profile
+answers are preserved. Downgrading allows the old category again but cannot recover
+deleted selections. Apply the migration explicitly to each database before deploying
+the matching client and server; it is not applied automatically by this change.
+
 ## 코드 품질 기준
 
 코드 품질은 아래 두 가지를 순서대로 우선한다.

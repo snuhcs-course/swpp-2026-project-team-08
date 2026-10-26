@@ -27,8 +27,8 @@ Module._load = function (name, ...args) {
   return name === '@react-native-async-storage/async-storage' ? storage : originalLoad.call(this, name, ...args);
 };
 
-const { emptyDraft } = require('../src/features/onboarding/types.ts');
-const { canFinish, isDraft } = require('../src/features/onboarding/rules.ts');
+const { emptyDraft, steps, nextStep, previousStep } = require('../src/features/onboarding/types.ts');
+const { canFinish, isDraft, restoreDraft } = require('../src/features/onboarding/rules.ts');
 const { readProfile, saveProfile } = require('../src/data/storage/profileStorage.ts');
 const { readDraft, saveDraft, clearDraft } = require('../src/data/storage/onboardingDraftStorage.ts');
 const { readLanguage, saveLanguage } = require('../src/data/storage/languageStorage.ts');
@@ -38,9 +38,23 @@ function completedDraft() {
     ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
     childName: 'Child', ageRange: 'toddler',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
-    allergies: ['none'], restrictions: ['none'], approaches: ['none'], familyFoods: ['dairy'],
+    allergies: ['none'], restrictions: ['none'], familyFoods: ['dairy'],
   };
 }
+
+test('family foods leads directly to sensory questions in both directions', () => {
+  assert.equal(nextStep('family'), 'texture');
+  assert.equal(previousStep('texture'), 'family');
+  assert.equal(steps.length, 14);
+});
+
+test('a retired saved step preserves answers and removes obsolete draft fields', () => {
+  const draft = completedDraft();
+  assert.deepEqual(restoreDraft({ ...draft, step: 'retired-step', obsoleteSelections: ['old'] }),
+    { ...draft, step: 'family' });
+  assert.deepEqual(restoreDraft({ ...draft, step: 'texture' }), { ...draft, step: 'texture' });
+  assert.equal(restoreDraft({ step: 'retired-step' }), null);
+});
 
 test('saved profile, language, and in-progress draft remain independent', async () => {
   values.clear();

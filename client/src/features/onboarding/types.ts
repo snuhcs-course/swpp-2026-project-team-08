@@ -4,7 +4,7 @@ import type { ChildProfile } from '../../types/profile';
 
 export const steps = [
   'account', 'consent', 'child', 'allergies', 'restrictions', 'family',
-  'approaches', 'texture', 'smell', 'taste', 'presentation', 'temperature',
+  'texture', 'smell', 'taste', 'presentation', 'temperature',
   'familiarity', 'safe-foods', 'review',
 ] as const;
 
@@ -19,7 +19,7 @@ export function emptyDraft(): OnboardingDraft {
   return {
     step: 'account', caregiverName: '', caregiverEmail: '', childName: '', ageRange: '',
     consent: { accountPrivacy: false, photoAnalysis: false, aiTraining: false },
-    allergies: [], restrictions: [], familyFoods: [], approaches: [], texture: [],
+    allergies: [], restrictions: [], familyFoods: [], texture: [],
     smell: '', taste: [], presentation: [], temperature: '', familiarity: '',
     safeFoods: [], noSafeFoods: false,
     safeFoodInput: { name: '', preparation: '', presentationNote: '' },

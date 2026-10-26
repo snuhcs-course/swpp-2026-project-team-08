@@ -27,7 +27,7 @@ import { SafeFoodsStepView } from './SafeFoodsStepView';
 import { reviewRows } from './reviewRows';
 
 const choiceSteps: ChoiceStep[] = [
-  'child', 'allergies', 'restrictions', 'family', 'approaches',
+  'child', 'allergies', 'restrictions', 'family',
   'texture', 'smell', 'taste', 'presentation', 'temperature', 'familiarity',
 ];
 

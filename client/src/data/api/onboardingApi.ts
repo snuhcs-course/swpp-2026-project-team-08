@@ -17,7 +17,6 @@ type ProfileResponse = {
   };
   food_preferences: {
     family_foods: Choice[];
-    dietary_approaches: Choice[];
     difficult_textures: Choice[];
     smell_sensitivity: string | null;
     difficult_tastes: Choice[];
@@ -65,7 +64,7 @@ function parseResponse(value: unknown): OnboardingResponse {
   const safeFoods = profile.safe_foods;
   if (!record(allergies) || !choiceItems(allergies.items)
     || !record(restrictions) || !choiceItems(restrictions.items)
-    || !choiceItems(preferences.family_foods) || !choiceItems(preferences.dietary_approaches)
+    || !choiceItems(preferences.family_foods)
     || !choiceItems(preferences.difficult_textures) || !choiceItems(preferences.difficult_tastes)
     || !choiceItems(preferences.presentation_preferences) || !Array.isArray(safeFoods.items)
     || !safeFoods.items.every((food: unknown) => record(food) && isUserId(food.id)
@@ -103,7 +102,6 @@ export function toOnboardingWrite(profile: ChildProfile) {
       },
       food_preferences: {
         family_foods: choices(profile.familyFoods, ['family', 'familyCatalog']),
-        dietary_approaches: choices(profile.approaches, ['approaches', 'approachCatalog']),
         difficult_textures: choices(profile.texture, ['texture']),
         smell_sensitivity: profile.smell || null,
         difficult_tastes: choices(profile.taste, ['taste']),
@@ -153,7 +151,6 @@ export function fromOnboardingResponse(
     restrictions: source.safety.restrictions.status === 'specified'
       ? selected(source.safety.restrictions.items) : ['none'],
     familyFoods: selected(source.food_preferences.family_foods),
-    approaches: selected(source.food_preferences.dietary_approaches),
     texture: selected(source.food_preferences.difficult_textures),
     smell: source.food_preferences.smell_sensitivity ?? '',
     taste: selected(source.food_preferences.difficult_tastes),

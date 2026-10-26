@@ -10,8 +10,8 @@
 
 [최종 ABC 디자인 — A Onboarding](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/ABC?node-id=815-4315)
 
-근거: 가족 식품군 `455:2525`, 알레르기 `455:1278`·`455:4672`, 제한 `455:5060`, 식이 방식 `455:5143`, 검토 `455:1748`, 완료 `455:1729`.
-디자인의 빠진 번호를 빈 화면으로 만들지 않는다. 화면에 표시하는 단계 번호와 진행률은 Figma의 18단계 표기를 따른다(Child 4, Dietary approaches 9, Review 17). 이 페이지에 없는 감각 질문은 기존 R9를 유지한다. `xxxxxxx` 같은 임시 설명·예시 이름은 실제 문구로 사용하지 않는다.
+근거: 가족 식품군 `455:2525`, 알레르기 `455:1278`·`455:4672`, 제한 `455:5060`, 검토 `455:1748`, 완료 `455:1729`.
+디자인의 빠진 번호를 빈 화면으로 만들지 않는다. 화면에 표시하는 단계 번호와 진행률은 총 17단계로 표시한다(Child 4, Texture 9, Review 16). 가족 식품군 다음에는 감각 질문으로 이동한다. 이 페이지에 없는 감각 질문은 R8을 유지한다. `xxxxxxx` 같은 임시 설명·예시 이름은 실제 문구로 사용하지 않는다.
 
 ## User Flow
 
@@ -21,12 +21,11 @@
 4. 식품 알레르기를 입력한다.
 5. 기타 식이 제한을 입력한다.
 6. 가족이 식단에 포함하는 식품군을 선택한다.
-7. Dietary Approaches를 선택한다.
-8. 아이의 감각적 경향(Sensory Profile)을 입력한다. (Texture, Smell, Taste, Presentation, Temperature)
-9. Familiarity with New Foods를 입력한다.
-10. Safe Food를 입력한다.
-11. 아이의 profile을 리뷰한다.
-12. 메인 화면으로 진입한다.
+7. 아이의 감각적 경향(Sensory Profile)을 입력한다. (Texture, Smell, Taste, Presentation, Temperature)
+8. Familiarity with New Foods를 입력한다.
+9. Safe Food를 입력한다.
+10. 아이의 profile을 리뷰한다.
+11. 메인 화면으로 진입한다.
 
 ## Requirements
 
@@ -86,16 +85,7 @@
 6. 기본 식품군은 Dairy, Eggs, Seafood, Poultry, Red meat, Legumes/soy, Nuts/seeds로 구성한다. All 선택은 제공하지 않고 개별 항목을 선택한다.
 7. 기본 식품군 또는 직접 추가한 식품을 하나 이상 선택해야 Continue를 사용할 수 있다. Required step과 선호가 추천에 항상 반영되지는 않는다는 안내를 표시한다.
 
-### R8 — Dietary approaches
-
-1. 보호자는 가족이 따르는 식이 접근 방식 또는 식단 유형을 선택할 수 있어야 한다.
-2. 선택된 항목은 화면에서 구분되어 표시되어야 하며, 보호자는 선택을 변경할 수 있어야 한다.
-3. 해당 사항이 없는 경우 이를 나타내는 선택지를 사용할 수 있어야 한다. 이 선택지는 타 선택지와 중복으로 선택될 수 없어야 한다.
-4. Other를 클릭하는 경우 검색 입력창이 활성화되며, dietary approaches catalog를 검색하고 검색 결과를 눌러 항목을 추가할 수 있어야 한다.
-5. 추가된 접근 방식은 보호자가 x를 눌러 제거 가능한 토큰 형태로 Other 검색 필드 아래에 표시되어야 한다. 기본 체크박스 목록에는 추가하지 않는다.
-6. 식이 접근 방식 없음을 선택하거나, 식이 접근 방식을 선택했다면 Continue 버튼이 활성화되어야 한다.
-
-### R9 — Sensory profile
+### R8 — Sensory profile
 
 1. 보호자는 식감(Texture), 냄새(Smell), 맛(Taste), 제공 형태(Presentation), 온도(Temperature)에 대한 아동의 경향을 각각 입력할 수 있어야 한다.
 2. 식감 화면에서는 어려워하는 식감 여러 개를 선택할 수 있어야 한다. `No clear texture difficulty`는 다른 식감과 동시에 선택할 수 없어야 한다.
@@ -107,14 +97,14 @@
 8. 각 질문의 답변은 다른 질문의 선택을 바꾸지 않아야 하며, 보호자는 Previous로 돌아가 답변을 수정할 수 있어야 한다.
 9. 맛 화면에는 선택한 경향이 진단이 아니며 실제 식사 기록을 통해 수정할 수 있다는 안내가 표시되어야 한다. 온도 화면에는 음식별로 실제로 받아들인 온도를 식사 기록에서 확인할 수 있다는 안내가 표시되어야 한다.
 
-### R10 — Familiarity with new foods
+### R9 — Familiarity with new foods
 
 1. 보호자는 아동이 새로운 음식을 처음 보았을 때 보통 어떻게 반응하는지 입력할 수 있어야 한다.
 2. `Usually tastes a new food`, `Okay on the plate, may not taste`, `Prefers it nearby but separate`, `Wants it removed`, `Varies by food`, `Not sure` 중 하나만 선택할 수 있어야 한다.
 3. 선택된 답변은 화면에서 구분되어 표시되어야 하며, 보호자는 다른 답변을 선택해 변경할 수 있어야 한다.
 4. 이 답변은 추천을 위한 일반적인 시작점으로 안내되어야 한다.
 
-### R11 — Safe foods
+### R10 — Safe foods
 
 1. 보호자는 아동이 익숙한 형태로 꾸준히 받아들이는 음식을 Safe Foods로 여러 개 추가할 수 있어야 한다.
 2. 음식 입력창 옆의 `+` 버튼을 누르면 `Add safe food` 카드가 열려야 한다.
@@ -125,9 +115,9 @@
 7. Safe Foods 화면에는 Save & exit가 표시되어야 하며, 이를 누르면 현재까지 입력한 답변을 저장하고 나중에 이어서 입력할 수 있어야 한다.
 8. 음식 입력창 옆의 `+` 버튼은 작은 화면에서도 잘리지 않고 전체가 보여야 한다.
 
-### R12 — Review profile
+### R11 — Review profile
 
-1. 보호자는 온보딩을 완료하기 전에 Child basics, Safety restrictions, Family practices, Dietary approaches, Safe foods의 다섯 카드에 입력한 내용을 요약 카드로 검토할 수 있어야 한다.
+1. 보호자는 온보딩을 완료하기 전에 Child basics, Safety restrictions, Family practices, Safe foods의 네 카드에 입력한 내용을 요약 카드로 검토할 수 있어야 한다.
 2. 감각·친숙도 답변은 저장하고 Profile Settings에서 질문별로 수정할 수 있어야 한다. 현재 Figma 검토 화면에 없는 추가 카드는 온보딩 요약에 만들지 않는다. Safety restrictions 카드에는 알레르기와 실제 추가 제한을 함께 표시하며, 수정 시 알레르기와 제한을 차례로 편집한 뒤 검토로 돌아온다.
 3. 각 카드의 수정 버튼을 누르면 해당 입력 화면으로 이동해야 한다. 수정 후 검토 화면으로 돌아왔을 때 다른 항목의 답변은 유지되어야 한다.
 4. 검토 화면에는 입력하지 않은 항목도 미입력 상태로 구분되어야 하며, 보호자가 이를 수정할 수 있어야 한다.
@@ -140,7 +130,7 @@
 - 개인정보 수집 및 이용의 필수 동의를 하지 않았거나, 동의한 뒤 다시 해제함
 - 아동의 닉네임 또는 연령대 중 하나만 입력함
 - 알레르기 또는 기타 식이 제한을 선택하지 않은 채 화면을 벗어나려 함
-- `None` 또는 식이 접근 방식의 ‘해당 없음’을 다른 항목과 함께 선택하려 함
+- `None`을 다른 항목과 함께 선택하려 함
 - catalog 검색 결과가 없거나 이미 추가한 항목을 다시 선택함
 - `Other` 입력창에 내용을 입력했지만 Add를 누르지 않고 다음 화면으로 이동함
 - 가족 식품군 필수 선택을 비운 상태로 다음 단계·완료를 시도함
@@ -205,14 +195,6 @@ Given 보호자가 가족 식단에 포함하는 식품군을 선택하지 않�
 When 화면을 확인하면<br>
 Then Continue가 비활성화되어 선택을 기다린다.
 
-Given 보호자가 Dietary approaches 화면에 있고<br>
-When 식이 접근 방식 또는 ‘해당 없음’을 선택하면<br>
-Then Continue 버튼이 활성화된다.
-
-Given 보호자가 Dietary approaches 화면에서 ‘해당 없음’을 선택했고<br>
-When 다른 식이 접근 방식을 선택하면<br>
-Then ‘해당 없음’이 해제된다.
-
 Given 보호자가 식감·맛·제공 형태 화면에서 여러 항목을 선택했고<br>
 When 각 화면의 ‘해당 없음’ 항목을 선택하면<br>
 Then 기존 선택이 해제되어 두 종류의 답변이 동시에 저장되지 않는다.
@@ -251,7 +233,7 @@ Then 검토 화면과 입력값이 유지되고 다시 시도할 수 있다.
 
 ## 2026-10-18 구현 범위
 
-- 알레르기·제한·가족 식품군·식이 방식의 검색·직접 입력·제거 가능한 토큰, None 배타 선택을 유지한다.
+- 알레르기·제한·가족 식품군의 검색·직접 입력·제거 가능한 토큰, None 배타 선택을 유지한다.
 - 가족 식품군은 필수 입력으로 바꾸고 검토 완료 조건에도 반영한다. 선택과 미선택은 테두리·체크·문구로 구분한다.
 - Safe foods의 Save & exit로 초안을 저장하고 홈으로 나갈 수 있어야 한다. 실패하면 화면과 입력을 유지한다.
 - 검토 뒤 `You’re ready to begin` 완료 화면에서 실제 아동 이름과 Go to home을 보여주고 홈으로 이동한다.
@@ -260,8 +242,8 @@ Then 검토 화면과 입력값이 유지되고 다시 시도할 수 있다.
 ## 2026-10-18 최신 A 변경 범위
 
 - 완료 화면(455:1729)은 중앙에 40px Poppins Bold 제목, 실제 아동 이름이 포함된 안내, 너비 230px의 `Go to home` 버튼을 표시한다. 기존 Next step 버튼을 교체한다.
-- 기타 식이 제한의 기본 목록(455:5060)은 No additional dietary restrictions, Gluten-free, Lactose-free, Casein-free, Other restrictions다. Low fructose는 기본 제한에서 빼되 기존 선택은 Other 토큰으로 보존하고 식이 방식 선택지에서는 유지한다.
-- 검토 화면(455:1748)은 Child basics, Safety restrictions, Family practices, Dietary approaches, Safe foods 순서로 핵심 카드를 배치한다. 기타 제한·감각 답변도 계속 확인·수정할 수 있다.
+- 기타 식이 제한의 기본 목록(455:5060)은 No additional dietary restrictions, Gluten-free, Lactose-free, Casein-free, Other restrictions다. Low fructose는 기본 제한에서 빼되 기존 선택은 Other 토큰으로 보존한다.
+- 검토 화면(455:1748)은 Child basics, Safety restrictions, Family practices, Safe foods 순서로 핵심 카드를 배치한다. 기타 제한·감각 답변도 계속 확인·수정할 수 있다.
 - 동의 화면(455:3095·455:3160)의 사진 분석 문구는 Figma에 아직 남은 이전 문구다. 사용자의 분석 기능 제거 결정이 우선한다. 필수 동의는 계정 개인정보와 식사 기록·프로필을 활용한 개인화이며 사진 분석 동의를 요구하지 않는다. 호환을 위해 기존 저장 키 photoAnalysis는 개인화 동의 값으로만 읽고 쓴다. 별도 AI 학습 동의는 선택 사항이며 이 버전은 사진을 분석·학습에 전송하지 않는다.
 - 이미 작성된 프로필·초안·알레르기 및 추천 안전성 검사는 보존한다.
 
@@ -271,7 +253,7 @@ Then 검토 화면과 입력값이 유지되고 다시 시도할 수 있다.
 - 동의 `455:3095`·`455:3160`: 패널·카드·안전 안내의 원본 간격과 13px 본문을 따른다. 분석 제거에 따른 동의 내용은 사용자의 결정이 우선한다.
 - 기타 입력 `455:1278`·`455:1382`: OTHER 14px, 입력 40px, 안내 12px. 검색 결과·선택 토큰을 별도 상태로 대조한다.
 - Safe foods `455:1916`: 빠른 입력 뒤 흰색 인라인 카드(너비 346px, 모서리 16px, 안쪽 16px)를 둔다. 제목과 설명은 한 묶음이며 필드 사이 8px이다. Presentation note와 Optional은 같은 줄에 둔다. 입력한 제공 메모도 추가된 음식에 표시한다.
-- 검토 `455:1748`: 다섯 카드에 27px 아이콘 영역·원본 수정 아이콘·13px 설명을 사용한다. 긴 내용은 잘라 숨기지 않는다.
+- 검토 `455:1748`: 네 카드에 27px 아이콘 영역·원본 수정 아이콘·13px 설명을 사용한다. 긴 내용은 잘라 숨기지 않는다.
 - 화면 대조는 390px 너비에서 수행한다. 웹에 없는 iOS 시계·배터리·홈 표시줄은 앱 콘텐츠와 분리해서 비교한다. 예시 아동 이름·답변은 실제 사용자 값으로 표시한다.
 
-- 기타 검색은 디자인에 나온 Lupin/Lupin flour/Lupin seed, Plant-based milk/yogurt/cheese, Low-histamine/Low-salicylate 항목을 포함한다. `keto a`, `keto b`, `xxxxxxx` 같은 임시 데이터는 실제 선택지로 만들지 않는다. 기타를 열면 None을 해제하고, None을 고르면 기타 입력을 닫는다.
+- 기타 검색은 디자인에 나온 Lupin/Lupin flour/Lupin seed, Plant-based milk/yogurt/cheese 항목을 포함한다. `xxxxxxx` 같은 임시 데이터는 실제 선택지로 만들지 않는다. 기타를 열면 None을 해제하고, None을 고르면 기타 입력을 닫는다.

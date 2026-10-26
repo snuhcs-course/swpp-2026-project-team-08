@@ -57,7 +57,6 @@ class SafetyDto(StrictDto):
 
 class FoodPreferencesDto(StrictDto):
     family_foods: list[ProfileChoiceDto] = Field(min_length=1)
-    dietary_approaches: list[ProfileChoiceDto]
     difficult_textures: list[ProfileChoiceDto]
     smell_sensitivity: Literal["yes", "sometimes", "no", "unsure"] | None
     difficult_tastes: list[ProfileChoiceDto]
@@ -126,7 +125,6 @@ class ProfileWriteDto(StrictDto):
             self.safety.allergies.items,
             self.safety.restrictions.items,
             self.food_preferences.family_foods,
-            self.food_preferences.dietary_approaches,
             self.food_preferences.difficult_textures,
             self.food_preferences.difficult_tastes,
             self.food_preferences.presentation_preferences,

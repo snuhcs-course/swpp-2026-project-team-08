@@ -17,14 +17,14 @@ import type { OnboardingDraft } from '../types';
 import { styles } from './onboardingStyles';
 
 export type ChoiceStep =
-  | 'child' | 'allergies' | 'restrictions' | 'family' | 'approaches'
+  | 'child' | 'allergies' | 'restrictions' | 'family'
   | 'texture' | 'smell' | 'taste' | 'presentation' | 'temperature' | 'familiarity';
 
 type ChoiceValues = Pick<OnboardingDraft,
   'childName' | 'ageRange' | 'allergies' | 'restrictions' | 'familyFoods' |
-  'approaches' | 'texture' | 'smell' | 'taste' | 'presentation' |
+  'texture' | 'smell' | 'taste' | 'presentation' |
   'temperature' | 'familiarity'>;
-type ListField = 'allergies' | 'restrictions' | 'familyFoods' | 'approaches' | 'texture' | 'taste' | 'presentation';
+type ListField = 'allergies' | 'restrictions' | 'familyFoods' | 'texture' | 'taste' | 'presentation';
 type TextField = 'childName' | 'ageRange' | 'smell' | 'temperature' | 'familiarity';
 
 function Guidance({ title, body, icon = 'info' }: { title?: string; body: string; icon?: 'info' | 'calendar' | 'activity' | 'utensils' }) {
@@ -52,7 +52,6 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
       allergies: [values.allergies, 'allergies'],
       restrictions: [values.restrictions, 'restrictions'],
       family: [values.familyFoods, 'family'],
-      approaches: [values.approaches, 'approaches'],
       texture: [values.texture, 'texture'],
       taste: [values.taste, 'taste'],
       presentation: [values.presentation, 'presentation'],
@@ -97,12 +96,11 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
     </View>
   );
 
-  if (step === 'allergies' || step === 'restrictions' || step === 'family' || step === 'approaches') {
+  if (step === 'allergies' || step === 'restrictions' || step === 'family') {
     const config = {
       allergies: { field: 'allergies', group: 'allergies', catalog: 'allergyCatalog', none: s.onboarding.noKnownAllergies },
       restrictions: { field: 'restrictions', group: 'restrictions', catalog: 'restrictionCatalog', none: s.onboarding.noOtherRestrictions },
       family: { field: 'familyFoods', group: 'family', catalog: 'familyCatalog', none: undefined },
-      approaches: { field: 'approaches', group: 'approaches', catalog: 'approachCatalog', none: s.common.none },
     } as const;
     const current = config[step];
     const options = optionsFor(current.group, language);
@@ -110,14 +108,11 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
       ? s.onboarding.otherAllergy
       : step === 'restrictions'
         ? s.onboarding.otherRestrictions
-        : step === 'family'
-          ? s.onboarding.otherFood
-          : s.onboarding.otherApproach;
+        : s.onboarding.otherFood;
     return (
       <View>
         {step === 'restrictions' && <Text style={styles.question}>{guidance.restrictionsQuestion(name)}</Text>}
         {step === 'family' && <Guidance title={guidance.familyTitle} body={guidance.familyBody} icon="utensils" />}
-        {step === 'approaches' && <Guidance title={guidance.approachesTitle} body={guidance.approachesBody} />}
         {step === 'allergies' && (
           <View style={styles.safetyBanner}>
             <View style={styles.safetyIcon}><UiAssetIcon name="onboarding-shield" /></View>

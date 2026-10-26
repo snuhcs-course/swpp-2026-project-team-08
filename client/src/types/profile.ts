@@ -23,7 +23,6 @@ export type ChildProfile = {
   allergies: string[];
   restrictions: string[];
   familyFoods: string[];
-  approaches: string[];
   texture: string[];
   smell: string;
   taste: string[];

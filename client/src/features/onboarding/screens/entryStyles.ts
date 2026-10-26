@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 
 import { StyleSheet } from 'react-native';
@@ -13,6 +14,7 @@ export const styles = StyleSheet.create({
   error: { color: colors.error, fontSize: 13, fontFamily: fonts.interRegular },
   loading: { color: colors.onboardingMuted, marginTop: 12 },
   actions: { gap: 10 },
+  actionLabel: { fontSize: 18 },
   linkWrap: { alignItems: 'center', paddingVertical: 12 },
   link: { color: colors.onboardingPrimary, fontSize: 13, fontFamily: fonts.interBold },
 });

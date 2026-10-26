@@ -12,6 +12,12 @@
 - 알러지 · 식이 제한 id(`RestrictionId`)나 재료 카탈로그를 다루는 작업이면
   [`../docs/food-ingredient-restriction-ids.md`](../docs/food-ingredient-restriction-ids.md)도 먼저 읽어야 한다.
   클라이언트와 id가 같아야 한다.
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-26, reviewed by Jaemin Kim -->
+- 추천(`features/suggestions/`)의 입력 · 프롬프트 · 검증을 바꾸는 작업이면
+  [`../docs/recommendation-logic.md`](../docs/recommendation-logic.md)도 먼저 읽어야 한다.
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-26, reviewed by Jaemin Kim -->
+- 테이블이나 모델을 만들거나 바꾸는 작업이면 [`../docs/db-schemas.md`](../docs/db-schemas.md)도 먼저 읽어야 하고,
+  관계나 키를 바꾸면 이 문서도 같은 변경에서 고쳐야 한다.
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 - LangGraph 같은 LLM 워크플로를 만들거나 고치는 작업이면 `docs/architecture.md` §2.5와 기준 구현인
   `app/features/suggestions/`를 먼저 읽고 그 구조를 따라야 한다.

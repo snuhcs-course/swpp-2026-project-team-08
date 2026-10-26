@@ -9,6 +9,9 @@ Read `client/docs/architecture.md` before starting any work in `client/`.
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 If the work touches allergy or dietary-restriction ids (`allergies` / `restrictions` in the child profile or the option groups in `src/util/strings.ts`), also read [`docs/food-ingredient-restriction-ids.md`](../docs/food-ingredient-restriction-ids.md). The server defines the same ids (`RestrictionId`), so a change here must be made there in the same change.
 
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-26, reviewed by Jaemin Kim -->
+If the work touches the suggestion request or the ids it sends (`food_id`, `ingredient_id`), also read [`docs/recommendation-logic.md`](../docs/recommendation-logic.md) and [`docs/db-schemas.md`](../docs/db-schemas.md). `food_id` is unique only within a meal, and the server reads food details from the saved review, not from the request.
+
 ## Expo has changed — do not trust your training data
 
 Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:

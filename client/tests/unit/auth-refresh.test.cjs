@@ -26,13 +26,13 @@ test('a 401 renews the session and retries the original request once', async () 
     calls.push({ url, authorization: new Headers(init.headers).get('Authorization') });
     if (url.endsWith('/api/v1/auth/refresh')) {
       assert.deepEqual(JSON.parse(init.body), { refresh_token: 'refresh' });
-      return new Response(JSON.stringify({ access_token: 'new-access', refresh_token: 'new-refresh' }), { status: 200 });
+      return new Response(JSON.stringify({ access_token: 'new-access', refresh_token: 'new-refresh', token_type: 'bearer' }), { status: 200 });
     }
     if (calls.length === 1) return new Response(JSON.stringify({ error_code: 'UNAUTHENTICATED' }), { status: 401 });
-    return new Response(JSON.stringify({ items: [] }), { status: 200 });
+    return new Response(JSON.stringify([]), { status: 200 });
   };
   try {
-    assert.deepEqual(await apiRequest('/api/v1/suggestions'), { items: [] });
+    assert.deepEqual(await apiRequest('/api/v1/suggestions'), []);
     assert.equal(calls.length, 3);
     assert.equal(calls[2].authorization, 'Bearer new-access');
     assert.equal(session.refreshToken, 'new-refresh');
@@ -71,16 +71,16 @@ test('simultaneous unauthorized requests share one token refresh', async (t) => 
   t.mock.method(global, 'fetch', async (url, init) => {
     if (url.endsWith('/refresh')) {
       refreshes++; started(); await gate;
-      return new Response(JSON.stringify({ access_token: 'new', refresh_token: 'next' }));
+      return new Response(JSON.stringify({ access_token: 'new', refresh_token: 'next', token_type: 'bearer' }));
     }
     return new Headers(init.headers).get('Authorization') === 'Bearer new'
-      ? new Response('{"ok":true}') : new Response('{}', { status: 401 });
+      ? new Response('[]') : new Response('{}', { status: 401 });
   });
   const first = apiRequest('/api/v1/meals');
   const second = apiRequest('/api/v1/suggestions');
   await refreshing;
   release();
-  assert.deepEqual(await Promise.all([first, second]), [{ ok: true }, { ok: true }]);
+  assert.deepEqual(await Promise.all([first, second]), [[], []]);
   assert.equal(refreshes, 1);
   assert.equal(session.refreshToken, 'next');
 });
@@ -90,7 +90,7 @@ test('account change during refresh rejects stale tokens without replacing the n
   t.mock.method(global, 'fetch', async url => {
     if (!url.endsWith('/refresh')) return new Response('{}', { status: 401 });
     session = other;
-    return new Response(JSON.stringify({ access_token: 'stale', refresh_token: 'stale' }));
+    return new Response(JSON.stringify({ access_token: 'stale', refresh_token: 'stale', token_type: 'bearer' }));
   });
   await assert.rejects(apiRequest('/api/v1/meals'), /UNAUTHENTICATED/);
   assert.deepEqual(session, other);
@@ -101,7 +101,7 @@ test('a second unauthorized response stops after one retry', async (t) => {
   t.mock.method(global, 'fetch', async url => {
     calls++;
     return url.endsWith('/refresh')
-      ? new Response(JSON.stringify({ access_token: 'new', refresh_token: 'next' }))
+      ? new Response(JSON.stringify({ access_token: 'new', refresh_token: 'next', token_type: 'bearer' }))
       : new Response('{"error_code":"UNAUTHENTICATED"}', { status: 401 });
   });
   await assert.rejects(apiRequest('/api/v1/meals'), /UNAUTHENTICATED/);

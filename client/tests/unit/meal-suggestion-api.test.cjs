@@ -37,12 +37,12 @@ test('meal suggestions list includes all statuses and generation sends food plus
     assert.deepEqual(JSON.parse(init.body), { targets: [
       { food_id: '2', ingredient_id: null }, { food_id: '2', ingredient_id: '212' },
     ] });
-    return [{ ...suggestion, ingredient_id: null }, suggestion];
+    return [{ ...suggestion, id: '30', ingredient_id: null }, suggestion];
   };
   const items = await api.generateMealSuggestions('1', '8', [
     { foodId: '2', ingredientId: null }, { foodId: '2', ingredientId: '212' },
   ]);
-  assert.equal(items.length, 2);
+  assert.deepEqual(items.map(item => [item.id, item.ingredientId]), [['30', null], ['31', '212']]);
 });
 
 test('saved, dismissed, and undo decisions use the v1 decision route', async () => {

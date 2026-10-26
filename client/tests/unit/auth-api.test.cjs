@@ -5,19 +5,19 @@ require('../helpers/register.cjs');
 require('../helpers/native-boundaries.cjs').nativeBoundaries();
 const network = require('../../src/data/network/apiClient.ts');
 const api = require('../../src/data/api/authApi.ts');
-const user = { id: '1', email: 'parent@example.com', full_name: 'Parent' };
+const user = { id: '1', email: 'parent@example.com', full_name: 'Parent', created_at: '2026-10-23T00:00:00Z' };
 const mappedUser = { id: '1', email: user.email, fullName: 'Parent' };
 const input = { email: user.email, password: 'password', fullName: 'Parent' };
 const operations = [
   ['signup', () => api.signUpAccount(input), '/api/v1/auth/signup', 'POST',
     { email: input.email, password: input.password, full_name: input.fullName }, user, mappedUser],
   ['login', () => api.loginAccount(input), '/api/v1/auth/login', 'POST',
-    { email: input.email, password: input.password }, { access_token: 'access', refresh_token: 'refresh' },
+    { email: input.email, password: input.password }, { access_token: 'access', refresh_token: 'refresh', token_type: 'bearer' },
     { accessToken: 'access', refreshToken: 'refresh' }],
   ['read user', () => api.readCurrentUser(), '/api/v1/auth/me', 'GET', undefined, user, mappedUser],
   ['rename user', () => api.updateCurrentName('Parent'), '/api/v1/auth/me', 'PATCH', { full_name: 'Parent' }, user, mappedUser],
   ['request email change', () => api.requestEmailChange('new@example.com'), '/api/v1/auth/email-change', 'POST',
-    { email: 'new@example.com' }, { dev_code: '482190' }, '482190'],
+    { email: 'new@example.com' }, { sent: true, dev_code: '482190' }, '482190'],
   ['confirm email change', () => api.confirmEmailChange(user.email, '482190'), '/api/v1/auth/email-change/confirm', 'POST',
     { email: user.email, code: '482190' }, user, mappedUser],
   ['delete account', () => api.deleteAccount(), '/api/v1/auth/me', 'DELETE', undefined, undefined, undefined],

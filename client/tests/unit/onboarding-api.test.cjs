@@ -73,6 +73,7 @@ test('onboarding write maps codes, custom choices, consents, and safe food IDs',
     { code: 'egg', custom_name: null }, { code: null, custom_name: 'custom-allergen' },
   ] });
   assert.deepEqual(body.profile.safety.restrictions, { status: 'none', items: [] });
+  assert.deepEqual(body.profile.food_preferences.family_foods, [{ code: 'eggs', custom_name: null }]);
   assert.deepEqual(body.profile.food_preferences.dietary_approaches, []);
   assert.equal(body.profile.safe_foods.items[0].id, undefined);
   assert.equal(body.profile.safe_foods.items[1].id, '501');
@@ -84,6 +85,8 @@ test('server profile restores app shape with server IDs', () => {
   assert.equal(restored.id, '12');
   assert.deepEqual(restored.allergies, ['egg', 'custom-allergen']);
   assert.deepEqual(restored.restrictions, ['none']);
+  assert.deepEqual(restored.familyFoods, ['eggs']);
+  assert.deepEqual(restored.consent, { accountPrivacy: true, photoAnalysis: true, aiTraining: false });
   assert.deepEqual(restored.safeFoods.map((item) => item.id), ['502', '501']);
   assert.equal(restored.caregiverEmail, account.email);
   assert.throws(() => fromOnboardingResponse(serverResponse(), { ...account, id: '13' }));

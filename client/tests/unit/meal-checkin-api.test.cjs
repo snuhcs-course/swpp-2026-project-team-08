@@ -70,7 +70,9 @@ test('ingredient catalog and saved suggestions use the new collection routes', a
   assert.equal((await listSavedSuggestions())[0].foodSnapshot.name, 'Potato');
   request = async (path) => {
     assert.equal(path, '/api/v1/meals');
-    return [{ id: '500', user_id: '1', meal_date: '2026-10-20', meal_type: 'lunch', setting: 'home', before_photo_uri: null, after_photo_uri: null, saved_at: '2026-10-20T08:00:00Z', foods: [], review: null, suggestion_links: [] }];
+    return [{ id: '500', user_id: '1', meal_date: '2026-10-20', meal_type: 'lunch', setting: 'home', before_photo_uri: null, after_photo_uri: null, saved_at: '2026-10-20T08:00:00Z', foods: [{ id: '1', meal_id: '500', name: 'Potato', ingredients: [{ id: '212', name: 'Potato' }], cooking_method: null, serving_note: null, acceptance: null }], review: null, suggestion_links: [] }];
   };
-  assert.equal((await listMealDetails())[0].mealDate, '2026-10-20');
+  const meals = await listMealDetails();
+  assert.equal(meals[0].mealDate, '2026-10-20');
+  assert.equal(meals[0].foods[0].name, 'Potato');
 });

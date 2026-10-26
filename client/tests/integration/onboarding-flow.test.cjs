@@ -54,22 +54,59 @@ test('invalid draft cannot finish or send a profile write', async t => {
   assert.equal(hook.current.profile.profile, null);
 });
 
+for (const aiTraining of [false, true]) {
+  test(`successful completion restores family foods and all consents (AI training: ${aiTraining})`, async t => {
+    const draft = completeDraft();
+    draft.consent.aiTraining = aiTraining;
+    await saveDraft(draft);
+    const hook = await mount(t, body => {
+      assert.deepEqual(body.profile.food_preferences.family_foods, [{ code: 'eggs', custom_name: null }]);
+      assert.deepEqual(body.consents, [
+        { kind: 'account_privacy', granted: true },
+        { kind: 'photo_analysis', granted: true },
+        { kind: 'ai_training', granted: aiTraining },
+      ]);
+      return new Response(JSON.stringify(profileResponse('1', { aiTraining })));
+    });
+    await act(async () => assert.equal(await hook.current.onboarding.finish(), true));
+    await waitFor(() => hook.current.profile.profile?.id === '1');
+    assert.deepEqual(hook.current.profile.profile.familyFoods, ['eggs']);
+    assert.deepEqual(hook.current.profile.profile.consent,
+      { accountPrivacy: true, photoAnalysis: true, aiTraining });
+    assert.equal(await readDraft(), null);
+    assert.equal(hook.current.onboarding.hasDraft, false);
+  });
+}
+
 test('failed completion preserves the draft and retry commits profile before clearing it', async t => {
   // Arrange: a complete stored draft and a failing HTTP boundary.
   await saveDraft(completeDraft());
   let fail = true;
   const hook = await mount(t, body => {
     assert.equal(body.profile.child_name, 'Child 1');
+    assert.deepEqual(body.profile.food_preferences.family_foods, [{ code: 'eggs', custom_name: null }]);
+    assert.deepEqual(body.consents, [
+      { kind: 'account_privacy', granted: true },
+      { kind: 'photo_analysis', granted: true },
+      { kind: 'ai_training', granted: false },
+    ]);
     return fail ? new Response('{}', { status: 503 }) : new Response(JSON.stringify(profileResponse()));
   });
   // Act/Assert: failure keeps recoverable data and does not publish a profile.
   await act(async () => assert.equal(await hook.current.onboarding.finish(), false));
   assert.equal(hook.current.onboarding.saveStatus, 'error');
-  assert.equal((await readDraft()).childName, 'Child 1');
+  const retained = await readDraft();
+  assert.equal(retained.childName, 'Child 1');
+  assert.deepEqual(retained.familyFoods, ['eggs']);
+  assert.deepEqual(retained.consent, { accountPrivacy: true, photoAnalysis: true, aiTraining: false });
   assert.equal(hook.current.profile.profile, null);
   fail = false;
   await act(async () => assert.equal(await hook.current.onboarding.finish(), true));
+  await waitFor(() => hook.current.profile.profile?.id === '1');
   assert.equal(hook.current.profile.profile.childName, 'Child 1');
+  assert.deepEqual(hook.current.profile.profile.familyFoods, ['eggs']);
+  assert.deepEqual(hook.current.profile.profile.consent,
+    { accountPrivacy: true, photoAnalysis: true, aiTraining: false });
   assert.equal(await readDraft(), null);
   assert.equal(hook.current.onboarding.hasDraft, false);
 });

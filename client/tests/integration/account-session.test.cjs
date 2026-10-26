@@ -17,13 +17,13 @@ function server(t, { onboarding = id => profileResponse(id), failUser = false } 
     const path = new URL(url).pathname;
     if (path === '/api/v1/auth/login') {
       const id = JSON.parse(init.body).email.startsWith('second') ? '2' : '1';
-      return new Response(JSON.stringify({ access_token: `access-${id}`, refresh_token: `refresh-${id}` }));
+      return new Response(JSON.stringify({ access_token: `access-${id}`, refresh_token: `refresh-${id}`, token_type: 'bearer' }));
     }
     const authorization = new Headers(init.headers).get('Authorization');
     assert.match(authorization, /^Bearer access-[12]$/);
     const id = authorization.endsWith('2') ? '2' : '1';
     if (path === '/api/v1/auth/me') return new Response(JSON.stringify(failUser ? { error_code: 'UNAVAILABLE' }
-      : { id, email: `user${id}@example.com`, full_name: `Parent ${id}` }), { status: failUser ? 503 : 200 });
+      : { id, email: `user${id}@example.com`, full_name: `Parent ${id}`, created_at: '2026-10-23T00:00:00Z' }), { status: failUser ? 503 : 200 });
     if (path === '/api/v1/onboarding') return new Response(JSON.stringify(await onboarding(id)));
     throw new Error(`Unexpected request: ${path}`);
   });
@@ -50,6 +50,9 @@ test('sign-in loads the authenticated profile and persists the confirmed session
   await waitFor(() => harness.current.profile.status === 'ready');
   assert.equal(harness.current.profile.profile.childName, 'Child 1');
   assert.equal(harness.current.profile.profile.caregiverName, 'Parent 1');
+  assert.deepEqual(harness.current.profile.profile.familyFoods, ['eggs']);
+  assert.deepEqual(harness.current.profile.profile.consent,
+    { accountPrivacy: true, photoAnalysis: true, aiTraining: false });
   assert.equal((await readSession()).user.id, '1');
 });
 

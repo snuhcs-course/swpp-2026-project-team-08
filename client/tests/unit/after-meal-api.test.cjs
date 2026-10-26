@@ -2,6 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
+const { reviewResponse } = require('../fixtures/server-meal.cjs');
 
 let request;
 
@@ -46,21 +47,17 @@ test('review meal loads by ID and maps server ingredient IDs into review request
   assert.equal(prepareReviewWrite(review, detail).foodResults[0].ingredientOutcomes[0].ingredientId, '212');
   let wrote = false;
   request = async (path, init) => {
-    if (path === '/api/v1/meals/8') return { ...response, review: {
-      food_results: [{ meal_id: '8', food_id: '2', food_snapshot: {
-        name: 'Potato', ingredients: [{ id: '212', name: 'Potato' }], cooking_method: null,
-        serving_note: null, acceptance: null }, outcome: 'eaten', difficulties: [] }],
-      ingredient_results: [{ meal_id: '8', food_id: '2', ingredient_id: '212', outcome: 'tasted', difficulties: [] }],
-    } };
     assert.equal(path, '/api/v1/meals/8/review');
     assert.equal(init.method, 'PUT');
     assert.equal(JSON.parse(init.body).food_results[0].ingredient_outcomes[0].ingredient_id, '212');
     wrote = true;
-    return { meal: response, food_results: [{ meal_id: '8', food_id: '2', food_snapshot: {
-      name: 'Potato', ingredients: [{ id: '212', name: 'Potato' }], cooking_method: null,
-      serving_note: null, acceptance: null }, outcome: 'eaten', difficulties: [] }], ingredient_results: [] };
+    return reviewResponse(response, JSON.parse(init.body));
   };
-  assert.equal((await writeMealReview(review, detail)).review.foodResults[0].outcome, 'eaten');
+  const saved = await writeMealReview(review, detail);
+  assert.equal(saved.review.foodResults[0].outcome, 'eaten');
+  assert.deepEqual(saved.review.ingredientResults, [{
+    mealId: '8', foodId: '2', ingredientId: '212', outcome: 'tasted', difficulties: [],
+  }]);
   assert.equal(wrote, true);
 });
 
@@ -71,7 +68,7 @@ test('food edit assigns a fresh ID after deleted food and sends the whole food l
     const foods = JSON.parse(init.body).foods;
     assert.deepEqual(foods.map((food) => food.id), ['1', '3']);
     return { ...response, foods: foods.map((food) => ({ ...food, meal_id: '8',
-      ingredients: food.ingredients.map((item) => ({ id: '212', name: item.name })) })) };
+      ingredients: food.ingredients.map((item) => ({ id: item.name === 'Rice' ? '211' : '212', name: item.name })) })) };
   };
   const foods = [
     { id: '1', name: 'Rice', ingredients: ['Rice'], preparation: '', servingNote: '', source: 'parent', confirmed: true },

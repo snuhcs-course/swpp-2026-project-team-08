@@ -53,7 +53,10 @@ test('failed review preserves the draft; retry updates storage, detail cache, an
     const body = JSON.parse(init.body);
     assert.equal(body.food_results[0].outcome, 'tasted');
     requests++;
-    if (!fails) serverMeal = { ...response, review: reviewResponse(response, body) };
+    if (!fails) {
+      const { meal: savedMeal, ...savedReview } = reviewResponse(response, body);
+      serverMeal = { ...response, ...savedMeal, review: savedReview };
+    }
     return new Response(JSON.stringify(fails ? { error_code: 'UNAVAILABLE' } : reviewResponse(response, body)),
       { status: fails ? 503 : 200 });
   });

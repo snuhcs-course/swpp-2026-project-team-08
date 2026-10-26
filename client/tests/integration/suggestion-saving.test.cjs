@@ -73,7 +73,8 @@ test('saving updates the meal observer and refetches the saved list without losi
   const hook = await mount(t);
   assert.deepEqual(ids(hook.current.list), ['32']);
   await act(async () => { await save(hook); });
-  await waitFor(() => !hook.current.list.isFetching && hook.current.list.data.length === 2);
+  await waitFor(() => !hook.current.list.isFetching
+    && hook.current.list.data?.length === 2 && hook.current.list.data?.[0]?.id === '31');
   assert.deepEqual(ids(hook.current.list), ['31', '32']);
   assert.equal(hook.current.list.data[0].savedAt, '2026-10-23T00:00:00Z');
   await waitFor(() => hook.current.meal.data[0].status === 'saved');
@@ -93,7 +94,8 @@ test('failed save preserves both observed lists and an explicit retry adds the c
   assert.deepEqual(server.writes, ['PUT']);
   server.decide = async () => json(suggestion('31', 'saved'));
   await act(async () => { await save(hook); });
-  await waitFor(() => !hook.current.list.isFetching && hook.current.list.data.length === 2);
+  await waitFor(() => !hook.current.list.isFetching
+    && hook.current.list.data?.length === 2 && hook.current.list.data?.[0]?.id === '31');
   await waitFor(() => hook.current.meal.data[0].status === 'saved');
   assert.deepEqual(ids(hook.current.list), ['31', '32']);
   assert.deepEqual(server.writes, ['PUT', 'PUT']);
@@ -109,7 +111,9 @@ test('removal hides only the selected card while pending and commits the pending
   await waitFor(() => hook.current.actions.undo.isPending && ids(hook.current.list).join() === '32');
   assert.equal(hook.current.meal.data[0].status, 'saved');
   await act(async () => { response.resolve(json(suggestion())); await pending; });
-  await waitFor(() => !hook.current.list.isFetching && hook.current.meal.data[0].status === 'pending');
+  await waitFor(() => !hook.current.list.isFetching
+    && hook.current.list.data?.length === 1 && hook.current.list.data?.[0]?.id === '32'
+    && hook.current.meal.data?.[0]?.status === 'pending');
   assert.deepEqual(ids(hook.current.list), ['32']);
   assert.equal(hook.current.meal.data[0].savedAt, null);
   assert.deepEqual(server.writes, ['DELETE']);
@@ -140,7 +144,9 @@ test('failed removal restores the exact list before refetch completes; retry rem
   server.list = null;
   server.undo = async () => json(suggestion());
   await act(async () => { await hook.current.actions.undo.mutateAsync('31'); });
-  await waitFor(() => !hook.current.list.isFetching && hook.current.meal.data[0].status === 'pending');
+  await waitFor(() => !hook.current.list.isFetching
+    && hook.current.list.data?.length === 1 && hook.current.list.data?.[0]?.id === '32'
+    && hook.current.meal.data?.[0]?.status === 'pending');
   assert.deepEqual(ids(hook.current.list), ['32']);
   assert.deepEqual(server.writes, ['DELETE', 'DELETE']);
 });
@@ -156,7 +162,8 @@ test('failed saved-list refresh keeps existing data and retry reflects the succe
   await waitFor(() => hook.current.meal.data[0].status === 'saved');
   server.list = null;
   await act(async () => { await hook.current.list.refetch(); });
-  await waitFor(() => hook.current.list.isSuccess && !hook.current.list.isFetching);
+  await waitFor(() => hook.current.list.isSuccess && !hook.current.list.isFetching
+    && hook.current.list.data?.length === 2 && hook.current.list.data?.[0]?.id === '31');
   assert.deepEqual(ids(hook.current.list), ['31', '32']);
   assert.deepEqual(server.writes, ['PUT']);
 });

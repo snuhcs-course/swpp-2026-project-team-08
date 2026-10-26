@@ -32,7 +32,7 @@ export default function RootLayout() {
               <OnboardingProvider>
                 <View style={styles.root}>
                   <StatusBar style="dark" />
-                  <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.onboardingBackground } }}>
+                  <Stack screenOptions={{ headerShown: false, animation: 'none', contentStyle: { backgroundColor: colors.onboardingBackground } }}>
                     <Stack.Screen name="(main)" options={{ animation: 'none' }} />
                   </Stack>
                   {!fontsLoaded && !fontError && <View style={styles.fontGate} />}

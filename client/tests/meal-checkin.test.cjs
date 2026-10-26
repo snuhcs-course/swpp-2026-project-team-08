@@ -1,4 +1,8 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -98,7 +102,6 @@ test('new food is blank and unconfirmed legacy photo fixtures cannot become care
   assert.equal(restored.editingFood, null); assert.deepEqual(restored.suggestionLinks, []);
 });
 
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 test('legacy origin becomes provenance while explicit confirmation is preserved', async () => {
   const draft = completeDraft('legacy-provenance');
   const { confirmed, ...legacy } = draft.foods[0];
@@ -122,7 +125,6 @@ test('legacy completed receipts preserve confirmed records even when their sourc
   assert.deepEqual((await readMealDraft(draft.childId)).foods,draft.foods);
 });
 
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 test('home pending meals survive an unfinished review and disappear only after final review storage', async () => {
   const { readHomeMeals } = require('../src/data/storage/homeMealStorage.ts');
   const { pendingHomeMeals } = require('../src/features/home/rules.ts');
@@ -146,7 +148,6 @@ test('home pending meals survive an unfinished review and disappear only after f
   assert.equal((await readMeals(child)).length,2);
 });
 
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 test('legacy goal drafts and receipts retain meals while discarding retired data', async () => {
   const child = 'retired-goal';
   const draft = completeDraft(child);
@@ -171,7 +172,6 @@ test('legacy goal drafts and receipts retain meals while discarding retired data
   assert.deepEqual(await readHomeRecords(child), { meals: [], suggestions: [] });
 });
 
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 test('retired food history is removed from legacy drafts, editors, receipts and meals', async () => {
   const draft = completeDraft('retired-food-history');
   const food = { ...draft.foods[0], history: 'usually' };
@@ -189,7 +189,6 @@ test('retired food history is removed from legacy drafts, editors, receipts and 
   assert.equal(Object.hasOwn(newFood(), 'history'), false);
 });
 
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 test('legacy food traits are removed from meals, drafts and editor data', async () => {
   const draft = completeDraft('retired-traits');
   const legacyFood = { ...draft.foods[0], traits: { texture: ['soft'] } };

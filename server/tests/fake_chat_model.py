@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: add suggestion LLM workflow
+
 """워크플로 테스트용 가짜 채팅 모델. 네트워크를 쓰지 않고 미리 정한 응답을 순서대로 돌려준다."""
 
 from typing import Any

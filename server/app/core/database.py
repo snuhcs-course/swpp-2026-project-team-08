@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+
 """DB 엔진 / 세션 / 선언적 베이스.
 
 SQLAlchemy 2.0 async 사용.

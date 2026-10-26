@@ -1,4 +1,8 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { FoodItem, Meal, MealDraft } from '../../types/meal';
 import { isDraft, isMeal } from './mealValidation';
@@ -19,15 +23,12 @@ function queued<T>(childId: string, work: () => Promise<T>): Promise<T> {
     .catch(() => undefined);
   return next;
 }
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Compatibility for records written before the feature was removed.
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 function normalizeStoredFood(value: unknown): unknown {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
   const next = { ...value } as Record<string, unknown>;
   delete next.history;
   delete next.traits;
-  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
   // Older entries used source for confirmation and origin for provenance.
   if (next.confirmed === undefined) next.confirmed = next.source === 'parent';
   if (next.origin === 'ai' || next.origin === 'parent') next.source = next.origin;
@@ -39,7 +40,6 @@ function normalizeStoredMeal(value: unknown): unknown {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
   const next = { ...value } as Record<string, unknown>;
   delete next.exposureFoodId;
-  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
   if (Array.isArray(next.foods)) next.foods = next.foods.map(normalizeStoredFood);
   if (next.editingFood) next.editingFood = normalizeStoredFood(next.editingFood);
   if (next.step === 'goal') next.step = 'foods';

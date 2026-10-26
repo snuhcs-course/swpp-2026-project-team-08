@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: add suggestion LLM workflow
+
 """제안 생성 워크플로 테스트. 가짜 모델로 그래프 전체를 실행하고 LLM은 호출하지 않는다."""
 
 import pytest

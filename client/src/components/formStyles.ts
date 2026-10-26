@@ -1,4 +1,5 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified meal choice spacing
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 
 import { StyleSheet } from 'react-native';
 import { colors } from '../util/colors';

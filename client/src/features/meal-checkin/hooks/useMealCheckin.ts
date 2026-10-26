@@ -1,4 +1,10 @@
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -24,10 +30,8 @@ import {
   newDraft,
 } from '../rules';
 
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 export function useMealCheckin(childId: string, startAfterMealId?: string, freshAfterComplete = false, suggestions: readonly MealSuggestionOption[] = [], initialSuggestionId = '') {
   const [draft, setDraft] = useState<MealDraft | null>(null);
-  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
   const [linkStep, setLinkStep] = useState<0 | 1 | 2>(0);
   const [suggestionId, setSuggestionId] = useState(initialSuggestionId);
   const [targetId, setTargetId] = useState('');
@@ -238,7 +242,6 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       busy.current = false;
     }
   };
-  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
   const edit = (food?: FoodItem) => {
     if (!current.current || busy.current) return;
     if (linkStep === 2) {
@@ -264,7 +267,6 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     const item: FoodItem = {
       ...food,
       name: food.name.trim(),
-      // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
       confirmed: true,
     };
     const foods = current.current?.foods ?? [];
@@ -277,7 +279,6 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
   };
   return {
     draft,
-    // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
     suggestionLinking: {
       step: linkStep,
       selectedSuggestion,

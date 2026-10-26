@@ -1,4 +1,12 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+// Changed: 식사 기록 화면 디자인 개선
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { FoodItem } from '../../types/meal';
 import type { FoodResponseCard, MealRecord } from './types';
@@ -146,7 +154,6 @@ export function acceptanceFill(outcome: FoodResponseCard['outcome']): number {
   return 0;
 }
 
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 function asSuggestion(
   suggestion: { managed?: boolean; id: string; title: string; description: string; servingTip: string | null } | null,
 ): FoodResponseCard['suggestion'] {

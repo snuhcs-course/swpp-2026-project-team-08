@@ -1,9 +1,11 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; align account errors and combined safety-card edit flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised for current ABC design
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+// Changed: 마이페이지·자녀 프로필 추가
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 
 import { router } from 'expo-router';
 import { useState } from 'react';

@@ -1,4 +1,10 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -16,7 +22,6 @@ Module._load = function (name, ...args) {
   if (name === '@react-native-async-storage/async-storage') {
     return { getItem: async () => null, setItem: async () => undefined, removeItem: async () => undefined };
   }
-  // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
   if (name === 'expo-secure-store') {
     const store = {
       WHEN_UNLOCKED: 1,
@@ -186,7 +191,6 @@ test('upsert, review, and suggestion bodies use the server field names', () => {
   assert.equal(Object.hasOwn(body.foods[0], 'history'), false);
   assert.equal(Object.hasOwn(body.foods[0], 'traits'), false);
   assert.equal(body.foods[0].serving_note, 'small bowl');
-  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
   assert.equal(body.foods[0].source, 'ai');
   assert.equal(body.foods[0].confirmed, true);
   assert.equal(Object.hasOwn(body.foods[0], 'origin'), false);
@@ -210,7 +214,6 @@ test('upsert, review, and suggestion bodies use the server field names', () => {
   assert.equal(suggestion.serving_tip, 'Keep the form');
 });
 
-// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 test('bookmarking a linked suggestion toggles the saved flag without dropping it on a later unsave', () => {
   const records = { meals: [], suggestions: [] };
   const draft = {
@@ -229,7 +232,6 @@ test('bookmarking a linked suggestion toggles the saved flag without dropping it
 });
 
 
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 test('meal history food and ingredient cards preserve managed suggestion routing', () => {
   const food = {
     id: 'food-managed', name: 'Omelet', ingredients: ['Egg'], preparation: 'pan-fried',
@@ -250,7 +252,6 @@ test('meal history food and ingredient cards preserve managed suggestion routing
   assert.equal(cards[1].outcome, 'eaten');
 });
 
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 test('meal detail responses preserve boolean feedback and reject invalid values', async () => {
   const api = require('../src/data/network/apiClient.ts');
   const { getMealDetail } = require('../src/data/api/mealLogApi.ts');

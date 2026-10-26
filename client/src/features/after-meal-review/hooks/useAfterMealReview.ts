@@ -1,4 +1,8 @@
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMeal, useMealDetail, useUpdateMealFoods } from '../../../data/queries/mealQueries';
@@ -105,7 +109,6 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     current.current = next;
     setDraft(next);
   };
-  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
   const cancelPhotoPick = () => {
     ++pickVersion.current;
     pickBusy.current = false;
@@ -137,16 +140,13 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     setPhotoError(null);
     try {
       const photo = await pickMealPhoto(source);
-      // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
       if (!mounted.current || request !== pickVersion.current || !photo) return;
       const value = current.current;
       if (!value) return;
       update({ afterPhoto: photo, step: 'preview', outcomes: clearOutcomeSuggestions(value.outcomes) });
     } catch (error) {
-      // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
       if (mounted.current && request === pickVersion.current) setPhotoError(error instanceof PhotoError ? error.code : 'image');
     } finally {
-      // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
       if (request === pickVersion.current) {
         pickBusy.current = false;
         if (mounted.current) setPicking(false);
@@ -154,7 +154,6 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     }
   };
   const removePhoto = () => {
-    // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
     cancelPhotoPick();
     const value = current.current;
     if (!value) return;
@@ -163,7 +162,6 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   };
 
   const manual = () => {
-    // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
     cancelPhotoPick();
     const value = current.current;
     if (!value) return;
@@ -204,7 +202,6 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const saveFood = async () => {
     if (!editingFood?.name.trim() || !meal || !profile || editorBusy.current) return;
     editorBusy.current = true;
-    // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
     const item: FoodItem = { ...editingFood, name: editingFood.name.trim(), confirmed: true };
     const foods = meal.foods.some((food) => food.id === item.id)
       ? meal.foods.map((food) => food.id === item.id ? item : food)

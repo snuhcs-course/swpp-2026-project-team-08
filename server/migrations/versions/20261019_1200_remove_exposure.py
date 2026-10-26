@@ -1,4 +1,6 @@
 # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+# Changed: 화면 디자인 및 식사 흐름 개선
+
 """Merge existing heads and remove meal exposure fields.
 
 Upgrade discards stored values. Downgrade restores empty nullable columns.

@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 import type { AfterMealReview } from '../types/afterMealReview';
 import type { SavedSuggestion } from '../types/home';
 import type { FoodItem, Meal } from '../types/meal';
@@ -23,7 +25,6 @@ export function foodFormKey(food: FoodItem): string {
   });
 }
 
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Old evidence may contain food traits. Compare the remaining serving details.
 export function normalizedFoodFormKey(key: string | undefined): string | null {
   if (typeof key !== 'string') return null;

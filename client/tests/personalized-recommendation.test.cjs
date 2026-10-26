@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -127,7 +129,6 @@ test('failed recommendation write keeps the card available for an idempotent ret
   assert.equal((await readHomeRecords(profile.id)).suggestions.length, 1);
 });
 
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 test('legacy recommendation forms ignore retired food traits and retain serving and rejection checks', () => {
   const { foodFormKey, isCurrentRecommendation } = require('../src/rules/recommendationSafety.ts');
   const { profile, meal, review } = fixtures('retired-traits-recommendation');

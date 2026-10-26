@@ -1,7 +1,5 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; align picker chevrons with the right inset
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match inline difficulty menus
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 
 import { UiAssetIcon, type UiAssetIconName } from "../../../components/UiAssetIcon";
 import { useState } from "react";

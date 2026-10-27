@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 식후 검토 글자 크기 및 가독성 개선
 
 import { router } from 'expo-router';
 import { useEffect } from 'react';
@@ -107,6 +109,6 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24, backgroundColor: colors.homeBackground },
-  message: { color: colors.homeText, fontSize: 12 },
-  error: { color: colors.error, fontSize: 12 },
+  message: { color: colors.homeText, fontSize: 16 },
+  error: { color: colors.error, fontSize: 16 },
 });

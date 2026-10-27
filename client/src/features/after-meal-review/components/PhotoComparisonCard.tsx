@@ -1,6 +1,8 @@
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 식후 검토 글자 크기 및 가독성 개선
 
 import { HeightFitPhoto } from '../../../components/HeightFitPhoto';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -39,7 +41,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 8 },
   frame: { flex: 1, height: 230, borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, overflow: 'hidden', backgroundColor: colors.homeBackground },
   image: { width: '100%', height: '100%' },
-  badge: { position: 'absolute', top: 8, left: 7, backgroundColor: colors.surface, color: colors.homeText, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, fontSize: 9, letterSpacing: 0.6, fontFamily: fonts.poppinsBold },
+  badge: { position: 'absolute', top: 8, left: 7, maxWidth: '90%', backgroundColor: colors.surface, color: colors.homeText, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, fontSize: 14, letterSpacing: 0.6, fontFamily: fonts.poppinsBold },
   enlargeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  enlarge: { color: colors.homePrimary, fontSize: 10, textAlign: 'center', fontFamily: fonts.interMedium },
+  enlarge: { color: colors.homePrimary, fontSize: 14, textAlign: 'center', fontFamily: fonts.interMedium },
 });

@@ -2,6 +2,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 식후 검토 글자 크기 및 가독성 개선
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { useState } from "react";
@@ -100,6 +102,7 @@ export function AfterMealReviewView(
               secondary
               label={s.common.retry}
               onPress={p.onRetrySave}
+              labelStyle={{ fontSize: 18 }}
             />
           </View>
         )}
@@ -181,7 +184,7 @@ export function AfterMealReviewView(
                     : setShowUnanswered(true)
                 }
                 style={[styles.pill, { minHeight: 52, borderRadius: 14, marginHorizontal: 24 }]}
-                labelStyle={{ fontSize: 16 }}
+                labelStyle={{ fontSize: 18 }}
               />
             )}
             {p.draft.step === "difficulties" && (
@@ -192,6 +195,7 @@ export function AfterMealReviewView(
                   disabled={p.saving || !p.canContinueOutcomes}
                   onPress={goAfterDifficulties}
                   style={styles.pill}
+                  labelStyle={{ fontSize: 18 }}
                 />
                 <AppButton
                   variant="meal"
@@ -199,7 +203,7 @@ export function AfterMealReviewView(
                   label={m.skip}
                   disabled={p.saving || !p.canContinueOutcomes}
                   onPress={goAfterDifficulties}
-                  labelStyle={{ fontSize: 16, color: colors.reviewHeading, fontFamily: fonts.interBold }}
+                  labelStyle={{ fontSize: 18, color: colors.reviewHeading, fontFamily: fonts.interBold }}
                   style={[styles.pill, { borderWidth: 0, backgroundColor: colors.transparent }]}
                 />
               </>
@@ -217,6 +221,7 @@ export function AfterMealReviewView(
                 secondary
                 label={s.common.retry}
                 onPress={p.onRetrySave}
+                labelStyle={{ fontSize: 18 }}
               />
             )}
           </View>
@@ -229,7 +234,7 @@ export function AfterMealReviewView(
               onPress={p.onSaveExit}
               style={{ alignItems: "center", padding: 12 }}
             >
-              <Text style={{ color: colors.homePrimary, fontSize: p.draft.step === "compare" ? 14 : 16, fontFamily: fonts.poppinsSemiBold }}>
+              <Text style={{ color: colors.homePrimary, fontSize: 18, fontFamily: fonts.poppinsSemiBold }}>
                 {p.draft.step === "outcomes" ? s.common.saveExit : a.saveExit}
               </Text>
             </Pressable>
@@ -274,7 +279,7 @@ const styles = StyleSheet.create({
   pill: { minHeight: 48, borderRadius: 999 },
   status: {
     color: colors.mealReviewMuted,
-    fontSize: 8,
+    fontSize: 12,
     fontFamily: fonts.interRegular,
     textAlign: "center",
   },
@@ -283,7 +288,7 @@ const styles = StyleSheet.create({
     color: colors.mealReviewMuted,
     paddingHorizontal: 24,
     paddingBottom: 4,
-    fontSize: 9,
+    fontSize: 14,
     fontFamily: fonts.interMedium,
   },
   retry: { paddingHorizontal: 24, paddingBottom: 5 },

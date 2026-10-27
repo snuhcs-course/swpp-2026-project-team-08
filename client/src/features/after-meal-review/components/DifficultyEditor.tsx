@@ -1,4 +1,5 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 네이티브 어려움 선택기 적용 및 글자 확대
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; align picker chevrons with the right inset
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match inline difficulty menus
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
@@ -226,7 +227,7 @@ export function DifficultyEditor({
           ))}
         </View>
       )}
-      {menu !== null && <View style={[styles.menu, menu === 'category' ? { width: 170 } : { alignSelf: 'stretch' }]}>
+      {menu !== null && <View style={styles.menu}>
               {menuOptions.map((item) => (
                 <Pressable
                   key={item}
@@ -276,12 +277,12 @@ const styles = StyleSheet.create({
   foodName: {
     color: colors.homeText,
     fontFamily: fonts.interBold,
-    fontSize: 14,
+    fontSize: 18,
   },
-  row: { flexDirection: "row", gap: 8, alignItems: "center" },
+  row: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" },
   spacer: { flex: 1 },
   select: {
-    minHeight: 36,
+    minHeight: 48,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderWidth: 1,
@@ -294,25 +295,27 @@ const styles = StyleSheet.create({
     gap: 5,
     maxWidth: "100%",
   },
-  categorySelect: { width: 170, flexShrink: 1 },
-  valueSelect: { flex: 1 },
+  categorySelect: { flexBasis: 170, flexGrow: 1, flexShrink: 1 },
+  valueSelect: { flexBasis: 120, flexGrow: 1, flexShrink: 1 },
   selectText: {
     flexShrink: 1,
     color: colors.homeText,
-    fontSize: 12,
+    fontSize: 16,
     fontFamily: fonts.interRegular,
   },
-  chevron: { color: colors.homeText, fontSize: 15 },
+  chevron: { color: colors.homeText, fontSize: 18 },
   addButton: {
-    width: 72,
-    minHeight: 36,
+    minWidth: 72,
+    minHeight: 48,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.homePrimary,
   },
   disabled: { opacity: 0.45 },
-  addText: { color: colors.surface, fontFamily: fonts.interBold, fontSize: 12 },
+  addText: { color: colors.surface, fontFamily: fonts.interBold, fontSize: 16 },
   sentence: {
     backgroundColor: colors.textureSentence,
     borderRadius: 12,
@@ -327,7 +330,7 @@ const styles = StyleSheet.create({
   },
   sentenceText: {
     color: colors.homeText,
-    fontSize: 12,
+    fontSize: 16,
     fontFamily: fonts.poppinsRegular,
   },
   backdrop: {
@@ -357,9 +360,9 @@ const styles = StyleSheet.create({
   menuText: {
     color: colors.homeText,
     fontFamily: fonts.interRegular,
-    fontSize: 9,
+    fontSize: 14,
   },
-  example: { color: colors.homeMuted, fontSize: 11 },
+  example: { color: colors.homeMuted, fontSize: 14 },
   colorDot: {
     width: 11,
     height: 11,
@@ -375,7 +378,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     padding: 10,
     color: colors.homeText,
-    fontSize: 12,
+    fontSize: 16,
   },
   tags: { flexDirection: "row", flexWrap: "wrap", gap: 5 },
   tag: {
@@ -391,7 +394,7 @@ const styles = StyleSheet.create({
   tagText: {
     flexShrink: 1,
     color: colors.success,
-    fontSize: 12,
+    fontSize: 16,
     fontFamily: fonts.interMedium,
   },
 });

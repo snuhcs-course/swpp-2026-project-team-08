@@ -2,7 +2,7 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Use the shared compact meal photo introduction card
+// Changed: 사진 안내 카드 공통화 및 식후 검토 글자 확대
 
 import { useState } from 'react';
 import { HeightFitPhoto } from '../../../components/HeightFitPhoto';
@@ -58,13 +58,13 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
         </Pressable>
       )}
       <View style={styles.actions}>
-        <AppButton variant="meal" secondary icon={<UiAssetIcon name="meal-refresh" />} label={m.replace} onPress={() => setReplaceOpen((value) => !value)} style={styles.actionButton} />
-        <AppButton variant="meal" secondary icon={<UiAssetIcon name="meal-trash" />} label={m.removePhoto} onPress={p.onRemovePhoto} style={[styles.actionButton, { backgroundColor: colors.safetySurface }]} labelStyle={{ color: colors.error, fontSize: 14 }} />
+        <AppButton variant="meal" secondary icon={<UiAssetIcon name="meal-refresh" />} label={m.replace} onPress={() => setReplaceOpen((value) => !value)} style={styles.actionButton} labelStyle={{ fontSize: 18 }} />
+        <AppButton variant="meal" secondary icon={<UiAssetIcon name="meal-trash" />} label={m.removePhoto} onPress={p.onRemovePhoto} style={[styles.actionButton, { backgroundColor: colors.safetySurface }]} labelStyle={{ color: colors.error, fontSize: 18 }} />
       </View>
       {replaceOpen && picker}
       {!p.meal.photo && <View style={styles.info}><UiAssetIcon name="meal-lock" /><Text style={styles.infoText}>{m.photoLocal}</Text></View>}
       {photoError}
-      <View style={styles.bottom}><AppButton variant="meal" icon={<UiAssetIcon name="meal-check" />} label={m.usePhoto} onPress={() => p.meal.photo ? p.onGo('compare') : p.onManual()} disabled={!p.draft.afterPhoto || !!p.photoError} /></View>
+      <View style={styles.bottom}><AppButton variant="meal" icon={<UiAssetIcon name="meal-check" />} label={m.usePhoto} onPress={() => p.meal.photo ? p.onGo('compare') : p.onManual()} disabled={!p.draft.afterPhoto || !!p.photoError} labelStyle={{ fontSize: 18 }} /></View>
     </View>
   );
 
@@ -76,7 +76,7 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
     <View style={styles.stack}>
       {comparison}
       <View style={styles.bottom}>
-        <AppButton variant="meal" label={m.manual} onPress={p.onManual} style={{ marginHorizontal: 14 }} labelStyle={{ fontSize: 16 }} />
+        <AppButton variant="meal" label={m.manual} onPress={p.onManual} style={{ marginHorizontal: 14 }} labelStyle={{ fontSize: 18 }} />
       </View>
     </View>
   );
@@ -84,24 +84,24 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
 
 const styles = StyleSheet.create({
   enlargeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 6 },
-  manualRoute: { minHeight: 60, borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, backgroundColor: colors.surface, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 },
+  manualRoute: { minHeight: 60, borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, backgroundColor: colors.surface, paddingHorizontal: 14, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 },
   sourceIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: colors.homeSelected, alignItems: 'center', justifyContent: 'center' },
-  manualLabel: { color: colors.homeText, fontSize: 13, fontFamily: fonts.poppinsSemiBold },
-  manualHint: { color: colors.mealReviewMuted, fontSize: 9, fontFamily: fonts.poppinsRegular },
+  manualLabel: { color: colors.homeText, fontSize: 16, fontFamily: fonts.poppinsSemiBold },
+  manualHint: { color: colors.mealReviewMuted, fontSize: 14, fontFamily: fonts.poppinsRegular },
   saveExit: { alignItems: 'center', padding: 16 },
-  saveExitText: { color: colors.homePrimary, fontFamily: fonts.poppinsSemiBold, fontSize: 16 },
+  saveExitText: { color: colors.homePrimary, fontFamily: fonts.poppinsSemiBold, fontSize: 18 },
   stack: { flex: 1, gap: 12, paddingBottom: 8 },
-  title: { color: colors.homeText, fontSize: 20, fontFamily: fonts.poppinsSemiBold },
-  autoSave: { marginTop: 'auto', paddingTop: 24, color: colors.mealReviewMuted, textAlign: 'center', fontSize: 9, fontFamily: fonts.interRegular },
+  title: { color: colors.homeText, fontSize: 24, fontFamily: fonts.poppinsSemiBold },
+  autoSave: { marginTop: 'auto', paddingTop: 24, color: colors.mealReviewMuted, textAlign: 'center', fontSize: 14, fontFamily: fonts.interRegular },
   preview: { height: 318, overflow: 'hidden', borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, width: '100%' },
-  enlarge: { color: colors.homePrimary, textAlign: 'center', fontSize: 9, fontFamily: fonts.interMedium, marginTop: 5 },
-  actions: { flexDirection: 'row', gap: 8 },
-  actionButton: { flex: 1 },
+  enlarge: { color: colors.homePrimary, textAlign: 'center', fontSize: 14, fontFamily: fonts.interMedium, marginTop: 5 },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  actionButton: { flexBasis: 160, flexGrow: 1, flexShrink: 1 },
   info: { flexDirection: 'row', gap: 8, backgroundColor: colors.calendarEmpty, padding: 11, borderRadius: 11 },
-  infoText: { flex: 1, color: colors.homeText, fontSize: 10, lineHeight: 15, fontFamily: fonts.interRegular },
-  error: { color: colors.error, fontSize: 11, fontFamily: fonts.interMedium },
+  infoText: { flex: 1, color: colors.homeText, fontSize: 14, lineHeight: 20, fontFamily: fonts.interRegular },
+  error: { color: colors.error, fontSize: 14, fontFamily: fonts.interMedium },
   bottom: { marginTop: 'auto', gap: 8, paddingTop: 18 },
   center: { alignItems: 'center', gap: 10, paddingVertical: 18 },
   failure: { backgroundColor: colors.safetySurface, borderRadius: 13, padding: 12, gap: 4 },
-  failureTitle: { color: colors.error, fontFamily: fonts.interBold, fontSize: 13 },
+  failureTitle: { color: colors.error, fontFamily: fonts.interBold, fontSize: 16 },
 });

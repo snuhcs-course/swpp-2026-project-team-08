@@ -92,7 +92,6 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
         placeholder={s.onboarding.ageRange}
         displayFallback={values.ageRange ? labelFor('age', values.ageRange, language) : undefined}
       />
-      <Guidance body={guidance.age} icon="calendar" />
     </View>
   );
 

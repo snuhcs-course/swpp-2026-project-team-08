@@ -9,11 +9,10 @@ import { fonts } from '../../../util/fonts';
 export const styles = StyleSheet.create({
   sectionLabel: {
     color: colors.onboardingText,
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: fonts.poppinsSemiBold,
     marginBottom: 6,
     marginTop: 10,
-    textTransform: 'uppercase',
   },
   fieldHint: { color: colors.onboardingMuted, fontSize: 12, fontFamily: fonts.interRegular, marginTop: -4 },
   question: { color: colors.onboardingText, fontSize: 13, lineHeight: 16, fontFamily: fonts.interBold, marginBottom: 7 },

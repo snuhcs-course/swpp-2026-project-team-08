@@ -1,7 +1,6 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; show replacement sources in a bottom sheet
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; removed photo analysis flow
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 
 import { Image } from 'expo-image';
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from 'react-native';

@@ -1,4 +1,8 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { difficultyCategories, outcomeValues, reviewSteps, type AfterMealReview, type AfterMealReviewDraft } from '../../types/afterMealReview';
 
@@ -9,12 +13,10 @@ const record = (value: unknown): value is Record<string, unknown> => !!value && 
 const validOutcome = (value: unknown) => value === null || outcomeValues.includes(value as never);
 const validDecision = (value: unknown) => record(value) && validOutcome(value.confirmed) && validOutcome(value.suggested);
 
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 function normalizeStoredReview(value: unknown): unknown {
   if (!record(value)) return value;
   const next = { ...value };
   delete next.goalFeedback;
-  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
   if (record(next.suggestionFeedback)) {
     next.suggestionFeedback = Object.fromEntries(Object.entries(next.suggestionFeedback).map(([id, choice]) => [
       id, choice === 'tried' ? { tried: true } : choice === 'notTried' ? { tried: false } : choice,

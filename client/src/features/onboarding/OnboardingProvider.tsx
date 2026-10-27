@@ -1,4 +1,10 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+// Changed: 마이페이지·자녀 프로필 추가
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
@@ -59,7 +65,10 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!ready || loadError || status !== 'ready' || finishing.current) return;
     if (skipFirstSave.current) { skipFirstSave.current = false; return; }
-    if (!profile || editing) void Promise.resolve().then(() => persist(draft));
+    if (!profile || editing) {
+      // persist exposes failure through saveStatus; consume the background rejection.
+      void Promise.resolve().then(() => persist(draft)).catch(() => undefined);
+    }
   }, [draft, ready, loadError, status, profile, editing, persist]);
 
   const setField = useCallback((field: DraftField, value: string) => {
@@ -165,6 +174,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [draft, profile, persist, commitProfile, auth.session]);
   const resetLocal = useCallback(async () => {
     finishing.current = true;
+    skipFirstSave.current = true;
     setDraft(emptyDraft());
     setPassword('');
     setEditing(false);

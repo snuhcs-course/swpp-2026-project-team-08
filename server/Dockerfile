@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
+# Changed: docker build 스크립트 작성
+
 # 운영 배포용 이미지. 빌드 컨텍스트는 server/ 디렉터리다.
 #   docker build -t nurturebites-server server/
 # 설정은 이미지에 넣지 않고 실행할 때 환경변수(--env-file)로 주입한다.

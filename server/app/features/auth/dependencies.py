@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+
 """로그인한 사용자를 엔드포인트에 넣어 주는 의존성.
 
 다른 기능의 router.py 도 `CurrentUser` 를 import 해서 쓴다. 엔드포인트 인자로 받으면 FastAPI 가

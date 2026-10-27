@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+
 import { AppHeader, topBarLayout } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
 import { Image } from 'expo-image';

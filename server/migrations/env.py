@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+
 """Alembic 환경 (async).
 
 참고: https://alembic.sqlalchemy.org/en/latest/cookbook.html#using-asyncio-with-alembic

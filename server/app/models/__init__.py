@@ -1,4 +1,10 @@
+# AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+# Changed: 식사 기록·로그인 기능 추가
 # AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+# Changed: 추천 카드·저장된 추천 기능 추가
+
 """모든 테이블 모델.
 
 여기서 import 해야 `Base.metadata` 에 테이블이 등록된다 (Alembic autogenerate 와 테스트의

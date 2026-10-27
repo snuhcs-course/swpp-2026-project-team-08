@@ -1,4 +1,7 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
 // AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+// Changed: 마이페이지·자녀 프로필 추가
 
 import { ApiError, apiRequest } from '../network/apiClient';
 import { isUserId, type AuthUser } from '../storage/authStorage';

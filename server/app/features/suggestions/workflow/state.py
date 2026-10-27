@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: ingredients 구조 bootstrap
+
 """워크플로의 입출력 값과 그래프 상태. ORM 객체가 아니라 평범한 값만 담는다."""
 
 from dataclasses import dataclass

@@ -1,4 +1,10 @@
+# AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+# AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+# Changed: 식사 기록·로그인 기능 추가
 # AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+# Changed: 추천 카드·저장된 추천 기능 추가
+
 """API v1 라우터 집합.
 
 각 기능(features/*)의 라우터를 /api/v1 아래로 모은다.

@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: add suggestion LLM workflow
+
 """워크플로가 LLM에 보내는 프롬프트 모음.
 
 검증 문제(`ValidationProblem`)는 문구 없이 데이터만 갖고 있으므로, 재시도 지시문은 여기서 만든다.

@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
+# Changed: server bootstraping
+
 """에러 -> HTTP 응답 변환.
 
 서비스와 검증기는 `AppError` 하위 클래스를 던지기만 하고, 그 에러를 어떤 응답으로 포장할지는

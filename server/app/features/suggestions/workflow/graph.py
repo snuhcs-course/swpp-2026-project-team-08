@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: add suggestion LLM workflow
+
 """제안 생성 그래프 조립.
 
     prepare → compose → validate ─┬─ 통과 또는 재시도 소진 → END

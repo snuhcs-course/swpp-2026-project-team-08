@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: add suggestion LLM workflow
+
 """서비스가 부르는 제안 생성의 단일 진입점.
 
 서비스는 그래프를 직접 다루지 않고 이 함수만 부른다. 타임아웃과 에러 변환은 서비스가 맡는다.

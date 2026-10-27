@@ -1,5 +1,6 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; localized meal date display
 // This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 
 export const localDate = (date = new Date()) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;

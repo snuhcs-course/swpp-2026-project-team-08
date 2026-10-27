@@ -1,3 +1,10 @@
+# AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+# Changed: 추천 카드·저장된 추천 기능 추가
+# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+# Changed: 화면 디자인 및 식사 흐름 개선
+# AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: add suggestion LLM workflow
+
 """Suggestions owned by the authenticated user."""
 
 import asyncio

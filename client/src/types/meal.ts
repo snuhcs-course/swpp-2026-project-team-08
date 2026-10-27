@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 export const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 export const mealSettings = ['home', 'restaurant', 'school', 'others'] as const;
 export type FoodItem = {
@@ -8,7 +10,6 @@ export type FoodItem = {
   preparation: string;
   servingNote: string;
   source: 'ai' | 'parent';
-  // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
   confirmed: boolean;
   acceptance?: number | null;
 };

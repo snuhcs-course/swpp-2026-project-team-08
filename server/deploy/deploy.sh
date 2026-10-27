@@ -1,5 +1,7 @@
 #!/bin/bash
 # AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
+# Changed: CD 스크립트 작성
+
 # EC2 에서 실행되는 배포 스크립트. GitHub Actions 가 SSM(AWS-RunShellScript)으로 보낸다.
 #
 # 호출하는 쪽이 아래 환경변수를 먼저 설정해 준다.

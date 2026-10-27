@@ -1,4 +1,6 @@
 # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+# Changed: 마이페이지·자녀 프로필 추가
+
 """이메일 변경 확인 코드 발급. 테스트에서 monkeypatch 한다."""
 
 import secrets

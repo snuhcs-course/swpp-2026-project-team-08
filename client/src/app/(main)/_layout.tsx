@@ -3,13 +3,14 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Bottom navigation safe area, instant page transitions, and iOS swipe-back
+// Changed: Safe-area navigation above native sheets and instant page transitions
 
 import { router, Stack, usePathname, useGlobalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HomeNavigationScreen } from '../../features/home/screens/HomeNavigationScreen';
 import { tabOrder, type HomeTab } from '../../components/BottomNavigation';
+import { BottomNavigationOverlay } from '../../components/BottomNavigationOverlay';
 import { useFontReady } from '../../components/FontReadyContext';
 import { colors } from '../../util/colors';
 
@@ -45,7 +46,9 @@ export default function MainLayout() {
         contentStyle: { backgroundColor: colors.homeBackground },
       }} />
     </View>
-    {showNavigation && <HomeNavigationScreen selected={selected} onSelect={onSelect} />}
+    {showNavigation && <BottomNavigationOverlay overSheet={selected === 'mealLog'}>
+      <HomeNavigationScreen selected={selected} onSelect={onSelect} />
+    </BottomNavigationOverlay>}
   </SafeAreaView>;
 }
 

@@ -5,19 +5,16 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Separate history controls from the native meal log sheet
+// Changed: Three-height native meal sheet defaulting to search and filters only
 
 import { AppHeader } from '../../../components/AppHeader';
-import { Feather } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, type Ref } from 'react';
 import {
-  KeyboardAvoidingView,
   Platform,
   Pressable,
   RefreshControl,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import type { Language } from '../../../types/profile';
@@ -25,7 +22,7 @@ import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import { MealLogCalendar } from '../components/MealLogCalendar';
 import { MealLogList } from '../components/MealLogList';
-import { MealLogSheetLayout } from '../components/MealLogSheetLayout';
+import { MealLogSheetLayout, type MealLogSheetHandle } from '../components/MealLogSheetLayout';
 import { styles } from './mealLogStyles';
 
 export type MealLogRow = {
@@ -54,6 +51,7 @@ type Props = {
   error: boolean;
   refreshing: boolean;
   active: boolean;
+  sheetRef: Ref<MealLogSheetHandle>;
   onBack: () => void;
   onRefresh: () => void;
   onPrevMonth: () => void;
@@ -69,20 +67,28 @@ type Props = {
   onGoCheckin: () => void;
 };
 
-export function MealLogView(p: Props) {
+export function MealLogView({ sheetRef, ...p }: Props) {
   const s = copyFor(p.language);
   const m = s.mealLog;
   const locale = p.language === 'ko' ? 'ko-KR' : 'en-US';
-  const [searchFocused, setSearchFocused] = useState(false);
-  const searching = !!p.query.trim();
   const [controlsHeight, setControlsHeight] = useState(0);
+  const [filtersHeight, setFiltersHeight] = useState(72);
+  const [minimum, setMinimum] = useState(Platform.OS !== 'web');
+  if (!p.active && minimum !== (Platform.OS !== 'web')) {
+    setMinimum(Platform.OS !== 'web');
+  }
 
   return (
-    <MealLogSheetLayout controlsHeight={controlsHeight} active={p.active} onBack={p.onBack}
-      sheet={<MealLogList language={p.language} records={p.records} query={p.query}
-        hasMeals={p.hasMeals} loading={p.loading} error={p.error} refreshing={p.refreshing}
+    <MealLogSheetLayout ref={sheetRef} controlsHeight={controlsHeight} filtersHeight={filtersHeight}
+      onMinimumChange={setMinimum} active={p.active} onBack={p.onBack}
+      sheet={<MealLogList minimum={minimum} onFiltersLayout={setFiltersHeight}
+        language={p.language} records={p.records} query={p.query}
+        hasMeals={p.hasMeals} loading={p.loading} error={p.error}
+        search={p.search} fromLabel={p.fromLabel} unreviewedOnly={p.unreviewedOnly}
+        onSearch={p.onSearch} onSubmitSearch={p.onSubmitSearch}
+        onToggleUnreviewed={p.onToggleUnreviewed}
         onRefresh={p.onRefresh} onOpenMeal={p.onOpenMeal} onGoCheckin={p.onGoCheckin} />}>
-      <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <View style={styles.root}>
         <AppHeader title={m.title} backLabel={s.common.back} onBack={p.onBack} />
         <ScrollView
           style={styles.root}
@@ -93,92 +99,54 @@ export function MealLogView(p: Props) {
           }
         >
           <View style={styles.controls} onLayout={event => setControlsHeight(event.nativeEvent.layout.height)}>
-            {!searchFocused ? (
-              <>
-                {p.draftMeta ? (
-                  <View style={styles.continueBlock} accessibilityLabel={m.continueLogging}>
-                    <Text style={styles.sectionLabel}>{m.continueLogging}</Text>
-                    <View style={styles.continueCard}>
-                      <View style={styles.continueCopy}>
-                        <Text style={styles.continueTitle}>{p.draftMeta}</Text>
-                        <View style={styles.continueSubtitle}>
-                          <Text style={styles.continueDraft}>{m.draft}</Text>
-                          {p.draftName ? (
-                            <Text style={styles.continueFood} numberOfLines={1}>{p.draftName}</Text>
-                          ) : null}
-                        </View>
-                      </View>
-                      <Pressable accessibilityRole="button" onPress={p.onContinueDraft} style={styles.resume}>
-                        <Text style={styles.resumeLabel}>{m.resume}</Text>
-                      </Pressable>
+            {p.draftMeta ? (
+              <View style={styles.continueBlock} accessibilityLabel={m.continueLogging}>
+                <Text style={styles.sectionLabel}>{m.continueLogging}</Text>
+                <View style={styles.continueCard}>
+                  <View style={styles.continueCopy}>
+                    <Text style={styles.continueTitle}>{p.draftMeta}</Text>
+                    <View style={styles.continueSubtitle}>
+                      <Text style={styles.continueDraft}>{m.draft}</Text>
+                      {p.draftName ? (
+                        <Text style={styles.continueFood} numberOfLines={1}>{p.draftName}</Text>
+                      ) : null}
                     </View>
                   </View>
-                ) : null}
-                <MealLogCalendar
-                  monthLabel={s.mealCheckin.month}
-                  yearLabel={s.mealCheckin.year}
-                  year={p.year}
-                  month={p.month}
-                  selectedDate={p.selectedDate}
-                  counts={p.counts}
-                  weekdays={m.weekdays}
-                  title={m.calendarTitle}
-                  clearLabel={m.clear}
-                  legend1={m.legend1}
-                  legend2={m.legend2}
-                  legend3={m.legend3}
-                  previousMonth={m.previousMonth}
-                  nextMonth={m.nextMonth}
-                  selectedDayLabel={m.selectedDay}
-                  logsOnDay={m.logsOnDay}
-                  selectedDateLabel={m.selectedDate}
-                  noneYet={m.noneYet}
-                  locale={locale}
-                  onPrev={p.onPrevMonth}
-                  onNext={p.onNextMonth}
-                  onToggleDate={p.onToggleDate}
-                  onClear={p.onClearDate}
-                  onMonthYear={p.onMonthYear}
-                />
-              </>
-            ) : null}
-            <View style={[styles.search, searchFocused && styles.searchFocused]}>
-              <TextInput
-                value={p.search}
-                onChangeText={p.onSearch}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                onSubmitEditing={p.onSubmitSearch}
-                placeholder={m.searchPlaceholder}
-                placeholderTextColor={colors.homeMuted}
-                accessibilityLabel={m.searchPlaceholder}
-                style={styles.searchInput}
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="search"
-              />
-              <Pressable accessibilityRole="button" accessibilityLabel={m.searchPlaceholder} onPress={p.onSubmitSearch} hitSlop={8}>
-                <Feather name="search" size={16} color={colors.homeMuted} />
-              </Pressable>
-            </View>
-            <View style={styles.filterRow}>
-              <Text style={styles.fromLabel}>{p.fromLabel}</Text>
-              <Pressable
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: p.unreviewedOnly }}
-                onPress={p.onToggleUnreviewed}
-                style={styles.filter}
-              >
-                <View style={[styles.checkbox, p.unreviewedOnly && styles.checkboxOn]}>
-                  {p.unreviewedOnly ? <Feather name="check" size={12} color={colors.surface} /> : null}
+                  <Pressable accessibilityRole="button" onPress={p.onContinueDraft} style={styles.resume}>
+                    <Text style={styles.resumeLabel}>{m.resume}</Text>
+                  </Pressable>
                 </View>
-                <Text style={styles.filterLabel}>{m.unreviewedOnly}</Text>
-              </Pressable>
-            </View>
-            {searching ? <Text style={styles.resultCount}>{m.mealCount(p.records.length)}</Text> : null}
+              </View>
+            ) : null}
+            <MealLogCalendar
+              monthLabel={s.mealCheckin.month}
+              yearLabel={s.mealCheckin.year}
+              year={p.year}
+              month={p.month}
+              selectedDate={p.selectedDate}
+              counts={p.counts}
+              weekdays={m.weekdays}
+              title={m.calendarTitle}
+              clearLabel={m.clear}
+              legend1={m.legend1}
+              legend2={m.legend2}
+              legend3={m.legend3}
+              previousMonth={m.previousMonth}
+              nextMonth={m.nextMonth}
+              selectedDayLabel={m.selectedDay}
+              logsOnDay={m.logsOnDay}
+              selectedDateLabel={m.selectedDate}
+              noneYet={m.noneYet}
+              locale={locale}
+              onPrev={p.onPrevMonth}
+              onNext={p.onNextMonth}
+              onToggleDate={p.onToggleDate}
+              onClear={p.onClearDate}
+              onMonthYear={p.onMonthYear}
+            />
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </View>
     </MealLogSheetLayout>
   );
 }

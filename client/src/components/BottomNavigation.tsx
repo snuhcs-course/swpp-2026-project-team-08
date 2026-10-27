@@ -3,7 +3,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Remove Insight tab and include bottom safe area in navigation padding
+// Changed: Remove Insight tab and share navigation height including the bottom safe area
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -21,6 +21,10 @@ export const tabOrder: HomeTab[] = [
   'ideas',
   'profile',
 ];
+
+export function bottomNavigationHeight(bottomInset: number) {
+  return 60 + Math.max(12, bottomInset);
+}
 const tabs: {
   key: HomeTab;
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
@@ -44,7 +48,7 @@ export function BottomNavigation({
   const insets = useSafeAreaInsets();
   const paddingBottom = Math.max(12, insets.bottom);
   return (
-    <View style={[styles.bar, { height: 60 + paddingBottom, paddingBottom }]}>
+    <View style={[styles.bar, { height: bottomNavigationHeight(insets.bottom), paddingBottom }]}>
       {tabs.map(({ key, icon }) => (
         <Pressable
           key={key}

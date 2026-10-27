@@ -5,7 +5,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Full-width meal sheet content and empty card layout
+// Changed: Full-width meal sheet, sticky filter spacing, and empty card layout
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
@@ -99,7 +99,10 @@ export const styles = StyleSheet.create({
   },
   searchFocused: { borderColor: colors.homePrimary, backgroundColor: colors.surface },
   searchInput: { flex: 1, color: colors.homeText, fontSize: 14, fontFamily: fonts.poppinsRegular, paddingVertical: 8 },
-  filterRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  filterRow: {
+    marginTop: 10,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+  },
   fromLabel: { color: colors.homePrimary, fontSize: 12, fontFamily: fonts.poppinsMedium, flex: 1 },
   filter: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   checkbox: {
@@ -126,6 +129,7 @@ export const styles = StyleSheet.create({
     borderColor: colors.homeBorder,
     overflow: 'hidden',
   },
+  sheetFilters: { backgroundColor: colors.surface, paddingBottom: 12 },
   sheetContent: { paddingHorizontal: 12, paddingTop: 28, paddingBottom: 28, gap: 12 },
   record: {
     backgroundColor: colors.surface,

@@ -4,6 +4,8 @@
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Match shared meal log density colors to the calendar design
 
 export const colors = {
   homeShadow: '#392D45',
@@ -82,9 +84,9 @@ export const colors = {
   suggestionTriedSurface: 'rgba(38,135,77,0.07)',
   overlay: 'rgba(19,35,58,0.45)',
   transparent: 'transparent',
-  logDensity1: '#C9DCFF',
-  logDensity2: '#7EA6F5',
-  logDensity3: '#1769FF',
+  logDensity1: '#D6E7FF',
+  logDensity2: '#8EBEFF',
+  logDensity3: '#1566FB',
   logDensitySelected: '#0F4FD0',
   suggestionBack: '#E8F0FF',
   bookmarkSaved: '#000000',

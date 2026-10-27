@@ -2,11 +2,12 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 식후 검토 글자 크기 및 가독성 개선
+// Changed: Match after-meal photo source rows to the before-meal design
 
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { PhotoSource } from '../../../types/meal';
 import { AppIcon } from '../../../components/AppIcon';
+import { formStyles as ui } from '../../../components/formStyles';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
 
@@ -23,7 +24,7 @@ export function AfterMealPhotoPicker({ labels, fileHint, picking, onPick }: {
           <View style={styles.icon}><AppIcon name={source} size={18} /></View>
           <View style={styles.textWrap}>
             <Text style={styles.label}>{labels[source]}</Text>
-            {source === 'files' && <Text style={styles.hint}>{fileHint}</Text>}
+            {source === 'files' && <Text style={ui.muted}>{fileHint}</Text>}
           </View>
           <AppIcon name="next" size={16} />
         </Pressable>
@@ -34,10 +35,9 @@ export function AfterMealPhotoPicker({ labels, fileHint, picking, onPick }: {
 }
 
 const styles = StyleSheet.create({
-  list: { gap: 9 },
-  row: { minHeight: 59, paddingHorizontal: 13, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 11, backgroundColor: colors.surface, borderColor: colors.mealReviewBorder, borderWidth: 1, borderRadius: 13 },
-  icon: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 9, backgroundColor: colors.homeSelected },
+  list: { gap: 8 },
+  row: { height: 60, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderColor: colors.mealReviewBorder, borderWidth: 1, borderRadius: 14 },
+  icon: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: colors.homeSelected },
   textWrap: { flex: 1 },
-  label: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 16 },
-  hint: { color: colors.mealReviewMuted, fontFamily: fonts.poppinsRegular, fontSize: 14, marginTop: 3 },
+  label: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 12 },
 });

@@ -2,14 +2,15 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 사진 안내 공통화·글자 확대 및 식후 사진 버튼 디자인 통일
+// Changed: 사진 안내·미리보기 버튼 조정 및 식전·식후 사진 선택 디자인 통일
 
 import { useState } from 'react';
 import { HeightFitPhoto } from '../../../components/HeightFitPhoto';
+import { AppIcon } from '../../../components/AppIcon';
+import { formStyles as ui } from '../../../components/formStyles';
 import { MealPhotoIntroCard } from '../../../components/MealPhotoIntroCard';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { MealFlowButton } from '../../../components/MealFlowButton';
 import { MealTextButton } from '../../../components/MealTextButton';
 import { AfterMealPhotoPicker } from '../components/AfterMealPhotoPicker';
 import { PhotoComparisonCard } from '../components/PhotoComparisonCard';
@@ -34,12 +35,17 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
   );
 
   if (p.draft.step === 'photo') return (
-    <View style={styles.stack}>
+    <View style={[styles.stack, styles.photoStack]}>
       <MealPhotoIntroCard title={m.photoIntro} subtitle={m.photoRequirement} />
       {picker}
       {photoError}
-      <MealFlowButton label={m.noPhoto} onPress={p.onManual} />
-      <Text style={styles.manualHint}>{abcCopyFor(p.language).enterOutcomes}</Text>
+      <Pressable accessibilityRole="button" onPress={p.onManual} style={styles.manualRoute}>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={styles.manualRouteLabel}>{m.noPhoto}</Text>
+          <Text style={ui.muted}>{abcCopyFor(p.language).enterOutcomes}</Text>
+        </View>
+        <AppIcon name="next" size={16} />
+      </Pressable>
       <MealTextButton label={abcCopyFor(p.language).saveExit} onPress={p.onSaveExit} />
       <Text style={styles.autoSave}>{m.draftSaved}</Text>
     </View>
@@ -77,8 +83,10 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
 
 const styles = StyleSheet.create({
   enlargeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 6 },
-  manualHint: { color: colors.mealReviewMuted, fontSize: 14, fontFamily: fonts.poppinsRegular, textAlign: 'center' },
+  manualRoute: { height: 60, borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, backgroundColor: colors.surface, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  manualRouteLabel: { color: colors.homeText, fontSize: 13, fontFamily: fonts.poppinsSemiBold },
   stack: { flex: 1, gap: 12, paddingBottom: 8 },
+  photoStack: { gap: 16 },
   title: { color: colors.homeText, fontSize: 24, fontFamily: fonts.poppinsSemiBold },
   autoSave: { marginTop: 'auto', paddingTop: 24, color: colors.mealReviewMuted, textAlign: 'center', fontSize: 14, fontFamily: fonts.interRegular },
   preview: { height: 318, overflow: 'hidden', borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, width: '100%' },

@@ -223,10 +223,11 @@ export function MealFoodsStepView({ p }: { p: Props }) {
         onPress={p.suggestionLinking.onOpen}
         style={[styles.suggestionEntry, !!p.removedName && { marginTop: "auto", paddingTop: 20 }]}
       >
-        <Text style={styles.suggestionTitle}>{a.previousSuggestion}</Text>
+        <Text style={styles.suggestionTitle}>
+          {a.previousSuggestion}
+        </Text>
         <UiAssetIcon name="abc-open" />
       </Pressable>
-      {!p.removedName && <Text style={[styles.muted, { fontSize: 13, opacity: 0.44, marginTop: "auto", paddingTop: 32, textAlign: 'center' }]}>{m.reviewAiReminder}</Text>}
       <Modal
         visible={linkStep !== 0}
         animationType="slide"

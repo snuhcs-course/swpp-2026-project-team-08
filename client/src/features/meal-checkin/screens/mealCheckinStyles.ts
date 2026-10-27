@@ -6,6 +6,7 @@ import { formStyles as ui } from '../../../components/formStyles';
 import { fonts } from '../../../util/fonts';
 
 export const styles = StyleSheet.create({
+  mealDetailViewColumn: { flex: 1, flexDirection: 'column', justifyContent: 'space-between'},
   replaceBody: { color: colors.homeText, fontFamily: fonts.poppinsRegular, fontSize: 12, lineHeight: 17.4, textAlign: 'center' },
   replaceHint: { color: colors.mealReviewMuted, fontFamily: fonts.poppinsRegular, fontSize: 11, lineHeight: 15.95, textAlign: 'center' },
   replaceButtonLabel: { fontSize: 13 },

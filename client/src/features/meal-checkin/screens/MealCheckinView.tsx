@@ -110,7 +110,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
               </View>
             )}
             {d.step === "details" && (
-              <>
+              <View style={styles.mealDetailViewColumn}>
                 <MealDetailsStepView
                   p={{
                     draft: d,
@@ -126,7 +126,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                   disabled={!d.mealType || !d.setting}
                   onPress={() => p.onGo("photo")}
                 />
-              </>
+              </View>
             )}
             {photoStep && (
               <MealPhotoStepsView

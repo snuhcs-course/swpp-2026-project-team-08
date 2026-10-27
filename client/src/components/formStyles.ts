@@ -23,13 +23,13 @@ export const formStyles = StyleSheet.create({
   },
   title: {
     color: colors.homeText,
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: fonts.poppinsSemiBold,
     lineHeight: 31,
   },
   label: {
     color: colors.homeText,
-    fontSize: 10,
+    fontSize: 14,
     fontFamily: fonts.poppinsSemiBold,
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },

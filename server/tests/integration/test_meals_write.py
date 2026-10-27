@@ -1,4 +1,6 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-28, reviewed by Seoyeon Heo
+# Changed: Cover free-text ingredient saves and invalid meal rollback
 """Authenticated meal write and ingredient ID resolution."""
 
 from datetime import UTC, datetime
@@ -95,7 +97,6 @@ async def test_write_meal_uses_authenticated_user_and_resolves_ingredient(
         assert len(links) == 1 and links[0].ingredient_id == 212
 
 
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 @pytest.mark.asyncio
 @pytest.mark.parametrize("seeded", [False, True])
 async def test_write_meal_saves_free_text_ingredients(client: AsyncClient, seeded: bool) -> None:
@@ -125,7 +126,6 @@ async def test_write_meal_saves_free_text_ingredients(client: AsyncClient, seede
     assert detail.json()["foods"][0]["ingredients"] == [ingredient]
 
 
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 @pytest.mark.asyncio
 @pytest.mark.parametrize("invalid_link", [False, True])
 async def test_invalid_free_text_meal_rolls_back_new_ingredients(
@@ -148,7 +148,6 @@ async def test_invalid_free_text_meal_rolls_back_new_ingredients(
         assert (await session.scalars(select(Ingredient))).all() == []
 
 
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 @pytest.mark.asyncio
 async def test_invalid_food_edit_preserves_the_meal_and_catalog(client: AsyncClient) -> None:
     await seed_ingredients()
@@ -337,24 +336,23 @@ async def test_update_foods_deletes_omitted_food(client: AsyncClient) -> None:
     assert [food["id"] for food in response.json()["foods"]] == ["1"]
 
 
-# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 @pytest.mark.asyncio
-async def test_unknown_ingredient_update_preserves_existing_meal(client):
+@pytest.mark.parametrize("ingredient_name", ["", " \t\n"])
+async def test_blank_ingredient_update_preserves_existing_meal(client, ingredient_name):
     await seed_ingredients()
     headers = await auth_headers(client, "recover@example.com")
     saved = await client.put("/api/v1/meals", headers=headers, json=meal_payload())
     assert saved.status_code == 200
     url = f"/api/v1/meals/{saved.json()['id']}"
     before = (await client.get(url, headers=headers)).json()
-    invalid = meal_payload(ingredient_name="없는 재료")
+    invalid = meal_payload(ingredient_name=ingredient_name)
     invalid["foods"][0]["name"] = "Must not persist"
     rejected = await client.put(f"{url}/foods", headers=headers, json={"foods": invalid["foods"]})
-    assert rejected.status_code == 404
-    assert rejected.json()["error_code"] == "INGREDIENT_NOT_FOUND"
+    assert rejected.status_code == 422
+    assert rejected.json()["error_code"] == "VALIDATION_ERROR"
     assert (await client.get(url, headers=headers)).json() == before
 
 
-# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 @pytest.mark.asyncio
 async def test_invalid_replacement_review_preserves_previous_review(client):
     await seed_ingredients()

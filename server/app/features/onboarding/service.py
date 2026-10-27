@@ -38,15 +38,13 @@ class ConsentInput:
     granted: bool
 
 
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 @dataclass(frozen=True)
 class OnboardingInput:
     child_name: str
     age_group: str
     allergy_status: str
     restriction_status: str
-    smell_sensitivity: str | None
-    preferred_temperature: str | None
-    new_food_response: str | None
     safe_food_status: str
     choices: tuple[ChoiceInput, ...]
     safe_foods: tuple[SafeFoodInput, ...]
@@ -100,6 +98,7 @@ class OnboardingService:
             latest.setdefault(row.kind, row)
         return OnboardingSnapshot(profile, choices, safe_foods, tuple(latest.values()))
 
+    # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
     async def write(self, user_id: int, data: OnboardingInput) -> OnboardingSnapshot:
         previous_foods = (
             await self._session.scalars(select(SafeFood).where(SafeFood.user_id == user_id))
@@ -116,9 +115,6 @@ class OnboardingService:
         profile.age_group = data.age_group
         profile.allergy_status = data.allergy_status
         profile.restriction_status = data.restriction_status
-        profile.smell_sensitivity = data.smell_sensitivity
-        profile.preferred_temperature = data.preferred_temperature
-        profile.new_food_response = data.new_food_response
         profile.safe_food_status = data.safe_food_status
         profile.updated_at = now_kst()
         await self._session.flush()

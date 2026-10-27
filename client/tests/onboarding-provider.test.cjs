@@ -123,7 +123,7 @@ test('a fresh signed-in draft is prefilled once and cleared account fields stay 
 
   model.setField('caregiverName', '');
   model.setField('childName', 'Child');
-  model.setField('smell', 'sometimes');
+  model.setField('ageRange', '4-5');
   model.setStep('child');
   model = await harness.flush();
   assert.equal(model.draft.caregiverName, '');

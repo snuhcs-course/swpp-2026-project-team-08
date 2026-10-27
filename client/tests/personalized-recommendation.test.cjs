@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -43,8 +43,7 @@ function fixtures(childId = 'child-d') {
   const profile = {
     id: childId, caregiverName: 'Parent', caregiverEmail: 'parent@example.com', childName: 'Child', ageRange: 'toddler',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
-    allergies: ['none'], restrictions: ['none'], familyFoods: [], texture: [], smell: '',
-    taste: [], presentation: ['separate'], temperature: '', familiarity: '', safeFoods: [], noSafeFoods: true,
+    allergies: ['none'], restrictions: ['none'], familyFoods: [], safeFoods: [], noSafeFoods: true,
     updatedAt: '2026-10-08T00:00:00.000Z',
   };
   const draft = newDraft(childId);
@@ -60,7 +59,7 @@ function fixtures(childId = 'child-d') {
 }
 
 function saved(candidate, profile) {
-  const english = recommendationText(candidate, 'en', profile);
+  const english = recommendationText(candidate, 'en');
   return {
     id: candidate.id, childId: candidate.childId, ingredients: candidate.ingredients,
     title: english.title, description: english.description, servingTip: english.servingTip,
@@ -83,8 +82,8 @@ test('recommendations use only confirmed outcomes and known forms under explicit
   const unconfirmed = { ...review, outcomes: [{ ...review.outcomes[0], decision: { confirmed: null, suggested: 'tasted' } }] };
   assert.equal(buildRecommendations(profile, meal, unconfirmed).status, 'insufficient-evidence');
   const candidate = buildRecommendations(profile, meal, review).candidates[0];
-  assert.match(recommendationText(candidate, 'en', profile).description, /presentation difficulty/);
-  assert.match(recommendationText(candidate, 'ko', profile).title, /Rice/);
+  assert.match(recommendationText(candidate, 'en').description, /was tasted/);
+  assert.match(recommendationText(candidate, 'ko').title, /Rice/);
 });
 
 test('saved recommendations are idempotent and disappear from actionable views when safety or form changes', async () => {

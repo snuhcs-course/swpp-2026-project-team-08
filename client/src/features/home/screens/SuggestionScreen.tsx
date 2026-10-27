@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
 import { ActivityIndicator, ScrollView, StyleSheet, Text } from 'react-native';
@@ -17,7 +17,7 @@ function SuggestionContent({ profile, id, mealId }: { profile: ChildProfile; id:
   const s = copyFor(model.language);
   const item = suggestion.item;
   const card = item
-    ? savedSuggestionText(item, model.language, profile)
+    ? savedSuggestionText(item, model.language)
     : suggestion.linked
       ? {
         title: suggestion.linked.title,

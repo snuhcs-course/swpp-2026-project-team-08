@@ -1,11 +1,9 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 import type { ChildProfile } from '../../types/profile';
 
 export const steps = [
   'account', 'consent', 'child', 'allergies', 'restrictions', 'family',
-  'texture', 'smell', 'taste', 'presentation', 'temperature',
-  'familiarity', 'safe-foods', 'review',
+  'safe-foods', 'review',
 ] as const;
 
 export type OnboardingStep = (typeof steps)[number];
@@ -19,8 +17,7 @@ export function emptyDraft(): OnboardingDraft {
   return {
     step: 'account', caregiverName: '', caregiverEmail: '', childName: '', ageRange: '',
     consent: { accountPrivacy: false, photoAnalysis: false, aiTraining: false },
-    allergies: [], restrictions: [], familyFoods: [], texture: [],
-    smell: '', taste: [], presentation: [], temperature: '', familiarity: '',
+    allergies: [], restrictions: [], familyFoods: [],
     safeFoods: [], noSafeFoods: false,
     safeFoodInput: { name: '', preparation: '', presentationNote: '' },
   };

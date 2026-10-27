@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -76,89 +76,64 @@ test('saving a meal keeps the before photo; manual after-meal review may omit it
   assert.equal(reviewToBody(review).after_photo_uri, afterPhoto.uri);
 });
 
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 test('live API stores a before-meal photo then an after-meal photo', async (t) => {
   const api = process.env.API_URL || 'http://127.0.0.1:8000';
   let health;
   try {
     health = await fetch(`${api}/health`);
-  } catch {
-    t.skip('API is not running');
+  } catch (error) {
+    if (process.env.API_URL) throw error;
+    t.skip('API is not running; use npm run test:integration');
     return;
   }
-  if (!health.ok) {
-    t.skip('API health check failed');
-    return;
-  }
+  assert.equal(health.status, 200, 'API health check failed');
+  process.env.EXPO_PUBLIC_API_URL = api;
 
-  const childId = `photo-test-${Date.now()}`;
-  const mealId = `meal-${Date.now()}`;
-  const food = {
-    id: 'food-1',
-    name: 'Rice',
-    ingredients: ['Egg'],
-    preparation: '',
-    serving_note: '',
-    source: 'parent', confirmed: true,
-  };
-  const mealRes = await fetch(`${api}/api/v1/children/${encodeURIComponent(childId)}/meals/${encodeURIComponent(mealId)}`, {
+  const { signUpAccount, loginAccount, deleteAccount } = require('../src/data/api/authApi.ts');
+  const { saveSession, clearSession } = require('../src/data/storage/authStorage.ts');
+  const { apiRequest, ApiError } = require('../src/data/network/apiClient.ts');
+  const { writeMeal } = require('../src/data/api/mealWriteApi.ts');
+  const { getMealDetail } = require('../src/data/api/mealReadApi.ts');
+  const { writeMealReview } = require('../src/data/api/mealReviewApi.ts');
+  const email = `photo-test-${require('node:crypto').randomUUID()}@example.com`;
+  const password = 'integration-test-password';
+  const user = await signUpAccount({ email, password, fullName: 'Photo test caregiver' });
+  const tokens = await loginAccount({ email, password });
+  await saveSession({ ...tokens, user });
+  t.after(async () => {
+    try { await deleteAccount(); } finally { await clearSession(); }
+  });
+
+  const saved = await writeMeal(mealWithBeforePhoto(user.id));
+  const detail = await getMealDetail(saved.id);
+  assert.equal(detail.beforePhotoUri, PNG);
+  assert.equal(detail.afterPhotoUri, null);
+  assert.equal(detail.review, null);
+  assert.equal(detail.foods[0].ingredients[0].name, 'Egg');
+
+  await assert.rejects(apiRequest(`/api/v1/meals/${saved.id}/review`, {
     method: 'PUT',
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      meal_date: '2026-10-15',
-      meal_type: 'lunch',
-      setting: 'home',
-      before_photo_uri: PNG,
-      saved_at: new Date().toISOString(),
-      foods: [food],
-    }),
-  });
-  const mealText = await mealRes.text();
-  assert.equal(mealRes.status, 200, mealText);
-  const savedMeal = JSON.parse(mealText);
-  assert.equal(savedMeal.before_photo_uri, PNG);
-  assert.equal(savedMeal.review, null);
+    body: JSON.stringify({ after_photo_uri: null, food_results: [] }),
+  }), (error) => error instanceof ApiError && error.status === 422);
+  assert.equal((await getMealDetail(saved.id)).review, null);
 
-  const emptyReview = await fetch(`${api}/api/v1/children/${encodeURIComponent(childId)}/meals/${encodeURIComponent(mealId)}/review`, {
-    method: 'PUT',
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      after_photo_uri: '',
-      outcomes: [],
-      difficulties: {},
-      saved_at: new Date().toISOString(),
-    }),
-  });
-  assert.equal(emptyReview.status, 422);
+  const draft = newReviewDraft(saved);
+  const foodId = saved.foods[0].id;
+  draft.outcomes = setOutcome(draft.outcomes, foodId, 'eaten');
+  const ingredientId = draft.outcomes[0].ingredients[0].id;
+  draft.outcomes = setOutcome(draft.outcomes, foodId, 'tasted', ingredientId);
+  draft.afterPhoto = afterPhoto;
+  const reviewed = await writeMealReview(reviewFromDraft(draft, saved), detail);
+  assert.equal(reviewed.beforePhotoUri, PNG);
+  assert.equal(reviewed.afterPhotoUri, afterPhoto.uri);
+  assert.equal(reviewed.review.foodResults[0].outcome, 'eaten');
+  assert.equal(reviewed.review.ingredientResults[0].outcome, 'tasted');
+  const restored = await getMealDetail(saved.id);
+  assert.equal(restored.beforePhotoUri, PNG);
+  assert.equal(restored.afterPhotoUri, afterPhoto.uri);
+  assert.deepEqual(restored.review, reviewed.review);
 
-  const afterUri = 'file:///meal-photos/after.png';
-  const reviewRes = await fetch(`${api}/api/v1/children/${encodeURIComponent(childId)}/meals/${encodeURIComponent(mealId)}/review`, {
-    method: 'PUT',
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      after_photo_uri: afterUri,
-      outcomes: [{
-        food_id: 'food-1',
-        decision: { confirmed: 'eaten', suggested: 'unclear' },
-        ingredients: [{ id: 'ing-egg', name: 'Egg', decision: { confirmed: 'tasted', suggested: null } }],
-      }],
-      difficulties: { 'food-1': [] },
-      saved_at: new Date().toISOString(),
-    }),
-  });
-  const reviewText = await reviewRes.text();
-  assert.equal(reviewRes.status, 200, reviewText);
-  const reviewed = JSON.parse(reviewText);
-  assert.equal(reviewed.before_photo_uri, PNG);
-  assert.equal(reviewed.review.after_photo_uri, afterUri);
-
-  const detailRes = await fetch(`${api}/api/v1/children/${encodeURIComponent(childId)}/meals/${encodeURIComponent(mealId)}`);
-  assert.equal(detailRes.status, 200);
-  const detail = await detailRes.json();
-  assert.equal(detail.before_photo_uri, PNG);
-  assert.equal(detail.review.after_photo_uri, afterUri);
-
-  const deleted = await fetch(`${api}/api/v1/children/${encodeURIComponent(childId)}/meals/${encodeURIComponent(mealId)}`, {
-    method: 'DELETE',
-  });
-  assert.equal(deleted.status, 204);
+  await apiRequest(`/api/v1/meals/${saved.id}`, { method: 'DELETE' });
+  await assert.rejects(getMealDetail(saved.id), (error) => error instanceof ApiError && error.status === 404);
 });

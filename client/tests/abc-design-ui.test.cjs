@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -104,14 +104,31 @@ test('draft suggestion linking opens explicitly and shows actual source meal met
   assert.match(html,/Step 1 of 2/);assert.match(html,/Oct 11, 2026/);assert.match(html,/Lunch/);assert.match(html,/Actual idea/);
 });
 
-test('onboarding review has the four summary cards without discarding sensory answers', () => {
+test('onboarding review has the four summary cards without changing profile answers', () => {
   const { emptyDraft } = require('../src/features/onboarding/types.ts');
   const { reviewRows } = require('../src/features/onboarding/screens/reviewRows.ts');
-  const draft={...emptyDraft(),texture:['soft'],familiarity:'familiar',allergies:['peanut'],restrictions:['gluten-free']};
+  const draft={...emptyDraft(),allergies:['peanut'],restrictions:['gluten-free']};
   const before=JSON.stringify(draft);
   const rows=reviewRows(draft,'en');
   assert.deepEqual(rows.map(row=>row.step),['child','allergies','family','safe-foods']);
   assert.match(rows[1].value,/Peanuts/); assert.equal(JSON.stringify(draft),before);
+});
+
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+test('onboarding progress follows the eight remaining screens in both languages', () => {
+  const { OnboardingFlowView } = require('../src/features/onboarding/screens/OnboardingFlowView.tsx');
+  const { steps } = require('../src/features/onboarding/types.ts');
+  for (const language of ['en', 'ko']) {
+    steps.forEach((step, stepIndex) => {
+      const html = renderToStaticMarkup(React.createElement(OnboardingFlowView, {
+        language, step, stepIndex, stepCount: steps.length, childName: 'Luna', saveStatus: 'saved',
+        submitting: false, canContinue: true, content: null,
+        onPrevious: noop, onContinue: noop, onSaveExit: noop, onRetrySave: noop,
+      }));
+      assert.ok(html.includes(copyFor(language).onboarding.progress(stepIndex + 1, 8)));
+      if (step === 'review') assert.match(html, /width:100%/);
+    });
+  }
 });
 test('account keeps the small password helper separate from the error', () => {
   const { AccountStepView } = require('../src/features/onboarding/screens/AccountStepView.tsx');

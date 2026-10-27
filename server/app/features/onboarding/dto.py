@@ -55,14 +55,9 @@ class SafetyDto(StrictDto):
     restrictions: RestrictionChoiceDto
 
 
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 class FoodPreferencesDto(StrictDto):
     family_foods: list[ProfileChoiceDto] = Field(min_length=1)
-    difficult_textures: list[ProfileChoiceDto]
-    smell_sensitivity: Literal["yes", "sometimes", "no", "unsure"] | None
-    difficult_tastes: list[ProfileChoiceDto]
-    presentation_preferences: list[ProfileChoiceDto]
-    preferred_temperature: Literal["none", "warm", "cool", "room", "depends"] | None
-    new_food_response: Literal["tastes", "plate", "nearby", "removed", "varies", "unsure"] | None
 
 
 class SafeFoodWriteDto(StrictDto):
@@ -105,6 +100,7 @@ class SafeFoodsWriteDto(StrictDto):
         return self
 
 
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 class ProfileWriteDto(StrictDto):
     child_name: str
     age_group: AgeGroup
@@ -125,9 +121,6 @@ class ProfileWriteDto(StrictDto):
             self.safety.allergies.items,
             self.safety.restrictions.items,
             self.food_preferences.family_foods,
-            self.food_preferences.difficult_textures,
-            self.food_preferences.difficult_tastes,
-            self.food_preferences.presentation_preferences,
         ]
         for items in groups:
             values = [(item.code, item.custom_name) for item in items]

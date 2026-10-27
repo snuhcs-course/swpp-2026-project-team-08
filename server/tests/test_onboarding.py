@@ -6,6 +6,7 @@ from httpx import AsyncClient
 from app.features.onboarding.consent_version import DOCUMENT_VERSION
 
 
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 def request_body() -> dict:
     return {
         "profile": {
@@ -20,12 +21,6 @@ def request_body() -> dict:
             },
             "food_preferences": {
                 "family_foods": [{"code": "eggs", "custom_name": None}],
-                "difficult_textures": [],
-                "smell_sensitivity": "sometimes",
-                "difficult_tastes": [],
-                "presentation_preferences": [],
-                "preferred_temperature": "warm",
-                "new_food_response": "plate",
             },
             "safe_foods": {
                 "status": "listed",
@@ -157,3 +152,28 @@ async def test_onboarding_is_authenticated_and_isolated(client: AsyncClient) -> 
         "profile": None,
         "consents": [],
     }
+
+
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("difficult_textures", []),
+        ("smell_sensitivity", "yes"),
+        ("difficult_tastes", []),
+        ("presentation_preferences", []),
+        ("preferred_temperature", "warm"),
+        ("new_food_response", "plate"),
+    ],
+)
+async def test_onboarding_rejects_retired_answers(
+    client: AsyncClient, field: str, value: object
+) -> None:
+    headers = await register(client, "parent@example.com")
+    payload = request_body()
+    payload["profile"]["food_preferences"][field] = value
+    response = await client.put("/api/v1/onboarding", headers=headers, json=payload)
+    assert response.status_code == 422
+    assert response.json()["error_code"] == "VALIDATION_ERROR"
+    assert (await client.get("/api/v1/onboarding", headers=headers)).json()["profile"] is None

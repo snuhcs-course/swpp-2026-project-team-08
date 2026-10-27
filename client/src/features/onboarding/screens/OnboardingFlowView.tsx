@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
@@ -12,10 +12,8 @@ import { abcCopyFor, copyFor } from '../../../util/strings';
 import type { OnboardingStep } from '../types';
 import { styles } from './onboardingFlowStyles';
 
-const designStepNumber: Record<OnboardingStep, number> = { account: 1, consent: 2, child: 4, allergies: 5, restrictions: 6, family: 7, texture: 9, smell: 10, taste: 11, presentation: 12, temperature: 13, familiarity: 14, 'safe-foods': 15, review: 16 };
-
 export function OnboardingFlowView({
-  language, step, childName, saveStatus, submitting, canContinue,
+  language, step, stepIndex, stepCount, childName, saveStatus, submitting, canContinue,
   content, onPrevious, onContinue, onRetrySave,
 }: {
   language: Language;
@@ -33,7 +31,6 @@ export function OnboardingFlowView({
   onRetrySave: () => void;
 }) {
   const s = copyFor(language);
-  const sensory = ['texture', 'smell', 'taste', 'presentation', 'temperature'].includes(step);
   const title = step === 'safe-foods'
     ? s.onboarding.safeFoodsTitle(childName || s.onboarding.childFallback)
     : step === 'review'
@@ -45,7 +42,7 @@ export function OnboardingFlowView({
         <AppHeader title={title} />
         <View style={topBarStyles.details}>
           <View style={styles.progressRow}>
-            <Text style={styles.progressText}>{s.onboarding.progress(designStepNumber[step], 17)}</Text>
+            <Text style={styles.progressText}>{s.onboarding.progress(stepIndex + 1, stepCount)}</Text>
             <View style={styles.headerRight}>
               {saveStatus === 'error'
                 ? <Feather name="cloud-off" size={13} color={colors.error} />
@@ -55,8 +52,8 @@ export function OnboardingFlowView({
               </Text>
             </View>
           </View>
-          <View style={styles.track}><View style={[styles.fill, { width: `${(designStepNumber[step] / 17) * 100}%` }]} /></View>
-          {!sensory && <Text style={styles.subtitle}>{step === "safe-foods" ? s.onboarding.safeFoodsDescription(childName || s.onboarding.childFallback) : s.onboarding.subtitles[step]}</Text>}
+          <View style={styles.track}><View style={[styles.fill, { width: `${((stepIndex + 1) / stepCount) * 100}%` }]} /></View>
+          <Text style={styles.subtitle}>{step === "safe-foods" ? s.onboarding.safeFoodsDescription(childName || s.onboarding.childFallback) : s.onboarding.subtitles[step]}</Text>
         </View>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           {content}

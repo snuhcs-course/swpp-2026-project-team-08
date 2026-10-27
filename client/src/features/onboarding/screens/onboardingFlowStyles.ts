@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 import { topBarLayout, topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../util/colors';
@@ -16,7 +16,6 @@ export const styles = StyleSheet.create({
   track: { height: 3, borderRadius: 999, backgroundColor: colors.progressTrack, marginTop: 6, overflow: 'hidden' },
   fill: { height: 3, borderRadius: 999, backgroundColor: colors.onboardingPrimary },
   title: { color: colors.onboardingText, fontSize: 20, fontFamily: fonts.poppinsBold, marginTop: 16, lineHeight: 21.6 },
-  sensoryTitle: { color: colors.onboardingText, fontSize: 16, fontFamily: fonts.poppinsBold, marginTop: 5, lineHeight: 17 },
   subtitle: { color: colors.onboardingMuted, fontSize: 13, fontFamily: fonts.poppinsRegular, lineHeight: 18, marginTop: 6 },
   content: { ...topBarStyles.content, paddingBottom: 8 },
   saveExit: { marginTop: 16 },

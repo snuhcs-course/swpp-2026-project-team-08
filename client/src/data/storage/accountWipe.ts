@@ -1,10 +1,10 @@
-// AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ALWAYS_REMOVE = ['nurturebites.profile.v1', 'nurturebites.onboarding.v1'];
 
-export async function wipeAccountLocalData(childIds: Array<string | null | undefined>): Promise<void> {
+export async function wipeAccountLocalData(childIds: (string | null | undefined)[]): Promise<void> {
   const ids = [...new Set(childIds.filter((value): value is string => !!value))];
   const keys = await AsyncStorage.getAllKeys();
   const remove = keys.filter((key) => {

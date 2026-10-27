@@ -1,5 +1,4 @@
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
@@ -22,7 +21,7 @@ function RecommendationContent({ mealId }: { mealId: string }) {
   return <RecommendationView
     language={language}
     status={model.error ? 'error' : model.status}
-    card={!model.error && model.current ? recommendationText(model.current, language, profile!) : null}
+    card={!model.error && model.current ? recommendationText(model.current, language) : null}
     mealFoods={model.meal?.foods ?? []}
     hasCandidates={model.hasCandidates}
     saving={model.saving}

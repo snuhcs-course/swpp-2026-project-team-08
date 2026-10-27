@@ -1,5 +1,4 @@
-// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 export type Language = 'ko' | 'en';
 
 export type SafeFood = {
@@ -23,12 +22,6 @@ export type ChildProfile = {
   allergies: string[];
   restrictions: string[];
   familyFoods: string[];
-  texture: string[];
-  smell: string;
-  taste: string[];
-  presentation: string[];
-  temperature: string;
-  familiarity: string;
   safeFoods: SafeFood[];
   noSafeFoods: boolean;
   updatedAt: string;

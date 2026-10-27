@@ -1,5 +1,4 @@
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 import { useCallback, useRef, useState } from 'react';
 import { useHomeRecords } from '../../../data/queries/homeQueries';
 import { useMeal } from '../../../data/queries/mealQueries';
@@ -42,7 +41,7 @@ export function usePersonalizedRecommendation(profile: ChildProfile, mealId: str
     busy.current = true;
     setSaveError(false);
     setSavedNotice(false);
-    const english = recommendationText(current, 'en', profile);
+    const english = recommendationText(current, 'en');
     const suggestion: SavedSuggestion = {
       id: current.id,
       childId: profile.id,

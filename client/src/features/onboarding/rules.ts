@@ -1,6 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 import { emptyDraft, isStep, type OnboardingDraft, type OnboardingStep } from './types';
 import type { Language } from '../../types/profile';
 import { labelFor } from '../../util/strings';
@@ -77,9 +75,8 @@ export function isDraft(value: unknown): value is OnboardingDraft {
     && typeof draft.ageRange === 'string'
     && !!consent && typeof consent.accountPrivacy === 'boolean'
     && typeof consent.photoAnalysis === 'boolean' && typeof consent.aiTraining === 'boolean'
-    && ['allergies', 'restrictions', 'familyFoods', 'texture', 'taste', 'presentation', 'safeFoods']
+    && ['allergies', 'restrictions', 'familyFoods', 'safeFoods']
       .every((key) => Array.isArray(draft[key]))
-    && ['smell', 'temperature', 'familiarity'].every((key) => typeof draft[key] === 'string')
     && typeof draft.noSafeFoods === 'boolean'
     && !!safeFoodInput && ['name', 'preparation', 'presentationNote'].every((key) => typeof safeFoodInput[key] === 'string');
 }

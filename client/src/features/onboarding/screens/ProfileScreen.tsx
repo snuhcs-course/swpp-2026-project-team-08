@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
@@ -8,7 +8,6 @@ import { useAuth } from '../../../providers/AuthProvider';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor, labelFor } from '../../../util/strings';
-import type { OnboardingStep } from '../types';
 import { useOnboarding } from '../hooks/useOnboarding';
 
 export function ProfileScreen() {
@@ -32,7 +31,6 @@ export function ProfileScreen() {
       <View style={styles.card}><Text style={styles.label}>{s.home.caregiver}</Text><Text style={styles.value}>{profile.caregiverName}</Text><Text style={styles.detail}>{profile.caregiverEmail}</Text></View>
       <View style={styles.card}><Text style={styles.label}>{s.home.child}</Text><Text style={styles.value}>{profile.childName}</Text><Text style={styles.detail}>{labelFor('age', profile.ageRange, appProfile.language)}</Text></View>
       <AppButton label={s.home.editProfile} onPress={() => { model.startEdit(); router.push({ pathname: '/onboarding/[step]', params: { step: 'review' } }); }} />
-      {(['texture', 'smell', 'taste', 'presentation', 'temperature', 'familiarity'] as const).map((step: OnboardingStep) => <AppButton key={step} secondary label={s.onboarding.titles[step]} onPress={() => { model.startEdit(); router.push({ pathname: '/onboarding/[step]', params: { step } }); }} />)}
       <AppButton secondary label={s.onboarding.logOut} onPress={() => { void auth.signOut().then(() => router.replace('/')); }} />
     </ScrollView>
   </View>;

@@ -28,13 +28,12 @@ const { toOnboardingWrite, fromOnboardingResponse, readOnboarding, writeOnboardi
   require('../src/data/api/onboardingApi.ts');
 
 const account = { id: '12', email: 'parent@example.com', fullName: 'Parent' };
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 const profile = {
   id: '12', caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
   childName: 'Child', ageRange: '4-5',
   consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
   allergies: ['egg', 'custom-allergen'], restrictions: ['none'], familyFoods: ['eggs'],
-  texture: ['soft'], smell: 'sometimes', taste: [],
-  presentation: ['separate'], temperature: 'warm', familiarity: 'plate',
   safeFoods: [
     { id: 'local-1', name: 'Potato', preparation: 'Boiled', presentationNote: '' },
     { id: '501', name: 'Egg', preparation: 'Steamed', presentationNote: 'Small pieces' },
@@ -42,6 +41,7 @@ const profile = {
   noSafeFoods: false, updatedAt: '2026-10-21T00:00:00Z',
 };
 
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 function serverResponse() {
   return {
     profile: {
@@ -54,9 +54,6 @@ function serverResponse() {
       },
       food_preferences: {
         family_foods: [{ code: 'eggs', custom_name: null }],
-        difficult_textures: [{ code: 'soft', custom_name: null }], smell_sensitivity: 'sometimes',
-        difficult_tastes: [], presentation_preferences: [{ code: 'separate', custom_name: null }],
-        preferred_temperature: 'warm', new_food_response: 'plate',
       },
       safe_foods: { status: 'listed', items: [
         { id: '502', name: 'Potato', preparation: 'Boiled', presentation_note: null },
@@ -72,6 +69,7 @@ function serverResponse() {
   };
 }
 
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 test('onboarding write maps codes, custom choices, consents, and safe food IDs', () => {
   const body = toOnboardingWrite(profile);
   assert.deepEqual(body.profile.safety.allergies, { status: 'specified', items: [
@@ -80,10 +78,6 @@ test('onboarding write maps codes, custom choices, consents, and safe food IDs',
   assert.deepEqual(body.profile.safety.restrictions, { status: 'none', items: [] });
   assert.deepEqual(body.profile.food_preferences, {
     family_foods: [{ code: 'eggs', custom_name: null }],
-    difficult_textures: [{ code: 'soft', custom_name: null }],
-    smell_sensitivity: 'sometimes', difficult_tastes: [],
-    presentation_preferences: [{ code: 'separate', custom_name: null }],
-    preferred_temperature: 'warm', new_food_response: 'plate',
   });
   assert.equal(body.profile.safe_foods.items[0].id, undefined);
   assert.equal(body.profile.safe_foods.items[1].id, '501');

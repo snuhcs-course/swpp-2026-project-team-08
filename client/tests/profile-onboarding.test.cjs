@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -42,17 +42,23 @@ function completedDraft() {
   };
 }
 
-test('family foods leads directly to sensory questions in both directions', () => {
-  assert.equal(nextStep('family'), 'texture');
-  assert.equal(previousStep('texture'), 'family');
-  assert.equal(steps.length, 14);
+test('family foods leads directly to safe foods in both directions', () => {
+  assert.equal(nextStep('family'), 'safe-foods');
+  assert.equal(previousStep('safe-foods'), 'family');
+  assert.equal(steps.length, 8);
 });
 
 test('a retired saved step preserves answers and removes obsolete draft fields', () => {
   const draft = completedDraft();
   assert.deepEqual(restoreDraft({ ...draft, step: 'retired-step', obsoleteSelections: ['old'] }),
     { ...draft, step: 'family' });
-  assert.deepEqual(restoreDraft({ ...draft, step: 'texture' }), { ...draft, step: 'texture' });
+  for (const step of ['texture', 'smell', 'taste', 'presentation', 'temperature', 'familiarity']) {
+    assert.deepEqual(restoreDraft({ ...draft, step, texture: ['soft'], smell: 'yes',
+      taste: ['sour'], presentation: ['separate'], temperature: 'warm', familiarity: 'plate' }),
+    { ...draft, step: 'family' });
+  }
+  assert.deepEqual(restoreDraft({ ...draft, step: 'safe-foods', texture: ['soft'], familiarity: 'plate' }),
+    { ...draft, step: 'safe-foods' });
   assert.equal(restoreDraft({ step: 'retired-step' }), null);
 });
 

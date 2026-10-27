@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 """Check migration history and generated SQL without connecting to a database."""
 
 from io import StringIO
@@ -12,10 +12,10 @@ from alembic.script import ScriptDirectory
 MIGRATIONS = Path(__file__).resolve().parents[1] / "migrations"
 
 
-# AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0015_remove_dietary_approaches"]
+    assert scripts.get_heads() == ["0016_remove_profile_questions"]
     assert scripts.get_revision("0012_mock_ingredients").down_revision == "0011_onboarding"
     assert scripts.get_revision("0011_onboarding").down_revision == "0010_bigint_user_ids"
     assert scripts.get_revision("0010_bigint_user_ids").down_revision == "0009_food_confirmation"
@@ -23,6 +23,45 @@ def test_removal_joins_both_existing_heads():
         "0004_final_abc_fields",
         "0004_user_email_change",
     }
+
+
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+def test_profile_answer_removal_preserves_other_categories_and_restores_empty_columns():
+    migration = run_path(str(MIGRATIONS / "versions" / "20261027_1000_remove_profile_questions.py"))
+    assert migration["down_revision"] == "0015_remove_dietary_approaches"
+    output = StringIO()
+    context = MigrationContext.configure(
+        dialect_name="postgresql", opts={"as_sql": True, "output_buffer": output}
+    )
+    with Operations.context(context):
+        migration["upgrade"]()
+    sql = output.getvalue()
+    assert sql.count("DELETE FROM") == 1
+    assert (
+        "DELETE FROM user_profile_choices WHERE category IN "
+        "('difficult_texture','difficult_taste','presentation_preference')" in sql
+    )
+    constraint = sql.split("ADD CONSTRAINT ck_user_profile_choices_category", 1)[1]
+    assert "CHECK (category IN ('allergy','restriction','family_food'))" in constraint
+    assert "ALTER TABLE user_profiles DROP COLUMN smell_sensitivity" in sql
+    assert "ALTER TABLE user_profiles DROP COLUMN preferred_temperature" in sql
+    assert "ALTER TABLE user_profiles DROP COLUMN new_food_response" in sql
+    assert "meal_reviews" not in sql
+    assert "safe_foods" not in sql
+
+    output.seek(0)
+    output.truncate()
+    with Operations.context(context):
+        migration["downgrade"]()
+    sql = output.getvalue()
+    assert "ADD COLUMN smell_sensitivity VARCHAR" in sql
+    assert "ADD COLUMN preferred_temperature VARCHAR" in sql
+    assert "ADD COLUMN new_food_response VARCHAR" in sql
+    for category in ("difficult_texture", "difficult_taste", "presentation_preference"):
+        assert f"'{category}'" in sql
+    assert "NOT NULL" not in sql
+    assert "INSERT" not in sql
+    assert "DELETE" not in sql
 
 
 def test_retired_profile_category_removal_is_scoped_and_tightens_the_constraint():

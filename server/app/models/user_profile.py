@@ -9,6 +9,7 @@ from app.core.database import Base
 from app.core.timezone import now_kst
 
 
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 class UserProfile(Base):
     __tablename__ = "user_profiles"
     __table_args__ = (
@@ -39,9 +40,6 @@ class UserProfile(Base):
     age_group: Mapped[str] = mapped_column(String, nullable=False)
     allergy_status: Mapped[str] = mapped_column(String, nullable=False)
     restriction_status: Mapped[str] = mapped_column(String, nullable=False)
-    smell_sensitivity: Mapped[str | None] = mapped_column(String, nullable=True)
-    preferred_temperature: Mapped[str | None] = mapped_column(String, nullable=True)
-    new_food_response: Mapped[str | None] = mapped_column(String, nullable=True)
     safe_food_status: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False

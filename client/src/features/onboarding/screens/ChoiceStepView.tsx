@@ -1,7 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match allergy option explanation placement
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 import { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { Text, View } from 'react-native';
@@ -9,7 +6,6 @@ import { FormField } from '../../../components/FormField';
 import { DropdownChoice } from '../../../components/DropdownChoice';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import { MultiChoice } from '../../../components/MultiChoice';
-import { SingleChoice } from '../../../components/SingleChoice';
 import { colors } from '../../../util/colors';
 import { copyFor, labelFor, optionsFor } from '../../../util/strings';
 import type { Language } from '../../../types/profile';
@@ -17,19 +13,16 @@ import type { OnboardingDraft } from '../types';
 import { styles } from './onboardingStyles';
 
 export type ChoiceStep =
-  | 'child' | 'allergies' | 'restrictions' | 'family'
-  | 'texture' | 'smell' | 'taste' | 'presentation' | 'temperature' | 'familiarity';
+  | 'child' | 'allergies' | 'restrictions' | 'family';
 
 type ChoiceValues = Pick<OnboardingDraft,
-  'childName' | 'ageRange' | 'allergies' | 'restrictions' | 'familyFoods' |
-  'texture' | 'smell' | 'taste' | 'presentation' |
-  'temperature' | 'familiarity'>;
-type ListField = 'allergies' | 'restrictions' | 'familyFoods' | 'texture' | 'taste' | 'presentation';
-type TextField = 'childName' | 'ageRange' | 'smell' | 'temperature' | 'familiarity';
+  'childName' | 'ageRange' | 'allergies' | 'restrictions' | 'familyFoods'>;
+type ListField = 'allergies' | 'restrictions' | 'familyFoods';
+type TextField = 'childName' | 'ageRange';
 
-function Guidance({ title, body, icon = 'info' }: { title?: string; body: string; icon?: 'info' | 'calendar' | 'activity' | 'utensils' }) {
+function Guidance({ title, body, icon = 'info' }: { title?: string; body: string; icon?: 'info' | 'utensils' }) {
   return <View style={styles.infoBanner}>
-    <View style={styles.infoIcon}>{icon === 'utensils' ? <UiAssetIcon name="abc-utensils" /> : icon === 'calendar' ? <UiAssetIcon name="onboarding-calendar" /> : <Feather name={icon} size={13} color={colors.onboardingPrimary} />}</View>
+    <View style={styles.infoIcon}>{icon === 'utensils' ? <UiAssetIcon name="abc-utensils" /> : <Feather name={icon} size={13} color={colors.onboardingPrimary} />}</View>
     <View style={styles.safetyCopy}>
       {title && <Text style={styles.infoTitle}>{title}</Text>}
       <Text style={styles.infoText}>{body}</Text>
@@ -52,9 +45,6 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
       allergies: [values.allergies, 'allergies'],
       restrictions: [values.restrictions, 'restrictions'],
       family: [values.familyFoods, 'family'],
-      texture: [values.texture, 'texture'],
-      taste: [values.taste, 'taste'],
-      presentation: [values.presentation, 'presentation'],
     } as const;
     const config = groups[step as keyof typeof groups];
     if (!config) return false;
@@ -95,104 +85,57 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
     </View>
   );
 
-  if (step === 'allergies' || step === 'restrictions' || step === 'family') {
-    const config = {
-      allergies: { field: 'allergies', group: 'allergies', catalog: 'allergyCatalog', none: s.onboarding.noKnownAllergies },
-      restrictions: { field: 'restrictions', group: 'restrictions', catalog: 'restrictionCatalog', none: s.onboarding.noOtherRestrictions },
-      family: { field: 'familyFoods', group: 'family', catalog: 'familyCatalog', none: undefined },
-    } as const;
-    const current = config[step];
-    const options = optionsFor(current.group, language);
-    const otherLabel = step === 'allergies'
-      ? s.onboarding.otherAllergy
-      : step === 'restrictions'
-        ? s.onboarding.otherRestrictions
-        : s.onboarding.otherFood;
-    return (
-      <View>
-        {step === 'restrictions' && <Text style={styles.question}>{guidance.restrictionsQuestion(name)}</Text>}
-        {step === 'family' && <Guidance title={guidance.familyTitle} body={guidance.familyBody} icon="utensils" />}
-        {step === 'allergies' && (
-          <View style={styles.safetyBanner}>
-            <View style={styles.safetyIcon}><UiAssetIcon name="onboarding-shield" /></View>
-            <View style={styles.safetyCopy}>
-              <Text style={styles.safetyTitle}>{s.onboarding.allergySafetyTitle}</Text>
-              <Text style={styles.safetyText}>{s.onboarding.allergySafetyBody}</Text>
-            </View>
+  const config = {
+    allergies: { field: 'allergies', group: 'allergies', catalog: 'allergyCatalog', none: s.onboarding.noKnownAllergies },
+    restrictions: { field: 'restrictions', group: 'restrictions', catalog: 'restrictionCatalog', none: s.onboarding.noOtherRestrictions },
+    family: { field: 'familyFoods', group: 'family', catalog: 'familyCatalog', none: undefined },
+  } as const;
+  const current = config[step];
+  const options = optionsFor(current.group, language);
+  const otherLabel = step === 'allergies'
+    ? s.onboarding.otherAllergy
+    : step === 'restrictions'
+      ? s.onboarding.otherRestrictions
+      : s.onboarding.otherFood;
+  return (
+    <View>
+      {step === 'restrictions' && <Text style={styles.question}>{guidance.restrictionsQuestion(name)}</Text>}
+      {step === 'family' && <Guidance title={guidance.familyTitle} body={guidance.familyBody} icon="utensils" />}
+      {step === 'allergies' && (
+        <View style={styles.safetyBanner}>
+          <View style={styles.safetyIcon}><UiAssetIcon name="onboarding-shield" /></View>
+          <View style={styles.safetyCopy}>
+            <Text style={styles.safetyTitle}>{s.onboarding.allergySafetyTitle}</Text>
+            <Text style={styles.safetyText}>{s.onboarding.allergySafetyBody}</Text>
           </View>
-        )}
-        <MultiChoice
-          options={options}
-          catalogOptions={optionsFor(current.catalog, language)}
-          labels={labels}
-          search={search}
-          onSearchChange={setSearch}
-          showOther={showOther}
-          onShowOtherChange={(open) => {
-            setShowOther(open);
-            if (open && values[current.field].includes('none')) onRemoveListItem(current.field, 'none');
-          }}
-          inlineSubtitleIds={step === 'allergies' ? ['tree-nut'] : undefined}
-          optionSubtitles={step === 'allergies' ? { 'tree-nut': s.onboarding.treeNutsHint } : subtitles[step]}
-          selected={values[current.field]}
-          noneLabel={current.none}
-          otherLabel={otherLabel}
-          onToggle={(value) => {
-            if (value === 'none') { setShowOther(false); setSearch(''); }
-            onToggleList(current.field, value);
-          }}
-          onAdd={(value) => { onAddListItem(current.field, value); setSearch(''); }}
-          onRemove={(value) => onRemoveListItem(current.field, value)}
-        />
-        <Text style={styles.selectionHint}>{guidance.multiple}</Text>
-        {step === 'restrictions' && <Guidance title={guidance.restrictionsTitle} body={guidance.restrictionsBody} />}
-        {step === 'family' && <Guidance title={guidance.familyWarningTitle} body={guidance.familyWarningBody} />}
-      </View>
-    );
-  }
-
-  if (step === 'texture' || step === 'taste' || step === 'presentation') {
-    const noneLabel = step === 'texture'
-      ? s.onboarding.noTexture
-      : step === 'taste'
-        ? s.onboarding.noTaste
-        : s.onboarding.noPresentation;
-    return (
-      <View>
-      <Text style={styles.question}>{step === 'texture' ? guidance.textureQuestion(name) : step === 'taste' ? guidance.tasteQuestion(name) : guidance.presentationQuestion(name)}</Text>
-      {step === 'presentation' && <Text style={styles.questionHelper}>{guidance.presentationExample}</Text>}
+        </View>
+      )}
       <MultiChoice
-        options={optionsFor(step, language)}
+        options={options}
+        catalogOptions={optionsFor(current.catalog, language)}
         labels={labels}
         search={search}
         onSearchChange={setSearch}
         showOther={showOther}
-        onShowOtherChange={setShowOther}
-        selected={values[step]}
-        optionSubtitles={subtitles[step]}
-        noneLabel={noneLabel}
-        freeText
-        onToggle={(value) => onToggleList(step, value)}
-        onAdd={(value) => { onAddListItem(step, value); setSearch(''); }}
-        onRemove={(value) => onRemoveListItem(step, value)}
+        onShowOtherChange={(open) => {
+          setShowOther(open);
+          if (open && values[current.field].includes('none')) onRemoveListItem(current.field, 'none');
+        }}
+        inlineSubtitleIds={step === 'allergies' ? ['tree-nut'] : undefined}
+        optionSubtitles={step === 'allergies' ? { 'tree-nut': s.onboarding.treeNutsHint } : subtitles[step]}
+        selected={values[current.field]}
+        noneLabel={current.none}
+        otherLabel={otherLabel}
+        onToggle={(value) => {
+          if (value === 'none') { setShowOther(false); setSearch(''); }
+          onToggleList(current.field, value);
+        }}
+        onAdd={(value) => { onAddListItem(current.field, value); setSearch(''); }}
+        onRemove={(value) => onRemoveListItem(current.field, value)}
       />
-      {step === 'taste' && <Guidance body={guidance.tasteBody} icon="activity" />}
       <Text style={styles.selectionHint}>{guidance.multiple}</Text>
-      </View>
-    );
-  }
-
-  return (
-    <View>
-    <Text style={styles.question}>{step === 'smell' ? guidance.smellQuestion(name) : step === 'temperature' ? guidance.temperatureQuestion(name) : guidance.familiarityQuestion(name)}</Text>
-    {step === 'smell' && <Text style={styles.questionHelper}>{guidance.smellExample}</Text>}
-    <SingleChoice
-      options={optionsFor(step, language).map((option) => ({ ...option, subtitle: subtitles[step]?.[option.id] }))}
-      value={values[step]}
-      onChange={(value) => onSetField(step, value)}
-    />
-    <Guidance body={step === 'smell' ? guidance.smellBody : step === 'temperature' ? guidance.temperatureBody : guidance.familiarityBody} icon="activity" />
-    <Text style={styles.selectionHint}>{guidance.single}</Text>
+      {step === 'restrictions' && <Guidance title={guidance.restrictionsTitle} body={guidance.restrictionsBody} />}
+      {step === 'family' && <Guidance title={guidance.familyWarningTitle} body={guidance.familyWarningBody} />}
     </View>
   );
 }

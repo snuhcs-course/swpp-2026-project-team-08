@@ -36,6 +36,7 @@ def get_onboarding_service(
     return OnboardingService(session)
 
 
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 def _input(payload: OnboardingWriteRequest) -> OnboardingInput:
     profile = payload.profile
     preferences = profile.food_preferences
@@ -43,9 +44,6 @@ def _input(payload: OnboardingWriteRequest) -> OnboardingInput:
         ("allergy", profile.safety.allergies.items),
         ("restriction", profile.safety.restrictions.items),
         ("family_food", preferences.family_foods),
-        ("difficult_texture", preferences.difficult_textures),
-        ("difficult_taste", preferences.difficult_tastes),
-        ("presentation_preference", preferences.presentation_preferences),
     )
     choices = tuple(
         ChoiceInput(category, position, item.code, item.custom_name)
@@ -67,9 +65,6 @@ def _input(payload: OnboardingWriteRequest) -> OnboardingInput:
         age_group=profile.age_group,
         allergy_status=profile.safety.allergies.status,
         restriction_status=profile.safety.restrictions.status,
-        smell_sensitivity=preferences.smell_sensitivity,
-        preferred_temperature=preferences.preferred_temperature,
-        new_food_response=preferences.new_food_response,
         safe_food_status=profile.safe_foods.status,
         choices=choices,
         safe_foods=foods,
@@ -77,6 +72,7 @@ def _input(payload: OnboardingWriteRequest) -> OnboardingInput:
     )
 
 
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 def _response(snapshot: OnboardingSnapshot) -> OnboardingResponse:
     profile = snapshot.profile
     profile_dto = None
@@ -99,12 +95,6 @@ def _response(snapshot: OnboardingSnapshot) -> OnboardingResponse:
             },
             food_preferences={
                 "family_foods": groups.get("family_food", []),
-                "difficult_textures": groups.get("difficult_texture", []),
-                "smell_sensitivity": profile.smell_sensitivity,
-                "difficult_tastes": groups.get("difficult_taste", []),
-                "presentation_preferences": groups.get("presentation_preference", []),
-                "preferred_temperature": profile.preferred_temperature,
-                "new_food_response": profile.new_food_response,
             },
             safe_foods=SafeFoodsDto(
                 status=profile.safe_food_status,

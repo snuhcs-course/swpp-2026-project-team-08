@@ -1,6 +1,4 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match combined safety card typography
-// This Code is generated with AI
-
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 import { Pressable, Text, View } from 'react-native';
 import { ReviewCard } from '../../../components/ReviewCard';
 import type { OnboardingStep } from '../types';
@@ -25,7 +23,7 @@ export function ReviewStepView({
       {rows.map((row) => (
         <ReviewCard
           key={row.step}
-          icon={row.step === 'allergies' ? 'review-shield' : row.step === 'family' ? 'review-users' : row.step === 'texture' || row.step === 'taste' ? 'review-sparkles' : row.step === 'safe-foods' ? 'review-heart' : row.step === 'child' ? 'review-utensils' : row.step === 'temperature' ? 'review-calendar' : row.step === 'presentation' || row.step === 'familiarity' ? 'review-route' : 'review-info'}
+          icon={row.step === 'allergies' ? 'review-shield' : row.step === 'family' ? 'review-users' : row.step === 'safe-foods' ? 'review-heart' : row.step === 'child' ? 'review-utensils' : 'review-info'}
           title={row.title}
           titleSize={row.step === 'allergies' ? 13 : 15}
           value={row.value}

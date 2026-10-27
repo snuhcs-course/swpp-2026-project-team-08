@@ -1,6 +1,9 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+
 import { useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
 import { AppButton } from './AppButton';

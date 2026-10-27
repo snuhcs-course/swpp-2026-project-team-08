@@ -1,10 +1,9 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; align final ABC home colors
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; add replacement source sheet palette
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; add full-photo back button colors
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; corrected manual food editor geometry
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; aligned ABC button typography
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 
 export const colors = {
   homeShadow: '#392D45',

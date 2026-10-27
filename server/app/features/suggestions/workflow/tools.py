@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: add suggestion LLM workflow
+
 """LLM이 호출하는 도구.
 
 도구는 읽기 전용이고 DB 세션을 열지 않는다. 아이의 제한 목록은 LLM 인자로 받지 않고

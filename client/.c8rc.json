@@ -1,0 +1,39 @@
+{
+  "all": true,
+  "src": [
+    "src"
+  ],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "**/*.d.ts",
+    "src/features/after-meal-review/screens/reviewViewTypes.ts",
+    "src/features/meal-checkin/screens/mealCheckinViewTypes.ts",
+    "src/features/meal-checkin/types.ts",
+    "src/features/meal-log/types.ts",
+    "src/features/suggestions/types.ts",
+    "src/types/home.ts",
+    "src/types/ingredientRecord.ts",
+    "src/types/mealRecord.ts",
+    "src/types/profile.ts",
+    "src/types/recordValues.ts",
+    "src/types/reviewRecord.ts",
+    "src/types/suggestion.ts",
+    "src/types/suggestionRecord.ts"
+  ],
+  "extension": [
+    ".ts",
+    ".tsx"
+  ],
+  "exclude-after-remap": true,
+  "reporter": [
+    "text-summary",
+    "html",
+    "json",
+    "json-summary"
+  ],
+  "reports-dir": "coverage/combined",
+  "_comment": "AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung"
+}

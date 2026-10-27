@@ -1,6 +1,6 @@
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; matched onboarding Figma typography and spacing
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised for current ABC design
 // This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 
 import type { Language } from '../../../types/profile';
 import { copyFor, labelFor, type OptionGroup } from '../../../util/strings';

@@ -1,5 +1,6 @@
 // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
 
 import { Redirect, router } from 'expo-router';
 import { ActivityIndicator, Text, View } from 'react-native';

@@ -1,4 +1,11 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; align account errors and combined safety-card edit flow
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; revised for current ABC design
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';

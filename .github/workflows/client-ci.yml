@@ -1,0 +1,47 @@
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+name: Client CI
+
+on:
+  pull_request:
+    paths:
+      - "client/**"
+      - ".github/workflows/client-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: client-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Client / ${{ matrix.check.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        check:
+          - name: Tests
+            command: npm test
+          - name: Lint
+            command: npm run lint
+          - name: Typecheck
+            command: npx --no-install tsc --noEmit
+    defaults:
+      run:
+        working-directory: client
+    env:
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26.0.0"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: ${{ matrix.check.name }}
+        run: ${{ matrix.check.command }}

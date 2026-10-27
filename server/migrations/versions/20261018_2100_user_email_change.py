@@ -1,4 +1,6 @@
 # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+# Changed: 마이페이지·자녀 프로필 추가
+
 """Add pending email-change columns on users."""
 
 import sqlalchemy as sa

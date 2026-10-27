@@ -1,4 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
+# Changed: ingredients 구조 bootstrap
+
 """임의의 사용자를 가정한 mock 제한 목록.
 
 아이의 알러지 · 식이 제한을 서버가 아직 알지 못하므로 임시로 쓴다.

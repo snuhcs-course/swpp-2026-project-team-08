@@ -1,4 +1,7 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+
 import { localDate, validDate } from '../../util/date';
 import {
   type FoodItem,
@@ -19,7 +22,6 @@ export const newDraft = (childId: string): MealDraft => ({
   editingFood: null,
   savedMealId: null,
 });
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 export const confirmFoods = (foods: FoodItem[]): FoodItem[] =>
   foods.map((food) => ({ ...food, name: food.name.trim(), confirmed: true }));
 export function mealFromDraft(draft: MealDraft): Meal {

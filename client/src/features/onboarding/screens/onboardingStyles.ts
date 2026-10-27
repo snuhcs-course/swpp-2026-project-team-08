@@ -1,4 +1,8 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; matched onboarding Figma typography and spacing
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
+// This Code is generated with AI
+
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';

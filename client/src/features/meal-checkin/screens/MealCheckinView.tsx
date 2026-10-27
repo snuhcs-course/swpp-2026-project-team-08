@@ -1,5 +1,13 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+
 import { AppHeader } from '../../../components/AppHeader';
 import { fonts } from "../../../util/fonts";
 import { colors } from "../../../util/colors";
@@ -173,7 +181,6 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                   removedName: p.removedName,
                   onUndoRemove: p.onUndoRemove,
                   suggestions: p.suggestions,
-                  // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
                   suggestionLinking: p.suggestionLinking,
                   suggestionsLoading: p.suggestionsLoading,
                   suggestionsError: p.suggestionsError,

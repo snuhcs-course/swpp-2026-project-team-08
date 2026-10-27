@@ -1,4 +1,6 @@
 # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
+# Changed: 마이페이지·자녀 프로필 추가
+
 """Delete records owned by one account before removing the user."""
 
 from sqlalchemy import delete, select

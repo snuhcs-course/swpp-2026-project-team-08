@@ -1,5 +1,12 @@
+<<<<<<< HEAD
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+=======
+// AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
+// Changed: 마이페이지·자녀 프로필 추가
+>>>>>>> a902dcbc5a996c2df4f204d9955a76945e895f03
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
+// Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+
 import { AppHeader } from '../../../components/AppHeader';
 import Feather from '@expo/vector-icons/Feather';
 import { useState } from 'react';

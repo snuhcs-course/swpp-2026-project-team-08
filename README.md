@@ -25,15 +25,15 @@ Iteration 2 moved NurtureBites from a local prototype to a client–server app a
 - **LLM suggestions ([#16](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/16)):** LangGraph suggestion workflow, ingredient catalog, and OpenRouter model wiring.
 - **Client–server contract ([#17](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/17)):** Shared models, DTOs, and DB schema so the app and API use the same meal, profile, and suggestion shapes.
 
-### Known demo bugs 
+### Known demo bugs
 (the bugs listed below will be fixed for iteration 3)
 - After you take the before meal picture, when you try to 'review food item' by adding food, when trying to type the food's ingredient name, the add button might not work
 
-### Small things to implement for iteration 3(that has not been implemented yet) 
+### Small things to implement for iteration 3(that has not been implemented yet)
 - sending emails for the verification code (if one wants to change the caregiver's email in the profile)
 - uploading photos from gallery / file (only can take photos for now in the demo)
 - profile's tutorial guide
-- the login screen design is not aesthetically appealing so the design will be modified 
+- the login screen design is not aesthetically appealing so the design will be modified
 - profile's data policy and privacy guideline
 
 ## Setup and Execution

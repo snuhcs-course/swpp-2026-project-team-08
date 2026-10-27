@@ -1,6 +1,4 @@
-<<<<<<< HEAD
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-=======
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -8,7 +6,6 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 
->>>>>>> a902dcbc5a996c2df4f204d9955a76945e895f03
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';

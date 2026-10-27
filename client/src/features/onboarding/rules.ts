@@ -1,6 +1,8 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
+// Changed: 제외된 프로필 질문 제거 및 초안 복원
 // This Code is generated with AI
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
 
 import { emptyDraft, isStep, type OnboardingDraft, type OnboardingStep } from './types';
 import type { Language } from '../../types/profile';

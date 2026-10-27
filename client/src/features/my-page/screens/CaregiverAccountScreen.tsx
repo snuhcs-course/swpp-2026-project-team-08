@@ -1,10 +1,4 @@
-<<<<<<< HEAD
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-import { Redirect, router } from 'expo-router';
-import { View } from 'react-native';
-import { colors } from '../../../util/colors';
-import { copyFor } from '../../../util/strings';
-=======
 // AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
@@ -12,12 +6,12 @@ import { copyFor } from '../../../util/strings';
 import { Redirect, router } from 'expo-router';
 import { View } from 'react-native';
 import { colors } from '../../../util/colors';
->>>>>>> a902dcbc5a996c2df4f204d9955a76945e895f03
+import { copyFor } from '../../../util/strings';
+
 import { useCaregiverAccount } from '../hooks/useCaregiverAccount';
 import { CaregiverAccountView } from './CaregiverAccountView';
 
 export function CaregiverAccountScreen() {
-<<<<<<< HEAD
   const model = useCaregiverAccount();
   if (model.status === 'loading') {
     return <View style={{ flex: 1, backgroundColor: colors.homeBackground }} />;
@@ -51,17 +45,4 @@ export function CaregiverAccountScreen() {
       onResend={() => { void model.sendCode(); }}
     />
   );
-=======
-  const account = useCaregiverAccount();
-  if (account.status === 'loading') {
-    return <View style={{ flex: 1, backgroundColor: colors.homeBackground }} />;
-  }
-  if (account.status === 'error' || !account.hasProfile) return <Redirect href="/" />;
-
-  const goBack = async () => {
-    if (await account.prepareBack()) router.back();
-  };
-
-  return <CaregiverAccountView {...account.viewProps} onBack={() => { void goBack(); }} />;
->>>>>>> a902dcbc5a996c2df4f204d9955a76945e895f03
 }

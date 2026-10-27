@@ -1,6 +1,7 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 제외된 온보딩 질문 타입 제거
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
-// // Changed: 마이페이지·자녀 프로필 추가
+// Changed: 마이페이지·자녀 프로필 추가
 
 import type { ChildProfile } from '../../types/profile';
 

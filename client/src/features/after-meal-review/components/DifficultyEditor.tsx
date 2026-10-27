@@ -1,10 +1,7 @@
-<<<<<<< HEAD
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; align picker chevrons with the right inset
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match inline difficulty menus
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
-=======
->>>>>>> a902dcbc5a996c2df4f204d9955a76945e895f03
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 

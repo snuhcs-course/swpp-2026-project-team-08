@@ -1,10 +1,13 @@
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Use the shared compact meal photo introduction card
 
 import { useState } from 'react';
 import { HeightFitPhoto } from '../../../components/HeightFitPhoto';
 import { AppIcon } from '../../../components/AppIcon';
+import { MealPhotoIntroCard } from '../../../components/MealPhotoIntroCard';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
@@ -32,11 +35,7 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
 
   if (p.draft.step === 'photo') return (
     <View style={styles.stack}>
-      <View style={styles.hero}>
-        <Text style={styles.heroTitle}>{m.photoIntro}</Text>
-        <Text style={styles.heroSubtitle}>{m.photoRequirement}</Text>
-
-      </View>
+      <MealPhotoIntroCard title={m.photoIntro} subtitle={m.photoRequirement} />
       {picker}
       {photoError}
       <Pressable accessibilityRole="button" onPress={p.onManual} style={styles.manualRoute}>
@@ -93,13 +92,6 @@ const styles = StyleSheet.create({
   saveExitText: { color: colors.homePrimary, fontFamily: fonts.poppinsSemiBold, fontSize: 16 },
   stack: { flex: 1, gap: 12, paddingBottom: 8 },
   title: { color: colors.homeText, fontSize: 20, fontFamily: fonts.poppinsSemiBold },
-  hero: { backgroundColor: colors.navy, borderRadius: 20, padding: 16, gap: 5 },
-  heroTitle: { color: colors.homeBorder, fontFamily: fonts.poppinsSemiBold, fontSize: 20, lineHeight: 26 },
-  heroSubtitle: { color: colors.surface, fontFamily: fonts.poppinsRegular, fontSize: 11 },
-  heroRow: { flexDirection: 'row', gap: 12, alignItems: 'center' },
-  example: { width: 105, height: 105, borderRadius: 11 },
-  tips: { flex: 1, gap: 9 },
-  tip: { color: colors.surface, fontSize: 9, fontFamily: fonts.interMedium },
   autoSave: { marginTop: 'auto', paddingTop: 24, color: colors.mealReviewMuted, textAlign: 'center', fontSize: 9, fontFamily: fonts.interRegular },
   preview: { height: 318, overflow: 'hidden', borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, width: '100%' },
   enlarge: { color: colors.homePrimary, textAlign: 'center', fontSize: 9, fontFamily: fonts.interMedium, marginTop: 5 },

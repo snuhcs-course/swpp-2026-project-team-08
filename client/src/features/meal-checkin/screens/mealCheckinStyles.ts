@@ -2,11 +2,12 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Remove styles owned by the shared meal photo introduction card
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../util/colors';
-import { formStyles as ui } from '../../../components/formStyles';
 import { fonts } from '../../../util/fonts';
 
 export const styles = StyleSheet.create({
@@ -44,7 +45,7 @@ export const styles = StyleSheet.create({
   activeSegment: { backgroundColor: colors.homePrimary },
   content: { ...topBarStyles.content, paddingBottom: 14, gap: 10, flexGrow: 1 },
   photoContent: { gap: 16 },
-  footer: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 16, gap: 10 },
+  footer: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 0, gap: 10 },
   photo: {
     height: 318,
     width: '100%',
@@ -52,28 +53,6 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.homeBorder,
   },
-  hero: {
-    backgroundColor: colors.navy,
-    padding: 18,
-    borderRadius: 20,
-    gap: 10,
-    height: 211,
-  },
-  heroTitle: {
-    ...ui.title,
-    fontSize: 20,
-    lineHeight: 26,
-    color: colors.homeBorder,
-  },
-  heroText: { ...ui.text, color: colors.surface, fontSize: 11 },
-  example: { width: 112, height: 112, borderRadius: 18 },
-  heroVisual: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  exampleWrap: { width: 112, height: 112 },
-  exampleBadge: { position: 'absolute', top: 7, left: 7, color: colors.homePrimary, backgroundColor: colors.surface, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, fontSize: 9, fontFamily: fonts.poppinsSemiBold },
-  heroGuidance: { flex: 1, gap: 10 },
-  heroTip: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  heroTipIcon: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.homeSelected, alignItems: 'center', justifyContent: 'center' },
-  heroTipText: { ...ui.text, color: colors.surface, flex: 1, fontSize: 10, lineHeight: 15 },
   sourceList: { gap: 8 },
   sourceAction: { height: 60, borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, backgroundColor: colors.surface, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 12 },
   manualRoute: { height: 60, borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, backgroundColor: colors.surface, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10 },

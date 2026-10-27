@@ -1,4 +1,5 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Repair onboarding imports and connect the shared storage mock
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
@@ -8,32 +9,32 @@ const assert = require("node:assert/strict");
 
 require("../helpers/register.cjs");
 
-const { createMemoryStorage } = require("../helpers/memory-storage.cjs");
+const { values, failNextWrite } = require("../helpers/native-boundaries.cjs").nativeBoundaries();
 
 const {
   emptyDraft,
   steps,
   nextStep,
   previousStep,
-} = require("../src/features/onboarding/types.ts");
+} = require("../../src/features/onboarding/types.ts");
 const {
   canFinish,
   isDraft,
   restoreDraft,
-} = require("../src/features/onboarding/rules.ts");
+} = require("../../src/features/onboarding/rules.ts");
 const {
   readProfile,
   saveProfile,
-} = require("../src/data/storage/profileStorage.ts");
+} = require("../../src/data/storage/profileStorage.ts");
 const {
   readDraft,
   saveDraft,
   clearDraft,
-} = require("../src/data/storage/onboardingDraftStorage.ts");
+} = require("../../src/data/storage/onboardingDraftStorage.ts");
 const {
   readLanguage,
   saveLanguage,
-} = require("../src/data/storage/languageStorage.ts");
+} = require("../../src/data/storage/languageStorage.ts");
 
 function completedDraft() {
   return {

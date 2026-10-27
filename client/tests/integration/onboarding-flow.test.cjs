@@ -1,11 +1,13 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Verify reset discards pending autosaves and current onboarding fixtures
 // Connects Auth/Profile/Onboarding providers, validation, API conversion and draft storage.
 // Only HTTP and native storage boundaries are mocked.
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
 const { React, act, renderHook, waitFor, deferred } = require('../helpers/react-harness.cjs');
-const { values, failNextWrite } = require('../helpers/native-boundaries.cjs').nativeBoundaries();
+const { values, storage, failNextWrite } = require('../helpers/native-boundaries.cjs').nativeBoundaries();
 const { AuthProvider } = require('../../src/providers/AuthProvider.tsx');
 const { ProfileProvider, useProfile } = require('../../src/providers/ProfileProvider.tsx');
 const { OnboardingProvider } = require('../../src/features/onboarding/OnboardingProvider.tsx');
@@ -18,7 +20,7 @@ beforeEach(async () => { await clearSession(); values.clear(); });
 function completeDraft() {
   return { ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com', childName: 'Child 1', ageRange: '4-5',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false }, allergies: ['none'], restrictions: ['none'],
-    familyFoods: ['eggs'], approaches: ['none'], step: 'review' };
+    familyFoods: ['eggs'], step: 'review' };
 }
 async function mount(t, put = () => new Response(JSON.stringify(profileResponse()))) {
   await saveSession({ accessToken: 'access', refreshToken: 'refresh', user: { id: '1', email: 'parent@example.com', fullName: 'Parent' } });
@@ -155,6 +157,32 @@ test('reset clears draft and password without committing a profile', async t => 
   await act(async () => hook.current.onboarding.resetLocal());
   assert.equal(await readDraft(), null);
   assert.equal(hook.current.onboarding.password, '');
+  assert.equal(hook.current.onboarding.hasDraft, false);
+  assert.equal(hook.current.profile.profile, null);
+  await act(async () => hook.current.onboarding.setField('childName', 'New child'));
+  await waitFor(() => hook.current.onboarding.saveStatus === 'saved');
+  assert.equal((await readDraft()).childName, 'New child');
+});
+
+test('reset waits for an in-flight autosave and keeps storage empty until another edit', async t => {
+  await saveDraft(completeDraft());
+  const hook = await mount(t);
+  const started = deferred();
+  const release = deferred();
+  const write = storage.setItem.bind(storage);
+  t.mock.method(storage, 'setItem', async (key, value) => {
+    if (key === 'nurturebites.onboarding.v1') {
+      started.resolve();
+      await release.promise;
+    }
+    await write(key, value);
+  });
+  await act(async () => hook.current.onboarding.setField('childName', 'Pending child'));
+  await started.promise;
+  let reset;
+  await act(async () => { reset = hook.current.onboarding.resetLocal(); });
+  await act(async () => { release.resolve(); await reset; });
+  assert.equal(await readDraft(), null);
   assert.equal(hook.current.onboarding.hasDraft, false);
   assert.equal(hook.current.profile.profile, null);
   await act(async () => hook.current.onboarding.setField('childName', 'New child'));

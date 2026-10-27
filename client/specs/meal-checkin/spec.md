@@ -1,4 +1,5 @@
 <!-- AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo -->
+<!-- Changed: Native date selection and shared compact meal photo introduction -->
 <!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 <!-- Changed: 화면 디자인 및 식사 흐름 개선 -->
 
@@ -43,7 +44,7 @@
 - 사진 추가 화면 `455:7879`의 상단 안내는 `Optional - keep a photo for your meal record.`, 사진 건너뛰기 버튼은 `Skip photo`, 보조 설명은 `Add foods yourself without a photo.`로 표시한다. 한국어는 각각 `선택 사항 - 식사 기록용 사진을 남길 수 있습니다.`, `사진 건너뛰기`, `사진 없이 음식을 직접 추가하세요.`로 표시한다.
 
 - 카메라·갤러리·파일 경로를 제공하고 해당 경로를 선택할 때 권한을 요청한다. 지원 이미지 형식만 받아들이며 취소·권한 거부·손상 이미지에는 기존 입력을 보존한다.
-- 좋은 조명·접시 중앙·음식이 잘 보이게 촬영하라는 안내와 기존 예시 사진을 표시한다. Skip photo는 분석 요청 없이 음식 입력으로 이동한다.
+- 사진 추가 안내는 식후 사진 화면과 같은 공통 컴포넌트로 제목과 선택 사항 설명만 표시한다. Skip photo는 분석 요청 없이 음식 입력으로 이동한다.
 - 사진 미리보기와 전체 화면 보기를 제공한다. Replace photo는 소스 선택을 열며, 이미 음식이나 연결이 있으면 먼저 교체 확인을 받는다.
 - 유효한 새 사진을 고르면 사진만 바꾼다. 음식·상세·목표·제안 연결·날짜·유형·장소는 유지한다. 취소 또는 잘못된 이미지에는 아무것도 초기화하지 않는다.
 - 사진 제거는 사진만 제거하고 확인한 음식 입력을 보존한다. 음식 목록에 사진이 없으면 `No Before-meal photo added`와 Add 동작을 표시한다.

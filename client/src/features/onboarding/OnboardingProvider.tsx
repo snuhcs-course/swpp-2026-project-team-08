@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 온보딩 초안 복원 및 계정 입력 초기화 수정
+// Changed: 온보딩 초안 복원, 계정 입력 초기화 및 초기화 후 자동 저장 수정
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -30,6 +30,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [hasDraft, setHasDraft] = useState(false);
   const saveGate = useRef(createDraftSaveGate());
   const skipFirstSave = useRef(true);
+  const clearedDraft = useRef<OnboardingDraft | null>(null);
   const finishing = useRef(false);
   const accountFieldsInitialized = useRef(false);
 
@@ -86,6 +87,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!ready || loadError || status !== 'ready' || finishing.current) return;
     if (skipFirstSave.current) { skipFirstSave.current = false; return; }
+    // Reset clears storage; only a subsequent edit should create another saved draft.
+    if (draft === clearedDraft.current) return;
     if (!profile || editing) {
       // persist exposes failure through saveStatus; consume the background rejection.
       void Promise.resolve().then(() => persist(draft)).catch(() => undefined);
@@ -190,7 +193,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const resetLocal = useCallback(async () => {
     finishing.current = true;
     accountFieldsInitialized.current = false;
-    setDraft(emptyDraft());
+    const next = emptyDraft();
+    clearedDraft.current = next;
+    setDraft(next);
     setPassword('');
     setEditing(false);
     setHasDraft(false);

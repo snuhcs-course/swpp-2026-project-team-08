@@ -2,6 +2,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Align the previous-suggestion action above the bottom save buttons
 
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { useState } from "react";
@@ -224,7 +226,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
       <Pressable
         accessibilityRole="button"
         onPress={p.suggestionLinking.onOpen}
-        style={[styles.suggestionEntry, !!p.removedName && { marginTop: "auto", paddingTop: 20 }]}
+        style={styles.suggestionEntry}
       >
         <Text style={styles.suggestionTitle}>
           {a.previousSuggestion}
@@ -470,7 +472,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 6,
     alignItems: "center",
-    marginTop: 20,
+    marginTop: "auto",
+    paddingTop: 20,
   },
   suggestionTitle: {
     color: colors.homeText,

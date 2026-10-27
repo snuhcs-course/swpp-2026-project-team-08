@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Validate current onboarding requirements and retired dietary-approach migration
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -9,7 +11,7 @@ const { validPassword, canAddSafeFood, toggleExclusive, canContinue, canFinish,
 function completeDraft() {
   return { ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
     childName: 'Child', ageRange: '4-5', consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
-    allergies: ['none'], restrictions: ['none'], familyFoods: ['eggs'], approaches: ['none'] };
+    allergies: ['none'], restrictions: ['none'], familyFoods: ['eggs'] };
 }
 
 test('password requires at least eight characters', () => {
@@ -21,7 +23,7 @@ const required = [
   ['consent', { consent: { accountPrivacy: true, photoAnalysis: false, aiTraining: false } }],
   ['child', { childName: ' ' }], ['child', { ageRange: '' }],
   ['allergies', { allergies: [] }], ['restrictions', { restrictions: [] }],
-  ['family', { familyFoods: [] }], ['approaches', { approaches: [] }],
+  ['family', { familyFoods: [] }],
 ];
 for (const [step, missing] of required) {
   test(`${step} rejects ${JSON.stringify(missing)} before continuing or finishing`, () => {
@@ -35,6 +37,12 @@ for (const [step, missing] of required) {
 test('account step rejects a short password while optional steps allow skipping', () => {
   assert.equal(canContinue('account', completeDraft(), 'short'), false);
   assert.equal(canContinue('safe-foods', emptyDraft(), ''), true);
+});
+test('retired dietary approaches are omitted on restore and do not block completion', () => {
+  const { restoreDraft } = require('../../src/features/onboarding/rules.ts');
+  const restored = restoreDraft({ ...completeDraft(), step: 'approaches', approaches: [] });
+  assert.deepEqual(restored, { ...completeDraft(), step: 'family' });
+  assert.equal(canFinish(restored), true);
 });
 test('none is exclusive and toggling a choice preserves the input array', () => {
   const selected = ['egg', 'milk'];

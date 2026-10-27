@@ -1,6 +1,5 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo; explicit ingredient removal buttons
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo; inline ingredient chip editing
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Inline ingredient editing, removal buttons, and balanced chip padding
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 
@@ -81,7 +80,7 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
         {food.ingredients.map((name) => 
         <View key={name} style={[styles.tag, styles.finishedTag]}>
           <Text style={[styles.tagText, styles.ingredientName]}>
-            {name} 
+            {name}
           </Text>
           <Pressable
             accessibilityRole="button"
@@ -166,7 +165,7 @@ const styles = StyleSheet.create({
   finishedTag: { flexDirection: 'row', alignItems: 'center', maxWidth: '100%', paddingVertical: 0, paddingRight: 0 },
   tagText: { color: colors.homeText, fontFamily: fonts.poppinsMedium, fontSize: 12 },
   ingredientName: { flexShrink: 1 },
-  removeIngredient: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 24 },
+  removeIngredient: { paddingHorizontal: 8, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 24 },
   removeIngredientPressed: { opacity: 0.5 },
   removeIngredientText: { color: colors.editorMuted, fontFamily: fonts.poppinsMedium, fontSize: 20, lineHeight: 24 },
   addIngredient: { minWidth: 62, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },

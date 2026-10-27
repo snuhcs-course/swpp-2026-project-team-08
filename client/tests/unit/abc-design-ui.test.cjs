@@ -1,4 +1,5 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Validate the current eight-step onboarding flow with corrected imports
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
@@ -350,10 +351,10 @@ test("draft suggestion linking opens explicitly and shows actual source meal met
 });
 
 test("onboarding review has the four summary cards without changing profile answers", () => {
-  const { emptyDraft } = require("../src/features/onboarding/types.ts");
+  const { emptyDraft } = require("../../src/features/onboarding/types.ts");
   const {
     reviewRows,
-  } = require("../src/features/onboarding/screens/reviewRows.ts");
+  } = require("../../src/features/onboarding/screens/reviewRows.ts");
   const draft = {
     ...emptyDraft(),
     allergies: ["peanut"],
@@ -369,12 +370,11 @@ test("onboarding review has the four summary cards without changing profile answ
   assert.equal(JSON.stringify(draft), before);
 });
 
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 test("onboarding progress follows the eight remaining screens in both languages", () => {
   const {
     OnboardingFlowView,
-  } = require("../src/features/onboarding/screens/OnboardingFlowView.tsx");
-  const { steps } = require("../src/features/onboarding/types.ts");
+  } = require("../../src/features/onboarding/screens/OnboardingFlowView.tsx");
+  const { steps } = require("../../src/features/onboarding/types.ts");
   for (const language of ["en", "ko"]) {
     steps.forEach((step, stepIndex) => {
       const html = renderToStaticMarkup(

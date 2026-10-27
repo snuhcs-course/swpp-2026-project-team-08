@@ -2,9 +2,10 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 결과 설명 모달 전체 글자 크기 확대
+// Changed: 결과 설명 모달 글자 확대 및 확인 버튼 디자인 통일
 
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { MealFlowButton } from '../../../components/MealFlowButton';
 import { outcomeValues, type Outcome } from '../../../types/afterMealReview';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
@@ -34,9 +35,7 @@ export function OutcomeDefinitionsModal({ visible, title, intro, labels, descrip
               <Text style={styles.description}>{descriptions[value]}</Text>
             </View>
           ))}
-          <Pressable accessibilityRole="button" onPress={onClose} style={styles.button}>
-            <Text style={styles.buttonText}>{gotIt}</Text>
-          </Pressable>
+          <MealFlowButton label={gotIt} onPress={onClose} style={styles.button} />
         </View>
       </View>
     </Modal>
@@ -57,6 +56,5 @@ const styles = StyleSheet.create({
   badge: {  overflow: 'hidden', borderRadius: 999, backgroundColor: colors.homeSelected, color: colors.homePrimary, paddingVertical: 5, paddingHorizontal: 9, textAlign: 'center', fontSize: 12, letterSpacing: 0.6, fontFamily: fonts.poppinsBold },
   warningBadge: { backgroundColor: colors.safetySurface, color: colors.error },
   description: { flex: 1, color: colors.outcomeDefinitionText, fontSize: 14, lineHeight: 20, fontFamily: fonts.poppinsRegular },
-  button: { marginTop: 10, width: 133, height: 38, alignSelf: 'center', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.outcomeTastedText, borderRadius: 999 },
-  buttonText: { color: colors.surface, fontSize: 16, fontFamily: fonts.poppinsSemiBold },
+  button: { marginTop: 10 },
 });

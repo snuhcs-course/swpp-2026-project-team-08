@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 네이티브 어려움 선택기 적용 및 글자 확대
+// Changed: 네이티브 어려움 선택기·글자 확대 및 추가 버튼 디자인 통일
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; align picker chevrons with the right inset
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match inline difficulty menus
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
@@ -7,6 +7,7 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 
 import { UiAssetIcon, type UiAssetIconName } from "../../../components/UiAssetIcon";
+import { MealFlowButton } from "../../../components/MealFlowButton";
 import { useState } from "react";
 import { NativeDropdown } from "../../../components/NativeDropdown";
 import {
@@ -152,15 +153,13 @@ export function DifficultyEditor({
         />
         {!isTexture && valueSelect}
         {isTexture && <View style={styles.spacer} />}
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canAdd }}
+        <MealFlowButton
+          label={labels.add}
+          icon={null}
           disabled={!canAdd}
           onPress={onAdd}
           style={styles.addButton}
-        >
-          <Text style={styles.addText}>{labels.add}</Text>
-        </Pressable>
+        />
       </View>
       {isTexture && (
         <View style={styles.sentence}>
@@ -282,7 +281,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" },
   spacer: { flex: 1 },
   select: {
-    minHeight: 48,
+    minHeight: 50,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderWidth: 1,
@@ -306,16 +305,10 @@ const styles = StyleSheet.create({
   chevron: { color: colors.homeText, fontSize: 18 },
   addButton: {
     minWidth: 72,
-    minHeight: 48,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.homePrimary,
   },
   disabled: { opacity: 0.45 },
-  addText: { color: colors.surface, fontFamily: fonts.interBold, fontSize: 16 },
   sentence: {
     backgroundColor: colors.textureSentence,
     borderRadius: 12,

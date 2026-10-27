@@ -1,13 +1,14 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 식후 검토 글자 크기 및 가독성 개선
+// Changed: 식후 검토 글자 확대 및 오류 화면 버튼 디자인 통일
 
 import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, BackHandler, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AppButton } from '../../../components/AppButton';
+import { MealFlowButton } from '../../../components/MealFlowButton';
+import { MealTextButton } from '../../../components/MealTextButton';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
@@ -29,7 +30,7 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
     <SafeAreaView style={styles.center}><ActivityIndicator color={colors.homePrimary} /><Text style={styles.message}>{s.common.loading}</Text></SafeAreaView>
   );
   if (profile.status === 'error' || !profile.profile) return (
-    <SafeAreaView style={styles.center}><Text style={styles.message}>{s.common.saveFailed}</Text><AppButton label={s.common.home} onPress={() => router.replace('/')} /></SafeAreaView>
+    <SafeAreaView style={styles.center}><Text style={styles.message}>{s.common.saveFailed}</Text><MealFlowButton label={s.common.home} onPress={() => router.replace('/')} /></SafeAreaView>
   );
   if (review.loading) return (
     <SafeAreaView style={styles.center}><ActivityIndicator color={colors.homePrimary} /><Text style={styles.message}>{s.common.loading}</Text></SafeAreaView>
@@ -37,14 +38,14 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
   if (review.loadError) return (
     <SafeAreaView style={styles.center}>
       <Text style={styles.error}>{s.afterMealReview.loadFailed}</Text>
-      <AppButton label={s.common.retry} onPress={review.retryLoad} />
-      <AppButton secondary label={s.common.home} onPress={() => router.replace('/(main)/home')} />
+      <MealFlowButton label={s.common.retry} onPress={review.retryLoad} />
+      <MealTextButton label={s.common.home} onPress={() => router.replace('/(main)/home')} />
     </SafeAreaView>
   );
   if (review.missingMeal || !review.meal || !review.draft) return (
     <SafeAreaView style={styles.center}>
       <Text style={styles.error}>{s.afterMealReview.missingMeal}</Text>
-      <AppButton label={s.common.home} onPress={() => router.replace('/(main)/home')} />
+      <MealFlowButton label={s.common.home} onPress={() => router.replace('/(main)/home')} />
     </SafeAreaView>
   );
 

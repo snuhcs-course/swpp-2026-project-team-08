@@ -2,12 +2,12 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 식후 검토 글자 크기 및 가독성 개선
+// Changed: 식후 검토 글자 확대 및 완료 버튼 디자인 통일
 
 import { MealSavedPanel } from '../../../components/MealSavedPanel';
 import { displayDate } from '../../../util/date';
-import { AppButton } from '../../../components/AppButton';
-import { colors } from '../../../util/colors';
+import { MealFlowButton } from '../../../components/MealFlowButton';
+import { MealTextButton } from '../../../components/MealTextButton';
 import { abcCopyFor, copyFor } from '../../../util/strings';
 import type { ReviewViewProps } from './reviewViewTypes';
 
@@ -22,7 +22,7 @@ export function AfterMealFollowUpView({ p }: { p: Props }) {
     date={`${s.mealCheckin.types[p.meal.mealType]}, ${displayDate(p.meal.mealDate, p.language)}`}
     foodNames={p.meal.foods.map((food) => food.name).join(', ')}
     actions={<>
-      <AppButton variant="meal" label={a.viewMealSuggestions} onPress={p.onRecommend} style={{ minHeight: 48 }} labelStyle={{ fontSize: 18 }} />
-      <AppButton variant="meal" secondary label={a.returnHome} onPress={p.onHome} style={{ minHeight: 48, borderWidth: 0, backgroundColor: colors.transparent }} labelStyle={{ fontSize: 18, color: colors.homePrimary }} />
+      <MealFlowButton label={a.viewMealSuggestions} onPress={p.onRecommend} />
+      <MealTextButton label={a.returnHome} onPress={p.onHome} />
     </>} />;
 }

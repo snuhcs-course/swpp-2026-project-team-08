@@ -1,4 +1,5 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 식사 정보 배치·재료 입력 조정 및 하단 UI 공통화
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -9,8 +10,6 @@
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 
 import { AppHeader } from '../../../components/AppHeader';
-import { fonts } from "../../../util/fonts";
-import { colors } from "../../../util/colors";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -22,6 +21,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppButton } from "../../../components/AppButton";
+import { MealFlowFooter } from "../../../components/MealFlowFooter";
+import { MealFlowButton } from "../../../components/MealFlowButton";
+import { MealTextButton } from "../../../components/MealTextButton";
 import { UiAssetIcon } from "../../../components/UiAssetIcon";
 import { MealFoodEditorDialog } from "../../../components/MealFoodEditorDialog";
 import { formStyles as ui } from "../../../components/formStyles";
@@ -212,7 +214,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
           </ScrollView>
         </View>
         {(["photo", "preview", "foods"] as string[]).includes(d.step) && (
-          <View style={styles.footer}>
+          <MealFlowFooter>
             {d.step === "preview" && (
               <AppButton
                 variant="meal"
@@ -224,8 +226,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             )}
             {d.step === "foods" && (
               <>
-                <AppButton
-                  variant="meal"
+                <MealFlowButton
                   label={
                     p.saving
                       ? a.savingMeal
@@ -233,25 +234,16 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                         ? s.common.retry
                         : m.confirmFoods
                   }
-                  icon={<UiAssetIcon name="meal-check" />}
-                  style={{ minHeight: 50 }} labelStyle={{ fontSize: emptyManual ? 13 : 16 }}
+                  labelStyle={{ fontSize: emptyManual ? 13 : 16 }}
                   disabled={!d.foods.length || p.saving}
                   onPress={() => { setSavePanelHidden(false); p.onConfirm(); }}
                 />
                 {p.saving && (
                   <Text style={styles.confirmHint}>{a.draftKept}</Text>
                 )}
-                {!emptyManual && 
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={p.onSaveExit}
-                  style={{ padding: 12, alignItems: "center" }}
-                >
-                  <Text style={{ color: colors.homePrimary, fontSize: 16, fontFamily: fonts.poppinsSemiBold }}>
-                    {a.saveExit}
-                  </Text>
-                </Pressable>
-                }
+                {!emptyManual && (
+                  <MealTextButton label={a.saveExit} onPress={p.onSaveExit} />
+                )}
               </>
             )}
             {d.step === "photo" && (
@@ -264,7 +256,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                 onPress={p.onRetryDraft}
               />
             )}
-          </View>
+          </MealFlowFooter>
         )}
         {d.editingFood && (
           <MealFoodEditorDialog

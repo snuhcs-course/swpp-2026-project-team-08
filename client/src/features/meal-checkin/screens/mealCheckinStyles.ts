@@ -3,7 +3,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Remove styles owned by the shared meal photo introduction card
+// Changed: 사진 안내·하단 UI 공통화 및 식사 정보 배치 조정
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
@@ -45,7 +45,6 @@ export const styles = StyleSheet.create({
   activeSegment: { backgroundColor: colors.homePrimary },
   content: { ...topBarStyles.content, paddingBottom: 14, gap: 10, flexGrow: 1 },
   photoContent: { gap: 16 },
-  footer: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 0, gap: 10 },
   photo: {
     height: 318,
     width: '100%',

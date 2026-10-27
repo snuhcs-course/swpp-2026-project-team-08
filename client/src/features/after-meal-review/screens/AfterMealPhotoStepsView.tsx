@@ -2,15 +2,15 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 사진 안내 카드 공통화 및 식후 검토 글자 확대
+// Changed: 사진 안내 공통화·글자 확대 및 식후 사진 버튼 디자인 통일
 
 import { useState } from 'react';
 import { HeightFitPhoto } from '../../../components/HeightFitPhoto';
-import { AppIcon } from '../../../components/AppIcon';
 import { MealPhotoIntroCard } from '../../../components/MealPhotoIntroCard';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { AppButton } from '../../../components/AppButton';
+import { MealFlowButton } from '../../../components/MealFlowButton';
+import { MealTextButton } from '../../../components/MealTextButton';
 import { AfterMealPhotoPicker } from '../components/AfterMealPhotoPicker';
 import { PhotoComparisonCard } from '../components/PhotoComparisonCard';
 import { colors } from '../../../util/colors';
@@ -21,7 +21,7 @@ import type { ReviewViewProps } from './reviewViewTypes';
 type Props = Pick<ReviewViewProps,
   'meal' | 'draft' | 'language' | 'picking' | 'photoError' |
   'onPick' | 'onRemovePhoto' | 'onFullPhoto' | 'onImageError' |
-  'onManual' | 'onGo' | 'onSaveExit'>;
+  'onManual' | 'onSaveExit'>;
 
 export function AfterMealPhotoStepsView({ p }: { p: Props }) {
   const s = copyFor(p.language);
@@ -38,12 +38,9 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
       <MealPhotoIntroCard title={m.photoIntro} subtitle={m.photoRequirement} />
       {picker}
       {photoError}
-      <Pressable accessibilityRole="button" onPress={p.onManual} style={styles.manualRoute}>
-        <View style={styles.sourceIcon}><AppIcon name="gallery" size={18} /></View>
-        <View style={{ flex: 1 }}><Text style={styles.manualLabel}>{m.noPhoto}</Text><Text style={styles.manualHint}>{abcCopyFor(p.language).enterOutcomes}</Text></View>
-        <AppIcon name="next" size={16} />
-      </Pressable>
-      <Pressable accessibilityRole="button" onPress={p.onSaveExit} style={styles.saveExit}><Text style={styles.saveExitText}>{abcCopyFor(p.language).saveExit}</Text></Pressable>
+      <MealFlowButton label={m.noPhoto} onPress={p.onManual} />
+      <Text style={styles.manualHint}>{abcCopyFor(p.language).enterOutcomes}</Text>
+      <MealTextButton label={abcCopyFor(p.language).saveExit} onPress={p.onSaveExit} />
       <Text style={styles.autoSave}>{m.draftSaved}</Text>
     </View>
   );
@@ -58,13 +55,12 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
         </Pressable>
       )}
       <View style={styles.actions}>
-        <AppButton variant="meal" secondary icon={<UiAssetIcon name="meal-refresh" />} label={m.replace} onPress={() => setReplaceOpen((value) => !value)} style={styles.actionButton} labelStyle={{ fontSize: 18 }} />
-        <AppButton variant="meal" secondary icon={<UiAssetIcon name="meal-trash" />} label={m.removePhoto} onPress={p.onRemovePhoto} style={[styles.actionButton, { backgroundColor: colors.safetySurface }]} labelStyle={{ color: colors.error, fontSize: 18 }} />
+        <MealTextButton icon={<UiAssetIcon name="meal-refresh" />} label={m.replace} onPress={() => setReplaceOpen((value) => !value)} />
+        <MealTextButton icon={<UiAssetIcon name="meal-trash" />} label={m.removePhoto} onPress={p.onRemovePhoto} labelStyle={{ color: colors.error }} />
       </View>
       {replaceOpen && picker}
       {!p.meal.photo && <View style={styles.info}><UiAssetIcon name="meal-lock" /><Text style={styles.infoText}>{m.photoLocal}</Text></View>}
       {photoError}
-      <View style={styles.bottom}><AppButton variant="meal" icon={<UiAssetIcon name="meal-check" />} label={m.usePhoto} onPress={() => p.meal.photo ? p.onGo('compare') : p.onManual()} disabled={!p.draft.afterPhoto || !!p.photoError} labelStyle={{ fontSize: 18 }} /></View>
     </View>
   );
 
@@ -75,32 +71,22 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
   return (
     <View style={styles.stack}>
       {comparison}
-      <View style={styles.bottom}>
-        <AppButton variant="meal" label={m.manual} onPress={p.onManual} style={{ marginHorizontal: 14 }} labelStyle={{ fontSize: 18 }} />
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   enlargeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 6 },
-  manualRoute: { minHeight: 60, borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, backgroundColor: colors.surface, paddingHorizontal: 14, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 },
-  sourceIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: colors.homeSelected, alignItems: 'center', justifyContent: 'center' },
-  manualLabel: { color: colors.homeText, fontSize: 16, fontFamily: fonts.poppinsSemiBold },
-  manualHint: { color: colors.mealReviewMuted, fontSize: 14, fontFamily: fonts.poppinsRegular },
-  saveExit: { alignItems: 'center', padding: 16 },
-  saveExitText: { color: colors.homePrimary, fontFamily: fonts.poppinsSemiBold, fontSize: 18 },
+  manualHint: { color: colors.mealReviewMuted, fontSize: 14, fontFamily: fonts.poppinsRegular, textAlign: 'center' },
   stack: { flex: 1, gap: 12, paddingBottom: 8 },
   title: { color: colors.homeText, fontSize: 24, fontFamily: fonts.poppinsSemiBold },
   autoSave: { marginTop: 'auto', paddingTop: 24, color: colors.mealReviewMuted, textAlign: 'center', fontSize: 14, fontFamily: fonts.interRegular },
   preview: { height: 318, overflow: 'hidden', borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, width: '100%' },
   enlarge: { color: colors.homePrimary, textAlign: 'center', fontSize: 14, fontFamily: fonts.interMedium, marginTop: 5 },
-  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  actionButton: { flexBasis: 160, flexGrow: 1, flexShrink: 1 },
+  actions: { gap: 10 },
   info: { flexDirection: 'row', gap: 8, backgroundColor: colors.calendarEmpty, padding: 11, borderRadius: 11 },
   infoText: { flex: 1, color: colors.homeText, fontSize: 14, lineHeight: 20, fontFamily: fonts.interRegular },
   error: { color: colors.error, fontSize: 14, fontFamily: fonts.interMedium },
-  bottom: { marginTop: 'auto', gap: 8, paddingTop: 18 },
   center: { alignItems: 'center', gap: 10, paddingVertical: 18 },
   failure: { backgroundColor: colors.safetySurface, borderRadius: 13, padding: 12, gap: 4 },
   failureTitle: { color: colors.error, fontFamily: fonts.interBold, fontSize: 16 },

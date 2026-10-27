@@ -2,12 +2,12 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 식후 검토 글자 크기 및 가독성 개선
+// Changed: 식후 검토 글자 확대 및 음식 추가 버튼 디자인 통일
 
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { UiAssetIcon } from "../../../components/UiAssetIcon";
-import { AppButton } from "../../../components/AppButton";
+import { MealTextButton } from "../../../components/MealTextButton";
 import { OutcomeChoiceRow } from "../components/OutcomeChoiceRow";
 import { OutcomeDefinitionsModal } from "../components/OutcomeDefinitionsModal";
 import { colors } from "../../../util/colors";
@@ -134,12 +134,8 @@ export function AfterMealOutcomesView({ p }: { p: Props }) {
           </View>
         );
       })}
-      <AppButton
-        variant="meal"
-        secondary
+      <MealTextButton
         label={a.addOutcomeFood}
-        labelStyle={{ fontSize: 16, color: colors.homePrimary }}
-        style={{ minHeight: 48 }}
         onPress={() => p.onEditFood()}
       />
       {p.showUnanswered && !p.canContinueOutcomes && (

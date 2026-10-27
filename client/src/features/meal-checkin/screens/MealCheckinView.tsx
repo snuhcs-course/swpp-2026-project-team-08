@@ -241,7 +241,8 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                 {p.saving && (
                   <Text style={styles.confirmHint}>{a.draftKept}</Text>
                 )}
-                {!emptyManual && <Pressable
+                {!emptyManual && 
+                <Pressable
                   accessibilityRole="button"
                   onPress={p.onSaveExit}
                   style={{ padding: 12, alignItems: "center" }}
@@ -249,7 +250,8 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                   <Text style={{ color: colors.homePrimary, fontSize: 16, fontFamily: fonts.poppinsSemiBold }}>
                     {a.saveExit}
                   </Text>
-                </Pressable>}
+                </Pressable>
+                }
               </>
             )}
             {d.step === "photo" && (

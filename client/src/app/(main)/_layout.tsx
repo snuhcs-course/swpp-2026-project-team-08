@@ -2,6 +2,8 @@
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Let visible bottom navigation own the bottom safe area
 
 import { router, Stack, usePathname, useGlobalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
@@ -23,6 +25,7 @@ export default function MainLayout() {
   const { suggestionFlow } = useGlobalSearchParams<{ suggestionFlow?: string }>();
   const fontReady = useFontReady();
   const selected = tabFromPath(pathname);
+  const showNavigation = !(selected === 'ideas' && suggestionFlow === 'record');
 
   const onSelect = (tab: HomeTab) => {
     if (tab === selected) return;
@@ -34,7 +37,7 @@ export default function MainLayout() {
 
   if (!fontReady) return <View style={styles.root} />;
 
-  return <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+  return <SafeAreaView style={styles.root} edges={showNavigation ? ['top'] : ['top', 'bottom']}>
     <View style={styles.content}>
       {/* JS stack animations call InteractionManager APIs removed in RN 0.86. */}
       <Stack screenOptions={({ route }) => ({
@@ -47,7 +50,7 @@ export default function MainLayout() {
         contentStyle: { backgroundColor: colors.homeBackground },
       })} />
     </View>
-    {!(selected === 'ideas' && suggestionFlow === 'record') && <HomeNavigationScreen selected={selected} onSelect={onSelect} />}
+    {showNavigation && <HomeNavigationScreen selected={selected} onSelect={onSelect} />}
   </SafeAreaView>;
 }
 

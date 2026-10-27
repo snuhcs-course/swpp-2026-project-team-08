@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Validate the current eight-step onboarding flow with corrected imports
+// Changed: Validate onboarding, photo steps, and four-tab navigation with safe-area padding
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
@@ -20,6 +20,8 @@ for (const ext of [".svg", ".png"])
 
 const flatten = (value) =>
   Object.assign({}, ...[value].flat(Infinity).filter(Boolean));
+
+let bottomInset = 0;
 
 function primitive(tag) {
   return function Primitive({
@@ -70,7 +72,10 @@ mockModules((name) => {
       StyleSheet: { create: (v) => v, absoluteFill: {} },
     };
   if (name === "react-native-safe-area-context")
-    return { SafeAreaView: primitive("main") };
+    return {
+      SafeAreaView: primitive("main"),
+      useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: bottomInset, left: 0 }),
+    };
   if (name === "expo-image") return { Image: primitive("img") };
   if (name === "@expo/vector-icons") return { Feather: primitive("i") };
   if (name.startsWith("@expo/vector-icons/")) return primitive("i");
@@ -565,23 +570,44 @@ test("home record read errors show retry instead of declaring a fresh account", 
   assert.doesNotMatch(html, /No saved suggestions yet|Meal Log Calendar/);
 });
 
-test("Home and every other tab share the shared five-tab navigation", () => {
+test("all tabs share four-tab navigation in both languages without Insight", () => {
   const {
     BottomNavigation,
+    tabOrder,
   } = require("../../src/components/BottomNavigation.tsx");
-  for (const selected of ["today", "mealLog", "ideas", "insight", "profile"]) {
-    const html = renderToStaticMarkup(
-      React.createElement(BottomNavigation, {
-        language: "en",
-        selected,
-        onSelect: noop,
-      }),
-    );
-    assert.equal((html.match(/role="tab"/g) || []).length, 5);
-    assert.doesNotMatch(html, /SOS/);
-    assert.match(html, /Insight/);
-    assert.match(html, /height:72px/);
-    assert.match(html, /padding-left:22px|padding-horizontal:22px/);
+  assert.deepEqual(tabOrder, ["today", "mealLog", "ideas", "profile"]);
+  for (const language of ["en", "ko"]) {
+    for (const selected of tabOrder) {
+      const html = renderToStaticMarkup(
+        React.createElement(BottomNavigation, {
+          language,
+          selected,
+          onSelect: noop,
+        }),
+      );
+      assert.equal((html.match(/role="tab"/g) || []).length, 4);
+      assert.equal((html.match(/aria-selected="true"/g) || []).length, 1);
+      assert.doesNotMatch(html, /SOS|Insight|인사이트/);
+      assert.match(html, new RegExp(`aria-label="${copyFor(language).home[selected]}" aria-selected="true"`));
+      assert.match(html, /height:72px/);
+      assert.match(html, /padding-left:22px|padding-horizontal:22px/);
+    }
+  }
+});
+
+test("bottom navigation absorbs device insets instead of adding extra bottom padding", () => {
+  const { BottomNavigation } = require("../../src/components/BottomNavigation.tsx");
+  try {
+    for (const [inset, padding, height] of [[0, 12, 72], [8, 12, 72], [20, 20, 80], [34, 34, 94]]) {
+      bottomInset = inset;
+      const html = renderToStaticMarkup(React.createElement(BottomNavigation, {
+        language: "en", selected: "today", onSelect: noop,
+      }));
+      assert.match(html, new RegExp(`padding-bottom:${padding}px`));
+      assert.match(html, new RegExp(`height:${height}px`));
+    }
+  } finally {
+    bottomInset = 0;
   }
 });
 

@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 
 import { useState } from 'react';
@@ -12,8 +12,18 @@ import { Dialog } from './Dialog';
 import { DropdownChoice } from './DropdownChoice';
 import { FormField } from './FormField';
 
-type Labels = { cooking: string; detail: string; acceptance: string; selectCooking: string; cookingOptions: readonly string[] };
-export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingredient, ingredientChoices, canAddIngredient, ingredientFeedback, onRetryIngredients, onIngredientChange, onAddIngredient, onSelectIngredient, onRemoveIngredient, onChange, onSave, onCancel }: {
+type Labels = { 
+  cooking: string; 
+  detail: string; 
+  acceptance: string; 
+  selectCooking: string; 
+  cookingOptions: readonly string[] 
+};
+
+export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingredient, 
+  ingredientChoices, canAddIngredient, ingredientFeedback, onRetryIngredients, 
+  onIngredientChange, onAddIngredient, onSelectIngredient, onRemoveIngredient, 
+  onChange, onSave, onCancel }: {
   food: FoodItem; mode: 'add' | 'edit'; meal: ReturnType<typeof copyFor>['mealCheckin'];
   common: Pick<ReturnType<typeof copyFor>['common'], 'add' | 'remove' | 'close' | 'retry'>;
   labels: Labels; ingredient: string; ingredientChoices?: string[]; onIngredientChange: (value: string) => void;
@@ -23,25 +33,49 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
   onChange: (value: Partial<FoodItem>) => void; onSave: () => void; onCancel: () => void;
 }) {
   const [ingredientOpen, setIngredientOpen] = useState(false);
-  return <Dialog title={mode === 'add' ? m.addFood : m.editFoodTitle(food.name)} closeLabel={common.close} onClose={onCancel} footer={
-    <View style={styles.actions}>
-      <AppButton variant="meal" secondary label={m.cancel} onPress={onCancel} style={styles.button} labelStyle={styles.buttonText} />
-      <AppButton variant="meal" label={m.saveFood} disabled={!food.name.trim()} onPress={onSave} style={[styles.button, !food.name.trim() && styles.disabledButton]} labelStyle={[styles.buttonText, !food.name.trim() && styles.disabledText]} />
+  return (
+  <Dialog 
+    title={mode === 'add' ? m.addFood : m.editFoodTitle(food.name)} 
+    closeLabel={common.close} 
+    onClose={onCancel} 
+    footer={
+      <View style={styles.actions}>
+        <AppButton variant="meal" secondary label={m.cancel} onPress={onCancel} style={styles.button} labelStyle={styles.buttonText} />
+        <AppButton variant="meal" label={m.saveFood} disabled={!food.name.trim()} onPress={onSave} style={[styles.button, !food.name.trim() && styles.disabledButton]} labelStyle={[styles.buttonText, !food.name.trim() && styles.disabledText]} />
+      </View>
+    }>
+    <View style={styles.field}>
+      <Text style={styles.label}>{m.name}</Text>
+      <FormField
+        variant="editor"
+        label={m.name}
+        hideLabel
+        value={food.name}
+        placeholder={m.foodNamePlaceholder}
+        onChangeText={(name) => onChange({ name })} />
     </View>
-  }>
-    <FormField variant="editor" label={m.name} value={food.name} placeholder={m.foodNamePlaceholder} onChangeText={(name) => onChange({ name })} />
+      
     <View style={styles.ingredients}>
       <Text style={styles.label}>{m.ingredients}</Text>
       <View style={styles.tags}>
-        {food.ingredients.map((name) => <Pressable key={name} accessibilityRole="button" accessibilityLabel={`${common.remove}: ${name}`} onPress={() => onRemoveIngredient(name)} style={styles.tag}><Text style={styles.tagText}>{name} ×</Text></Pressable>)}
+        {food.ingredients.map((name) => 
+        <Pressable key={name} accessibilityRole="button" accessibilityLabel={`${common.remove}: ${name}`} onPress={() => onRemoveIngredient(name)} style={styles.tag}>
+          <Text style={styles.tagText}>
+            {name} 
+          </Text>
+          </Pressable>
+        )}
         <Pressable accessibilityRole="button" onPress={() => setIngredientOpen(true)} style={styles.addIngredient}><Text style={styles.addText}>+ {common.add}</Text></Pressable>
       </View>
-      {ingredientOpen && <View style={styles.ingredientInput}>
+      {ingredientOpen && 
+      <View style={styles.ingredientInput}>
         <View style={styles.column}><FormField variant="editor" label={m.addIngredient} hideLabel value={ingredient} onChangeText={onIngredientChange} placeholder={m.addIngredient} /></View>
         <AppButton compact label={common.add} disabled={canAddIngredient === undefined ? !ingredient.trim() : !canAddIngredient} onPress={() => { if (onAddIngredient() !== false) setIngredientOpen(false); }} />
-      </View>}
-      {ingredientOpen && !!ingredientFeedback && <Text accessibilityLiveRegion="polite" style={styles.ingredientFeedback}>{ingredientFeedback}</Text>}
-      {ingredientOpen && onRetryIngredients && <AppButton compact secondary label={common.retry} onPress={onRetryIngredients} />}
+      </View>
+      }
+      {ingredientOpen && onRetryIngredients && 
+      <AppButton compact secondary label={common.retry} onPress={onRetryIngredients} />
+      }
       {ingredientOpen && ingredientChoices && onSelectIngredient && (
         <View style={styles.ingredientChoices}>
           {ingredientChoices.map((name) => (
@@ -54,10 +88,23 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
     </View>
     <View style={styles.twoFields}>
       <View style={styles.column}>
-        <View style={styles.fieldHeading}><Text style={styles.label}>{labels.cooking}</Text><Text style={[styles.optional, { fontSize: 11 }]}>{m.optional}</Text></View>
+        <View style={styles.fieldHeading}>
+          <Text style={styles.label}>
+            {labels.cooking}
+          </Text>
+          <Text style={[styles.optional, { fontSize: 11 }]}>
+            {m.optional}
+          </Text>
+        </View>
         <DropdownChoice variant="editor" value={food.preparation} placeholder={labels.selectCooking} displayFallback={food.preparation || undefined} options={labels.cookingOptions.map((label) => ({ id: label, label }))} onChange={(preparation) => onChange({ preparation })} />
       </View>
-      <View style={styles.column}><FormField variant="editor" label={labels.detail} optionalLabel={m.optional} value={food.servingNote} placeholder={m.detailPlaceholder} onChangeText={(servingNote) => onChange({ servingNote })} /></View>
+      <View style={styles.column}>
+        <View style={styles.fieldHeading}>
+          <Text style={styles.label}>{labels.detail}</Text>
+          <Text style={styles.optional}>{m.optional}</Text>
+        </View>
+        <FormField variant="editor" label={labels.detail} hideLabel value={food.servingNote} placeholder={m.detailPlaceholder} onChangeText={(servingNote) => onChange({ servingNote })} />
+      </View>
     </View>
     <View style={styles.acceptance}>
       <View style={styles.fieldHeading}><Text style={styles.label}>{labels.acceptance}</Text><Text style={styles.optional}>{m.optional}</Text></View>
@@ -69,15 +116,17 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
         </Pressable>)}
       </View>
     </View>
-  </Dialog>;
+  </Dialog>
+  );
 }
 const styles = StyleSheet.create({
   ingredientFeedback: { color: colors.editorMuted, fontFamily: fonts.poppinsRegular, fontSize: 12, lineHeight: 18 },
   ingredientChoices: { gap: 2 },
   ingredientChoice: { minHeight: 30, paddingHorizontal: 8, justifyContent: 'center', backgroundColor: colors.foodIngredientBackground, borderRadius: 8 },
-  label: { color: colors.editorMuted, fontFamily: fonts.poppinsSemiBold, fontSize: 11, lineHeight: 16 },
+  label: { color: colors.editorMuted, fontFamily: fonts.poppinsSemiBold, fontSize: 12, lineHeight: 16 },
   optional: { color: colors.editorMuted, fontFamily: fonts.poppinsRegular, fontSize: 9, lineHeight: 16 },
   fieldHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 4, minHeight: 16 },
+  field: { gap: 6 },
   column: { flex: 1, minWidth: 0, gap: 6 },
   twoFields: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, zIndex: 2 },
   ingredients: { gap: 0 },

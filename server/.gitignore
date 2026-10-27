@@ -22,3 +22,8 @@ __pycache__/
 .idea/
 .vscode/
 .DS_Store
+
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# Generated coverage data and reports
+coverage/
+.coverage*

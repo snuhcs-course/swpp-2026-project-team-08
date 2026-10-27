@@ -1,6 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
 # Changed: server bootstraping
-
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 [project]
 name = "server"
 version = "0.1.0"
@@ -22,6 +22,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "aiosqlite>=0.22.1",
+    "coverage>=7.17.0",
     "httpx>=0.28.1",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
@@ -43,3 +44,16 @@ select = ["E", "F", "I", "UP", "B"]
 asyncio_mode = "auto"
 pythonpath = ["."]
 testpaths = ["tests"]
+
+# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+[tool.coverage.run]
+branch = true
+source = ["app"]
+relative_files = true
+
+[tool.coverage.report]
+include_namespace_packages = true
+precision = 2
+show_missing = true
+# Keep the denominator explicit: no executable source lines are excluded.
+exclude_lines = []

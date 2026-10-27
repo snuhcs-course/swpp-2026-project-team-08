@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Verify onboarding, navigation, and meal flow footer actions
+// Changed: Verify onboarding, navigation, meal flow actions, and step progress
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
@@ -644,6 +644,66 @@ test("pressing a pending home card passes the existing meal ID without creating 
   assert.equal(opened, undefined);
   card.props.onPress();
   assert.equal(opened, "existing-meal");
+});
+
+function findElement(node, predicate) {
+  if (!node || typeof node !== "object") return null;
+  if (predicate(node)) return node;
+  for (const child of React.Children.toArray(node.props?.children)) {
+    const found = findElement(child, predicate);
+    if (found) return found;
+  }
+  return null;
+}
+
+function assertSegmentProgress(root, filled) {
+  const bar = findElement(root, (node) => node.props?.accessibilityRole === "progressbar");
+  if (filled === null) {
+    assert.equal(bar, null);
+    return;
+  }
+  assert.ok(bar);
+  assert.deepEqual(bar.props.accessibilityValue, { min: 1, max: 5, now: filled });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(bar);
+  const segments = Array.from(container.firstElementChild.children);
+  const active = document.createElement("div");
+  active.style.backgroundColor = require("../../src/util/colors.ts").colors.homePrimary;
+  assert.equal(segments.length, 5);
+  assert.equal(segments.filter((segment) => segment.style.backgroundColor === active.style.backgroundColor).length, filled);
+}
+
+test("before-meal segments follow current screens forward, backward, and without a photo", async (t) => {
+  const { MealCheckinView } = require("../../src/features/meal-checkin/screens/MealCheckinView.tsx");
+  const base = { language: "en", draft: newDraft("test"), saveStatus: "saved" };
+  const harness = await renderHook(t, (props) => MealCheckinView(props), { props: base });
+  for (const [step, filled] of [
+    ["details", 1], ["photo", 2], ["preview", 3], ["foods", 4], ["complete", 5],
+    ["foods", 4], ["preview", 3], ["photo", 2], ["foods", 4],
+  ]) {
+    await harness.rerender({ ...base, draft: { ...base.draft, step } });
+    assertSegmentProgress(harness.current, filled);
+  }
+});
+
+test("after-meal segments advance to outcomes and stay correct on optional and skipped screens", async (t) => {
+  const { AfterMealReviewView } = require("../../src/features/after-meal-review/screens/AfterMealReviewView.tsx");
+  const { ReviewProgressHeader } = require("../../src/features/after-meal-review/components/ReviewProgressHeader.tsx");
+  const base = {
+    language: "en", draft: { step: "photo" }, saveStatus: "saved",
+    meal: { photo: null, foods: [], mealDate: "2026-10-27", mealType: "lunch", setting: "home" },
+  };
+  const harness = await renderHook(t, (props) => AfterMealReviewView(props), { props: base });
+  for (const [step, filled] of [
+    ["photo", 1], ["preview", 2], ["compare", 3], ["outcomes", 4],
+    ["difficulties", null], ["complete", 5], ["outcomes", 4], ["preview", 2],
+    ["outcomes", 4], ["photo", 1], ["outcomes", 4],
+  ]) {
+    await harness.rerender({ ...base, draft: { step } });
+    const header = findElement(harness.current, (node) => node.type === ReviewProgressHeader);
+    assert.ok(header);
+    assertSegmentProgress(ReviewProgressHeader(header.props), filled);
+  }
 });
 
 test("difficulty Continue and Skip save directly without a suggestion confirmation step", async (t) => {

@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 식사 정보 배치·재료 입력 조정 및 하단 UI 공통화
+// Changed: 식사 정보·재료 입력·하단 UI 조정 및 현재 단계별 진행 표시
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -53,15 +53,16 @@ export function MealCheckinView(p: MealCheckinViewProps) {
     "photo",
     "preview",
   ].includes(d.step);
-  const segment = ["details", "photo"].includes(d.step)
-    ? 0
-    : d.step === "preview"
-      ? 1
-      : ["method", "analyzing", "analysis-error"].includes(d.step)
-        ? 2
-        : d.step === "foods"
-          ? 3
-          : 4;
+  const segment = {
+    details: 0,
+    photo: 1,
+    preview: 2,
+    method: 3,
+    analyzing: 3,
+    "analysis-error": 3,
+    foods: 3,
+    complete: 4,
+  }[d.step];
 
   if (!savePanelHidden && d.step !== 'complete' && (p.saving || p.error === 'save')) return <MealSaveStatusView
     status={p.saving ? 'saving' : 'error'} language={p.language} photos={d.photo ? [d.photo.uri] : []}

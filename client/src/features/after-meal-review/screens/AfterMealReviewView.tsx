@@ -3,7 +3,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 식후 검토 글자 확대·하단 공통화 및 전체 흐름 버튼 디자인 통일
+// Changed: 식후 검토 글자·하단·버튼 조정 및 현재 단계별 진행 표시
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { useState } from "react";
@@ -45,16 +45,17 @@ export function AfterMealReviewView(
     "preview",
     "compare",
   ].includes(p.draft.step);
-  const phase =
-    p.draft.step === "photo"
-      ? 0
-      : p.draft.step === "preview"
-        ? 1
-        : ["compare", "comparing", "comparison-error"].includes(p.draft.step)
-          ? 3
-          : p.draft.step === "outcomes"
-            ? 3
-            : 4;
+  const phase = {
+    photo: 0,
+    preview: 1,
+    compare: 2,
+    comparing: 2,
+    "comparison-error": 2,
+    outcomes: 3,
+    difficulties: 4,
+    suggestions: 4,
+    complete: 4,
+  }[p.draft.step];
   const goAfterDifficulties = () => {
     if (p.saving || !p.canContinueOutcomes) return;
     setSavePanelHidden(false);
@@ -77,7 +78,7 @@ export function AfterMealReviewView(
           stacked={["outcomes", "difficulties"].includes(p.draft.step)}
           caption={p.draft.step === "preview" && !p.meal.photo ? a.draftFor(p.childName) : !["outcomes", "preview"].includes(p.draft.step) ? undefined : `${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${s.mealCheckin.settings[p.meal.setting]}`}
           backLabel={s.common.back}
-          progress={p.draft.step === "outcomes" ? 0 : phase}
+          progress={phase}
           hideProgress={p.draft.step === "difficulties"}
           onBack={p.onBack}
           disabled={p.saving}

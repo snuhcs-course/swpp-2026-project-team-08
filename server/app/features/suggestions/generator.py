@@ -15,6 +15,7 @@ from app.features.suggestions.ingredients import ChildRestrictions
 from app.features.suggestions.workflow.graph import graph
 from app.features.suggestions.workflow.llm import build_chat_model
 from app.features.suggestions.workflow.state import (
+    ChildContext,
     FoodInput,
     GeneratedSuggestion,
     SuggestionContext,
@@ -23,7 +24,8 @@ from app.features.suggestions.workflow.state import (
 
 logger = logging.getLogger(__name__)
 
-# agent ⇄ tools 도구 호출 루프와 재시도를 합친 그래프 단계 수의 상한.
+# AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim
+# compose ⇄ validate 재시도를 포함한 그래프 단계 수의 상한.
 RECURSION_LIMIT = 25
 
 
@@ -35,18 +37,21 @@ class GenerationRejectedError(AppError):
         self.problems = problems
 
 
+# AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim
 async def generate_suggestions(
     foods: list[FoodInput],
     restrictions: ChildRestrictions,
+    child: ChildContext,
     *,
     llm: BaseChatModel | None = None,
 ) -> list[GeneratedSuggestion]:
-    """음식마다 제안을 만든다. 검증을 통과하지 못하면 `GenerationRejectedError`를 던진다.
+    """대상마다 제안을 만든다. 검증을 통과하지 못하면 `GenerationRejectedError`를 던진다.
 
+    `restrictions`는 코드로 검증하는 제한이고, `child`는 프롬프트에 싣는 아이의 정보다.
     `llm`을 넘기지 않으면 설정에서 모델을 만든다 (테스트는 가짜 모델을 넘긴다).
     """
     output = await graph.ainvoke(
-        {"foods": foods, "restrictions": restrictions},
+        {"foods": foods, "restrictions": restrictions, "child": child},
         context=SuggestionContext(llm=llm or build_chat_model()),
         config={"recursion_limit": RECURSION_LIMIT},
     )

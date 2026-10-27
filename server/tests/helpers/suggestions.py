@@ -1,7 +1,7 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with Claude Sonnet 5.5, 2026-10-28, reviewed by Jaemin Kim
+# Changed: remove agent replies from the fake model setup
 """Explicit LLM responses for API integration; the real graph/validation still run."""
-
-from langchain_core.messages import AIMessage
 
 from app.features.suggestions.workflow.schemas import SuggestionDraft, SuggestionsDraft
 from tests.helpers.fake_chat_model import ScriptedChatModel
@@ -18,7 +18,7 @@ def suggestion_draft(food_id: str = "0", *, serving_tip: str = "작게 잘라 �
 
 
 def install_model(monkeypatch, batches):
-    model = ScriptedChatModel(replies=[AIMessage(content="ready")], drafts=batches)
+    model = ScriptedChatModel(drafts=batches)
     monkeypatch.setattr("app.features.suggestions.generator.build_chat_model", lambda: model)
     return model
 

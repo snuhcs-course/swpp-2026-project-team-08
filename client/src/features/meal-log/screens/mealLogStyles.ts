@@ -4,6 +4,8 @@
 // Changed: 식사 기록 화면 디자인 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Full-width meal sheet content and empty card layout
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
@@ -113,25 +115,18 @@ export const styles = StyleSheet.create({
   checkboxOn: { backgroundColor: colors.homePrimary, borderColor: colors.homePrimary },
   filterLabel: { color: colors.homeText, fontSize: 12, fontFamily: fonts.poppinsRegular },
   resultCount: { color: colors.homeMuted, fontSize: 12, fontFamily: fonts.poppinsRegular, marginTop: -4 },
-  sheet: {
-    backgroundColor: colors.surface,
-    borderRadius: 22,
+  controlsScroll: { paddingBottom: 220 },
+  controls: { ...topBarStyles.content, gap: 12 },
+  webSheet: {
+    flex: 1,
+    minHeight: 200,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     borderWidth: 1,
     borderColor: colors.homeBorder,
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 12,
-    gap: 10,
-    minHeight: 180,
+    overflow: 'hidden',
   },
-  handle: {
-    alignSelf: 'center',
-    width: 42,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: '#D8DEE7',
-    marginBottom: 4,
-  },
+  sheetContent: { paddingHorizontal: 12, paddingTop: 28, paddingBottom: 28, gap: 12 },
   record: {
     backgroundColor: colors.surface,
     borderRadius: 16,
@@ -160,7 +155,11 @@ export const styles = StyleSheet.create({
   awaitingText: { color: colors.homeMuted, fontSize: 10, fontFamily: fonts.poppinsSemiBold },
   reviewed: { backgroundColor: colors.successSurface },
   reviewedText: { color: colors.success, fontSize: 10, fontFamily: fonts.poppinsSemiBold },
-  empty: { alignItems: 'center', paddingVertical: 28, paddingHorizontal: 16, gap: 8 },
+  empty: {
+    alignItems: 'center', paddingVertical: 28, paddingHorizontal: 16, gap: 8,
+    backgroundColor: colors.homeBackground, borderRadius: 18,
+    borderWidth: 1, borderColor: colors.homeNavBorder,
+  },
   emptyTitle: { color: colors.homeText, fontSize: 16, fontFamily: fonts.poppinsSemiBold, textAlign: 'center' },
   emptyBody: { color: colors.homeMuted, fontSize: 13, fontFamily: fonts.poppinsRegular, textAlign: 'center' },
   checkinButton: {

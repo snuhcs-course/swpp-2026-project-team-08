@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, BackHandler, Text } from 'react-native';
@@ -40,9 +40,6 @@ export function MealCheckinScreen({
     onUpdate: model.update,
     onEditFood: model.edit,
     onChangeFood: model.changeFood,
-    // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
-    ingredientOptions: saved.ingredientOptions,
-    ingredientCatalogStatus: saved.ingredientCatalogStatus,
   });
   const s = copyFor(language);
   const exit = async () => {
@@ -118,7 +115,6 @@ export function MealCheckinScreen({
       removedName={model.removed?.food.name}
       onUndoRemove={model.undoRemove}
       suggestions={saved.suggestions}
-      onRetryIngredients={saved.retryIngredients}
       suggestionLinking={model.suggestionLinking}
       suggestionsLoading={saved.loading}
       suggestionsError={saved.error}

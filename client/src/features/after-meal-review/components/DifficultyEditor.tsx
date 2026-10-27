@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; align picker chevrons with the right inset
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; match inline difficulty menus
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
@@ -5,12 +6,16 @@
 
 import { UiAssetIcon, type UiAssetIconName } from "../../../components/UiAssetIcon";
 import { useState } from "react";
+import { NativeDropdown } from "../../../components/NativeDropdown";
 import {
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
+  type StyleProp,
+  type ViewStyle,
 } from "react-native";
 import type {
   DifficultyCategory,
@@ -38,6 +43,32 @@ const categoryIcons: Partial<Record<DifficultyCategory, UiAssetIconName>> = {
   texture: 'difficulty-texture', tasteType: 'difficulty-taste', smell: 'difficulty-smell', color: 'difficulty-color',
   pieceSize: 'difficulty-piece', arrangement: 'difficulty-arrangement', temperature: 'difficulty-temperature', notSure: 'difficulty-unsure',
 };
+
+function DifficultySelect({ label, value, placeholder, options, disabled = false, expanded, onPress, onChange, style }: {
+  label: string;
+  value: string;
+  placeholder: string;
+  options: readonly { id: string; label: string }[];
+  disabled?: boolean;
+  expanded: boolean;
+  onPress: () => void;
+  onChange: (value: string) => void;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const content = <>
+    <Text style={styles.selectText}>{label || placeholder}</Text>
+    <UiAssetIcon name="abc-select" />
+  </>;
+  if (Platform.OS === 'android' || Platform.OS === 'ios') return (
+    <NativeDropdown options={options} value={value} label={placeholder} disabled={disabled}
+      onChange={onChange} style={style} fieldStyle={styles.select}>
+      {content}
+    </NativeDropdown>
+  );
+  return <Pressable accessibilityRole="button" accessibilityLabel={placeholder}
+    accessibilityState={{ expanded, disabled }} disabled={disabled} onPress={onPress}
+    style={[styles.select, style]}>{content}</Pressable>;
+}
 export function DifficultyEditor({
   foodName,
   category,
@@ -90,40 +121,33 @@ export function DifficultyEditor({
         ? labels.questions[item]
         : (labels.values[item] ?? item);
   const valueSelect = (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={labels.valuePlaceholder}
-      accessibilityState={{
-        expanded: menu === "value",
-        disabled: !category || (isTexture && !subcategory),
-      }}
+    <DifficultySelect
+      label={value ? (labels.values[value] ?? value) : ''}
+      value={value}
+      placeholder={labels.valuePlaceholder}
+      options={options.map(item => ({ id: item, label: labels.examples[item]
+        ? `${labels.values[item] ?? item}\n${labels.examples[item]}` : (labels.values[item] ?? item) }))}
+      expanded={menu === "value"}
       disabled={!category || (isTexture && !subcategory)}
       onPress={() => setMenu(menu === "value" ? null : "value")}
-      style={[styles.select, !isTexture && styles.valueSelect]}
-    >
-      <Text style={styles.selectText}>
-        {value ? (labels.values[value] ?? value) : labels.valuePlaceholder}
-      </Text>
-      <UiAssetIcon name="abc-select" />
-    </Pressable>
+      onChange={onValue}
+      style={!isTexture && styles.valueSelect}
+    />
   );
   return (
     <View style={styles.root}>
       <Text style={styles.foodName}>{foodName}</Text>
       <View style={styles.row}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ expanded: menu === "category" }}
+        <DifficultySelect
+          label={category ? (labels.categories[category] ?? category) : ''}
+          value={category ?? ''}
+          placeholder={labels.categoryPlaceholder}
+          options={Object.entries(labels.categories).map(([id, label]) => ({ id, label: label ?? id }))}
+          expanded={menu === "category"}
           onPress={() => setMenu(menu === "category" ? null : "category")}
-          style={[styles.select, styles.categorySelect]}
-        >
-          <Text style={styles.selectText}>
-            {category
-              ? (labels.categories[category] ?? category)
-              : labels.categoryPlaceholder}
-          </Text>
-          <UiAssetIcon name="abc-select" />
-        </Pressable>
+          onChange={item => onCategory(item as DifficultyCategory)}
+          style={styles.categorySelect}
+        />
         {!isTexture && valueSelect}
         {isTexture && <View style={styles.spacer} />}
         <Pressable
@@ -139,19 +163,15 @@ export function DifficultyEditor({
       {isTexture && (
         <View style={styles.sentence}>
           <View style={styles.sentenceRow}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ expanded: menu === "question" }}
+            <DifficultySelect
+              label={subcategory ? (labels.questions[subcategory] ?? subcategory) : ''}
+              value={subcategory ?? ''}
+              placeholder={labels.textureQuestion}
+              options={Object.entries(labels.questions).map(([id, label]) => ({ id, label }))}
+              expanded={menu === "question"}
               onPress={() => setMenu(menu === "question" ? null : "question")}
-              style={styles.select}
-            >
-              <Text style={styles.selectText}>
-                {subcategory
-                  ? (labels.questions[subcategory] ?? subcategory)
-                  : labels.textureQuestion}
-              </Text>
-              <UiAssetIcon name="abc-select" />
-            </Pressable>
+              onChange={onSubcategory}
+            />
             <Text style={styles.sentenceText}>{labels.textureCause}</Text>
           </View>
           <View style={styles.sentenceRow}>

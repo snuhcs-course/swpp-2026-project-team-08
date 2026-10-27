@@ -1,8 +1,10 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 import { AppHeader } from '../../../components/AppHeader';
 import Feather from '@expo/vector-icons/Feather';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { NativeDropdown } from '../../../components/NativeDropdown';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
@@ -60,7 +62,7 @@ export function ChildProfileView({
                 style={styles.input}
               />
               <Text style={[styles.fieldLabel, { marginTop: 12 }]}>{m.ageGroup}</Text>
-              <AgeDropdown value={ageRange} label={ageLabel} options={ages} onChange={onAge} />
+              <AgeDropdown value={ageRange} label={ageLabel} title={m.ageGroup} options={ages} onChange={onAge} />
               {saveError ? <Text style={styles.errorText}>{copy.common.saveFailed}</Text> : null}
               <Pressable
                 accessibilityRole="button"
@@ -129,14 +131,21 @@ export function ChildProfileView({
 }
 
 function AgeDropdown({
-  value, label, options, onChange,
+  value, label, title, options, onChange,
 }: {
   value: string;
   label: string;
+  title: string;
   options: { id: string; label: string }[];
   onChange: (value: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  if (Platform.OS === 'android' || Platform.OS === 'ios') return (
+    <NativeDropdown options={options} value={value} onChange={onChange} label={title} fieldStyle={styles.emailField}>
+      <Text style={styles.emailValue}>{label}</Text>
+      <Feather name="chevron-down" size={16} color={colors.homeMuted} />
+    </NativeDropdown>
+  );
   return (
     <View>
       <Pressable

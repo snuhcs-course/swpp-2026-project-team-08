@@ -104,17 +104,77 @@ async def test_write_meal_uses_authenticated_user_and_resolves_ingredient(
         assert len(links) == 1 and links[0].ingredient_id == 212
 
 
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 @pytest.mark.asyncio
-async def test_write_meal_rejects_unknown_ingredient_without_saving(client: AsyncClient) -> None:
-    await seed_ingredients()
+@pytest.mark.parametrize("seeded", [False, True])
+async def test_write_meal_saves_free_text_ingredients(client: AsyncClient, seeded: bool) -> None:
+    if seeded:
+        await seed_ingredients()
     headers = await auth_headers(client, "meal@example.com")
     response = await client.put(
-        "/api/v1/meals", headers=headers, json=meal_payload("212", "없는 재료")
+        "/api/v1/meals", headers=headers, json=meal_payload(None, "우리집 양념")
     )
-    assert response.status_code == 404
-    assert response.json()["error_code"] == "INGREDIENT_NOT_FOUND"
+    assert response.status_code == 200, response.text
+    meal_id = response.json()["id"]
+    detail = await client.get(f"/api/v1/meals/{meal_id}", headers=headers)
+    ingredient = detail.json()["foods"][0]["ingredients"][0]
+    assert ingredient["name"] == "우리집 양념"
+    assert 0 < int(ingredient["id"]) < 2**63
+
+    edited = {"foods": meal_payload(None, "Another custom ingredient")["foods"]}
+    update = await client.put(f"/api/v1/meals/{meal_id}/foods", headers=headers, json=edited)
+    assert update.status_code == 200, update.text
+    assert update.json()["foods"][0]["ingredients"][0]["name"] == "Another custom ingredient"
+
+    repeated = await client.put(
+        "/api/v1/meals", headers=headers, json=meal_payload(None, "  우리집   양념  ")
+    )
+    assert repeated.status_code == 200, repeated.text
+    detail = await client.get(f"/api/v1/meals/{repeated.json()['id']}", headers=headers)
+    assert detail.json()["foods"][0]["ingredients"] == [ingredient]
+
+
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+@pytest.mark.asyncio
+@pytest.mark.parametrize("invalid_link", [False, True])
+async def test_invalid_free_text_meal_rolls_back_new_ingredients(
+    client: AsyncClient, invalid_link: bool
+) -> None:
+    headers = await auth_headers(client, "rollback@example.com")
+    payload = meal_payload(None, "Custom spice")
+    if invalid_link:
+        payload["suggestion_links"] = [
+            {"suggestion_id": "301", "food_id": "1", "ingredient_id": None}
+        ]
+    else:
+        payload["foods"][0]["ingredients"].append({"id": None, "name": " custom   SPICE "})
+    response = await client.put("/api/v1/meals", headers=headers, json=payload)
+    assert response.status_code == 422, response.text
+    expected_error = "INVALID_MEAL_LINK" if invalid_link else "DUPLICATE_INGREDIENT"
+    assert response.json()["error_code"] == expected_error
     async for session in app.dependency_overrides[get_session]():
         assert (await session.scalars(select(Meal))).all() == []
+        assert (await session.scalars(select(Ingredient))).all() == []
+
+
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+@pytest.mark.asyncio
+async def test_invalid_food_edit_preserves_the_meal_and_catalog(client: AsyncClient) -> None:
+    await seed_ingredients()
+    headers = await auth_headers(client, "edit-rollback@example.com")
+    saved = await client.put("/api/v1/meals", headers=headers, json=meal_payload())
+    meal_id = saved.json()["id"]
+    edited = meal_payload(None, "Custom spice")["foods"]
+    edited[0]["ingredients"].append({"id": None, "name": "custom SPICE"})
+    rejected = await client.put(
+        f"/api/v1/meals/{meal_id}/foods", headers=headers, json={"foods": edited}
+    )
+    assert rejected.status_code == 422, rejected.text
+    assert rejected.json()["error_code"] == "DUPLICATE_INGREDIENT"
+    detail = await client.get(f"/api/v1/meals/{meal_id}", headers=headers)
+    assert detail.json()["foods"][0]["ingredients"] == [{"id": "212", "name": "감자"}]
+    catalog = await client.get("/api/v1/ingredients", headers=headers)
+    assert len(catalog.json()) == 2
 
 
 @pytest.mark.asyncio

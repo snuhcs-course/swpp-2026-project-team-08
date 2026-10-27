@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 import { AppHeader } from '../../../components/AppHeader';
 import { fonts } from "../../../util/fonts";
@@ -265,8 +265,6 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             meal={m}
             common={s.common}
             {...p.foodInput}
-            ingredientFeedback={m.ingredientFeedback[p.foodInput.ingredientStatus]}
-            onRetryIngredients={p.foodInput.ingredientStatus === 'error' ? p.onRetryIngredients : undefined}
             onChange={p.onChangeFood}
             onSave={p.onSaveFood}
             onCancel={() => p.onUpdate({ editingFood: null })}

@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // https://docs.expo.dev/guides/using-eslint/
 const { defineConfig } = require('eslint/config');
 const expoConfig = require("eslint-config-expo/flat");
@@ -6,6 +7,13 @@ module.exports = defineConfig([
   expoConfig,
   {
     ignores: ["dist/*"],
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    settings: {
+      // Resolve public package exports such as @expo/ui/community/menu.
+      "import/resolver": { typescript: true },
+    },
   },
   {
     files: ["src/app/**/*.{ts,tsx}"],

@@ -47,7 +47,7 @@ function harness(os) {
   const h = {
     render() {
       cursor = 0;
-      input = useMealCheckinInputs({ draft, ingredientOptions: [], ingredientCatalogStatus: 'ready',
+      input = useMealCheckinInputs({ draft,
         onUpdate(patch) { draft = { ...draft, ...patch }; updates++; },
       }).date;
       return h;

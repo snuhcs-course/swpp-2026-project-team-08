@@ -1,4 +1,5 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 import { useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
@@ -8,6 +9,7 @@ import { formStyles as styles } from './formStyles';
 import { colors } from '../util/colors';
 import { fonts } from '../util/fonts';
 import { NativeDatePicker } from './NativeDatePicker';
+import { NativeDropdown } from './NativeDropdown';
 
 type Part = 0 | 1 | 2;
 type Parts = [number, number, number];
@@ -71,6 +73,17 @@ function DatePart({ index, value, year, month, label, locale, open, showLabel, o
   const format = (number: number) => index === 1
     ? new Date(year, number - 1, 1).toLocaleDateString(locale, { month: 'short' })
     : index === 2 ? String(number).padStart(2, '0') : String(number);
+  if (Platform.OS === 'android' || Platform.OS === 'ios') return (
+    <View style={dateStyles.partWrap}>
+      {showLabel && <Text style={dateStyles.fieldLabel}>{label}</Text>}
+      <NativeDropdown label={label} value={String(value)} onChange={number => onSelect(Number(number))}
+        options={Array.from({ length: count }, (_, i) => first + i).map(number => ({ id: String(number), label: format(number) }))}
+        fieldStyle={[dateStyles.partField, inputSize]}>
+        <Text style={[dateStyles.partText, textSize]}>{format(value)}</Text>
+        <AppIcon name="down" size={14} />
+      </NativeDropdown>
+    </View>
+  );
   return <View style={[dateStyles.partWrap, open && dateStyles.openPart]}>
     {showLabel && <Text style={dateStyles.fieldLabel}>{label}</Text>}
     <Pressable testID={`date-part-${index}`} accessibilityRole="button" accessibilityLabel={label}

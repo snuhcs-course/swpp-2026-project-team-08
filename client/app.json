@@ -57,7 +57,8 @@
         {
           "configureAndroidBackup": true
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ]
   }
 }

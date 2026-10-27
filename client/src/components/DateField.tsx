@@ -1,12 +1,13 @@
-// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
 import { AppButton } from './AppButton';
 import { AppIcon } from './AppIcon';
 import { formStyles as styles } from './formStyles';
 import { colors } from '../util/colors';
 import { fonts } from '../util/fonts';
+import { NativeDatePicker } from './NativeDatePicker';
 
 type Part = 0 | 1 | 2;
 type Parts = [number, number, number];
@@ -23,7 +24,8 @@ type FullDateProps = SizingProps & {
   onToggle: () => void;
   onFieldChange: (field: Part | null) => void;
   onNumberSelect: (number: number) => void;
-  onConfirm: () => void;
+  onDateChange: (date: Date) => void;
+  onConfirm: (date?: Date) => void;
 };
 type MonthYearProps = SizingProps & {
   variant: 'month-year';
@@ -102,17 +104,21 @@ function MonthYearField({ year, month, labels, onChange, size }: MonthYearProps)
   </View>;
 }
 
-function FullDateField({ label, labels, parts, open, field, onToggle, onFieldChange, onNumberSelect, onConfirm, size }: FullDateProps) {
+function FullDateField({ label, labels, parts, open, field, onToggle, onFieldChange, onNumberSelect, onDateChange, onConfirm, size }: FullDateProps) {
   const [year, month, day] = parts;
+  const native = Platform.OS === 'ios' || Platform.OS === 'android';
+  const value = new Date(year, month - 1, day);
   const displayDate = new Date(year, month - 1, day).toLocaleDateString(labels.locale, { day: 'numeric', month: 'long', year: 'numeric' });
   return <View style={dateStyles.wrap}>
     <Text style={styles.label}>{labels.date}</Text>
-    {!open && <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={onToggle} style={[styles.choice, dateStyles.field,
+    {(!open || native) && <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={onToggle} style={[styles.choice, dateStyles.field,
       size?.height !== undefined && { height: size.height, minHeight: size.height, paddingVertical: 0 },
       size?.borderRadius !== undefined && { borderRadius: size.borderRadius }]}>
       <Text style={[styles.text, size?.fontSize !== undefined && { fontSize: size.fontSize, lineHeight: Math.ceil(size.fontSize * 1.5) }]}>{label}</Text><AppIcon name="down" size={14} />
     </Pressable>}
-    {open && <View style={dateStyles.card}>
+    {open && native && <NativeDatePicker value={value} labels={labels}
+      onChange={onDateChange} onConfirm={onConfirm} onClose={onToggle} />}
+    {open && !native && <View style={dateStyles.card}>
       <Text style={dateStyles.cardTitle}>{labels.select}</Text>
       <Text style={dateStyles.displayDate}>{displayDate}</Text>
       <DateParts parts={parts} labels={labels} visibleParts={[1, 2, 0]} showLabels size={size}

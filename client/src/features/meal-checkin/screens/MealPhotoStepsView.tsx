@@ -104,7 +104,7 @@ export function MealPhotoStepsView({
       </View>
       {sources}
       <Pressable accessibilityRole="button" onPress={() => p.onGo('foods')} style={styles.manualRoute}>
-        <View style={styles.sourceIcon}><UiAssetIcon name="meal-manual" /></View>
+        {/* <View style={styles.sourceIcon}><UiAssetIcon name="meal-manual" /></View> */}
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={styles.manualRouteLabel}>{m.skipPhoto}</Text>
           <Text style={ui.muted}>{m.skipPhotoHint}</Text>

@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 import { useState } from 'react';
 import type { FoodItem, MealDraft } from '../../../types/meal';
 import { localDate } from '../../../util/date';
@@ -47,8 +47,13 @@ export function useMealCheckinInputs({
     setDateParts(next);
     setDateField(null);
   };
-  const confirmDate = () => {
-    const [year, month, day] = dateParts;
+  const changeDate = (date: Date) => {
+    setDateParts([date.getFullYear(), date.getMonth() + 1, date.getDate()]);
+  };
+  const confirmDate = (date?: Date) => {
+    const [year, month, day] = date
+      ? [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+      : dateParts;
     const dayCount = new Date(year, month, 0).getDate();
     onUpdate({ mealDate: localDate(new Date(year, month - 1, Math.min(day, dayCount))) });
     setDateField(null);
@@ -81,6 +86,7 @@ export function useMealCheckinInputs({
       onToggle: toggleDate,
       onFieldChange: setDateField,
       onNumberSelect: selectDateNumber,
+      onDateChange: changeDate,
       onConfirm: confirmDate,
     },
     food: {

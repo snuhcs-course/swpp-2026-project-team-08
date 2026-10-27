@@ -1,4 +1,4 @@
-// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 import type { FoodItem, MealDraft, MealStep, PhotoSource } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
 // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
@@ -12,7 +12,8 @@ type DateInput = {
   onToggle: () => void;
   onFieldChange: (field: 0 | 1 | 2 | null) => void;
   onNumberSelect: (number: number) => void;
-  onConfirm: () => void;
+  onDateChange: (date: Date) => void;
+  onConfirm: (date?: Date) => void;
 };
 
 type FoodInput = {

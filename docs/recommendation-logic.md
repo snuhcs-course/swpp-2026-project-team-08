@@ -62,7 +62,7 @@
 - 손도 대지 않은 음식 · 재료는 이 사용자의 식사만, 최근 식사부터 각각 최대 10개(`queries.MAX_REFUSED`)를 읽고, 같은 이름은 한 번만 싣는다.
 - 프로필이 없으면 빈 값으로 채운다.
 - 온보딩 기능의 `service.py`를 부르지 않고 모델을 직접 조회한다. 다른 기능의 `service.py`를 호출하면 안 된다.
-  (출처: [`server/AGENTS.md`](../server/AGENTS.md)의 "하지 말 것", [`server/docs/architecture.md`](../server/docs/architecture.md) §2.5)
+  (출처: [`server/docs/architecture.md`](../server/docs/architecture.md) §3 "의존성 방향과 기능 간 규칙")
 
 ## 4. 재료 제한 규칙
 

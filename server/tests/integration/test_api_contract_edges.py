@@ -9,7 +9,6 @@ from httpx import AsyncClient
 from app.core.database import Base, get_session
 from app.core.timezone import now_kst
 from app.features.suggestions.workflow.nodes import MAX_ATTEMPTS
-from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
 from app.main import app
 from app.models import Ingredient
 from tests.helpers.auth import auth_headers as login
@@ -150,13 +149,7 @@ async def test_suggestion_target_validation_and_generation_failure_are_atomic(
         )
     ).status_code == 422
 
-    # AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim
-    async def invalid_generator(
-        _: list[FoodInput], _restrictions: object, _child: object
-    ) -> list[GeneratedSuggestion]:
-        return []
-
-    monkeypatch.setattr("app.features.suggestions.service.generate_suggestions", invalid_generator)
+    model = install_model(monkeypatch, [batch()] * MAX_ATTEMPTS)
     failed = await client.post(path, headers=owner, json={"targets": [target]})
     assert failed.status_code == 502
     assert len(model.compose_inputs) == MAX_ATTEMPTS
@@ -176,22 +169,7 @@ async def test_saved_filter_decision_validation_and_undo(
     meal_id = await save_meal(client, owner, "2026-10-20")
     assert (await review_meal(client, owner, meal_id)).status_code == 200
 
-    # AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim
-    async def generator(
-        items: list[FoodInput], _restrictions: object, _child: object
-    ) -> list[GeneratedSuggestion]:
-        return [
-            GeneratedSuggestion(
-                food_id=item.id,
-                what_to_try="소량 제공",
-                why_this_may_help="익숙한 음식",
-                serving_tip="작게 잘라 제공",
-                used_ingredients=(),
-            )
-            for item in items
-        ]
-
-    monkeypatch.setattr("app.features.suggestions.service.generate_suggestions", generator)
+    install_model(monkeypatch, [batch("0")])
     created = await client.post(
         f"/api/v1/meals/{meal_id}/suggestions",
         headers=owner,

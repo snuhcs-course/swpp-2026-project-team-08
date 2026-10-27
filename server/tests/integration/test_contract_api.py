@@ -8,7 +8,6 @@ from httpx import AsyncClient
 
 from app.core.database import get_session
 from app.core.timezone import now_kst
-from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
 from app.main import app
 from app.models import Ingredient
 from tests.helpers.auth import auth_headers
@@ -22,22 +21,7 @@ async def test_meal_review_suggestion_and_history_flow(
     async for session in app.dependency_overrides[get_session]():
         session.add_all([Ingredient(id=182, name="당근"), Ingredient(id=212, name="감자")])
 
-    # AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim
-    async def fake_generate(
-        inputs: list[FoodInput], _restrictions: object, _child: object
-    ) -> list[GeneratedSuggestion]:
-        return [
-            GeneratedSuggestion(
-                food_id=item.id,
-                what_to_try=f"{item.name} 소량 제공",
-                why_this_may_help="익숙한 형태로 제공",
-                serving_tip="작게 잘라 제공",
-                used_ingredients=(),
-            )
-            for item in inputs
-        ]
-
-    monkeypatch.setattr("app.features.suggestions.service.generate_suggestions", fake_generate)
+    install_model(monkeypatch, [batch("0", "1")])
     owner = await auth_headers(client, "owner@example.com")
     stranger = await auth_headers(client, "stranger@example.com")
     saved = await client.put(

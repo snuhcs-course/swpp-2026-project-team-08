@@ -1,4 +1,6 @@
 <!-- AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-28, reviewed by Jaemin Kim -->
+<!-- Changed: remove tool-call wording after the tool node was removed -->
 
 # Backend 테스트 기준
 
@@ -7,7 +9,7 @@
 | 종류 | 확인할 것 | 예시 |
 | --- | --- | --- |
 | Unit | 한 함수·모듈의 입력과 결과 | DTO 검증, 생성 결과 검증, 토큰·비밀번호 처리 |
-| Integration | 서로 다른 책임을 가진 실제 코드가 함께 만드는 결과 | HTTP 요청 → 인증 → 서비스 → DB 저장·조회, 추천 그래프의 도구 호출 → 검증 → 재시도 |
+| Integration | 서로 다른 책임을 가진 실제 코드가 함께 만드는 결과 | HTTP 요청 → 인증 → 서비스 → DB 저장·조회, 추천 그래프의 생성 → 검증 → 재시도 |
 | E2E | 실행 중인 시스템을 통한 전체 사용자 흐름 | 실제 앱에서 가입 → 식사 기록 → 기록 확인 |
 
 **파일 개수, 비동기 여부, HTTP 호출 여부만으로 분류하지 않는다.** 실제 코드로 연결해 확인하는 책임으로 판단한다. 서비스 하나를 실행하면서 의존성을 모두 대체하면 Unit이고, 실제 서비스와 DB를 함께 확인하면 Integration이다.
@@ -33,7 +35,7 @@ Unit은 `tests/unit/`, Integration은 `tests/integration/`에 둔다. 공통 준
 
 ## Integration Test
 
-- 무엇을 연결하는지 명시한다. 예: **라우터 → 인증 의존성 → 서비스 → ORM/DB**, **추천 그래프 → 도구 → 검증 → 재시도**.
+- 무엇을 연결하는지 명시한다. 예: **라우터 → 인증 의존성 → 서비스 → ORM/DB**, **추천 그래프 → 검증 → 재시도**.
 - 연결 대상은 실제 구현을 사용하고, mock은 그 연결 바깥의 외부 서비스로 제한한다. 서비스를 mock한 라우터 검사로 실제 DB 저장을 검증했다고 판단하지 않는다.
 - API 검사는 상태 코드·응답 본문뿐 아니라 필요한 저장 결과를 확인한다. 오류 시 기존 데이터 유지, 부분 저장 방지, 다른 사용자의 데이터 접근 거부도 검사한다.
 - 요청 DTO 오류와 서비스의 업무 규칙 오류를 구분한다. 계약에 정해진 `error_code`와 `details`, 응답에서 제외해야 할 민감한 필드를 검사한다.
@@ -59,7 +61,7 @@ Unit은 `tests/unit/`, Integration은 `tests/integration/`에 둔다. 공통 준
 | 온보딩 요청 데이터 | [`fixtures/onboarding.py`](fixtures/onboarding.py)의 `request_body`: 호출마다 새 객체 |
 | 추천 API의 가짜 LLM 설정 | [`helpers/suggestions.py`](helpers/suggestions.py)의 `install_model`: 생성 함수·그래프는 실제 구현 유지 |
 | 외부 의존성 대체 | pytest의 `monkeypatch`, `unittest.mock`의 `Mock` / `AsyncMock` |
-| LLM 응답·도구 호출 순서 제어 | [`fake_chat_model.py`](helpers/fake_chat_model.py)의 `ScriptedChatModel` |
+| LLM 응답 순서 제어 | [`fake_chat_model.py`](helpers/fake_chat_model.py)의 `ScriptedChatModel` |
 | Unit 작성 예 | [`test_suggestion_validation.py`](unit/test_suggestion_validation.py): 입력과 생성 결과의 검증 |
 | API Integration 작성 예 | [`test_auth.py`](integration/test_auth.py): 가입·로그인·인증과 DB 연결 |
 | 그래프 Integration 작성 예 | [`test_suggestion_workflow.py`](integration/test_suggestion_workflow.py): 실제 그래프와 가짜 LLM 연결 |

@@ -4,7 +4,7 @@
 """제안 생성 워크플로 테스트. 가짜 모델로 그래프 전체를 실행하고 LLM은 호출하지 않는다."""
 
 import pytest
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
 from app.features.suggestions.generator import GenerationRejectedError, generate_suggestions
 from app.features.suggestions.ingredients import ChildRestrictions, RestrictionId
@@ -108,11 +108,42 @@ async def test_invalid_result_is_retried_with_feedback():
 
     assert results[0].used_ingredients == ("carrot",)
     assert len(llm.compose_inputs) == 2
-    retry_message = llm.compose_inputs[1][-1]
-    assert isinstance(retry_message, HumanMessage)
-    assert "땅콩버터" in retry_message.content and "peanut" in retry_message.content
-    # 첫 시도에는 재시도 지시문이 없다.
-    assert "땅콩버터" not in text_of(llm.compose_inputs[0][-1:])
+    # 첫 시도에는 이전 응답도 재시도 메시지도 없다.
+    assert not any(isinstance(m, AIMessage | ToolMessage) for m in llm.compose_inputs[0])
+    # 재시도에는 이전 응답(도구 호출)과, 그 호출에 대한 결과로서 문제를 알리는 ToolMessage가 간다.
+    previous, feedback = llm.compose_inputs[1][-2:]
+    assert isinstance(previous, AIMessage) and "땅콩버터" in str(previous.tool_calls)
+    assert isinstance(feedback, ToolMessage)
+    assert feedback.tool_call_id == previous.tool_calls[0]["id"]
+    assert "땅콩버터" in feedback.content and "peanut" in feedback.content
+
+
+async def test_retry_feedback_is_a_user_message_when_response_has_no_tool_call():
+    llm = ScriptedChatModel(
+        drafts=[drafts(["땅콩버터"], ["rice"]), drafts(["carrot"], ["rice"])],
+        tool_calling=False,
+    )
+
+    await generate_suggestions(FOODS, RESTRICTIONS, CHILD, llm=llm)
+
+    previous, feedback = llm.compose_inputs[1][-2:]
+    assert isinstance(previous, AIMessage) and "땅콩버터" in previous.content
+    assert isinstance(feedback, HumanMessage) and "peanut" in feedback.content
+
+
+async def test_history_keeps_every_previous_response_and_feedback():
+    llm = ScriptedChatModel(
+        drafts=[
+            drafts(["땅콩버터"], ["rice"]),
+            drafts(["땅콩"], ["rice"]),
+            drafts(["carrot"], ["rice"]),
+        ]
+    )
+
+    await generate_suggestions(FOODS, RESTRICTIONS, CHILD, llm=llm)
+
+    third = llm.compose_inputs[2]
+    assert [type(m) for m in third[2:]] == [AIMessage, ToolMessage, AIMessage, ToolMessage]
 
 
 async def test_rejected_after_attempts_are_exhausted():

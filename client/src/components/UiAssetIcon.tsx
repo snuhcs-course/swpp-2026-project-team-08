@@ -1,7 +1,7 @@
-// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
-// Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
+// Changed: 추천 카드·저장된 추천 기능 추가
 
 import { Image } from 'expo-image';
 
@@ -55,7 +55,6 @@ const iconAssets = {
   'onboarding-calendar': require('../../assets/ui/onboarding-calendar.svg'),
   'review-shield': require('../../assets/ui/review-shield.svg'),
   'review-users': require('../../assets/ui/review-users.svg'),
-  'review-filter': require('../../assets/ui/review-filter.svg'),
   'review-sparkles': require('../../assets/ui/review-sparkles.svg'),
   'review-heart': require('../../assets/ui/review-heart.svg'),
   'review-utensils': require('../../assets/ui/review-utensils.svg'),
@@ -97,7 +96,7 @@ const size: Record<UiAssetIconName, number> = {
   'meal-manual': 18,
   'meal-selection-check': 12,
   'onboarding-cloud-check': 13, 'onboarding-shield': 13, 'onboarding-calendar': 13,
-  'review-shield': 14, 'review-users': 14, 'review-filter': 14,
+  'review-shield': 14, 'review-users': 14,
   'review-sparkles': 14, 'review-heart': 14, 'review-utensils': 14,
   'review-info': 14, 'review-route': 14, 'review-calendar': 14,
 };

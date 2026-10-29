@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+# Changed: Register meal ingredient model
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
 # Changed: server bootstraping
 # AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
@@ -15,6 +17,7 @@ from app.models.food_item import FoodItem
 from app.models.ingredient import Ingredient
 from app.models.meal import Meal
 from app.models.meal_food_ingredient import MealFoodIngredient
+from app.models.meal_ingredient import MealIngredient
 from app.models.review_food_result import ReviewFoodResult
 from app.models.review_ingredient_result import ReviewIngredientResult
 from app.models.safe_food import SafeFood
@@ -29,7 +32,7 @@ __all__ = ["User"]
 from app.models.suggestion_meal_link import SuggestionMealLink
 
 __all__ += ["UserProfile", "UserProfileChoice", "SafeFood", "UserConsent"]
-__all__ += ["Ingredient"]
+__all__ += ["Ingredient", "MealIngredient"]
 __all__ += ["MealFoodIngredient"]
 __all__ += ["Meal", "FoodItem"]
 __all__ += ["SuggestionMealLink"]

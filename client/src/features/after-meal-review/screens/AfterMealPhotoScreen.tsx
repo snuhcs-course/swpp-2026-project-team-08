@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 식후 검토 글자 크기 및 가독성 개선
 
 import { AppHeader, topBarLayout } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
@@ -32,5 +34,5 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.homeBackground },
   frame: { marginHorizontal: topBarLayout.inset, marginTop: topBarLayout.bodyGap, marginBottom: 16, flex: 1, borderWidth: 1, borderColor: colors.mealReviewBorder, borderRadius: 14, overflow: 'hidden', justifyContent: 'center' },
   image: { flex: 1, width: '100%', height: '100%' },
-  error: { color: colors.error, textAlign: 'center', fontSize: 12 },
+  error: { color: colors.error, textAlign: 'center', fontSize: 16 },
 });

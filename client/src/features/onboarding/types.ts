@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 제외된 온보딩 질문 타입 제거
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
 
@@ -5,8 +7,7 @@ import type { ChildProfile } from '../../types/profile';
 
 export const steps = [
   'account', 'consent', 'child', 'allergies', 'restrictions', 'family',
-  'approaches', 'texture', 'smell', 'taste', 'presentation', 'temperature',
-  'familiarity', 'safe-foods', 'review',
+  'safe-foods', 'review',
 ] as const;
 
 export type OnboardingStep = (typeof steps)[number];
@@ -20,8 +21,7 @@ export function emptyDraft(): OnboardingDraft {
   return {
     step: 'account', caregiverName: '', caregiverEmail: '', childName: '', ageRange: '',
     consent: { accountPrivacy: false, photoAnalysis: false, aiTraining: false },
-    allergies: [], restrictions: [], familyFoods: [], approaches: [], texture: [],
-    smell: '', taste: [], presentation: [], temperature: '', familiarity: '',
+    allergies: [], restrictions: [], familyFoods: [],
     safeFoods: [], noSafeFoods: false,
     safeFoodInput: { name: '', preparation: '', presentationNote: '' },
   };

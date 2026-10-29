@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+# Changed: Keep catalog resolution read-only
 """Shared ingredient lookups for APIs that store ingredient IDs."""
 
 from sqlalchemy import select

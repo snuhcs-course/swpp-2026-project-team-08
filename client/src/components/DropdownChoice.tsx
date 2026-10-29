@@ -1,13 +1,15 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 
 import { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../util/colors';
 import { UiAssetIcon } from './UiAssetIcon';
 import { fonts } from '../util/fonts';
+import { NativeDropdown } from './NativeDropdown';
 
 export function DropdownChoice({ options, value, onChange, placeholder, displayFallback, variant = 'onboarding' }: {
   variant?: 'onboarding' | 'editor';
@@ -19,6 +21,13 @@ export function DropdownChoice({ options, value, onChange, placeholder, displayF
 }) {
   const [open, setOpen] = useState(false);
   const selected = options.find((option) => option.id === value);
+  if (Platform.OS === 'android' || Platform.OS === 'ios') return (
+    <NativeDropdown options={options} value={value} onChange={onChange} label={placeholder}
+      fieldStyle={[styles.field, variant === 'editor' && styles.editorField]}>
+      <Text style={[styles.value, variant === 'editor' && styles.editorValue]}>{selected?.label ?? displayFallback ?? placeholder}</Text>
+      {variant === 'editor' ? <UiAssetIcon name="abc-select" /> : <Feather name="chevron-down" size={15} color={colors.onboardingText} />}
+    </NativeDropdown>
+  );
   return (
     <View style={styles.wrap}>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={() => setOpen(!open)} style={[styles.field, variant === 'editor' && styles.editorField, open && styles.activeField]}>

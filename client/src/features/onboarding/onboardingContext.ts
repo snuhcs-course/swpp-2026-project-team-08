@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
 
@@ -6,8 +7,8 @@ import type { SafeFood } from '../../types/profile';
 import type { OnboardingDraft, OnboardingStep } from './types';
 
 export type SaveStatus = 'saving' | 'saved' | 'error';
-export type DraftField = keyof Pick<OnboardingDraft, 'caregiverName' | 'caregiverEmail' | 'childName' | 'ageRange' | 'smell' | 'temperature' | 'familiarity'>;
-export type ListField = keyof Pick<OnboardingDraft, 'allergies' | 'restrictions' | 'familyFoods' | 'approaches' | 'texture' | 'taste' | 'presentation'>;
+export type DraftField = keyof Pick<OnboardingDraft, 'caregiverName' | 'caregiverEmail' | 'childName' | 'ageRange'>;
+export type ListField = keyof Pick<OnboardingDraft, 'allergies' | 'restrictions' | 'familyFoods'>;
 export type ConsentField = keyof OnboardingDraft['consent'];
 
 export type OnboardingContextValue = {

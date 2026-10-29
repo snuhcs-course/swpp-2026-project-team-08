@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
 
 
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 class UserProfileChoice(Base):
     __tablename__ = "user_profile_choices"
     __table_args__ = (
@@ -14,8 +15,7 @@ class UserProfileChoice(Base):
             "(code IS NULL) <> (custom_name IS NULL)", name="ck_user_profile_choices_value"
         ),
         CheckConstraint(
-            "category IN ('allergy','restriction','family_food','dietary_approach',"
-            "'difficult_texture','difficult_taste','presentation_preference')",
+            "category IN ('allergy','restriction','family_food')",
             name="ck_user_profile_choices_category",
         ),
         CheckConstraint("code IS NULL OR trim(code) <> ''", name="ck_user_profile_choices_code"),

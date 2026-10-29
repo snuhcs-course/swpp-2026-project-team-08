@@ -1,10 +1,13 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+# Changed: Include live API coverage with all client test files
 name: Client CI
 
 on:
   pull_request:
     paths:
       - "client/**"
+      - "server/**"
       - ".github/workflows/client-ci.yml"
 
 permissions:
@@ -25,6 +28,8 @@ jobs:
         check:
           - name: Tests
             command: npm test
+          - name: API Tests
+            command: cd ../server && uv run python -m tests.run_client_integration
           - name: Lint
             command: npm run lint
           - name: Typecheck
@@ -41,6 +46,14 @@ jobs:
           node-version: "26.0.0"
           cache: npm
           cache-dependency-path: client/package-lock.json
+      - uses: astral-sh/setup-uv@v6
+        if: matrix.check.name == 'API Tests'
+        with:
+          enable-cache: true
+          cache-dependency-glob: server/uv.lock
+      - name: Install API test dependencies
+        if: matrix.check.name == 'API Tests'
+        run: uv sync --frozen --project ../server
       - name: Install dependencies
         run: npm ci --ignore-scripts
       - name: ${{ matrix.check.name }}

@@ -1,8 +1,11 @@
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 결과 설명 모달 글자 확대 및 확인 버튼 디자인 통일
 
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { MealFlowButton } from '../../../components/MealFlowButton';
 import { outcomeValues, type Outcome } from '../../../types/afterMealReview';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
@@ -24,17 +27,15 @@ export function OutcomeDefinitionsModal({ visible, title, intro, labels, descrip
         <View style={styles.card}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.intro}>{intro}</Text>
-          {[...outcomeValues, 'unanswered' as const].map((value) => (
+          {outcomeValues.map((value) => (
             <View key={value} style={styles.row}>
               <Text style={[styles.badge, { backgroundColor: badgeColors[value][0], color: badgeColors[value][1] }]}>
-                {(value === 'unanswered' ? unansweredLabel : labels[value]).toLocaleUpperCase()}
+                {(labels[value]).toLocaleUpperCase()}
               </Text>
               <Text style={styles.description}>{descriptions[value]}</Text>
             </View>
           ))}
-          <Pressable accessibilityRole="button" onPress={onClose} style={styles.button}>
-            <Text style={styles.buttonText}>{gotIt}</Text>
-          </Pressable>
+          <MealFlowButton label={gotIt} onPress={onClose} style={styles.button} />
         </View>
       </View>
     </Modal>
@@ -49,12 +50,11 @@ const badgeColors = {
 const styles = StyleSheet.create({
   scrim: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'center', paddingHorizontal: 18 },
   card: { backgroundColor: colors.surface, borderRadius: 20, borderWidth: 1, borderColor: colors.suggestionCardBorder, padding: 16, gap: 6, minHeight: 402 },
-  title: { color: colors.reviewHeading, fontSize: 18, fontFamily: fonts.poppinsBold },
-  intro: { color: colors.outcomeDefinitionText, fontSize: 10, lineHeight: 15, fontFamily: fonts.poppinsRegular },
+  title: { color: colors.reviewHeading, fontSize: 22, fontFamily: fonts.poppinsBold },
+  intro: { color: colors.outcomeDefinitionText, fontSize: 14, lineHeight: 20, fontFamily: fonts.poppinsRegular },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, minHeight: 44 },
-  badge: {  overflow: 'hidden', borderRadius: 999, backgroundColor: colors.homeSelected, color: colors.homePrimary, paddingVertical: 5, paddingHorizontal: 9, textAlign: 'center', fontSize: 9, letterSpacing: 0.6, fontFamily: fonts.poppinsBold },
+  badge: {  overflow: 'hidden', borderRadius: 999, backgroundColor: colors.homeSelected, color: colors.homePrimary, paddingVertical: 5, paddingHorizontal: 9, textAlign: 'center', fontSize: 12, letterSpacing: 0.6, fontFamily: fonts.poppinsBold },
   warningBadge: { backgroundColor: colors.safetySurface, color: colors.error },
-  description: { flex: 1, color: colors.outcomeDefinitionText, fontSize: 10, lineHeight: 14, fontFamily: fonts.poppinsRegular },
-  button: { marginTop: 10, width: 133, height: 38, alignSelf: 'center', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.outcomeTastedText, borderRadius: 999 },
-  buttonText: { color: colors.surface, fontSize: 12, fontFamily: fonts.poppinsSemiBold },
+  description: { flex: 1, color: colors.outcomeDefinitionText, fontSize: 14, lineHeight: 20, fontFamily: fonts.poppinsRegular },
+  button: { marginTop: 10 },
 });

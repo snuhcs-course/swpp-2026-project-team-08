@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 네이티브 날짜 선택 및 재료 입력 연동
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -119,7 +121,6 @@ export function MealCheckinScreen({
       removedName={model.removed?.food.name}
       onUndoRemove={model.undoRemove}
       suggestions={saved.suggestions}
-      ingredientOptions={saved.ingredientOptions}
       suggestionLinking={model.suggestionLinking}
       suggestionsLoading={saved.loading}
       suggestionsError={saved.error}

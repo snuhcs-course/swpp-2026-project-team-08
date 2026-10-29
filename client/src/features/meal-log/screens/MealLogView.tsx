@@ -4,27 +4,25 @@
 // Changed: 식사 기록 화면 디자인 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Three-height native meal sheet defaulting to search and filters only
 
 import { AppHeader } from '../../../components/AppHeader';
-import { Feather } from '@expo/vector-icons';
-import { Image } from 'expo-image';
-import { useState } from 'react';
+import { useState, type Ref } from 'react';
 import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
   Platform,
   Pressable,
   RefreshControl,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from 'react-native';
-import { AppButton } from '../../../components/AppButton';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import { MealLogCalendar } from '../components/MealLogCalendar';
+import { MealLogList } from '../components/MealLogList';
+import { MealLogSheetLayout, type MealLogSheetHandle } from '../components/MealLogSheetLayout';
 import { styles } from './mealLogStyles';
 
 export type MealLogRow = {
@@ -52,6 +50,8 @@ type Props = {
   loading: boolean;
   error: boolean;
   refreshing: boolean;
+  active: boolean;
+  sheetRef: Ref<MealLogSheetHandle>;
   onBack: () => void;
   onRefresh: () => void;
   onPrevMonth: () => void;
@@ -67,28 +67,38 @@ type Props = {
   onGoCheckin: () => void;
 };
 
-export function MealLogView(p: Props) {
+export function MealLogView({ sheetRef, ...p }: Props) {
   const s = copyFor(p.language);
   const m = s.mealLog;
   const locale = p.language === 'ko' ? 'ko-KR' : 'en-US';
-  const [searchFocused, setSearchFocused] = useState(false);
-  const searching = !!p.query.trim();
-  const emptySearch = searching && !p.records.length;
-  const emptyFirst = !p.hasMeals && !searching;
+  const [controlsHeight, setControlsHeight] = useState(0);
+  const [filtersHeight, setFiltersHeight] = useState(72);
+  const [minimum, setMinimum] = useState(Platform.OS !== 'web');
+  if (!p.active && minimum !== (Platform.OS !== 'web')) {
+    setMinimum(Platform.OS !== 'web');
+  }
 
   return (
-    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <AppHeader title={m.title} backLabel={s.common.back} onBack={p.onBack} />
-      <ScrollView
-        style={styles.root}
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl refreshing={p.refreshing} onRefresh={p.onRefresh} tintColor={colors.homePrimary} />
-        }
-      >
-        {!searchFocused ? (
-          <>
+    <MealLogSheetLayout ref={sheetRef} controlsHeight={controlsHeight} filtersHeight={filtersHeight}
+      onMinimumChange={setMinimum} active={p.active} onBack={p.onBack}
+      sheet={<MealLogList minimum={minimum} onFiltersLayout={setFiltersHeight}
+        language={p.language} records={p.records} query={p.query}
+        hasMeals={p.hasMeals} loading={p.loading} error={p.error}
+        search={p.search} fromLabel={p.fromLabel} unreviewedOnly={p.unreviewedOnly}
+        onSearch={p.onSearch} onSubmitSearch={p.onSubmitSearch}
+        onToggleUnreviewed={p.onToggleUnreviewed}
+        onRefresh={p.onRefresh} onOpenMeal={p.onOpenMeal} onGoCheckin={p.onGoCheckin} />}>
+      <View style={styles.root}>
+        <AppHeader title={m.title} backLabel={s.common.back} onBack={p.onBack} />
+        <ScrollView
+          style={styles.root}
+          contentContainerStyle={styles.controlsScroll}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl refreshing={p.refreshing} onRefresh={p.onRefresh} tintColor={colors.homePrimary} />
+          }
+        >
+          <View style={styles.controls} onLayout={event => setControlsHeight(event.nativeEvent.layout.height)}>
             {p.draftMeta ? (
               <View style={styles.continueBlock} accessibilityLabel={m.continueLogging}>
                 <Text style={styles.sectionLabel}>{m.continueLogging}</Text>
@@ -134,97 +144,9 @@ export function MealLogView(p: Props) {
               onClear={p.onClearDate}
               onMonthYear={p.onMonthYear}
             />
-          </>
-        ) : null}
-        <View style={[styles.search, searchFocused && styles.searchFocused]}>
-          <TextInput
-            value={p.search}
-            onChangeText={p.onSearch}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
-            onSubmitEditing={p.onSubmitSearch}
-            placeholder={m.searchPlaceholder}
-            placeholderTextColor={colors.homeMuted}
-            accessibilityLabel={m.searchPlaceholder}
-            style={styles.searchInput}
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="search"
-          />
-          <Pressable accessibilityRole="button" accessibilityLabel={m.searchPlaceholder} onPress={p.onSubmitSearch} hitSlop={8}>
-            <Feather name="search" size={16} color={colors.homeMuted} />
-          </Pressable>
-        </View>
-        <View style={styles.filterRow}>
-          <Text style={styles.fromLabel}>{p.fromLabel}</Text>
-          <Pressable
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: p.unreviewedOnly }}
-            onPress={p.onToggleUnreviewed}
-            style={styles.filter}
-          >
-            <View style={[styles.checkbox, p.unreviewedOnly && styles.checkboxOn]}>
-              {p.unreviewedOnly ? <Feather name="check" size={12} color={colors.surface} /> : null}
-            </View>
-            <Text style={styles.filterLabel}>{m.unreviewedOnly}</Text>
-          </Pressable>
-        </View>
-        {searching ? <Text style={styles.resultCount}>{m.mealCount(p.records.length)}</Text> : null}
-        <View style={styles.sheet}>
-          <View style={styles.handle} />
-          {p.loading ? (
-            <View style={styles.state}>
-              <ActivityIndicator color={colors.homePrimary} />
-              <Text style={styles.stateText}>{s.common.loading}</Text>
-            </View>
-          ) : p.error ? (
-            <View style={styles.state}>
-              <Text style={styles.stateText}>{m.loadFailed}</Text>
-              <AppButton label={s.common.retry} onPress={p.onRefresh} />
-            </View>
-          ) : p.records.length ? (
-            p.records.map((row) => (
-              <Pressable
-                key={row.id}
-                accessibilityRole="button"
-                onPress={() => p.onOpenMeal(row.id)}
-                style={styles.record}
-              >
-                <View style={styles.thumb}>
-                  {row.photoUri
-                    ? <Image source={{ uri: row.photoUri }} style={styles.photo} contentFit="cover" />
-                    : <Feather name="image" size={20} color={colors.homeMuted} />}
-                </View>
-                <View style={styles.recordCopy}>
-                  <View style={styles.recordTitleRow}>
-                    <Text style={styles.recordTitle} numberOfLines={1}>{row.title}</Text>
-                    <View style={[styles.badge, row.awaiting ? styles.awaiting : styles.reviewed]}>
-                      <Text style={row.awaiting ? styles.awaitingText : styles.reviewedText}>
-                        {row.awaiting ? m.awaitingReview : m.reviewed}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text style={styles.recordFoods} numberOfLines={2}>{row.foods}</Text>
-                </View>
-                <Feather name="chevron-right" size={18} color={colors.homeMuted} />
-              </Pressable>
-            ))
-          ) : (
-            <View style={styles.empty}>
-              {emptyFirst ? <Feather name="calendar" size={28} color={colors.homeMuted} /> : null}
-              <Text style={styles.emptyTitle}>{emptySearch ? m.noMatchingTitle : m.emptyTitle}</Text>
-              <Text style={styles.emptyBody}>
-                {emptySearch ? m.noMatchingBody(p.query.trim()) : m.emptyBody}
-              </Text>
-              {emptyFirst ? (
-                <Pressable accessibilityRole="button" onPress={p.onGoCheckin} style={styles.checkinButton}>
-                  <Text style={styles.checkinLabel}>{m.goToCheckin}</Text>
-                </Pressable>
-              ) : null}
-            </View>
-          )}
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          </View>
+        </ScrollView>
+      </View>
+    </MealLogSheetLayout>
   );
 }

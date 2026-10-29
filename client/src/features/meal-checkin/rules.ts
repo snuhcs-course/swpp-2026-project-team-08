@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
 
@@ -43,4 +44,15 @@ export function mealFromDraft(draft: MealDraft): Meal {
     suggestionLinks: draft.suggestionLinks ?? [],
     savedAt: new Date().toISOString(),
   };
+}
+
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+export function getIngredientInput(
+  input: string,
+  selected: string[],
+) {
+  const normalize = (name: string) => name.trim().replace(/\s+/g, ' ').toLowerCase();
+  const query = normalize(input);
+  const existing = new Set(selected.map(normalize));
+  return { name: input.trim(), canAdd: !!query && !existing.has(query) };
 }

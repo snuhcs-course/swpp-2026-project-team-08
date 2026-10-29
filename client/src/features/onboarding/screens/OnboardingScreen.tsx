@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 제외된 온보딩 질문 제거
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
@@ -29,8 +31,7 @@ import { SafeFoodsStepView } from './SafeFoodsStepView';
 import { reviewRows } from './reviewRows';
 
 const choiceSteps: ChoiceStep[] = [
-  'child', 'allergies', 'restrictions', 'family', 'approaches',
-  'texture', 'smell', 'taste', 'presentation', 'temperature', 'familiarity',
+  'child', 'allergies', 'restrictions', 'family',
 ];
 
 export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?: string }) {

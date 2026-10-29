@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 온보딩 초안 복원, 계정 입력 초기화 및 초기화 후 자동 저장 수정
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -6,13 +8,13 @@
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
 import { useAuth } from '../../providers/AuthProvider';
 import { useProfile } from '../../providers/ProfileProvider';
 import type { ChildProfile, SafeFood } from '../../types/profile';
 import { createDraftSaveGate } from './draftSaveGate';
-import { addUnique, canAddSafeFood, canContinue, canFinish, isDraft, toggleExclusive, validEmail } from './rules';
+import { addUnique, canAddSafeFood, canContinue, canFinish, restoreDraft, toggleExclusive, validEmail } from './rules';
 import { emptyDraft, type OnboardingDraft, type OnboardingStep } from './types';
 import { OnboardingContext, type ConsentField, type DraftField, type ListField, type SaveStatus } from './onboardingContext';
 
@@ -21,18 +23,16 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const auth = useAuth();
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
-  const [storedDraftState, setDraft] = useState<OnboardingDraft>(emptyDraft);
-  const draft = useMemo(() => ready && auth.session && !profile && !storedDraftState.caregiverEmail.trim()
-    ? { ...storedDraftState, caregiverName: storedDraftState.caregiverName || auth.session.user.fullName,
-        caregiverEmail: auth.session.user.email }
-    : storedDraftState, [ready, auth.session, profile, storedDraftState]);
+  const [draft, setDraft] = useState<OnboardingDraft>(emptyDraft);
   const [password, setPassword] = useState('');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   const [editing, setEditing] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
   const saveGate = useRef(createDraftSaveGate());
   const skipFirstSave = useRef(true);
+  const clearedDraft = useRef<OnboardingDraft | null>(null);
   const finishing = useRef(false);
+  const accountFieldsInitialized = useRef(false);
 
   useEffect(() => {
     if (status === 'loading' || ready) return;
@@ -40,16 +40,38 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     readDraft()
       .then((storedDraft) => {
         if (!active) return;
-        if (isDraft(storedDraft)) {
-          setDraft(storedDraft);
+        const restored = restoreDraft(storedDraft);
+        if (restored) {
+          accountFieldsInitialized.current = true;
+          setDraft(restored);
           setHasDraft(true);
           if (profile) setEditing(true);
+        } else if (auth.session && !profile) {
+          accountFieldsInitialized.current = true;
+          setDraft({
+            ...emptyDraft(),
+            caregiverName: auth.session.user.fullName,
+            caregiverEmail: auth.session.user.email,
+          });
         }
         setReady(true);
       })
       .catch(() => { if (active) { setLoadError(true); setReady(true); } });
     return () => { active = false; };
-  }, [status, profile, ready]);
+  }, [status, profile, ready, auth.session]);
+
+  // A fresh draft can finish loading before the user signs in.
+  useEffect(() => {
+    if (!ready || loadError || status !== 'ready' || !auth.session || profile
+      || accountFieldsInitialized.current) return;
+    accountFieldsInitialized.current = true;
+    const { user } = auth.session;
+    setDraft((current) => ({
+      ...current,
+      caregiverName: user.fullName,
+      caregiverEmail: user.email,
+    }));
+  }, [ready, loadError, status, auth.session, profile]);
 
   const persist = useCallback((value: OnboardingDraft) => {
     setSaveStatus('saving');
@@ -65,6 +87,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!ready || loadError || status !== 'ready' || finishing.current) return;
     if (skipFirstSave.current) { skipFirstSave.current = false; return; }
+    // Reset clears storage; only a subsequent edit should create another saved draft.
+    if (draft === clearedDraft.current) return;
     if (!profile || editing) {
       // persist exposes failure through saveStatus; consume the background rejection.
       void Promise.resolve().then(() => persist(draft)).catch(() => undefined);
@@ -72,15 +96,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [draft, ready, loadError, status, profile, editing, persist]);
 
   const setField = useCallback((field: DraftField, value: string) => {
-    setDraft((current) => ({
-      ...current,
-      ...(!current.caregiverEmail.trim() && auth.session ? {
-        caregiverName: current.caregiverName || auth.session.user.fullName,
-        caregiverEmail: auth.session.user.email,
-      } : {}),
-      [field]: value,
-    }));
-  }, [auth.session]);
+    if (field === 'caregiverName' || field === 'caregiverEmail') accountFieldsInitialized.current = true;
+    setDraft((current) => ({ ...current, [field]: value }));
+  }, []);
   const setConsent = useCallback((field: ConsentField, value: boolean) => {
     setDraft((current) => ({ ...current, consent: { ...current.consent, [field]: value } }));
   }, []);
@@ -174,8 +192,10 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [draft, profile, persist, commitProfile, auth.session]);
   const resetLocal = useCallback(async () => {
     finishing.current = true;
-    skipFirstSave.current = true;
-    setDraft(emptyDraft());
+    accountFieldsInitialized.current = false;
+    const next = emptyDraft();
+    clearedDraft.current = next;
+    setDraft(next);
     setPassword('');
     setEditing(false);
     setHasDraft(false);

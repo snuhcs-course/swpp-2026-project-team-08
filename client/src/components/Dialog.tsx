@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 
@@ -7,12 +8,13 @@ import { colors } from '../util/colors';
 import { fonts } from '../util/fonts';
 
 /** Centered modal. Sheet gestures and grab handles do not belong to a dialog. */
-export function Dialog({ title, closeLabel, onClose, children, footer, compact = false, titleStyle }: {
+export function Dialog({ title, closeLabel, onClose, children, footer, compact = false, titleStyle, onBackgroundInteraction }: {
   title: string; closeLabel: string; onClose: () => void; children: ReactNode;
   footer?: ReactNode; compact?: boolean; titleStyle?: StyleProp<TextStyle>;
+  onBackgroundInteraction?: () => void;
 }) {
   return <Modal transparent animationType="fade" onRequestClose={onClose}>
-    <KeyboardAvoidingView style={styles.scrim} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={styles.scrim} behavior={Platform.OS === 'ios' ? 'padding' : undefined} onPointerDown={onBackgroundInteraction} onTouchStart={onBackgroundInteraction}>
       <View accessibilityViewIsModal style={[styles.dialog, compact && styles.compact]}>
         <View style={[styles.header, compact && styles.compactHeader]}>
           <Text accessibilityRole="header" style={[styles.title, compact && styles.compactTitle, titleStyle]}>{title}</Text>

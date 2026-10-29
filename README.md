@@ -1,4 +1,4 @@
-<!-- AI-generated with Cursor Grok 4.6, 2026-10-23, reviewed by moonmoonboop -->
+<!-- AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo -->
 # NurtureBites
 
 NurtureBites is a meal tracker and planning app for caregivers of autistic children with sensory-selective eating. Caregivers record what was served and what happened after the meal, then get small, restriction-aware ideas for what to try next.
@@ -6,7 +6,7 @@ NurtureBites is a meal tracker and planning app for caregivers of autistic child
 ## Features
 
 - **Caregiver accounts:** Sign up, log in, and keep access/refresh tokens in Expo SecureStore.
-- **Child profile onboarding:** Consent, child basics, allergies, dietary restrictions, family food groups, dietary approaches, sensory profile, familiarity with new foods, and Safe Foods. Progress auto-saves.
+- **Child profile onboarding:** Consent, child basics, allergies, dietary restrictions, family food groups, and Safe Foods. Progress auto-saves.
 - **Meal check-in:** Log date, meal type, and place; optionally add a before-meal photo; enter served foods, ingredients, and preparation by hand. Unfinished drafts can be resumed.
 - **After-meal review:** Record each food as Eaten, Tasted, Untouched, or Unclear; optionally track ingredient outcomes and difficulty reasons; optionally add an after-meal photo.
 - **Home (Today):** Start a new meal, continue a draft, and pick up meals that still need an after-meal review.
@@ -46,7 +46,8 @@ This repository has two parts: a FastAPI backend in `server/` and an Expo / Reac
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python package manager; do not use `pip`)
 - Python 3.12 or later (`uv` can install it)
 - Docker (local PostgreSQL)
-- Node.js and npm
+<!-- AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo -->
+- Node.js 22.13+ (22.x), 24.3+ (24.x), or 26+ and npm (required by Expo SDK 58)
 - [Expo Go](https://expo.dev/go) on a phone, or an iOS Simulator / Android emulator
 
 ### 1. Clone the repository
@@ -104,20 +105,22 @@ Useful client commands (from `client/`):
 | Lint | `npm run lint` |
 | Typecheck | `npx tsc --noEmit` |
 | Tests | `npm test` |
+| Tests with live API integration (disposable PostgreSQL; requires Docker and `uv`) | `npm run test:integration` |
 
+<!-- AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo -->
 <!-- AI-generated with Cursor Grok 4.6, 2026-10-23, reviewed by moonmoonboop -->
 ## Development Environment
 
-Local development and execution used the following environment.
+The client targets Expo SDK 58. Upgrade validation used Node.js 24.12.0 and npm 11.6.2; the other entries describe the existing development environment.
 
 | Item | Version / notes |
 |---|---|
 | OS | macOS 26.5.1 (Apple silicon) |
-| Node.js | 26.0.0 |
-| npm | 11.12.1 |
-| Expo SDK | 57 (`expo` `~57.0.27`) |
-| React Native | 0.86.3 |
-| React | 19.2.3 |
+| Node.js | 24.12.0 (SDK 58 requires 22.13+ on 22.x, 24.3+ on 24.x, or 26+) |
+| npm | 11.6.2 |
+| Expo SDK | 58 (`expo` `~58.0.19`) |
+| React Native | 0.88.0 |
+| React | 19.3.0 |
 | Client package manager | npm (`client/package-lock.json`) |
 | Python | 3.14.7 via `uv` (project requires `>=3.12`; production image is `python:3.12-slim`) |
 | uv | 0.13.1 |

@@ -1,8 +1,10 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 제외된 프로필 질문 제거 및 초안 복원
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 
-import { isStep, type OnboardingDraft, type OnboardingStep } from './types';
+import { emptyDraft, isStep, type OnboardingDraft, type OnboardingStep } from './types';
 import type { Language } from '../../types/profile';
 import { labelFor } from '../../util/strings';
 
@@ -34,7 +36,6 @@ export function canContinue(step: OnboardingStep, draft: OnboardingDraft, passwo
     case 'allergies': return draft.allergies.length > 0;
     case 'restrictions': return draft.restrictions.length > 0;
     case 'family': return draft.familyFoods.length > 0;
-    case 'approaches': return draft.approaches.length > 0;
     default: return true;
   }
 }
@@ -45,7 +46,7 @@ export function canFinish(draft: OnboardingDraft): boolean {
     && draft.consent.accountPrivacy && draft.consent.photoAnalysis
     && !!draft.childName.trim() && !!draft.ageRange
     && draft.allergies.length > 0 && draft.restrictions.length > 0
-    && draft.familyFoods.length > 0 && draft.approaches.length > 0;
+    && draft.familyFoods.length > 0;
 }
 
 export function addUnique(values: string[], value: string): string[] {
@@ -79,9 +80,19 @@ export function isDraft(value: unknown): value is OnboardingDraft {
     && typeof draft.ageRange === 'string'
     && !!consent && typeof consent.accountPrivacy === 'boolean'
     && typeof consent.photoAnalysis === 'boolean' && typeof consent.aiTraining === 'boolean'
-    && ['allergies', 'restrictions', 'familyFoods', 'approaches', 'texture', 'taste', 'presentation', 'safeFoods']
+    && ['allergies', 'restrictions', 'familyFoods', 'safeFoods']
       .every((key) => Array.isArray(draft[key]))
-    && ['smell', 'temperature', 'familiarity'].every((key) => typeof draft[key] === 'string')
     && typeof draft.noSafeFoods === 'boolean'
     && !!safeFoodInput && ['name', 'preparation', 'presentationNote'].every((key) => typeof safeFoodInput[key] === 'string');
+}
+
+export function restoreDraft(value: unknown): OnboardingDraft | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const stored = value as Record<string, unknown>;
+  if (typeof stored.step !== 'string') return null;
+  const draft = { ...stored, step: isStep(stored.step) ? stored.step : 'family' };
+  if (!isDraft(draft)) return null;
+  return Object.fromEntries(
+    Object.keys(emptyDraft()).map((key) => [key, draft[key as keyof OnboardingDraft]]),
+  ) as OnboardingDraft;
 }

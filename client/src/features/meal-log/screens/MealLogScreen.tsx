@@ -4,6 +4,8 @@
 // Changed: 식사 기록 화면 디자인 개선
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Coordinate native sheet dismissal with every history navigation action
 
 import { Redirect, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback } from 'react';
@@ -13,11 +15,13 @@ import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import { useMealLog } from '../hooks/useMealLog';
+import { useMealLogNavigation } from '../hooks/useMealLogNavigation';
 import { mealDateParts, mealThumbnail } from '../rules';
 import { MealLogView } from './MealLogView';
 
 export function MealLogScreen() {
   const profile = useProfile();
+  const { active, sheetRef, navigate } = useMealLogNavigation();
   const { date } = useLocalSearchParams<{ date?: string }>();
   const log = useMealLog(profile.profile?.id ?? '', date);
   const s = copyFor(profile.language);
@@ -73,7 +77,9 @@ export function MealLogScreen() {
       loading={log.loading}
       error={log.error}
       refreshing={log.refreshing}
-      onBack={() => router.replace('/home')}
+      active={active}
+      sheetRef={sheetRef}
+      onBack={() => navigate(() => router.replace('/home'))}
       onRefresh={() => { void log.retry(); }}
       onPrevMonth={() => log.goMonth(-1)}
       onNextMonth={() => log.goMonth(1)}
@@ -83,15 +89,15 @@ export function MealLogScreen() {
       onSearch={log.setSearch}
       onSubmitSearch={log.submitSearch}
       onToggleUnreviewed={() => log.setUnreviewedOnly((value) => !value)}
-      onContinueDraft={() => {
+      onContinueDraft={() => navigate(() => {
         if (draft?.savedMealId) {
           router.push({ pathname: '/after-meal-review', params: { mealId: draft.savedMealId } });
           return;
         }
         router.push('/meal-checkin');
-      }}
-      onOpenMeal={(id) => router.push({ pathname: '/meal/[mealId]', params: { mealId: id } })}
-      onGoCheckin={() => router.push('/meal-checkin')}
+      })}
+      onOpenMeal={(id) => navigate(() => router.push({ pathname: '/meal/[mealId]', params: { mealId: id } }))}
+      onGoCheckin={() => navigate(() => router.push('/meal-checkin'))}
     />
   );
 }

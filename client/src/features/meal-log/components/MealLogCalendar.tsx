@@ -4,6 +4,8 @@
 // Changed: 식사 기록 화면 디자인 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Match meal calendar layout, density tiles, and date selection to the design
 
 import { DateField } from '../../../components/DateField';
 import { Feather } from '@expo/vector-icons';
@@ -30,7 +32,6 @@ export function MealLogCalendar({
   selectedDayLabel,
   logsOnDay,
   selectedDateLabel,
-  noneYet,
   locale,
   monthLabel,
   yearLabel,
@@ -69,25 +70,21 @@ export function MealLogCalendar({
 
   return (
     <View style={styles.calendarBlock}>
-      <Text style={styles.sectionLabel}>{title}</Text>
+      <Text style={styles.calendarTitle}>{title}</Text>
       <View style={styles.selectedRow}>
         <View style={styles.selectedLeft}>
           <View style={styles.selectedTitle}>
             <Feather name="calendar" size={14} color={colors.homeText} />
             <Text style={styles.selectedTitleText}>{selectedDateLabel}</Text>
           </View>
-          <View style={styles.selectedValueRow}>
-            {selectedParts ? (
-              <>
-                <Text style={styles.selectedValue}>{selectedParts.monthDay}</Text>
-                <Pressable accessibilityRole="button" accessibilityLabel={clearLabel} onPress={onClear} hitSlop={8}>
-                  <Feather name="rotate-ccw" size={14} color={colors.homePrimary} />
-                </Pressable>
-              </>
-            ) : (
-              <Text style={styles.noneYet}>{noneYet}</Text>
-            )}
-          </View>
+          {selectedParts && (
+            <View style={styles.selectedValueRow}>
+              <Text style={styles.selectedValue}>{selectedParts.monthDay}</Text>
+              <Pressable accessibilityRole="button" accessibilityLabel={clearLabel} onPress={onClear} hitSlop={8}>
+                <Feather name="rotate-ccw" size={14} color={colors.homePrimary} />
+              </Pressable>
+            </View>
+          )}
         </View>
         <View style={styles.legend}>
           {([{ color: colors.logDensity1, label: legend1 }, { color: colors.logDensity2, label: legend2 }, { color: colors.logDensity3, label: legend3 }]).map((item) => (
@@ -103,7 +100,7 @@ export function MealLogCalendar({
           <Pressable accessibilityRole="button" accessibilityLabel={previousMonth} onPress={onPrev} style={styles.nav}>
             <Feather name="chevron-left" size={16} color={colors.homeText} />
           </Pressable>
-          <DateField key={`${year}-${month}`} variant="month-year" size={{ height: 36, fontSize: 14, borderRadius: 12 }} year={year} month={month + 1}
+          <DateField key={`${year}-${month}`} variant="month-year" size={{ height: 32, fontSize: 14, borderRadius: 10 }} year={year} month={month + 1}
             labels={{ month: monthLabel, year: yearLabel, locale }}
             onChange={(nextYear, nextMonth) => onMonthYear(nextYear, nextMonth - 1)} />
           <Pressable accessibilityRole="button" accessibilityLabel={nextMonth} onPress={onNext} style={styles.nav}>
@@ -121,7 +118,7 @@ export function MealLogCalendar({
             const selected = selectedDate === cell.date;
             const level = densityLevel(count);
             const fill = densityFill[level];
-            const onDark = selected || level >= 2;
+            const onDark = level === 3;
             return (
               <Pressable
                 key={cell.date}
@@ -138,7 +135,7 @@ export function MealLogCalendar({
                 ]}>
                   <Text style={[
                     styles.dayText,
-                    (!cell.inMonth || (count === 0 && !selected)) && styles.dayMuted,
+                    !cell.inMonth && styles.dayMuted,
                     onDark && cell.inMonth && styles.dayOnDark,
                   ]}>{cell.day}</Text>
                 </View>

@@ -5,6 +5,9 @@
 <!-- AI-generated with GPT-6, 2026-10-26, reviewed by Haechan Jung -->
 <!-- Changed: 식사 API 인증 설명 수정 -->
 
+<!-- AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo -->
+<!-- Changed: 클라이언트 API 통합 CI 설명 -->
+
 # 서버 배포 가이드
 
 서버(`server/`)를 AWS에 배포하는 구조와 설정 방법을 설명합니다. 코드 구조는 [architecture.md](architecture.md), 로컬 실행은 [README](../README.md)를 참고하세요.
@@ -57,6 +60,10 @@ PR이 열리거나 갱신될 때 `server/`에서 아래를 순서대로 실행�
 3. `pytest` — 테스트. 인메모리 SQLite를 쓰므로 DB나 환경변수 설정이 필요 없습니다.
 
 PR을 올리기 전에 `server/`에서 같은 명령을 실행하면 CI 결과를 미리 알 수 있습니다.
+
+Client CI는 `client/` 또는 `server/`가 바뀌면 실행한다. 루트·Unit·Integration 클라이언트 테스트와
+린트·타입 검사를 수행하고, 별도 API 검사에서는 임시 PostgreSQL 컨테이너와 HTTP 서버를 띄워
+`tests.run_client_integration`으로 전체 클라이언트 테스트를 실행한다. 실제 LLM은 호출하지 않는다.
 
 ### 2.2 배포 (main 머지)
 

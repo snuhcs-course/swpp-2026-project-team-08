@@ -1,9 +1,11 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
 
 import { useState } from 'react';
 import type { FoodItem, MealDraft } from '../../../types/meal';
 import { localDate } from '../../../util/date';
+import { getIngredientInput } from '../rules';
 
 type DateParts = [number, number, number];
 type DateFieldIndex = 0 | 1 | 2 | null;
@@ -43,25 +45,30 @@ export function useMealCheckinInputs({
     setDateParts(next);
     setDateField(null);
   };
-  const confirmDate = () => {
-    const [year, month, day] = dateParts;
+  const changeDate = (date: Date) => {
+    setDateParts([date.getFullYear(), date.getMonth() + 1, date.getDate()]);
+  };
+  const confirmDate = (date?: Date) => {
+    const [year, month, day] = date
+      ? [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+      : dateParts;
     const dayCount = new Date(year, month, 0).getDate();
     onUpdate({ mealDate: localDate(new Date(year, month - 1, Math.min(day, dayCount))) });
     setDateField(null);
     setDateOpen(false);
   };
-  const addIngredient = () => {
-    const value = ingredient.trim();
-    if (value && draft?.editingFood && !draft.editingFood.ingredients.includes(value)) {
-      onChangeFood({ ingredients: [...draft.editingFood.ingredients, value] });
-    }
+  // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+  const ingredientInput = getIngredientInput(
+    ingredient, draft?.editingFood?.ingredients ?? [],
+  );
+  const addIngredient = (name: string): boolean => {
+    const food = draft?.editingFood;
+    if (!food) return false;
+    const result = getIngredientInput(name, food.ingredients);
+    if (!result.canAdd) return false;
+    onChangeFood({ ingredients: [...food.ingredients, result.name] });
     setIngredient('');
-  };
-  const selectIngredient = (name: string) => {
-    if (draft?.editingFood && !draft.editingFood.ingredients.includes(name)) {
-      onChangeFood({ ingredients: [...draft.editingFood.ingredients, name] });
-    }
-    setIngredient('');
+    return true;
   };
   const removeIngredient = (value: string) => {
     if (!draft?.editingFood) return;
@@ -77,13 +84,14 @@ export function useMealCheckinInputs({
       onToggle: toggleDate,
       onFieldChange: setDateField,
       onNumberSelect: selectDateNumber,
+      onDateChange: changeDate,
       onConfirm: confirmDate,
     },
     food: {
       ingredient,
+      canAddIngredient: ingredientInput.canAdd,
       onIngredientChange: setIngredient,
-      onAddIngredient: addIngredient,
-      onSelectIngredient: selectIngredient,
+      onAddIngredient: () => addIngredient(ingredient),
       onRemoveIngredient: removeIngredient,
     },
   };

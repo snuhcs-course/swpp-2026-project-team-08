@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+# Changed: Save and edit ingredients independently of the catalog
 """Save an authenticated meal and its resolved ingredients."""
 
 from dataclasses import dataclass
@@ -7,8 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
 from app.core.timezone import now_kst
-from app.features.ingredients.queries import resolve_ingredient
 from app.features.meals.data import FoodData, MealData, ReviewData
+from app.features.meals.ingredients import resolve_meal_ingredient
 from app.features.meals.queries import MealRecords, meal_records, meals_records, owned_meal
 from app.models import (
     FoodItem,
@@ -85,6 +87,13 @@ class MealService:
     async def update_foods(
         self, *, user_id: int, meal_id: int, foods: list[FoodData]
     ) -> MealRecords:
+        # Keep new ingredients and food edits in the same atomic operation.
+        async with self._session.begin_nested():
+            return await self._update_foods(user_id=user_id, meal_id=meal_id, foods=foods)
+
+    async def _update_foods(
+        self, *, user_id: int, meal_id: int, foods: list[FoodData]
+    ) -> MealRecords:
         meal = await owned_meal(self._session, user_id, meal_id)
         if meal is None:
             raise MealNotFoundError()
@@ -96,7 +105,7 @@ class MealService:
         for food in foods:
             ingredient_ids: list[int] = []
             for item in food.ingredients:
-                ingredient = await resolve_ingredient(
+                ingredient = await resolve_meal_ingredient(
                     self._session, ingredient_id=item.id, name=item.name
                 )
                 if ingredient is None:
@@ -213,11 +222,16 @@ class MealService:
         return await meal_records(self._session, meal)
 
     async def write(self, *, user_id: int, data: MealData) -> Meal:
+        # Invalid meals must not leave newly entered ingredients behind.
+        async with self._session.begin_nested():
+            return await self._write(user_id=user_id, data=data)
+
+    async def _write(self, *, user_id: int, data: MealData) -> Meal:
         foods: list[ResolvedFood] = []
         for food in data.foods:
             ingredient_ids: list[int] = []
             for item in food.ingredients:
-                ingredient = await resolve_ingredient(
+                ingredient = await resolve_meal_ingredient(
                     self._session, ingredient_id=item.id, name=item.name
                 )
                 if ingredient is None:

@@ -2,6 +2,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Redirect removed Insight section to Home
 
 import { AppHeader } from '../../../components/AppHeader';
 import { Redirect } from 'expo-router';
@@ -11,7 +13,7 @@ import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 
-const sections: HomeTab[] = ['mealLog', 'ideas', 'insight'];
+const sections: HomeTab[] = ['mealLog', 'ideas'];
 
 export function SectionScreen({ name }: { name: string }) {
   const model = useProfile();

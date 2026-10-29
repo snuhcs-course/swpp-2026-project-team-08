@@ -1,3 +1,4 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -26,21 +27,13 @@ const en = {
     titles: {
       account: 'Create your caregiver account', consent: 'Data and photo consent', child: 'Tell us about your child',
       allergies: 'Food allergies', restrictions: 'Other dietary restrictions', family: 'Foods the family includes',
-      approaches: 'Dietary approaches', texture: 'Sensory Profile', smell: 'Sensory Profile',
-      taste: 'Sensory Profile', presentation: 'Sensory Profile', temperature: 'Sensory Profile',
-      familiarity: 'Familiarity with new foods', 'safe-foods': 'Safe foods', review: 'Review your child’s profile',
+      'safe-foods': 'Safe foods', review: 'Review your child’s profile',
     },
     subtitles: {
       account: 'Welcome! Let’s take this one step at a time.', consent: 'Consent is needed to continue',
       child: 'A few basics help us give better recommendations and output.',
       allergies: 'Select every known allergy. Help avoid foods that should not be suggested to the child.', restrictions: 'Select other required limits or choose None.',
       family: 'Select food groups your household is comfortable including.',
-      approaches: 'Are there any dietary approaches you want us to consider when suggesting food?',
-      texture: 'Which food textures are often difficult?', smell: 'Are strong food smells often difficult?',
-      taste: 'Which tastes are often difficult?',
-      presentation: 'Are any of these presentation details important?',
-      temperature: 'What food temperature does your child usually prefer?',
-      familiarity: 'When your child sees a new food for the first time, what usually happens?',
       'safe-foods': 'Add foods your child reliably accepts in a familiar form. We can use these foods as familiar starting points when suggesting something new.',
       review: 'You’re in control. Edit any section now or later in Profile Settings.',
     },
@@ -51,7 +44,7 @@ const en = {
     aiTraining: 'AI training and model research', required: 'Required', optional: 'Optional',
     consentDescriptions: {
       accountPrivacy: 'Account details are used for identification and verification. Password protection, security, retention, account deletion and deletion timing are explained in the full privacy policy.',
-      photoAnalysis: 'Your meal records and child profile personalize suggestions using sensory preferences, allergies, restrictions, safe foods and feedback. Photos are optional records and are not analyzed.',
+      photoAnalysis: 'Your meal records and child profile personalize suggestions using allergies, restrictions, safe foods and feedback. Photos are optional records and are not analyzed.',
       aiTraining: 'Photos are not sent for analysis or AI training in this version. Any future training or research use requires separate consent.',
     },
     viewDetail: 'View details', consentNote: 'The app does not diagnose, calculate nutritional adequacy or replace medical advice. Allergies and caregiver decisions always come first.',
@@ -60,14 +53,13 @@ const en = {
     consentSafetyTitle: 'Safety and recommendation limits',
     searchCatalog: 'Type a food or category.', noMatches: 'No matching catalog items',
     addOther: 'Other', otherAllergy: 'Other allergy', otherRestrictions: 'Other restrictions',
-    otherFood: 'Other food', otherApproach: 'Other approach',
+    otherFood: 'Other food',
     otherHint: 'Add one item at a time.', selectedItems: 'Selected items',
     allergySafetyTitle: 'Safety-critical',
     allergySafetyBody: 'Always check labels, preparation and cross-contact yourself. The app does not replace medical advice.',
     treeNutsHint: 'almonds, walnuts, or cashews',
-    noTexture: 'No clear texture difficulty', noTaste: 'No clear taste difficulty',
     noKnownAllergies: 'No known food allergies', noOtherRestrictions: 'No other dietary restrictions',
-    noPresentation: 'No presentation preferences', noSafeFoods: 'No safe foods yet',
+    noSafeFoods: 'No safe foods yet',
     foodName: 'Food name', preparation: 'Preparation', presentationNote: 'Presentation note',
     addSafeFood: 'Add safe food', safeFoodIncomplete: 'Enter a food name and preparation.',
     safeFoodExamples: 'e.g. apple slices, white bread', safeFoodNameExample: 'e.g. apple slices',
@@ -80,36 +72,16 @@ const en = {
       restrictionsTitle: 'How we use these safely',
       restrictionsBody: 'Predefined restrictions only affect recommendations when reliable rules and food data exist. Unsupported custom restrictions are stored but do not automatically filter recommendations.',
       familyTitle: 'This isn’t about likes or dislikes',
-      familyBody: 'We’ll ask about familiar and safe foods separately.',
+      familyBody: 'We’ll ask about safe foods separately.',
       familyWarningTitle: 'This may not be included in the suggested meal or ingredients',
-      familyWarningBody: 'There is a possibility that the preferences and approaches may not be included in the recommending meals.',
-      approachesTitle: 'How approaches affect suggestions',
-      approachesBody: 'Only supported approaches with clear rules affect suggestions automatically.',
-      textureQuestion: (name: string) => `Which food textures are often difficult for ${name}?`,
-      smellQuestion: (name: string) => `Are strong food smells often difficult for ${name}?`,
-      smellExample: 'For example, strong smells from fish, cooked onions, or some cooked vegetables.',
-      smellBody: 'Used for: adjusting how strongly scented foods or preparations are suggested.',
-      tasteQuestion: (name: string) => `Which tastes are often difficult for ${name}?`,
-      tasteBody: 'These are tendencies, not diagnoses. You can update them as you notice patterns in real meals.',
-      presentationQuestion: (name: string) => `Are any of these presentation details important for ${name}?`,
-      presentationExample: 'Select the ones that often affect whether your child accepts a food.',
-      temperatureQuestion: (name: string) => `What food temperature does ${name} usually prefer?`,
-      temperatureBody: 'This is a starting tendency. Meal records can capture what worked for each food.',
-      familiarityQuestion: (name: string) => `When ${name} sees a new food for the first time, what usually happens?`,
-      familiarityBody: 'This is a general starting point for recommendations.',
-      multiple: 'multiple select available', single: 'single select available',
+      familyWarningBody: 'Family food preferences may not be reflected in every suggested meal.',
+      multiple: 'multiple select available',
     },
     choiceSubtitles: {
       restrictions: { none: 'Selecting this clears and disables all other selections.', 'gluten-free': 'Avoids foods containing gluten.', 'lactose-free': 'Limits or avoids lactose-containing foods.', 'low-fructose': 'Limits foods high in fructose.', 'casein-free': 'Avoids foods containing casein.', other: 'Add one or more custom restrictions.' },
-      approaches: { none: 'Use general suggestions without a specific diet.', 'gluten-casein-free': 'Avoid wheat, barley, rye, and dairy.', 'no-added-sugar': 'Fewer sweeteners and processed extras.', 'low-fructose': 'Limits foods high in fructose.', 'low-sodium': 'Limits foods high in sodium.', ketogenic: 'High fat, moderate protein, very low carbs.', other: 'Describe a custom approach or preference.' },
-      texture: { smooth: 'e.g. yogurt, puree, pudding', soft: 'e.g. mashed potato, ripe banana, soft porridge', lumpy: 'e.g. chunky soup, oatmeal with pieces', crunchy: 'e.g. crackers, raw carrots, crisp cereal', chewy: 'e.g. meat, dried fruit, gummy snacks', slippery: 'e.g. watermelon, peeled citrus, slippery noodles', mixed: 'e.g. cereal with milk, yogurt with fruit pieces', other: 'Add another texture description.' },
-      taste: { bitter: 'e.g. some dark leafy vegetables', sour: 'e.g. lemon, pickles', spicy: 'e.g. chili or hot sauces', 'very-sweet': 'e.g. heavily sweetened foods', 'very-salty': 'e.g. strongly salted foods' },
-      presentation: { none: 'Mutually exclusive with all options below.', color: 'For example, light or single-color foods.', shape: 'Pieces look predictable from bite to bite.', separate: 'Sauces and sides do not touch.', visible: 'Nothing hidden or mixed in.', other: 'Describe a presentation detail.' },
-      temperature: { none: 'No consistent pattern across meals.', warm: 'Best when heated, but not hot.', cool: 'Often prefers food straight from the fridge.', room: 'Best after sitting out for a few minutes.', depends: 'Temperature preference changes by food type.' },
     },
     reviewAllergies: 'Allergies', reviewChild: 'Child basics', reviewSafety: 'Safety restrictions', reviewFamily: 'Family practices',
-    reviewApproaches: 'Dietary approaches', reviewSensory: 'Sensory tendencies',
-    reviewSafeFoods: 'Safe foods', reviewFamiliarity: 'New-food familiarity',
+    reviewSafeFoods: 'Safe foods',
     conflict: 'A safe food name matches a listed restriction. Review it before relying on that food.',
     looksGood: 'Looks good',
     start: 'Start setup', resume: 'Resume setup', editProfile: 'Edit profile',
@@ -152,6 +124,12 @@ const en = {
     usingSuggestion: 'Using a saved suggestion?', chooseSuggestion: 'Choose a suggestion', moreAboutMeal: 'More about this meal',
     aiNote: 'AI suggestions are never confirmed until you review them.', empty: 'Add a food item to continue.', addFood: 'Add food item', saveFood: 'Save food',
     name: 'Food name', ingredients: 'Ingredients', addIngredient: 'Add ingredient', preparation: 'Presentation', servingNote: 'Serving note',
+    // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+    ingredientFeedback: {
+      loading: 'Loading ingredients…', error: 'Could not load ingredients. Retry to add an ingredient.',
+      empty: 'Type an ingredient name, then choose a match.', choose: 'Choose an ingredient from the suggestions.',
+      'no-match': 'No matching ingredient. Try another name.', duplicate: 'This ingredient is already added.', ready: '',
+    },
     editFoodTitle: (name: string) => `Edit ${name}`, reviewFood: (name: string) => `Review ${name}`, reviewItemHint: 'Confirm or adjust what was served before saving.',
     foodNamePlaceholder: 'Enter food name', detailPlaceholder: 'Add detail', addFoodHint: 'Please click ‘save food’ to save',
     optional: 'Optional',
@@ -200,7 +178,6 @@ const en = {
     action: (name: string) => `Offer ${name} as one small, separate portion`,
     whyTasted: (name: string) => `You confirmed ${name} was tasted at this meal. This offers another chance with the same known food form.`,
     whyUntouched: (name: string) => `You confirmed ${name} was untouched at this meal. A small separate portion lets your child approach it at their own pace.`,
-    whyPresentation: (name: string) => `You recorded a presentation difficulty with ${name} and said keeping foods separate matters. This keeps the known food form while changing its placement.`,
     tip: 'Keep the recorded ingredients and preparation the same; place just this portion separately.',
     safety: 'Check the food label and possible cross-contact yourself before serving. This is an idea, not a guarantee.',
     save: 'Save suggestion', skip: 'Skip suggestion', goBack: 'Go back', saved: 'Suggestion saved.',
@@ -351,21 +328,13 @@ const ko = {
     titles: {
       account: '보호자 정보 입력', consent: '개인정보 동의', child: '아이에 대해 알려주세요',
       allergies: '식품 알레르기', restrictions: '기타 식이 제한', family: '가족 식단의 식품',
-      approaches: '식이 접근 방식', texture: '음식의 식감', smell: '음식의 냄새',
-      taste: '맛 선호', presentation: '음식 제공 형태', temperature: '음식의 온도',
-      familiarity: '새로운 음식', 'safe-foods': '안심하고 먹는 음식', review: '프로필 검토',
+      'safe-foods': '안심하고 먹는 음식', review: '프로필 검토',
     },
     subtitles: {
       account: '환영합니다! 한 단계씩 진행해 볼게요.', consent: '맞춤 경험을 위한 동의가 필요합니다.',
       child: '정확한 생년월일 대신 연령대만 입력합니다.',
       allergies: '알고 있는 알레르기를 모두 선택해 주세요. 아이에게 추천하면 안 되는 음식을 피하는 데 사용합니다.', restrictions: '필수 제한을 선택하거나 해당 없음을 선택하세요.',
       family: '가족 식단에 포함하는 식품을 하나 이상 선택하세요.',
-      approaches: '가족의 식이 방식을 선택하거나 해당 없음을 선택하세요.',
-      texture: '어려워하는 식감이 있나요?', smell: '강한 음식 냄새가 어려운가요?',
-      taste: '어려워하는 맛이 있나요? 이 답변은 진단이 아닙니다.',
-      presentation: '음식의 모양이나 배치에 선호가 있나요?',
-      temperature: '실제로 받아들인 온도는 이후 식사 기록에서 확인할 수 있습니다.',
-      familiarity: '추천을 위한 일반적인 시작점입니다.',
       'safe-foods': '익숙한 형태로 꾸준히 먹는 음식을 추가하세요.',
       review: '저장하기 전에 내용을 확인해 주세요.',
     },
@@ -385,14 +354,13 @@ const ko = {
     consentSafetyTitle: '안전과 신뢰',
     searchCatalog: '음식이나 종류를 입력해 주세요.', noMatches: '검색 결과가 없습니다',
     addOther: '기타', otherAllergy: '기타 알레르기', otherRestrictions: '기타 식이 제한',
-    otherFood: '기타 식품', otherApproach: '기타 식이 방식',
+    otherFood: '기타 식품',
     otherHint: '한 번에 한 항목씩 추가하세요.', selectedItems: '선택한 항목',
     allergySafetyTitle: '안전 주의',
     allergySafetyBody: '식품 표시, 조리 과정, 교차 접촉 가능성을 직접 확인하세요. 앱은 의학적 조언을 대신하지 않습니다.',
     treeNutsHint: '아몬드, 호두, 캐슈넛',
-    noTexture: '뚜렷하게 어려운 식감 없음', noTaste: '뚜렷하게 어려운 맛 없음',
     noKnownAllergies: '알려진 식품 알레르기 없음', noOtherRestrictions: '기타 식이 제한 없음',
-    noPresentation: '제공 형태 선호 없음', noSafeFoods: '아직 안심 음식 없음',
+    noSafeFoods: '아직 안심 음식 없음',
     foodName: '음식 이름', preparation: '조리 방법', presentationNote: '제공 메모',
     addSafeFood: '안심 음식 추가', safeFoodIncomplete: '음식 이름과 조리 방법을 입력해 주세요.',
     safeFoodExamples: '예: 사과 조각, 흰 빵', safeFoodNameExample: '예: 사과 조각',
@@ -405,36 +373,16 @@ const ko = {
       restrictionsTitle: '제한 사항을 안전하게 사용하는 방법',
       restrictionsBody: '정해진 제한 사항은 신뢰할 수 있는 규칙과 음식 데이터가 있을 때만 추천에 반영됩니다. 직접 추가한 제한 사항은 저장되지만 추천을 자동으로 거르지는 않습니다.',
       familyTitle: '좋아하거나 싫어하는 음식에 관한 질문이 아닙니다',
-      familyBody: '익숙한 음식과 안전하게 먹는 음식은 따로 묻습니다.',
+      familyBody: '안전하게 먹는 음식은 따로 묻습니다.',
       familyWarningTitle: '추천 식사나 재료에 항상 반영되지는 않을 수 있습니다',
-      familyWarningBody: '입력한 선호와 식이 방식이 모든 추천 식사에 반영되지 않을 수 있습니다.',
-      approachesTitle: '식이 방식이 추천에 반영되는 방법',
-      approachesBody: '명확한 규칙으로 지원하는 식이 방식만 추천에 자동 반영됩니다.',
-      textureQuestion: (name: string) => `${name}가 어려워하는 음식 식감은 무엇인가요?`,
-      smellQuestion: (name: string) => `${name}가 강한 음식 냄새를 어려워하나요?`,
-      smellExample: '예: 생선, 익힌 양파, 일부 익힌 채소의 강한 냄새',
-      smellBody: '냄새가 강한 음식이나 조리법의 추천 정도를 조정하는 데 사용합니다.',
-      tasteQuestion: (name: string) => `${name}가 어려워하는 맛은 무엇인가요?`,
-      tasteBody: '이 정보는 진단이 아닙니다. 실제 식사에서 관찰한 내용을 바탕으로 수정할 수 있습니다.',
-      presentationQuestion: (name: string) => `${name}에게 중요한 음식 제공 형태가 있나요?`,
-      presentationExample: '음식을 받아들이는 데 영향을 주는 항목을 선택해 주세요.',
-      temperatureQuestion: (name: string) => `${name}가 보통 선호하는 음식 온도는 무엇인가요?`,
-      temperatureBody: '시작점으로 사용합니다. 음식별로 잘 맞았던 온도는 식사 기록에서 확인할 수 있습니다.',
-      familiarityQuestion: (name: string) => `${name}가 새로운 음식을 처음 보면 보통 어떻게 하나요?`,
-      familiarityBody: '추천을 위한 일반적인 시작점입니다.',
-      multiple: '여러 항목 선택 가능', single: '한 항목 선택 가능',
+      familyWarningBody: '가족 식단의 선호가 모든 추천 식사에 반영되지 않을 수 있습니다.',
+      multiple: '여러 항목 선택 가능',
     },
     choiceSubtitles: {
       restrictions: { none: '선택하면 다른 선택이 모두 해제됩니다.', 'gluten-free': '글루텐이 든 음식을 피합니다.', 'lactose-free': '유당이 든 음식을 제한합니다.', 'low-fructose': '과당이 많은 음식을 제한합니다.', 'casein-free': '카제인이 든 음식을 피합니다.', other: '다른 제한 사항을 추가합니다.' },
-      approaches: { none: '특정 식단 없이 일반적인 제안을 받습니다.', 'gluten-casein-free': '밀, 보리, 호밀, 유제품을 피합니다.', 'no-added-sugar': '감미료와 가공 첨가물을 줄입니다.', 'low-fructose': '과당이 많은 음식을 제한합니다.', 'low-sodium': '나트륨이 많은 음식을 제한합니다.', ketogenic: '고지방, 중간 단백질, 매우 낮은 탄수화물 식단입니다.', other: '다른 식이 방식이나 선호를 적습니다.' },
-      texture: { smooth: '예: 요거트, 퓌레, 푸딩', soft: '예: 으깬 감자, 익은 바나나', lumpy: '예: 건더기 수프, 오트밀', crunchy: '예: 크래커, 생당근', chewy: '예: 고기, 말린 과일', slippery: '예: 수박, 미끄러운 면', mixed: '예: 우유에 든 시리얼', other: '다른 식감을 적습니다.' },
-      taste: { bitter: '예: 짙은 잎채소', sour: '예: 레몬, 피클', spicy: '예: 고추, 매운 소스', 'very-sweet': '예: 단맛이 강한 음식', 'very-salty': '예: 짠맛이 강한 음식' },
-      presentation: { none: '아래 선택지와 함께 선택할 수 없습니다.', color: '예: 밝거나 한 가지 색의 음식', shape: '매번 비슷한 모양과 크기의 조각', separate: '소스와 반찬이 서로 닿지 않음', visible: '숨기거나 섞지 않은 재료', other: '다른 제공 형태를 적습니다.' },
-      temperature: { none: '식사마다 일정한 패턴이 없습니다.', warm: '뜨겁지 않게 데웠을 때 좋습니다.', cool: '냉장고에서 꺼낸 차가운 음식을 선호합니다.', room: '잠시 두어 실온이 되었을 때 좋습니다.', depends: '음식마다 선호 온도가 다릅니다.' },
     },
     reviewAllergies: '알레르기', reviewChild: '아이 기본 정보', reviewSafety: '안전 관련 제한', reviewFamily: '가족 식단',
-    reviewApproaches: '식이 방식', reviewSensory: '감각 경향',
-    reviewSafeFoods: '안심 음식', reviewFamiliarity: '새 음식 친숙도',
+    reviewSafeFoods: '안심 음식',
     conflict: '안심 음식 이름이 제한 항목과 겹칩니다. 해당 음식을 다시 확인해 주세요.',
     looksGood: '확인했어요',
     start: '설정 시작하기', resume: '설정 이어하기', editProfile: '프로필 수정',
@@ -477,6 +425,12 @@ const ko = {
     usingSuggestion: '저장한 제안을 사용했나요?', chooseSuggestion: '제안 선택', moreAboutMeal: '이 식사에 대해 더 보기',
     aiNote: 'AI 제안은 보호자가 확인하기 전까지 확정되지 않습니다.', empty: '계속하려면 음식을 추가해 주세요.', addFood: '음식 항목 추가', saveFood: '음식 저장',
     name: '음식 이름', ingredients: '재료', addIngredient: '재료 추가', preparation: '제공 형태', servingNote: '제공 메모',
+    // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+    ingredientFeedback: {
+      loading: '재료를 불러오는 중…', error: '재료를 불러오지 못했습니다. 재료를 추가하려면 다시 시도해 주세요.',
+      empty: '재료 이름을 입력한 뒤 일치하는 항목을 선택해 주세요.', choose: '검색 결과에서 재료를 선택해 주세요.',
+      'no-match': '일치하는 재료가 없습니다. 다른 이름으로 검색해 주세요.', duplicate: '이미 추가한 재료입니다.', ready: '',
+    },
     editFoodTitle: (name: string) => `${name} 수정`, reviewFood: (name: string) => `${name} 확인`, reviewItemHint: '저장하기 전에 실제로 제공한 내용을 확인하거나 수정하세요.',
     foodNamePlaceholder: '음식 이름 입력', detailPlaceholder: '설명 추가', addFoodHint: '저장하려면 음식 저장을 눌러 주세요.',
     optional: '선택',
@@ -525,7 +479,6 @@ const ko = {
     action: (name: string) => `${name}을(를) 작은 양으로 따로 담아 제공하기`,
     whyTasted: (name: string) => `이번 식사에서 ${name}을(를) 맛본 것으로 확인했습니다. 같은 음식 형태를 다시 접할 기회를 만들 수 있습니다.`,
     whyUntouched: (name: string) => `이번 식사에서 ${name}을(를) 먹거나 맛보지 않은 것으로 확인했습니다. 작은 양을 따로 두면 아이가 자기 속도로 살펴볼 수 있습니다.`,
-    whyPresentation: (name: string) => `${name}의 제공 형태가 어려웠다고 기록했고 음식이 닿지 않는 것이 중요하다고 답했습니다. 확인된 음식 형태는 유지하고 놓는 위치만 바꿉니다.`,
     tip: '기록한 재료와 조리 방법은 그대로 두고, 이 음식만 작은 양으로 따로 놓아주세요.',
     safety: '제공 전 식품 표시와 교차 접촉 가능성을 직접 확인해 주세요. 이 제안은 결과를 보장하지 않습니다.',
     save: '제안 저장', skip: '넘기기', goBack: '돌아가기', saved: '제안을 저장했습니다.',
@@ -664,8 +617,7 @@ export function copyFor(language: Language) { return strings[language]; }
 type Label = { en: string; ko: string };
 type Option = { id: string; label: Label };
 export type OptionGroup = 'age' | 'allergies' | 'allergyCatalog' | 'restrictions' | 'restrictionCatalog' |
-  'family' | 'familyCatalog' | 'approaches' | 'approachCatalog' | 'texture' | 'smell' |
-  'taste' | 'presentation' | 'temperature' | 'familiarity';
+  'family' | 'familyCatalog';
 
 const options: Record<OptionGroup, Option[]> = {
   age: [
@@ -702,48 +654,6 @@ const options: Record<OptionGroup, Option[]> = {
     ['plant-based-milk', 'Plant-based milk', '식물성 음료'], ['plant-based-yogurt', 'Plant-based yogurt', '식물성 요거트'], ['plant-based-cheese', 'Plant-based cheese', '식물성 치즈'],
     ['legumes', 'Legumes', '콩류'], ['eggs', 'Eggs', '달걀'], ['seaweed', 'Seaweed', '해조류'],
   ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
-  approaches: [
-    ['gluten-casein-free', 'Gluten-free and casein-free', '글루텐·카제인 제한'],
-    ['no-added-sugar', 'No added sugar / limited artificial additives', '첨가당 없음 / 인공첨가물 제한'],
-    ['low-fructose', 'Low-fructose', '저과당식'], ['low-sodium', 'Low sodium', '저염식'],
-    ['ketogenic', 'Ketogenic', '케톤 식이'],
-  ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
-  approachCatalog: [
-    ['low-histamine', 'Low-histamine', '저히스타민식'], ['low-salicylate', 'Low-salicylate', '저살리실산식'],
-    ['pescatarian', 'Pescatarian', '페스코'], ['mediterranean', 'Mediterranean', '지중해식'],
-  ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
-  texture: [
-    ['smooth', 'Smooth / creamy', '매끈하거나 크림 같은'],
-    ['soft', 'Soft / mushy', '부드럽거나 으깬'], ['lumpy', 'Lumpy / chunky', '덩어리가 있는'],
-    ['crunchy', 'Crunchy / crisp', '바삭한'], ['chewy', 'Chewy / tough', '질기거나 쫄깃한'],
-    ['slippery', 'Wet / slippery', '젖거나 미끄러운'], ['mixed', 'Mixed textures', '혼합된 식감'],
-  ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
-  smell: [
-    ['yes', 'Yes', '네'], ['sometimes', 'Sometimes', '가끔'],
-    ['no', 'No', '아니요'], ['unsure', 'Not sure', '잘 모르겠어요'],
-  ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
-  taste: [
-    ['bitter', 'Bitter', '쓴맛'], ['sour', 'Sour', '신맛'],
-    ['spicy', 'Spicy / hot', '맵거나 뜨거운 맛'],
-    ['very-sweet', 'Very sweet', '매우 단맛'], ['very-salty', 'Very salty', '매우 짠맛'],
-  ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
-  presentation: [
-    ['color', 'Specific colors', '특정 색상'], ['shape', 'Consistent shapes and sizes', '일관된 모양과 크기'],
-    ['separate', 'Foods kept separate', '음식이 닿지 않게'],
-    ['visible', 'Ingredients clearly visible', '재료가 분명하게 보이게'],
-  ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
-  temperature: [
-    ['none', 'No clear preference', '뚜렷한 선호 없음'], ['warm', 'Warm', '따뜻하게'],
-    ['cool', 'Cool / chilled', '차갑게'], ['room', 'Room temperature', '상온'],
-    ['depends', 'It depends on the food', '음식마다 달라요'],
-  ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
-  familiarity: [
-    ['tastes', 'Usually tastes a new food', '새 음식을 보통 맛봐요'],
-    ['plate', 'Okay on the plate, may not taste', '접시에 놓여도 괜찮지만 먹지 않을 수 있어요'],
-    ['nearby', 'Prefers it nearby but separate', '가까이 두되 분리하는 편이에요'],
-    ['removed', 'Wants it removed', '치워 주길 원해요'],
-    ['varies', 'Varies by food', '음식마다 달라요'], ['unsure', 'Not sure', '잘 모르겠어요'],
-  ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
 };
 
 export function optionsFor(group: OptionGroup, language: Language) {
@@ -761,19 +671,13 @@ const legacyOptionLabels: Partial<Record<OptionGroup, Record<string, { en: strin
     grains: { en: 'Grains', ko: '곡류' }, meat: { en: 'Meat', ko: '육류' },
     fish: { en: 'Fish', ko: '생선' }, legumes: { en: 'Legumes', ko: '콩류' }, seaweed: { en: 'Seaweed', ko: '해조류' },
   },
-  approaches: {
-    vegetarian: { en: 'Vegetarian', ko: '채식' }, vegan: { en: 'Vegan', ko: '비건' },
-    halal: { en: 'Halal', ko: '할랄' }, kosher: { en: 'Kosher', ko: '코셔' },
-    pescatarian: { en: 'Pescatarian', ko: '페스코' }, mediterranean: { en: 'Mediterranean', ko: '지중해식' },
-  },
-  taste: { sweet: { en: 'Sweet', ko: '단맛' }, salty: { en: 'Salty', ko: '짠맛' } },
 };
 
 export function labelFor(group: OptionGroup, id: string, language: Language): string {
   if (id === 'none') return strings[language].common.none;
   const catalog: Partial<Record<OptionGroup, OptionGroup>> = {
     allergies: 'allergyCatalog', restrictions: 'restrictionCatalog',
-    family: 'familyCatalog', approaches: 'approachCatalog',
+    family: 'familyCatalog',
   };
   return options[group].find((option) => option.id === id)?.label[language]
     ?? (catalog[group] ? options[catalog[group]].find((option) => option.id === id)?.label[language] : undefined)

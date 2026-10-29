@@ -1,6 +1,8 @@
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 식후 검토 글자 크기 및 가독성 개선
 
 import { StyleSheet, Text, View } from 'react-native';
 import { DifficultyEditor } from '../components/DifficultyEditor';
@@ -61,6 +63,6 @@ export function AfterMealDifficultiesView({ p }: { p: Props }) {
 
 const styles = StyleSheet.create({
   root: { gap: 5 },
-  title: { color: colors.homeText, fontSize: 18, fontFamily: fonts.poppinsSemiBold },
-  subtitle: { color: colors.mealReviewMuted, fontSize: 10, lineHeight: 12, fontFamily: fonts.interRegular, marginTop: -8, marginBottom: 7 },
+  title: { color: colors.homeText, fontSize: 22, fontFamily: fonts.poppinsSemiBold },
+  subtitle: { color: colors.mealReviewMuted, fontSize: 14, lineHeight: 20, fontFamily: fonts.interRegular, marginTop: -8, marginBottom: 7 },
 });

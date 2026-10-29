@@ -5,8 +5,52 @@ import pytest
 from httpx import AsyncClient
 
 from app.features.onboarding.consent_version import DOCUMENT_VERSION
-from tests.fixtures.onboarding import request_body
-from tests.helpers.auth import auth_headers as register
+
+
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+def request_body() -> dict:
+    return {
+        "profile": {
+            "child_name": "아이",
+            "age_group": "4-5",
+            "safety": {
+                "allergies": {
+                    "status": "specified",
+                    "items": [{"code": "egg", "custom_name": None}],
+                },
+                "restrictions": {"status": "none", "items": []},
+            },
+            "food_preferences": {
+                "family_foods": [{"code": "eggs", "custom_name": None}],
+            },
+            "safe_foods": {
+                "status": "listed",
+                "items": [
+                    {
+                        "name": "감자",
+                        "preparation": "푹 삶기",
+                        "presentation_note": "작게 잘라 제공",
+                    }
+                ],
+            },
+        },
+        "consents": [
+            {"kind": "account_privacy", "granted": True},
+            {"kind": "photo_analysis", "granted": True},
+            {"kind": "ai_training", "granted": False},
+        ],
+    }
+
+
+async def register(client: AsyncClient, email: str) -> dict[str, str]:
+    await client.post(
+        "/api/v1/auth/signup",
+        json={"email": email, "password": "supersecret", "full_name": "보호자"},
+    )
+    login = await client.post(
+        "/api/v1/auth/login", json={"email": email, "password": "supersecret"}
+    )
+    return {"Authorization": f"Bearer {login.json()['access_token']}"}
 
 
 @pytest.mark.asyncio
@@ -19,6 +63,7 @@ async def test_onboarding_round_trip_and_idempotent_consents(client: AsyncClient
     written = await client.put("/api/v1/onboarding", headers=headers, json=request_body())
     assert written.status_code == 200, written.text
     body = written.json()
+    assert body["profile"]["food_preferences"] == request_body()["profile"]["food_preferences"]
     assert body["profile"]["user_id"].isdecimal()
     assert body["profile"]["safety"]["allergies"]["items"] == [{"code": "egg", "custom_name": None}]
     food_id = body["profile"]["safe_foods"]["items"][0]["id"]
@@ -86,3 +131,28 @@ async def test_onboarding_is_authenticated_and_isolated(client: AsyncClient) -> 
         "profile": None,
         "consents": [],
     }
+
+
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("difficult_textures", []),
+        ("smell_sensitivity", "yes"),
+        ("difficult_tastes", []),
+        ("presentation_preferences", []),
+        ("preferred_temperature", "warm"),
+        ("new_food_response", "plate"),
+    ],
+)
+async def test_onboarding_rejects_retired_answers(
+    client: AsyncClient, field: str, value: object
+) -> None:
+    headers = await register(client, "parent@example.com")
+    payload = request_body()
+    payload["profile"]["food_preferences"][field] = value
+    response = await client.put("/api/v1/onboarding", headers=headers, json=payload)
+    assert response.status_code == 422
+    assert response.json()["error_code"] == "VALIDATION_ERROR"
+    assert (await client.get("/api/v1/onboarding", headers=headers)).json()["profile"] is None

@@ -84,10 +84,23 @@ export function HomeView(p: HomeViewProps) {
         {!p.loading && !p.error && <View style={[styles.section, { gap: 10 }]}>
           <Text style={styles.sectionTitle}>{fresh ? h.savedEmptyTitle : h.savedTitle}</Text>
           <View style={styles.suggestionCard}>
-            {idea ? <Pressable accessibilityRole="button" onPress={() => p.onTrySuggestion(idea.id)} style={styles.ideaRow}>
+          {idea ? (
+            <Pressable accessibilityRole="button" onPress={() => p.onTrySuggestion(idea.id)} style={styles.ideaRow}>
               <HomeAssetIcon name="suggestion" />
-              <View style={styles.ideaCopy}><Text style={styles.ideaTitle}>{p.suggestionText[idea.id]?.title ?? idea.title}</Text><Text style={styles.mealMeta}>{h.savedHint}</Text></View>
-            </Pressable> : <Text style={styles.ideaTitle}>{h.noRecommendations}</Text>}
+              <View style={styles.ideaCopy}>
+                <Text style={styles.ideaTitle}>
+                  {p.suggestionText[idea.id]?.title ?? idea.title}
+                </Text>
+                <Text style={styles.mealMeta}>
+                  {h.savedHint}
+                </Text>
+              </View>
+            </Pressable>
+          ) : (
+            <Text style={styles.ideaTitle}>
+              {h.noRecommendations}
+            </Text>
+        )}
             <Pressable accessibilityRole="button" onPress={idea ? p.onSavedSuggestions : () => p.onMealHistory()} style={styles.sectionAction}>
               <Text style={styles.sectionActionText}>{idea ? h.viewSaved : h.viewHistory}</Text><HomeAssetIcon name="chevron" />
             </Pressable>

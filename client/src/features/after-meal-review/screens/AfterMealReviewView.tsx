@@ -2,13 +2,14 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 식후 검토 글자·하단·버튼 조정 및 현재 단계별 진행 표시
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -16,7 +17,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MealSaveStatusView } from "../../../components/MealSaveStatusView";
-import { AppButton } from "../../../components/AppButton";
+import { MealFlowButton } from "../../../components/MealFlowButton";
+import { MealFlowFooter } from "../../../components/MealFlowFooter";
+import { MealTextButton } from "../../../components/MealTextButton";
 import { MealFoodEditorDialog } from "../../../components/MealFoodEditorDialog";
 import { ReviewProgressHeader } from "../components/ReviewProgressHeader";
 import { colors } from "../../../util/colors";
@@ -42,16 +45,17 @@ export function AfterMealReviewView(
     "preview",
     "compare",
   ].includes(p.draft.step);
-  const phase =
-    p.draft.step === "photo"
-      ? 0
-      : p.draft.step === "preview"
-        ? 1
-        : ["compare", "comparing", "comparison-error"].includes(p.draft.step)
-          ? 3
-          : p.draft.step === "outcomes"
-            ? 3
-            : 4;
+  const phase = {
+    photo: 0,
+    preview: 1,
+    compare: 2,
+    comparing: 2,
+    "comparison-error": 2,
+    outcomes: 3,
+    difficulties: 4,
+    suggestions: 4,
+    complete: 4,
+  }[p.draft.step];
   const goAfterDifficulties = () => {
     if (p.saving || !p.canContinueOutcomes) return;
     setSavePanelHidden(false);
@@ -74,7 +78,7 @@ export function AfterMealReviewView(
           stacked={["outcomes", "difficulties"].includes(p.draft.step)}
           caption={p.draft.step === "preview" && !p.meal.photo ? a.draftFor(p.childName) : !["outcomes", "preview"].includes(p.draft.step) ? undefined : `${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${s.mealCheckin.settings[p.meal.setting]}`}
           backLabel={s.common.back}
-          progress={p.draft.step === "outcomes" ? 0 : phase}
+          progress={phase}
           hideProgress={p.draft.step === "difficulties"}
           onBack={p.onBack}
           disabled={p.saving}
@@ -93,11 +97,9 @@ export function AfterMealReviewView(
               ? m.saveFailed
               : s.common.saved}
         </Text>}
-        {photoStep && p.saveStatus === "error" && (
+        {p.draft.step === "photo" && p.saveStatus === "error" && (
           <View style={styles.retry}>
-            <AppButton
-              variant="meal"
-              secondary
+            <MealTextButton
               label={s.common.retry}
               onPress={p.onRetrySave}
             />
@@ -121,7 +123,6 @@ export function AfterMealReviewView(
                 onFullPhoto: p.onFullPhoto,
                 onImageError: p.onImageError,
                 onManual: p.onManual,
-                onGo: p.onGo,
                 onSaveExit: p.onSaveExit,
               }}
             />
@@ -166,13 +167,22 @@ export function AfterMealReviewView(
             />
           )}
         </ScrollView>
-        {["outcomes", "difficulties"].includes(
+        {["preview", "compare", "outcomes", "difficulties"].includes(
           p.draft.step,
         ) && (
-          <View style={[styles.footer, p.draft.step === "difficulties" && { paddingHorizontal: 24, backgroundColor: colors.difficultyBackground }]}>
+          <MealFlowFooter style={p.draft.step === "difficulties" ? { backgroundColor: colors.difficultyBackground } : undefined}>
+            {p.draft.step === "preview" && (
+              <MealFlowButton
+                label={m.usePhoto}
+                disabled={p.saving || !p.draft.afterPhoto || !!p.photoError}
+                onPress={() => p.meal.photo ? p.onGo("compare") : p.onManual()}
+              />
+            )}
+            {p.draft.step === "compare" && (
+              <MealFlowButton label={m.manual} disabled={p.saving} onPress={p.onManual} />
+            )}
             {p.draft.step === "outcomes" && (
-              <AppButton
-                variant="meal"
+              <MealFlowButton
                 label={s.common.continue}
                 disabled={!p.canContinueOutcomes}
                 onPress={() =>
@@ -180,30 +190,25 @@ export function AfterMealReviewView(
                     ? p.onGo("difficulties")
                     : setShowUnanswered(true)
                 }
-                style={[styles.pill, { minHeight: 52, borderRadius: 14, marginHorizontal: 24 }]}
-                labelStyle={{ fontSize: 16 }}
               />
             )}
             {p.draft.step === "difficulties" && (
               <>
-                <AppButton
-                  variant="meal"
+                <MealFlowButton
                   label={s.common.continue}
                   disabled={p.saving || !p.canContinueOutcomes}
                   onPress={goAfterDifficulties}
-                  style={styles.pill}
                 />
-                <AppButton
-                  variant="meal"
-                  secondary
+                <MealTextButton
                   label={m.skip}
                   disabled={p.saving || !p.canContinueOutcomes}
                   onPress={goAfterDifficulties}
-                  labelStyle={{ fontSize: 16, color: colors.reviewHeading, fontFamily: fonts.interBold }}
-                  style={[styles.pill, { borderWidth: 0, backgroundColor: colors.transparent }]}
                 />
               </>
             )}
+            {["compare", "outcomes"].includes(p.draft.step) || (p.draft.step === "preview" && !!p.meal.photo) ? (
+              <MealTextButton label={a.saveExit} disabled={p.saving} onPress={p.onSaveExit} />
+            ) : null}
             {p.saveStatus !== "saved" && <Text accessibilityLiveRegion="polite" style={styles.status}>
               {p.saveStatus === "saving"
                 ? s.common.saving
@@ -212,28 +217,12 @@ export function AfterMealReviewView(
                   : s.common.saved}
             </Text>}
             {p.saveStatus === "error" && (
-              <AppButton
-                variant="meal"
-                secondary
+              <MealTextButton
                 label={s.common.retry}
                 onPress={p.onRetrySave}
               />
             )}
-          </View>
-        )}
-        {!["complete", "difficulties", "photo"].includes(p.draft.step) && (p.draft.step !== "preview" || !!p.meal.photo) && (
-          <View style={styles.retry}>
-            <Pressable
-              accessibilityRole="button"
-              disabled={p.saving}
-              onPress={p.onSaveExit}
-              style={{ alignItems: "center", padding: 12 }}
-            >
-              <Text style={{ color: colors.homePrimary, fontSize: p.draft.step === "compare" ? 14 : 16, fontFamily: fonts.poppinsSemiBold }}>
-                {p.draft.step === "outcomes" ? s.common.saveExit : a.saveExit}
-              </Text>
-            </Pressable>
-          </View>
+          </MealFlowFooter>
         )}
         {p.editingFood && (
           <MealFoodEditorDialog
@@ -264,17 +253,9 @@ const styles = StyleSheet.create({
     paddingBottom: 26,
     flexGrow: 1,
   },
-  footer: {
-    paddingHorizontal: 24,
-    paddingTop: 9,
-    paddingBottom: 10,
-    gap: 7,
-    backgroundColor: colors.afterMealBackground,
-  },
-  pill: { minHeight: 48, borderRadius: 999 },
   status: {
     color: colors.mealReviewMuted,
-    fontSize: 8,
+    fontSize: 12,
     fontFamily: fonts.interRegular,
     textAlign: "center",
   },
@@ -283,7 +264,7 @@ const styles = StyleSheet.create({
     color: colors.mealReviewMuted,
     paddingHorizontal: 24,
     paddingBottom: 4,
-    fontSize: 9,
+    fontSize: 14,
     fontFamily: fonts.interMedium,
   },
   retry: { paddingHorizontal: 24, paddingBottom: 5 },

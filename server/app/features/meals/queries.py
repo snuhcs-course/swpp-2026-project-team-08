@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+# Changed: Read check-in ingredients from their own table
 """Read authenticated meals and their related records."""
 
 from collections import defaultdict
@@ -8,9 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import (
     FoodItem,
-    Ingredient,
     Meal,
     MealFoodIngredient,
+    MealIngredient,
     ReviewFoodResult,
     ReviewIngredientResult,
     SuggestionMealLink,
@@ -22,7 +24,7 @@ from app.models import (
 class MealRecords:
     meal: Meal
     foods: list[FoodItem]
-    ingredients: list[tuple[MealFoodIngredient, Ingredient]]
+    ingredients: list[tuple[MealFoodIngredient, MealIngredient]]
     food_results: list[ReviewFoodResult]
     ingredient_results: list[ReviewIngredientResult]
     links: list[tuple[SuggestionMealLink, UserSuggestion]]
@@ -49,10 +51,10 @@ async def meals_records(session: AsyncSession, meals: list[Meal]) -> list[MealRe
     ).all()
     ingredients = (
         await session.execute(
-            select(MealFoodIngredient, Ingredient)
-            .join(Ingredient, MealFoodIngredient.ingredient_id == Ingredient.id)
+            select(MealFoodIngredient, MealIngredient)
+            .join(MealIngredient, MealFoodIngredient.ingredient_id == MealIngredient.id)
             .where(MealFoodIngredient.meal_id.in_(ids))
-            .order_by(MealFoodIngredient.meal_id, MealFoodIngredient.food_id, Ingredient.id)
+            .order_by(MealFoodIngredient.meal_id, MealFoodIngredient.food_id, MealIngredient.id)
         )
     ).all()
     food_results = (

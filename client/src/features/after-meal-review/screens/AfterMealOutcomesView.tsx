@@ -1,11 +1,13 @@
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 식후 검토 글자 확대 및 음식 추가 버튼 디자인 통일
 
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { UiAssetIcon } from "../../../components/UiAssetIcon";
-import { AppButton } from "../../../components/AppButton";
+import { MealTextButton } from "../../../components/MealTextButton";
 import { OutcomeChoiceRow } from "../components/OutcomeChoiceRow";
 import { OutcomeDefinitionsModal } from "../components/OutcomeDefinitionsModal";
 import { colors } from "../../../util/colors";
@@ -132,12 +134,8 @@ export function AfterMealOutcomesView({ p }: { p: Props }) {
           </View>
         );
       })}
-      <AppButton
-        variant="meal"
-        secondary
+      <MealTextButton
         label={a.addOutcomeFood}
-        labelStyle={{ fontSize: 12, color: colors.homePrimary }}
-        style={{ minHeight: 48 }}
         onPress={() => p.onEditFood()}
       />
       {p.showUnanswered && !p.canContinueOutcomes && (
@@ -162,35 +160,39 @@ export function AfterMealOutcomesView({ p }: { p: Props }) {
 const styles = StyleSheet.create({
   tokens: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   token: {
+    maxWidth: "100%",
     borderRadius: 999,
     backgroundColor: colors.ingredientChip,
     paddingHorizontal: 8,
     paddingVertical: 5,
   },
   selectedToken: { backgroundColor: colors.navy },
-  tokenText: { color: colors.homeText, fontSize: 13, fontFamily: fonts.poppinsMedium },
+  tokenText: { color: colors.homeText, fontSize: 16, fontFamily: fonts.poppinsMedium },
   selectedTokenText: { color: colors.surface },
   heading: {
     flexDirection: "row",
+    gap: 12,
     justifyContent: "space-between",
     alignItems: "center",
   },
   foodName: {
+    flex: 1,
+    minWidth: 0,
     color: colors.homeText,
-    fontSize: 14,
+    fontSize: 18,
     fontFamily: fonts.poppinsSemiBold,
   },
   root: { gap: 11 },
   title: {
     color: colors.homeText,
-    fontSize: 19,
-    lineHeight: 23,
+    fontSize: 23,
+    lineHeight: 29,
     fontFamily: fonts.poppinsSemiBold,
   },
   intro: {
     color: colors.mealReviewMuted,
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 16,
+    lineHeight: 23,
     fontFamily: fonts.poppinsMedium,
   },
   demo: {
@@ -198,7 +200,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.suggestionSurface,
     borderRadius: 9,
     padding: 8,
-    fontSize: 12,
+    fontSize: 16,
     fontFamily: fonts.poppinsSemiBold,
   },
   countRow: {
@@ -208,8 +210,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
     paddingTop: 32,
   },
-  count: { color: colors.homeText, fontSize: 11, fontFamily: fonts.poppinsSemiBold },
-  help: { color: colors.homePrimary, fontSize: 17, paddingHorizontal: 5 },
+  count: { color: colors.homeText, fontSize: 14, fontFamily: fonts.poppinsSemiBold },
+  help: { color: colors.homePrimary, fontSize: 20, paddingHorizontal: 5 },
   card: {
     backgroundColor: colors.surface,
     borderWidth: 1,
@@ -222,13 +224,13 @@ const styles = StyleSheet.create({
   edit: { alignSelf: "flex-end" },
   editText: {
     color: colors.homePrimary,
-    fontSize: 12,
+    fontSize: 16,
     fontFamily: fonts.poppinsSemiBold,
   },
   removeText: {
     color: colors.error,
-    fontSize: 12,
+    fontSize: 16,
     fontFamily: fonts.poppinsSemiBold,
   },
-  error: { color: colors.error, fontSize: 10, fontFamily: fonts.interMedium },
+  error: { color: colors.error, fontSize: 14, fontFamily: fonts.interMedium },
 });

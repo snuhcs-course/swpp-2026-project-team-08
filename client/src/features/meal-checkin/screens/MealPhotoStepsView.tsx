@@ -1,6 +1,8 @@
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Use the shared compact meal photo introduction card
 
 import { Image } from 'expo-image';
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -8,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../../../util/fonts';
 import { AppButton } from '../../../components/AppButton';
 import { AppIcon } from '../../../components/AppIcon';
+import { MealPhotoIntroCard } from '../../../components/MealPhotoIntroCard';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import { formStyles as ui } from '../../../components/formStyles';
 import type { PhotoSource } from '../../../types/meal';
@@ -76,34 +79,10 @@ export function MealPhotoStepsView({
 
   if (d.step === 'photo') return (
     <>
-      <View style={styles.hero}>
-        <Text style={styles.heroTitle}>{m.addPhoto}</Text>
-        <Text style={styles.heroText}>{m.photoTip}</Text>
-        <View style={styles.heroVisual}>
-          <View style={styles.exampleWrap}>
-            <Image
-              source={require('../../../../assets/meal/example-plate.png')}
-              accessibilityLabel={m.example}
-              style={styles.example}
-              contentFit="contain"
-            />
-            <Text style={styles.exampleBadge}>{m.previewBadge}</Text>
-          </View>
-          <View style={styles.heroGuidance}>
-            {m.photoTips.map((tip, i) => (
-              <View key={tip} style={styles.heroTip}>
-                <View style={styles.heroTipIcon}>
-                  <AppIcon name={(['camera', 'gallery', 'files'] as const)[i]} size={14} />
-                </View>
-                <Text style={styles.heroTipText}>{tip}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      </View>
+      <MealPhotoIntroCard title={m.addPhoto} subtitle={m.photoTip} />
       {sources}
       <Pressable accessibilityRole="button" onPress={() => p.onGo('foods')} style={styles.manualRoute}>
-        <View style={styles.sourceIcon}><UiAssetIcon name="meal-manual" /></View>
+        {/* <View style={styles.sourceIcon}><UiAssetIcon name="meal-manual" /></View> */}
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={styles.manualRouteLabel}>{m.skipPhoto}</Text>
           <Text style={ui.muted}>{m.skipPhotoHint}</Text>

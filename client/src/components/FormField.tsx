@@ -23,7 +23,18 @@ type Props = {
 export function FormField({ label, value, onChangeText, placeholder, error, secureTextEntry, keyboardType, autoCapitalize, hideLabel, optionalLabel, variant = 'onboarding' }: Props) {
   return (
     <View style={[styles.wrap, variant === 'editor' && styles.editorWrap, (variant === 'safe' || variant === 'safe-note') && { marginBottom: 0 }]}>
-      {!hideLabel && <View style={[styles.headingRow, variant === 'safe-note' && { justifyContent: 'flex-start', gap: 6 }]}><Text style={[styles.label, (variant === 'account' || variant === 'safe-note') && { fontSize: 15, lineHeight: 22 }, variant === 'meal' && styles.mealLabel, variant === 'editor' && styles.editorLabel]}>{label}</Text>{optionalLabel && <Text style={[styles.optionalLabel, variant === 'safe-note' && { fontSize: 12, fontFamily: fonts.interBold }]}>{optionalLabel}</Text>}</View>}
+      {!hideLabel && 
+        <View style={[styles.headingRow, variant === 'safe-note' && { justifyContent: 'flex-start', gap: 6 }]}>
+          <Text style={[styles.label, (variant === 'account' || variant === 'safe-note') && { fontSize: 15, lineHeight: 22 }, variant === 'meal' && styles.mealLabel, variant === 'editor' && styles.editorLabel]}>
+            {label}
+            </Text>
+            {optionalLabel && 
+            <Text style={[styles.optionalLabel, variant === 'safe-note' && { fontSize: 12, fontFamily: fonts.interBold }]}>
+              {optionalLabel}
+            </Text>
+            }
+        </View>
+      }
       <TextInput
         accessibilityLabel={label}
         value={value}
@@ -49,8 +60,8 @@ const styles = StyleSheet.create({
   editorLabel: { fontFamily: fonts.poppinsSemiBold, fontSize: 11, lineHeight: 16, textTransform: 'none', color: colors.editorMuted },
   editorInput: { minHeight: 38, height: 38, paddingHorizontal: 11, borderRadius: 10, borderColor: colors.mealReviewBorder, backgroundColor: colors.editorInput, fontFamily: fonts.poppinsMedium, fontSize: 13, color: colors.homeText },
   wrap: { gap: 5, marginBottom: 9 },
-  label: { color: colors.onboardingText, fontSize: 13, lineHeight: 19, fontFamily: fonts.poppinsSemiBold },
-  input: { minHeight: 40, borderWidth: 1, borderColor: colors.onboardingBorder, borderRadius: 8, backgroundColor: colors.surface, paddingHorizontal: 11, paddingVertical: 6, color: colors.onboardingText, fontSize: 13, fontFamily: fonts.interRegular },
+  label: { color: colors.onboardingText, fontSize: 15, lineHeight: 19, fontFamily: fonts.poppinsSemiBold },
+  input: { minHeight: 40, borderWidth: 1, borderColor: colors.onboardingBorder, borderRadius: 8, backgroundColor: colors.surface, paddingHorizontal: 11, paddingVertical: 6, color: colors.onboardingText, fontSize: 14, fontFamily: fonts.interRegular },
   errorInput: { borderColor: colors.error },
   error: { color: colors.error, fontSize: 12, lineHeight: 16, fontFamily: fonts.interRegular },
 });

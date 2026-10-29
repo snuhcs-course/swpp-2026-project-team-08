@@ -1,4 +1,6 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-28, reviewed by Seoyeon Heo
+# Changed: Align onboarding fixture with supported food preferences
 """Valid onboarding request; each call returns independent nested values."""
 
 
@@ -16,13 +18,6 @@ def request_body() -> dict:
             },
             "food_preferences": {
                 "family_foods": [{"code": "eggs", "custom_name": None}],
-                "dietary_approaches": [],
-                "difficult_textures": [],
-                "smell_sensitivity": "sometimes",
-                "difficult_tastes": [],
-                "presentation_preferences": [],
-                "preferred_temperature": "warm",
-                "new_food_response": "plate",
             },
             "safe_foods": {
                 "status": "listed",

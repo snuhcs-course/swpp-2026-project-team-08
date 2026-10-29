@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: 온보딩 라벨 스타일 정리
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
@@ -9,15 +11,13 @@ import { fonts } from '../../../util/fonts';
 export const styles = StyleSheet.create({
   sectionLabel: {
     color: colors.onboardingText,
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: fonts.poppinsSemiBold,
     marginBottom: 6,
     marginTop: 10,
-    textTransform: 'uppercase',
   },
   fieldHint: { color: colors.onboardingMuted, fontSize: 12, fontFamily: fonts.interRegular, marginTop: -4 },
   question: { color: colors.onboardingText, fontSize: 13, lineHeight: 16, fontFamily: fonts.interBold, marginBottom: 7 },
-  questionHelper: { color: colors.onboardingMuted, fontSize: 12, lineHeight: 16, fontFamily: fonts.interRegular, marginTop: -5, marginBottom: 7 },
   selectionHint: { color: colors.onboardingMuted, fontSize: 12, fontFamily: fonts.interRegular, textAlign: 'right', marginTop: 3, marginBottom: 6 },
   infoBanner: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: colors.homeSelected, borderRadius: 11, padding: 8, marginTop: 8, marginBottom: 8 },
   infoIcon: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },

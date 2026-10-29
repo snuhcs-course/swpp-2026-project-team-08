@@ -1,5 +1,7 @@
 <!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 <!-- Changed: 화면 디자인 및 식사 흐름 개선 -->
+<!-- AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo -->
+<!-- Changed: 공통 바텀바의 4개 탭과 하단 안전 영역 정의 -->
 
 # Home — Today
 
@@ -14,7 +16,7 @@
 - [체크인 저장 완료 — 455:9843](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/?node-id=455-9843)
 - [식후 리뷰 시작 — 455:6876](https://www.figma.com/design/mxsRk3PMmZGuNpJVeAiRi5/?node-id=455-6876)
 
-이전 37:3607의 Recommended action goals 위젯은 이 홈의 기준에서 제외한다. 사용자 요청에 따라 바텀바는 Figma의 홈 전용 디자인 대신 기존 공통 탐색을 사용한다. 기록 유무와 현재 탭에 관계없이 Today·Meal Log·Ideas·Insight·Profile의 5개 탭을 같은 순서·아이콘·크기·간격으로 표시한다. 상태 표시줄·홈 인디케이터는 앱 콘텐츠로 복제하지 않는다.
+이전 37:3607의 Recommended action goals 위젯은 이 홈의 기준에서 제외한다. 바텀바는 공통 탐색을 사용한다. 기록 유무와 현재 탭에 관계없이 Today·Meal Log·Suggestions·Profile의 4개 탭을 같은 순서·아이콘·크기·간격으로 표시한다. 상태 표시줄·홈 인디케이터는 앱 콘텐츠로 복제하지 않는다.
 
 ## User Flow
 
@@ -68,7 +70,7 @@
 ### R6 — 공통 배치·언어·탐색
 
 - 화면 배경 #F7FAFF, 콘텐츠 좌우 24px, 인사말 위 10px·아래 20px, 본문 섹션 간 18px, 하단 여백 24px이다.
-- 바텀바는 모든 탭이 MainLayout에서 공유하는 기존 BottomNavigation을 사용한다. 5개 탭·20px MaterialCommunityIcons·9px 라벨·72px 높이·좌우 22px 여백을 유지한다. 탭 전환 시 본문만 이동하며 바텀바의 위치·크기·구성은 바뀌지 않고 선택 표시만 갱신한다. 기록 유무에 따라 탭을 숨기지 않는다. 콘텐츠는 세로 스크롤한다.
+- 바텀바는 모든 탭이 MainLayout에서 공유하는 BottomNavigation을 사용한다. 4개 탭·20px MaterialCommunityIcons·9px 라벨·좌우 22px 여백을 사용한다. 높이는 60px에 하단 여백을 더하며, 하단 여백은 12px과 기기의 하단 안전 영역 중 큰 값이다. 바텀바 배경은 화면 하단까지 이어지며 MainLayout은 안전 영역을 중복 적용하지 않는다. 바텀바가 숨겨지는 기록용 추천 흐름에서는 MainLayout이 하단 안전 영역을 적용한다. 탭 전환 시 본문만 이동하며 바텀바의 위치·크기·구성은 바뀌지 않고 선택 표시만 갱신한다. 기록 유무에 따라 탭을 숨기지 않는다. 콘텐츠는 세로 스크롤한다.
 - 모든 문구는 strings.ts, 색은 colors.ts에 모은다. 한국어·영어 모두 지원하며 실제 이름·음식명은 유지한다.
 - View는 props만 받아 렌더링하고 Hook·Query·Storage가 데이터 조회와 상태를 담당한다.
 

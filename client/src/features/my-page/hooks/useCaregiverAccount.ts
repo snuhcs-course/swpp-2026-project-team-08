@@ -1,10 +1,10 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 
 import { useState } from 'react';
 import { authFailure, confirmEmailChange, requestEmailChange, updateCurrentName } from '../../../data/api/authApi';
 import { useAuth } from '../../../providers/AuthProvider';
 import { useProfile } from '../../../providers/ProfileProvider';
-import { copyFor } from '../../../util/strings';
 import { canSendEmailCode } from '../rules';
 
 export function useCaregiverAccount() {
@@ -21,10 +21,10 @@ export function useCaregiverAccount() {
   const [sendError, setSendError] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const copy = copyFor(appProfile.language);
   const saveName = async () => {
+    if (!profile) return false;
     const next = name.trim();
-    if (!profile || !next || next === profile.caregiverName) return true;
+    if (!next || next === profile.caregiverName) return true;
     setBusy(true);
     setSaveError(false);
     try {
@@ -70,45 +70,29 @@ export function useCaregiverAccount() {
       setBusy(false);
     }
   };
-  const prepareBack = async () => {
+  const goBack = async () => {
     if (mode === 'verify') {
       setMode('change-email');
-      return false;
+      return;
     }
     if (mode === 'change-email') {
       setMode('account');
-      return false;
+      return;
     }
     return saveName();
   };
 
   return {
     status: appProfile.status,
-    hasProfile: !!profile,
-    prepareBack,
-    viewProps: {
-      language: appProfile.language,
-      mode: mode,
-      name: name,
-      email: profile?.caregiverEmail ?? '',
-      newEmail: newEmail,
-      code: code,
-      mismatch: mismatch,
-      updated: updated,
-      busy: busy,
-      saveError: saveError,
-      sendError: sendError,
-      saveFailedLabel: copy.common.saveFailed,
-      canSend: !!profile && canSendEmailCode(profile.caregiverEmail, newEmail),
-      canVerify: code.length === 6,
-      onName: (value: string) => { setSaveError(false); setName(value); },
-      onSaveName: () => { void saveName(); },
-      onChange: () => { setUpdated(false); setSendError(false); setNewEmail(''); setMode('change-email'); },
-      onNewEmail: setNewEmail,
-      onSend: () => { void sendCode(); },
-      onCode: (value: string) => { setMismatch(false); setCode(value); },
-      onVerify: () => { void verify(); },
-      onResend: () => { void sendCode(); },
-    },
+    language: appProfile.language,
+    profile,
+    mode, name, newEmail, code, mismatch, updated, busy, saveError, sendError,
+    canSend: !!profile && canSendEmailCode(profile.caregiverEmail, newEmail),
+    canVerify: code.length === 6,
+    goBack, saveName, sendCode, verify,
+    changeName: (value: string) => { setSaveError(false); setName(value); },
+    startEmailChange: () => { setUpdated(false); setSendError(false); setNewEmail(''); setMode('change-email'); },
+    setNewEmail,
+    changeCode: (value: string) => { setMismatch(false); setCode(value); },
   };
 }

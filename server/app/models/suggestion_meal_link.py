@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+# Changed: Reference check-in ingredients independently of the catalog
 """Saved suggestion linked to a later authenticated meal."""
 
 from datetime import datetime
@@ -60,7 +62,7 @@ class SuggestionMealLink(Base):
     food_id: Mapped[int] = mapped_column(BigInteger().with_variant(Integer, "sqlite"))
     ingredient_id: Mapped[int | None] = mapped_column(
         BigInteger().with_variant(Integer, "sqlite"),
-        ForeignKey("ingredients.id", onupdate="CASCADE", ondelete="CASCADE"),
+        ForeignKey("meal_ingredients.id", onupdate="CASCADE", ondelete="CASCADE"),
         nullable=True,
     )
     feedback: Mapped[str | None] = mapped_column(Text, nullable=True)

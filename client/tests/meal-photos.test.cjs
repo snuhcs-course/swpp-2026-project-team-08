@@ -1,4 +1,7 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+// Changed: Photo persistence coverage and API runner instructions
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -17,7 +20,6 @@ Module._load = function (name, ...args) {
   if (name === '@react-native-async-storage/async-storage') {
     return { getItem: async () => null, setItem: async () => undefined, removeItem: async () => undefined };
   }
-  // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
   if (name === 'expo-secure-store') {
     const store = {
       WHEN_UNLOCKED: 1,
@@ -54,10 +56,6 @@ function mealWithBeforePhoto(childId = 'child-photo') {
   draft.step = 'foods';
   return mealFromDraft(draft);
 }
-
-
-
-// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 test('saving a meal keeps the before photo; manual after-meal review may omit its photo', () => {
   const meal = mealWithBeforePhoto();
   assert.equal(meal.photo.uri, PNG);
@@ -76,7 +74,6 @@ test('saving a meal keeps the before photo; manual after-meal review may omit it
   assert.equal(reviewToBody(review).after_photo_uri, afterPhoto.uri);
 });
 
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 test('live API stores a before-meal photo then an after-meal photo', async (t) => {
   const api = process.env.API_URL || 'http://127.0.0.1:8000';
   let health;
@@ -84,7 +81,7 @@ test('live API stores a before-meal photo then an after-meal photo', async (t) =
     health = await fetch(`${api}/health`);
   } catch (error) {
     if (process.env.API_URL) throw error;
-    t.skip('API is not running; use npm run test:integration');
+    t.skip('API is not running; run uv run python -m tests.run_client_integration from server/');
     return;
   }
   assert.equal(health.status, 200, 'API health check failed');

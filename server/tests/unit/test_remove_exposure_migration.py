@@ -1,4 +1,5 @@
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+# Changed: Verify meal ingredient migration head
 # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 # Changed: 화면 디자인 및 식사 흐름 개선
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
@@ -17,7 +18,11 @@ MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0016_remove_profile_questions"]
+    assert scripts.get_heads() == ["0017_meal_ingredients"]
+    assert (
+        scripts.get_revision("0017_meal_ingredients").down_revision
+        == "0016_remove_profile_questions"
+    )
     assert scripts.get_revision("0012_mock_ingredients").down_revision == "0011_onboarding"
     assert scripts.get_revision("0011_onboarding").down_revision == "0010_bigint_user_ids"
     assert scripts.get_revision("0010_bigint_user_ids").down_revision == "0009_food_confirmation"
@@ -27,7 +32,6 @@ def test_removal_joins_both_existing_heads():
     }
 
 
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 def test_profile_answer_removal_preserves_other_categories_and_restores_empty_columns():
     migration = run_path(str(MIGRATIONS / "versions" / "20261027_1000_remove_profile_questions.py"))
     assert migration["down_revision"] == "0015_remove_dietary_approaches"

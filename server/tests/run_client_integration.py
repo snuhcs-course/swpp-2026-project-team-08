@@ -1,4 +1,5 @@
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+# Changed: Run every client test against the disposable API
 """Run the client suite against a real HTTP API backed by disposable PostgreSQL.
 
 Run from server/: uv run python -m tests.run_client_integration
@@ -98,7 +99,7 @@ async def run_suite(database_url: str) -> int:
                 print(
                     f"Integration API: http://127.0.0.1:{port} (disposable PostgreSQL)", flush=True
                 )
-                tests = sorted(str(path) for path in (client_dir / "tests").glob("*.test.cjs"))
+                tests = sorted(str(path) for path in (client_dir / "tests").rglob("*.test.cjs"))
                 process = await asyncio.create_subprocess_exec(
                     "node",
                     "--test",

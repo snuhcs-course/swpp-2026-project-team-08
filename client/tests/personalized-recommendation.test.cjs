@@ -1,43 +1,17 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+// Changed: Validate retained recommendation evidence and current server suggestion retry
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Tests legacy evidence compatibility and current API generation; only native storage and HTTP are mocked.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const ts = require('typescript');
-const Module = require('node:module');
-
-require.extensions['.ts'] = (module, filename) => module._compile(
-  ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
-  }).outputText,
-  filename,
-);
-
-const values = new Map();
-let failedKey = null;
-const storage = {
-  async getItem(key) { return values.get(key) ?? null; },
-  async setItem(key, value) {
-    if (key === failedKey) { failedKey = null; throw new Error('Disk full'); }
-    values.set(key, value);
-  },
-  async removeItem(key) { values.delete(key); },
-};
-const originalLoad = Module._load;
-Module._load = function (name, ...args) {
-  return name === '@react-native-async-storage/async-storage' ? storage : originalLoad.call(this, name, ...args);
-};
-
+require('./helpers/register.cjs');
+require('./helpers/native-boundaries.cjs').nativeBoundaries();
 const { newDraft, mealFromDraft } = require('../src/features/meal-checkin/rules.ts');
 const { newFood } = require('../src/rules/foodDraft.ts');
 const { newReviewDraft, setOutcome, reviewFromDraft } = require('../src/features/after-meal-review/rules.ts');
-const { buildRecommendations } = require('../src/features/personalized-recommendation/rules.ts');
-const { savedSuggestionsForProfile } = require('../src/rules/savedSuggestions.ts');
 const { recommendationText } = require('../src/rules/recommendationPresentation.ts');
-const { saveMeal, readMeal, updateMealFoods } = require('../src/data/storage/mealStorage.ts');
-const { saveAfterMealReview } = require('../src/data/storage/afterMealReviewStorage.ts');
-const { saveProfile } = require('../src/data/storage/profileStorage.ts');
-const { saveRecommendation } = require('../src/data/storage/recommendationStorage.ts');
-const { readHomeRecords } = require('../src/data/storage/homeStorage.ts');
+const { foodFormKey, isCurrentRecommendation } = require('../src/rules/recommendationSafety.ts');
+const { generateMealSuggestions } = require('../src/data/api/mealSuggestionApi.ts');
 
 function fixtures(childId = 'child-d') {
   const profile = {
@@ -58,85 +32,73 @@ function fixtures(childId = 'child-d') {
   return { profile, meal, review: reviewFromDraft(reviewDraft, meal) };
 }
 
-function saved(candidate, profile) {
-  const english = recommendationText(candidate, 'en');
+
+function savedFor(profile, meal, review) {
   return {
-    id: candidate.id, childId: candidate.childId, ingredients: candidate.ingredients,
-    title: english.title, description: english.description, servingTip: english.servingTip,
-    isSaved: true, safetyVerifiedForProfileAt: profile.updatedAt,
+    id: 'legacy-card', childId: profile.id, ingredients: meal.foods[0].ingredients,
+    title: 'Try Rice', description: 'Try a small portion', isSaved: true,
+    safetyVerifiedForProfileAt: profile.updatedAt,
     recommendation: {
-      mealId: candidate.mealId, foodId: candidate.foodId, foodName: candidate.foodName,
-      foodFormKey: candidate.foodFormKey, reviewSavedAt: candidate.reviewSavedAt,
-      outcome: candidate.outcome, difficulty: candidate.difficulty, kind: candidate.kind,
+      mealId: meal.id, foodId: 'food-d', foodName: 'Rice',
+      foodFormKey: foodFormKey(meal.foods[0]), reviewSavedAt: review.savedAt,
+      outcome: 'tasted', difficulty: 'shape', kind: 'small-separate-portion',
     },
   };
 }
 
-test('recommendations use only confirmed outcomes and known forms under explicit no-restriction answers', () => {
+test('legacy recommendation requires explicit restriction answers and confirmed review evidence', () => {
   const { profile, meal, review } = fixtures();
-  assert.equal(buildRecommendations(profile, meal, review).status, 'ready');
-  assert.equal(buildRecommendations({ ...profile, allergies: [] }, meal, review).status, 'safety-unverified');
-  assert.equal(buildRecommendations({ ...profile, restrictions: ['dairy'] }, meal, review).status, 'safety-unverified');
-  assert.equal(buildRecommendations(profile, { ...meal, foods: [{ ...meal.foods[0], ingredients: [] }] }, review).status, 'no-safe-candidate');
-  assert.equal(buildRecommendations(profile, meal, { ...review, foodFormKeys: {} }).status, 'meal-changed');
+  const card = savedFor(profile, meal, review);
+  assert.equal(isCurrentRecommendation(card, profile, meal, review), true);
+  for (const changed of [{ ...profile, allergies: [] }, { ...profile, restrictions: ['dairy'] }]) {
+    assert.equal(isCurrentRecommendation(card, changed, meal, review), false);
+  }
   const unconfirmed = { ...review, outcomes: [{ ...review.outcomes[0], decision: { confirmed: null, suggested: 'tasted' } }] };
-  assert.equal(buildRecommendations(profile, meal, unconfirmed).status, 'insufficient-evidence');
-  const candidate = buildRecommendations(profile, meal, review).candidates[0];
-  assert.match(recommendationText(candidate, 'en').description, /was tasted/);
-  assert.match(recommendationText(candidate, 'ko').title, /Rice/);
+  assert.equal(isCurrentRecommendation(card, profile, meal, unconfirmed), false);
+  assert.match(recommendationText(card.recommendation, 'en').description, /was tasted/);
+  assert.match(recommendationText(card.recommendation, 'ko').title, /Rice/);
 });
 
-test('saved recommendations are idempotent and disappear from actionable views when safety or form changes', async () => {
-  values.clear();
+test('legacy saved evidence stops being actionable when its owner, safety or serving form changes', () => {
   const { profile, meal, review } = fixtures();
-  await saveProfile(profile);
-  await saveMeal(meal);
-  await saveAfterMealReview(review);
-  const candidate = buildRecommendations(profile, meal, review).candidates[0];
-  const suggestion = saved(candidate, profile);
-  await saveRecommendation(suggestion);
-  await saveRecommendation(suggestion);
-  let home = await readHomeRecords(profile.id);
-  assert.equal(home.suggestions.length, 1);
-  assert.equal(savedSuggestionsForProfile(home, profile, [meal]).length, 1);
-  const changedProfile = { ...profile, allergies: ['egg'], updatedAt: 'later' };
-  assert.equal(savedSuggestionsForProfile(home, changedProfile, [meal]).length, 0);
-  await saveProfile(changedProfile);
-  await assert.rejects(saveRecommendation(saved({ ...candidate, id: 'another' }, profile)));
-  await saveProfile(profile);
-  await updateMealFoods(profile.id, meal.id, [{ ...meal.foods[0], preparation: 'fried' }]);
-  const edited = await readMeal(profile.id, meal.id);
-  home = await readHomeRecords(profile.id);
-  assert.equal(home.suggestions.length, 1);
-  assert.equal(savedSuggestionsForProfile(home, profile, [edited]).length, 0);
-  await assert.rejects(saveRecommendation(saved({ ...candidate, id: 'another' }, profile)));
+  const card = savedFor(profile, meal, review);
+  assert.equal(isCurrentRecommendation(card, profile, meal, review), true);
+  assert.equal(isCurrentRecommendation(card, { ...profile, id: 'another' }, meal, review), false);
+  assert.equal(isCurrentRecommendation(card, { ...profile, allergies: ['egg'] }, meal, review), false);
+  assert.equal(isCurrentRecommendation(card, profile, { ...meal, foods: [{ ...meal.foods[0], preparation: 'fried' }] }, review), false);
+  assert.equal(isCurrentRecommendation(card, profile, { ...meal, foods: [{ ...meal.foods[0], ingredients: [] }] }, review), false);
 });
 
-test('failed recommendation write keeps the card available for an idempotent retry', async () => {
-  values.clear();
-  const { profile, meal, review } = fixtures('retry-d');
-  await saveProfile(profile);
-  await saveMeal(meal);
-  await saveAfterMealReview(review);
-  const suggestion = saved(buildRecommendations(profile, meal, review).candidates[0], profile);
-  failedKey = `nurturebites.home.${profile.id}.v1`;
-  await assert.rejects(saveRecommendation(suggestion));
-  assert.equal((await readHomeRecords(profile.id)).suggestions.length, 0);
-  await saveRecommendation(suggestion);
-  assert.equal((await readHomeRecords(profile.id)).suggestions.length, 1);
+test('failed server generation preserves requested targets for a successful explicit retry', async t => {
+  const targets = [{ foodId: '2', ingredientId: null }];
+  let calls = 0;
+  t.mock.method(global, 'fetch', async (url, init) => {
+    assert.equal(new URL(url).pathname, '/api/v1/meals/8/suggestions');
+    assert.equal(init.method, 'POST');
+    assert.deepEqual(JSON.parse(init.body), { targets: [{ food_id: '2', ingredient_id: null }] });
+    calls++;
+    if (calls === 1) return new Response('{"error_code":"GENERATION_FAILED"}', { status: 502 });
+    return new Response(JSON.stringify([{
+      id: '31', user_id: '1', meal_id: '8', food_id: '2', ingredient_id: null,
+      food_snapshot: { name: 'Rice', ingredients: [], cooking_method: null, serving_note: null, acceptance: null },
+      what_to_try: 'Try a little', why_this_may_help: 'Familiar texture', serving_tip: null,
+      status: 'pending', dismiss_reasons: [], saved_at: null, created_at: '2026-10-21T00:00:00Z',
+    }]));
+  });
+  await assert.rejects(generateMealSuggestions('1', '8', targets), /GENERATION_FAILED/);
+  assert.deepEqual(targets, [{ foodId: '2', ingredientId: null }]);
+  const items = await generateMealSuggestions('1', '8', targets);
+  assert.deepEqual(items.map(item => item.id), ['31']);
+  assert.equal(calls, 2);
 });
 
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
-test('legacy recommendation forms ignore retired food traits and retain serving and rejection checks', () => {
-  const { foodFormKey, isCurrentRecommendation } = require('../src/rules/recommendationSafety.ts');
+test('legacy forms ignore retired traits while preserving serving and difficulty checks', () => {
   const { profile, meal, review } = fixtures('retired-traits-recommendation');
-  const card = saved(buildRecommendations(profile, meal, review).candidates[0], profile);
-  assert.ok(card);
+  const card = savedFor(profile, meal, review);
   const oldKey = JSON.stringify({ ...JSON.parse(foodFormKey(meal.foods[0])), traits: { texture: ['soft'] } });
   const suggestion = { ...card, recommendation: { ...card.recommendation, foodFormKey: oldKey } };
   const oldReview = { ...review, foodFormKeys: { [meal.foods[0].id]: oldKey } };
   assert.equal(isCurrentRecommendation(suggestion, profile, meal, oldReview), true);
-  assert.equal(buildRecommendations(profile, meal, oldReview).status, 'ready');
   assert.equal(isCurrentRecommendation(suggestion, profile, { ...meal, foods: [{ ...meal.foods[0], preparation: 'fried' }] }, oldReview), false);
   assert.equal(isCurrentRecommendation(suggestion, profile, meal, { ...oldReview, difficulties: {} }), false);
 });

@@ -1,6 +1,6 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
-# AI-generated with GPT-6, 2026-10-28, reviewed by Seoyeon Heo
-# Changed: Cover free-text ingredient saves and invalid meal rollback
+# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+# Changed: Verify isolated check-in ingredients and atomic meal writes
 """Authenticated meal write and ingredient ID resolution."""
 
 from datetime import UTC, datetime
@@ -15,7 +15,14 @@ from sqlalchemy import create_engine, select, text
 
 from app.core.database import get_session
 from app.main import app
-from app.models import Ingredient, Meal, MealFoodIngredient, SuggestionMealLink, UserSuggestion
+from app.models import (
+    Ingredient,
+    Meal,
+    MealFoodIngredient,
+    MealIngredient,
+    SuggestionMealLink,
+    UserSuggestion,
+)
 from tests.helpers.auth import auth_headers
 
 
@@ -113,6 +120,18 @@ async def test_write_meal_saves_free_text_ingredients(client: AsyncClient, seede
     assert ingredient["name"] == "우리집 양념"
     assert 0 < int(ingredient["id"]) < 2**63
 
+    async for session in app.dependency_overrides[get_session]():
+        assert await session.get(MealIngredient, int(ingredient["id"])) is not None
+        assert await session.get(Ingredient, int(ingredient["id"])) is None
+    catalog = await client.get("/api/v1/ingredients", headers=headers)
+    assert all(item["name"] != ingredient["name"] for item in catalog.json())
+    resolved = await client.post(
+        "/api/v1/ingredients/resolve",
+        headers=headers,
+        json={"id": ingredient["id"], "name": ingredient["name"]},
+    )
+    assert resolved.status_code == 404
+
     edited = {"foods": meal_payload(None, "Another custom ingredient")["foods"]}
     update = await client.put(f"/api/v1/meals/{meal_id}/foods", headers=headers, json=edited)
     assert update.status_code == 200, update.text
@@ -146,6 +165,7 @@ async def test_invalid_free_text_meal_rolls_back_new_ingredients(
     async for session in app.dependency_overrides[get_session]():
         assert (await session.scalars(select(Meal))).all() == []
         assert (await session.scalars(select(Ingredient))).all() == []
+        assert (await session.scalars(select(MealIngredient))).all() == []
 
 
 @pytest.mark.asyncio

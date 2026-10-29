@@ -1,4 +1,6 @@
-"""Resolved shared ingredients attached to a meal food."""
+# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+# Changed: Reference check-in ingredients independently of the catalog
+"""Recorded check-in ingredients attached to a meal food."""
 
 from sqlalchemy import BigInteger, ForeignKey, ForeignKeyConstraint, Integer
 from sqlalchemy.orm import Mapped, mapped_column
@@ -25,6 +27,6 @@ class MealFoodIngredient(Base):
     )
     ingredient_id: Mapped[int] = mapped_column(
         BigInteger().with_variant(Integer, "sqlite"),
-        ForeignKey("ingredients.id", onupdate="CASCADE", ondelete="CASCADE"),
+        ForeignKey("meal_ingredients.id", onupdate="CASCADE", ondelete="CASCADE"),
         primary_key=True,
     )

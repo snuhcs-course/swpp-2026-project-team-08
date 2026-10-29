@@ -6,6 +6,9 @@
 <!-- AI-generated with GPT-6, 2026-10-26, reviewed by Haechan Jung -->
 <!-- Changed: 아키텍처 현행화 및 문서 역할 정리 -->
 
+<!-- AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo -->
+<!-- Changed: 식사 재료와 공용 카탈로그의 저장 경계 -->
+
 # server — 아키텍처
 
 > 범위: 백엔드 서버(`server/`)의 **아키텍처** — 구조의 의도 · 영역별 설계와 근거 · 에러 처리 · 코드 배치 규칙 · 버전 관리 전략
@@ -204,6 +207,17 @@ async def list_meal_logs(
 
 `CurrentUser`는 `features/auth/dependencies.py`에 있다. 토큰을 다루는 도구(`features/auth/security.py`)는 `auth`
 기능 안에만 두고, 다른 기능은 `CurrentUser`만 import해서 쓴다 (§3).
+
+## 재료 저장 경계
+
+`Ingredient`(`ingredients`)는 공용 재료 카탈로그다. 식사 저장·수정은 이 테이블에 쓰지 않는다.
+`MealIngredient`(`meal_ingredients`)는 meal check-in에서 기록한 재료를 저장한다.
+카탈로그에서 선택한 재료도 별도 행으로 복사하고, 자유 입력 재료는 이 테이블에만 생성한다.
+식사와 추천 연결의 재료 FK는 `meal_ingredients`를 참조한다. 식후 결과와 추천 스냅샷은 기록한 ID를 유지한다.
+공용 카탈로그 API는 `Ingredient`만 조회한다. LLM의 제한 검증은 현재 별도 JSON 카탈로그를 사용한다.
+
+`0017_meal_ingredients`는 기존 재료 ID와 이름을 복사하고 식사 관련 FK를 옮긴다.
+기존 `ingredients`의 행은 보존한다. 사용자 재료를 공용 카탈로그로 합치지 않도록 자동 downgrade는 제공하지 않는다.
 
 ## 3. 의존성 방향과 기능 간 규칙
 

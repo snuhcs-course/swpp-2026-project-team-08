@@ -1,5 +1,8 @@
 <!-- AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung -->
 
+<!-- AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo -->
+<!-- Changed: 누락 없는 테스트 실행 범위 및 API 통합 검사 -->
+
 # Frontend 테스트 기준
 
 ## 종류 구분
@@ -72,7 +75,7 @@
 
 ```sh
 node --test tests/unit/auth-api.test.cjs # 작성한 파일 경로로 변경
-npm test
+npm test # tests/ 루트, unit/, integration/ 전체 실행
 npm run lint
 ./node_modules/.bin/tsc --noEmit
 ```
@@ -80,3 +83,11 @@ npm run lint
 - 변경한 동작과 중요한 실패 사례가 검사되는지 먼저 확인한다. 버그 수정에는 가능하면 수정 전 실패하는 재현 테스트를 남긴다.
 - 커버리지는 미실행 코드도 포함해 영역별로 측정하고, 중요한 분기가 빠졌는지 함께 확인한다. 테스트 개수나 전체 평균만으로 완료를 판단하지 않는다.
 - 수치 목표는 측정 범위와 제외 항목을 정한 뒤 별도로 합의한다. 이 문서는 임의의 커버리지 목표를 정하지 않는다.
+
+Client CI는 `npm test`와 별도로 `server/`의 `uv run python -m tests.run_client_integration`을 실행한다.
+API 통합 검사는 임시 PostgreSQL 컨테이너와 HTTP 서버에 `API_URL`을 연결해 전체 테스트를 실행한다.
+로컬에서 같은 검사를 실행하려면 Docker가 필요하다.
+
+기존 로컬 추천 생성기는 제거되었으므로 `personalized-recommendation.test.cjs`는 서버 생성 실패·재시도와
+기존 추천 기록의 안전성·제공 형태·식후 결과 호환성을 검사한다. 저장의 멱등성과 캐시 복구는
+`integration/suggestion-saving.test.cjs`가 검사한다.

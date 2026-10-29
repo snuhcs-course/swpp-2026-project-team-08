@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+# Changed: Register separate check-in ingredient storage in the schema contract
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """Contract edge cases for authenticated meals, reviews, and suggestions."""
 
@@ -18,6 +20,7 @@ from tests.helpers.suggestions import batch, install_model
 def test_only_current_tables_and_routes_are_registered() -> None:
     assert set(Base.metadata.tables) == {
         "ingredients",
+        "meal_ingredients",
         "meals",
         "meal_foods",
         "meal_food_ingredients",

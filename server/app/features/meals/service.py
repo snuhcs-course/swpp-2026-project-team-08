@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+# Changed: Save and edit ingredients independently of the catalog
 """Save an authenticated meal and its resolved ingredients."""
 
 from dataclasses import dataclass
@@ -7,8 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
 from app.core.timezone import now_kst
-from app.features.ingredients.queries import resolve_ingredient
 from app.features.meals.data import FoodData, MealData, ReviewData
+from app.features.meals.ingredients import resolve_meal_ingredient
 from app.features.meals.queries import MealRecords, meal_records, meals_records, owned_meal
 from app.models import (
     FoodItem,
@@ -82,7 +84,6 @@ class MealService:
         await self._session.delete(meal)
         await self._session.flush()
 
-    # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
     async def update_foods(
         self, *, user_id: int, meal_id: int, foods: list[FoodData]
     ) -> MealRecords:
@@ -104,9 +105,8 @@ class MealService:
         for food in foods:
             ingredient_ids: list[int] = []
             for item in food.ingredients:
-                # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-                ingredient = await resolve_ingredient(
-                    self._session, ingredient_id=item.id, name=item.name, create=True
+                ingredient = await resolve_meal_ingredient(
+                    self._session, ingredient_id=item.id, name=item.name
                 )
                 if ingredient is None:
                     raise IngredientNotFoundError()
@@ -221,7 +221,6 @@ class MealService:
         await self._session.flush()
         return await meal_records(self._session, meal)
 
-    # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
     async def write(self, *, user_id: int, data: MealData) -> Meal:
         # Invalid meals must not leave newly entered ingredients behind.
         async with self._session.begin_nested():
@@ -232,9 +231,8 @@ class MealService:
         for food in data.foods:
             ingredient_ids: list[int] = []
             for item in food.ingredients:
-                # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-                ingredient = await resolve_ingredient(
-                    self._session, ingredient_id=item.id, name=item.name, create=True
+                ingredient = await resolve_meal_ingredient(
+                    self._session, ingredient_id=item.id, name=item.name
                 )
                 if ingredient is None:
                     raise IngredientNotFoundError()

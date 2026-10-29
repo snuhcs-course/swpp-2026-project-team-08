@@ -1,6 +1,5 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo; explicit ingredient removal interactions
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo; inline ingredient chip interactions
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+// Changed: Ingredient interactions and native icon boundary for CI
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -52,7 +51,7 @@ Module._load = function (name, ...args) {
     useSavedSuggestionsForCheckin: () => emptyQuery,
   };
   const unusedComponents = {
-    './DropdownChoice': 'DropdownChoice',
+    './DropdownChoice': 'DropdownChoice', './UiAssetIcon': 'UiAssetIcon',
     '../../../components/UiAssetIcon': 'UiAssetIcon', './MealCompleteStepView': 'MealCompleteStepView',
     './MealDetailsStepView': 'MealDetailsStepView', './MealFoodsStepView': 'MealFoodsStepView',
     '../../../components/MealSaveStatusView': 'MealSaveStatusView',

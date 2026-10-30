@@ -107,32 +107,38 @@ revision `0018_user_email_change_attempts`, down_revision `0017_meal_ingredients
 - 영향 없음: `auth/router.py`의 DTO와 엔드포인트(응답 모양 불변), `tests/integration/test_auth.py`의 이메일 변경 테스트(동작 불변이라 그대로 통과해야 한다).
 - 과거 마이그레이션(`20261018_2100_user_email_change.py`, `20261021_1000_bigint_user_ids.py`)은 수정하지 않는다.
 
-### 2.2 Meal: `meal_type`, `setting`을 StrEnum으로
+### 2.2 Meal, MealFood: StrEnum 전환과 모델 이름 변경
 
-**대상 테이블:** `meals`
+**대상 테이블:** `meals`, `meal_foods`
 
 **마이그레이션:** 파일 `20261030_1100_meal_enums.py`, revision `0019_meal_enums`, down_revision `0018_user_email_change_attempts`
 
 #### 목표 스키마
 
-- 새 파일 `app/models/meal_enums.py`에 `MealType`, `MealSetting`(StrEnum)을 정의한다.
+- 새 파일 `app/models/meal_enums.py`에 `MealType`, `MealSetting`, `MealCookingMethod`(StrEnum)을 정의한다.
+  `MealCookingMethod`는 기존 `FoodPreparation`(`app/models/food_enums.py`)의 이름을 바꾼 것이며 `food_enums.py`는 삭제한다.
   값은 현재 허용 값을 그대로 쓰고, 멤버 이름만 대문자다.
 
   | enum | 멤버 = 값 |
   |---|---|
   | `MealType` | `BREAKFAST="breakfast"`, `LUNCH="lunch"`, `DINNER="dinner"`, `SNACK="snack"` |
   | `MealSetting` | `HOME="home"`, `RESTAURANT="restaurant"`, `SCHOOL="school"`, `OTHERS="others"` |
+  | `MealCookingMethod` | `RAW_UNHEATED="raw"`, `BOILED="boiled"`, `STEAMED="steamed"`, `PAN_FRIED="pan_fried"`, `STIR_FRIED="stir_fried"`, `BAKED_ROASTED="baked_roasted"`, `MASHED_BLENDED="mashed_blended"`, `OTHER="other"` |
 
 - `meals.meal_type`, `meals.setting`: 네이티브 enum 없이 `VARCHAR(20) NOT NULL`로 저장한다. ORM 매핑은
   [architecture.md §2.2](../server/docs/architecture.md)의 `Enum(..., native_enum=False, create_constraint=False)` 규칙을 따른다.
-- `CheckConstraint` `ck_meals_meal_type`, `ck_meals_setting` 삭제. 허용 값은 enum이 검증한다.
+- `meal_foods.cooking_method`: 같은 규칙으로 `VARCHAR(30) NULL`에 `MealCookingMethod`를 저장한다.
+- `CheckConstraint` `ck_meals_meal_type`, `ck_meals_setting`, `ck_meal_foods_cooking_method` 삭제. 허용 값은 enum이 검증한다.
+- 모델 파일 `app/models/food_item.py`를 `app/models/meal_food.py`로 옮기고 클래스 `FoodItem`을 `MealFood`로 바꾼다.
+  테이블 이름(`meal_foods`)은 그대로다.
 - `Meal.id`는 이미 `Identity()` 자동 증가이므로 바꾸지 않는다.
 - 다른 `CheckConstraint`(`ck_meals_id_positive` 등)는 이 묶음에서 건드리지 않는다. 값 규칙 `CHECK`의 정리 범위는 4절 결정을 따른다.
 
 #### 이관 규칙
 
-- 컬럼 타입(`VARCHAR(20)`)과 저장 값이 그대로이므로 데이터 이관은 없다.
-- upgrade: 두 `CHECK` 제약을 삭제한다. downgrade: 두 `CHECK` 제약을 다시 만든다. 허용 값 밖의 행이 있으면 downgrade가 실패한다.
+- 컬럼 타입(`VARCHAR(20)`, `VARCHAR(30)`)과 저장 값이 그대로이므로 데이터 이관은 없다.
+- upgrade: 세 `CHECK` 제약을 삭제한다. downgrade: 세 `CHECK` 제약을 다시 만든다. 허용 값 밖의 행이 있으면 downgrade가 실패한다.
+- 모델 파일 이동, 클래스 이름 변경, enum 이름 변경은 DB에 영향이 없다.
 
 #### 깨지는 지점
 
@@ -140,8 +146,17 @@ revision `0018_user_email_change_attempts`, down_revision `0017_meal_ingredients
   - `app/features/meals/dto.py`: `Literal`로 정의한 `MealType`, `MealSetting`을 `app/models/meal_enums.py`의 enum으로 교체한다. JSON 값은 그대로다.
   - `app/features/meals/data.py`: `meal_type: str`, `setting: str` 필드 타입.
   - `app/features/meals/service.py`(272~273행), `present.py`(24~25행): enum 값을 주고받는 부분.
+- `FoodPreparation`이 `MealCookingMethod`로 바뀌고 `app/models/food_enums.py`가 사라진다.
+  `app/features/meals/dto.py`의 import(8행)와 타입(35, 123, 152행)을 `app/models/meal_enums.py`의 `MealCookingMethod`로 교체한다.
+- `MealFood.cooking_method`의 파이썬 타입이 `str | None`에서 `MealCookingMethod | None`으로 바뀐다.
+- `app/models/food_item.py` 경로가 사라지고 클래스 `FoodItem`이 `MealFood`로 바뀐다.
+  - 경로를 직접 import하는 곳: `app/models/__init__.py`(16행), `app/models/meal.py`(23행, `TYPE_CHECKING` import).
+    `meal.py`의 `foods` 관계 타입 문자열(`"FoodItem"`)도 바꾼다.
+  - 클래스명을 쓰는 곳: `app/features/meals/queries.py`, `app/features/meals/service.py`, `app/features/auth/queries.py`
+    (`delete_user_owned_rows`).
+  - `tests/`에서는 `FoodItem`을 쓰지 않는다.
 - API JSON 값은 그대로이므로 클라이언트 수정은 없다.
-- 잘못된 `meal_type`, `setting` 요청이 422로 거절되는 기존 검증은 그대로 통과해야 한다.
+- 잘못된 `meal_type`, `setting`, `cooking_method` 요청이 422로 거절되는 기존 검증은 그대로 통과해야 한다.
 
 ## 3. 진행 상태
 

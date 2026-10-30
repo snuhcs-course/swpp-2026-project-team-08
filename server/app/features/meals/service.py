@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+# AI-generated with GPT-6, 2026-10-31, reviewed by Haechan Jung
 # Changed: Save and edit ingredients independently of the catalog
 """Save an authenticated meal and its resolved ingredients."""
 
@@ -9,8 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
 from app.core.timezone import now_kst
-from app.features.meals.data import FoodData, MealData, ReviewData
-from app.features.meals.ingredients import resolve_meal_ingredient
+from app.features.meals.ingredient_queries import resolve_meal_ingredient
+from app.features.meals.input_dto import FoodData, MealData, ReviewData
 from app.features.meals.queries import MealRecords, meal_records, meals_records, owned_meal
 from app.models import (
     FoodItem,

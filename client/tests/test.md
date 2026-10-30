@@ -1,9 +1,36 @@
+<!-- AI-generated with GPT-6, 2026-10-31, reviewed by Haechan Jung -->
 <!-- AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung -->
 
 <!-- AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo -->
 <!-- Changed: 누락 없는 테스트 실행 범위 및 API 통합 검사 -->
 
 # Frontend 테스트 기준
+
+이 문서는 테스트의 구성과 코드 변경 시 테스트를 추가·수정하는 기준을 설명한다.
+커버리지 도구의 작동 방식·측정 범위·보고서는 [c8 커버리지](c8.md)를 참고한다.
+
+## 현재 테스트 구성
+
+`npm test`는 `tests/` 바로 아래와 `unit/`, `integration/`의 `*.test.cjs`를 실행한다.
+새 하위 폴더를 만들면 자동으로 포함되지 않으므로 실행 명령도 확인한다.
+
+| 위치 | 주로 확인하는 코드 |
+|---|---|
+| `unit/` | 규칙·날짜·입력 검증, API 변환, 저장소, UI 컴포넌트 |
+| `integration/` | 실제 React·Provider·Query·API·저장소를 연결한 저장·복구·계정 전환 |
+| `tests/` 바로 아래 | 기존 입력·사진·추천·Provider 검사. `meal-photos.test.cjs`에는 실제 API 검사도 있다. |
+| `helpers/`, `fixtures/` | TS 로더, React 실행 환경, 외부 모듈 대체, 메모리 저장소, 공통 데이터 |
+
+일반 검사는 HTTP·기기 경계를 대체한다. 실제 API 검사는 별도 서버 실행 도구를 사용하며,
+전체 테스트를 다시 실행해도 각 테스트에 작성된 mock이 자동으로 해제되지는 않는다.
+
+## 코드를 수정할 때
+
+- 규칙·입력 범위를 바꾸면 해당 Unit의 정상값·경계값·오류값과 기대 결과를 함께 고친다.
+- API 요청·응답을 바꾸면 API Unit의 계약과 이를 쓰는 fixture를 고치고, 저장·조회 연결 검사도 확인한다.
+- Hook·Provider·캐시를 바꾸면 관련 Integration에서 성공 후 갱신, 실패 시 보존, 재시도 결과를 확인한다.
+- UI를 바꾸면 표시·버튼 상태·콜백 검사를 고친다. 실제 RN 입력과 화면 배치는 기기에서 별도로 확인한다.
+- 동작이 그대로인 리팩토링이면 기존 기대 결과를 유지한다. 버그 수정은 기존 코드에서 실패하는 사례를 먼저 만든다.
 
 ## 종류 구분
 
@@ -41,7 +68,7 @@
 - React Hook·Provider·Query의 연결을 검사할 때는 실제 React 실행 환경과 QueryClient를 사용한다. 직접 만든 `useState`·`useEffect`·`useMutation` 모사 코드로 그 연결을 검증했다고 판단하지 않는다.
 - 최종 결과뿐 아니라 중요한 실패·복구도 확인한다. 예: 저장 실패 시 기존 데이터 유지, 재시도 후 한 번만 반영.
 - 캐시 갱신을 검사한다면 실제 성공 콜백과 캐시 변경까지 실행한다. `invalidateQueries`를 빈 함수로 바꾼 뒤 저장 성공만 확인해서는 부족하다.
-- Unit·Integration 테스트는 실제 서버 없이 실행한다. HTTP 응답은 mock으로 제공하고, 서버의 저장·검증 동작은 backend 테스트에서 확인한다.
+- `unit/`·`integration/` 검사는 HTTP 응답을 mock으로 제공한다. 서버의 저장·검증은 backend 테스트와 아래 실제 API 검사에서 확인한다.
 
 ## 새 테스트 추가 순서
 
@@ -76,12 +103,14 @@
 ```sh
 node --test tests/unit/auth-api.test.cjs # 작성한 파일 경로로 변경
 npm test # tests/ 루트, unit/, integration/ 전체 실행
+npm run test:coverage # 같은 범위 실행, 계층별 HTML과 테스트 로그 생성
 npm run lint
 ./node_modules/.bin/tsc --noEmit
 ```
 
 - 변경한 동작과 중요한 실패 사례가 검사되는지 먼저 확인한다. 버그 수정에는 가능하면 수정 전 실패하는 재현 테스트를 남긴다.
 - 커버리지는 미실행 코드도 포함해 영역별로 측정하고, 중요한 분기가 빠졌는지 함께 확인한다. 테스트 개수나 전체 평균만으로 완료를 판단하지 않는다.
+- 타입 파일과 표시용 리소스는 [c8의 제외 규칙](c8.md#제외-범위)에 따라 커버리지 계산에서 제외한다. 타입 파일 안의 변환 함수 등 실행 코드도 테스트로 검사한다. 커버리지 제외 여부로 테스트 필요성을 판단하지 않는다. 타입은 `tsc --noEmit`으로 검사한다.
 - 수치 목표는 측정 범위와 제외 항목을 정한 뒤 별도로 합의한다. 이 문서는 임의의 커버리지 목표를 정하지 않는다.
 
 Client CI는 `npm test`와 별도로 `server/`의 `uv run python -m tests.run_client_integration`을 실행한다.

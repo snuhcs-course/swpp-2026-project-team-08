@@ -1,3 +1,4 @@
+<!-- AI-generated with GPT-6, 2026-10-31, reviewed by Haechan Jung -->
 <!-- AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim -->
 <!-- Changed: server bootstraping -->
@@ -58,10 +59,11 @@ app/
 | 파일 | 언제 | 역할 |
 |---|---|---|
 | `dto.py` | DTO가 다른 기능에서 재사용되거나 `router.py`가 길어질 때 | DTO를 `router.py`에서 분리 |
+| `*_dto.py` · `serialization.py` | 입력 데이터와 응답 변환을 별도 파일로 둘 때 | 서비스 입력 dataclass는 `input_dto.py`, 응답 DTO 변환은 `serialization.py` |
 | `exceptions.py` | 에러 클래스가 많아질 때 | 에러를 `service.py`에서 분리 |
 | `dependencies.py` | 엔드포인트가 공통으로 받는 값(FastAPI `Depends`)을 만들어 주는 코드가 필요할 때 | 예: `auth/dependencies.py`의 `CurrentUser`(요청을 보낸 로그인 사용자). 다른 기능의 `router.py`도 import해서 쓴다 (§3) |
 | `security.py` 등 | 그 기능만 쓰는 기술 도구가 필요할 때 | 예: `auth/security.py`의 비밀번호 암호화 · 토큰 발급 · 검증 |
-| `queries.py` | 같은 쿼리를 둘 이상에서 쓰거나 길어질 때 | 평범한 **함수**로 쿼리를 분리 (클래스 · 리포지토리 계층은 두지 않는다) |
+| `queries.py` · `*_queries.py` | 같은 쿼리를 둘 이상에서 쓰거나 길어질 때 | 평범한 **함수**로 쿼리를 분리 (클래스 · 리포지토리 계층은 두지 않는다) |
 | `analysis.py` · `scoring.py` 등 | DB 조회 없이 판단되는 계산 규칙 | **순수 함수** 모듈. 서비스가 데이터를 읽어 넘기고 결과를 저장한다 |
 | `workflow/` | LangGraph 같은 다단계 워크플로가 필요할 때 | `state.py · nodes.py · prompts.py · graph.py` 등 (§2.5). LLM이 직접 호출할 도구가 필요하면 `tools.py`를 더할 수 있다 |
 

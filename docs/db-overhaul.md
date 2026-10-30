@@ -158,6 +158,113 @@ revision `0018_user_email_change_attempts`, down_revision `0017_meal_ingredients
 - API JSON 값은 그대로이므로 클라이언트 수정은 없다.
 - 잘못된 `meal_type`, `setting`, `cooking_method` 요청이 422로 거절되는 기존 검증은 그대로 통과해야 한다.
 
+### 2.3 MealFood, MealFoodIngredient: 식사 기록 재료 구조 재편
+
+**대상 테이블:** `meal_foods`, `meal_food_ingredients`, `suggestion_meal_links`(모두 재생성),
+`meal_ingredients`, `review_food_results`, `review_ingredient_results`(삭제), `meals`, `suggestions`(행 삭제)
+
+**마이그레이션:** 파일 `20261030_1200_meal_food_restructure.py`,
+revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
+
+#### 재료 두 계열의 경계
+
+재료를 다루는 테이블은 목적이 완전히 다른 두 계열이며 서로 참조하지 않는다.
+
+- **`Ingredient`(`ingredients`): 추천용 공용 카탈로그.** 음식 추천 때 식이 제한을 지킨 재료 화이트리스트를 LLM에게
+  주기 위해 존재한다. 식사 기록과 관계가 없고, 식사 저장·수정은 이 테이블을 읽거나 쓰지 않는다.
+- **`MealFoodIngredient`(`meal_food_ingredients`): 사용자 입력 기록.** 사용자가 식사(`Meal`) 안의 음식(`MealFood`)에
+  들어갔다고 기록한 재료를 입력한 그대로 저장한다. 카탈로그를 참조하지 않으며, 같은 이름도 음식마다 별도 행이다.
+  이름 기준 중복 제거나 유니크 제약이 없다.
+- 두 계열 사이에는 FK도 이름 매칭도 없다.
+- `server/docs/architecture.md`의 "재료 저장 경계" 절은 현재 `MealIngredient`를 설명한다. 이 묶음을 구현할 때 위 구조로 고친다.
+
+#### 목표 스키마
+
+공통: 모든 `id`는 `BigInteger().with_variant(Integer, "sqlite")` + `Identity()`로 **서버가 자동 증가시키며**, 클라이언트는 id를 보내지 않고
+서버가 응답으로 돌려준다. 모든 FK는 `onupdate="CASCADE", ondelete="CASCADE"`다. 재생성하는 테이블에는 `CheckConstraint`를 두지 않는다
+(값 규칙은 애플리케이션이 검증한다. [architecture.md §2.2](../server/docs/architecture.md)).
+
+새 enum `EatingOutcome`을 `app/models/meal_enums.py`에 정의한다. 값은 현행을 유지한다.
+
+| enum | 멤버 = 값 |
+|---|---|
+| `EatingOutcome` | `EATEN="eaten"`, `TASTED="tasted"`, `UNTOUCHED="untouched"`, `UNCLEAR="unclear"` |
+
+`meal_foods` (모델 `MealFood`, `app/models/meal_food.py`)
+
+| 컬럼 | 타입 | 제약 |
+|---|---|---|
+| `id` | BigInteger | PK, `Identity()` |
+| `meal_id` | BigInteger | NOT NULL, FK → `meals.id`, index |
+| `name` | String | NOT NULL |
+| `cooking_method` | VARCHAR(30) | NULL, `MealCookingMethod` (2.2) |
+| `serving_note` | Text | NULL |
+| `acceptance` | SmallInteger | NULL (변경 없음) |
+| `outcome` | VARCHAR(20) | NULL, `EatingOutcome`. NULL이면 미리뷰 |
+| `difficulty_reasons` | JSON (Postgres는 JSONB) | NOT NULL, 기본값 `[]` (`server_default '[]'`) |
+| `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL |
+
+`meal_food_ingredients` (모델 `MealFoodIngredient`, `app/models/meal_food_ingredient.py`)
+
+| 컬럼 | 타입 | 제약 |
+|---|---|---|
+| `id` | BigInteger | PK, `Identity()` |
+| `meal_food_id` | BigInteger | NOT NULL, FK → `meal_foods.id`, index |
+| `name` | String | NOT NULL. 사용자가 입력한 이름 |
+| `outcome` | VARCHAR(20) | NULL, `EatingOutcome`. NULL이면 미리뷰 |
+| `difficulty_reasons` | JSON (Postgres는 JSONB) | NOT NULL, 기본값 `[]` |
+| `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL |
+
+`suggestion_meal_links` (모델 `SuggestionMealLink`)
+
+| 컬럼 | 타입 | 제약 |
+|---|---|---|
+| `id` | BigInteger | PK, `Identity()` |
+| `suggestion_id` | BigInteger | NOT NULL, FK → `suggestions.id` |
+| `meal_id` | BigInteger | NOT NULL, FK → `meals.id` |
+| `meal_food_id` | BigInteger | NOT NULL, FK → `meal_foods.id` |
+| `meal_food_ingredient_id` | BigInteger | NULL, FK → `meal_food_ingredients.id` |
+| `feedback` | Text | NULL (변경 없음) |
+| `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL |
+
+- UNIQUE(`meal_id`, `suggestion_id`)는 유지한다. `meal_id`가 `meal_food_id`의 식사와 같은지는 서비스가 보장한다.
+- 삭제하는 모델: `MealIngredient`(`meal_ingredient.py`), `ReviewFoodResult`(`review_food_result.py`),
+  `ReviewIngredientResult`(`review_ingredient_result.py`).
+- 사라지는 컬럼: `food_snapshot`(음식 정보는 `meal_foods` 자체가 갖는다), `normalized_name`, 복합 PK를 이루던 `food_id`·`ingredient_id`.
+- `difficulties`는 `difficulty_reasons`로 이름을 바꿔 두 테이블에 둔다.
+
+#### 이관 규칙
+
+- **기존 데이터는 이관하지 않고 버린다.** 구조가 크게 달라 옛 id를 새 id로 옮기지 않는다.
+- upgrade 순서: `suggestion_meal_links`, `review_ingredient_results`, `review_food_results`, `meal_food_ingredients`,
+  `meal_ingredients`, `meal_foods`를 삭제하기 전에 `suggestions`와 `meals`의 행을 삭제한다. 그 뒤 `meal_foods`,
+  `meal_food_ingredients`, `suggestion_meal_links`를 새 구조로 만든다.
+- 삭제되는 데이터: 모든 식사, 음식, 재료, 식후 리뷰, 추천, 추천 연결. `users`, 프로필, 동의, `ingredients`는 유지한다.
+- downgrade: 옛 구조의 테이블을 빈 상태로 다시 만든다. 삭제된 데이터는 복구되지 않는다.
+- 운영 DB에 적용하기 전에 삭제 범위를 팀이 확인한다.
+
+#### 깨지는 지점
+
+- 삭제되는 모델 `ReviewFoodResult`, `ReviewIngredientResult`, `MealIngredient`와 구조가 바뀌는 `MealFood`(복합 PK `(meal_id, id)` →
+  단일 PK `id`), `MealFoodIngredient`(복합 PK → 단일 PK `id`와 `meal_food_id`, `name`, `outcome`, `difficulty_reasons`),
+  `SuggestionMealLink`(`food_id`, `ingredient_id` → `meal_food_id`, `meal_food_ingredient_id`)를 쓰는 서버 코드:
+  - `app/models/__init__.py`, `app/features/auth/queries.py`(`delete_user_owned_rows`의 삭제 목록)
+  - `app/features/meals/`의 `data.py`, `dto.py`, `ingredients.py`, `present.py`, `queries.py`, `router.py`, `service.py`
+- **API가 바뀐다.**
+  - 음식과 재료의 id는 서버가 발급하고 응답으로 돌려준다. 요청의 `FoodWriteRequest.id`, `IngredientInput.id`를 없애고,
+    식사를 수정할 때 기존 음식·재료를 식별하는 방법은 meals 담당이 정한다.
+  - 식후 리뷰의 `food_results`·`ingredient_results` 구조는 `MealFood`·`MealFoodIngredient`의 `outcome`, `difficulty_reasons`로 대체된다.
+    `food_snapshot` 응답 필드는 사라진다. 요청·응답의 `difficulties` 필드 이름은 이 문서에서 정하지 않는다.
+  - 클라이언트에서 `difficulties`, `food_snapshot`, `food_id`, `ingredient_id`를 쓰는 파일: `client/src/data/api/mealLogApi.ts`,
+    `mealReviewApi.ts`, `data/dto/mealDto.ts`, `reviewDto.ts`, `suggestionDto.ts`, `data/storage/afterMealReviewStorage.ts`,
+    `features/after-meal-review/`, `features/meal-log/rules.ts`, `rules/recommendationSafety.ts`, `types/afterMealReview.ts`,
+    `types/reviewRecord.ts`, `util/strings.ts`.
+- `suggestions` 테이블: `food_id`, `ingredient_id` 컬럼이 각각 `MealFood.id`, `MealFoodIngredient.id`를 뜻하도록 의미가 바뀐다
+  (행은 삭제된다). 컬럼 이름 변경과 FK 추가는 suggestions 묶음에서 정한다.
+- 테스트: `tests/integration/test_api_contract_edges.py`, `test_auth.py`, `test_contract_api.py`, `test_meals_write.py`,
+  `test_meal_ingredient_migration.py`(구조가 사라지므로 삭제 또는 재작성), `tests/unit/test_remove_exposure_migration.py`(head 단언).
+- 문서: `server/docs/architecture.md`의 "재료 저장 경계" 절.
+
 ## 3. 진행 상태
 
 (작성 예정)
@@ -170,3 +277,8 @@ revision `0018_user_email_change_attempts`, down_revision `0017_meal_ingredients
   [server/docs/architecture.md §2.2](../server/docs/architecture.md)에 기록했다.
   이유는 `CHECK`보다 마이그레이션이 수월하고 검증 코드가 애플리케이션에 모이기 때문이다.
 - `StrEnum`의 멤버 이름은 대문자로 하고, 값은 현행(소문자 등)을 유지한다. API · DB 값이 바뀌지 않으므로 데이터 이관과 클라이언트 수정이 없다.
+- `ingredients`(추천용 카탈로그)와 `meal_food_ingredients`(사용자 입력 기록)는 서로 참조하지 않는 별개 계열이다.
+- `MealFood.id`와 `MealFoodIngredient.id`는 서버 자동 증가이며 서버가 응답으로 돌려준다.
+- 식후 리뷰 테이블은 `meal_foods`, `meal_food_ingredients`에 합친다. `outcome`이 NULL이면 미리뷰다. `food_snapshot`과
+  `normalized_name`은 버리고, `difficulties`는 `difficulty_reasons`로 이름을 바꾼다.
+- 2.3은 기존 데이터를 이관하지 않고 식사·추천 관련 데이터를 삭제한다.

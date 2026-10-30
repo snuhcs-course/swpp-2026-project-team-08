@@ -107,10 +107,51 @@ revision `0018_user_email_change_attempts`, down_revision `0017_meal_ingredients
 - 영향 없음: `auth/router.py`의 DTO와 엔드포인트(응답 모양 불변), `tests/integration/test_auth.py`의 이메일 변경 테스트(동작 불변이라 그대로 통과해야 한다).
 - 과거 마이그레이션(`20261018_2100_user_email_change.py`, `20261021_1000_bigint_user_ids.py`)은 수정하지 않는다.
 
+### 2.2 Meal: `meal_type`, `setting`을 StrEnum으로
+
+**대상 테이블:** `meals`
+
+**마이그레이션:** 파일 `20261030_1100_meal_enums.py`, revision `0019_meal_enums`, down_revision `0018_user_email_change_attempts`
+
+#### 목표 스키마
+
+- 새 파일 `app/models/meal_enums.py`에 `MealType`, `MealSetting`(StrEnum)을 정의한다.
+  값은 현재 허용 값을 그대로 쓰고, 멤버 이름만 대문자다.
+
+  | enum | 멤버 = 값 |
+  |---|---|
+  | `MealType` | `BREAKFAST="breakfast"`, `LUNCH="lunch"`, `DINNER="dinner"`, `SNACK="snack"` |
+  | `MealSetting` | `HOME="home"`, `RESTAURANT="restaurant"`, `SCHOOL="school"`, `OTHERS="others"` |
+
+- `meals.meal_type`, `meals.setting`: 네이티브 enum 없이 `VARCHAR(20) NOT NULL`로 저장한다. ORM 매핑은
+  [architecture.md §2.2](../server/docs/architecture.md)의 `Enum(..., native_enum=False, create_constraint=False)` 규칙을 따른다.
+- `CheckConstraint` `ck_meals_meal_type`, `ck_meals_setting` 삭제. 허용 값은 enum이 검증한다.
+- `Meal.id`는 이미 `Identity()` 자동 증가이므로 바꾸지 않는다.
+- 다른 `CheckConstraint`(`ck_meals_id_positive` 등)는 이 묶음에서 건드리지 않는다. 값 규칙 `CHECK`의 정리 범위는 4절 결정을 따른다.
+
+#### 이관 규칙
+
+- 컬럼 타입(`VARCHAR(20)`)과 저장 값이 그대로이므로 데이터 이관은 없다.
+- upgrade: 두 `CHECK` 제약을 삭제한다. downgrade: 두 `CHECK` 제약을 다시 만든다. 허용 값 밖의 행이 있으면 downgrade가 실패한다.
+
+#### 깨지는 지점
+
+- `Meal.meal_type`, `Meal.setting`의 파이썬 타입이 `str`에서 `MealType`, `MealSetting`으로 바뀐다.
+  - `app/features/meals/dto.py`: `Literal`로 정의한 `MealType`, `MealSetting`을 `app/models/meal_enums.py`의 enum으로 교체한다. JSON 값은 그대로다.
+  - `app/features/meals/data.py`: `meal_type: str`, `setting: str` 필드 타입.
+  - `app/features/meals/service.py`(272~273행), `present.py`(24~25행): enum 값을 주고받는 부분.
+- API JSON 값은 그대로이므로 클라이언트 수정은 없다.
+- 잘못된 `meal_type`, `setting` 요청이 422로 거절되는 기존 검증은 그대로 통과해야 한다.
+
 ## 3. 진행 상태
 
 (작성 예정)
 
 ## 4. 결정 기록
 
-(작성 예정)
+- 이메일 변경 시도는 사용자당 한 행(`user_id` PK)으로 둔다. 이력은 남기지 않는다.
+- `Meal.id`는 이미 자동 증가(`Identity`)이므로 타입을 바꾸지 않는다 (Postgres `bigint` 유지).
+- 값의 유효성은 DB `CHECK`가 아니라 애플리케이션 로직으로 검증한다. 이 규칙은 개편 뒤에도 유지하므로
+  [server/docs/architecture.md §2.2](../server/docs/architecture.md)에 기록했다.
+  이유는 `CHECK`보다 마이그레이션이 수월하고 검증 코드가 애플리케이션에 모이기 때문이다.
+- `StrEnum`의 멤버 이름은 대문자로 하고, 값은 현행(소문자 등)을 유지한다. API · DB 값이 바뀌지 않으므로 데이터 이관과 클라이언트 수정이 없다.

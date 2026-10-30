@@ -8,6 +8,8 @@
 
 <!-- AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo -->
 <!-- Changed: 식사 재료와 공용 카탈로그의 저장 경계 -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-30, reviewed by Jaemin Kim -->
+<!-- Changed: 모델 값 검증 규칙과 StrEnum 매핑 규칙 추가 -->
 
 # server — 아키텍처
 
@@ -83,6 +85,28 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 - 파일은 테이블(클래스) 하나당 하나, 단수형 snake_case (`user.py`, `meal_log.py`).
 - 새 모델은 `models/__init__.py`에 import해야 `Base.metadata`에 등록된다 (Alembic · 테스트 `create_all`이 필요로 한다).
 - 모든 테이블에 `created_at` / `updated_at`, 모든 `ForeignKey`에 `onupdate="CASCADE", ondelete="CASCADE"`.
+- **값의 유효성은 DB 제약이 아니라 애플리케이션 로직으로 검증한다.** DB에는 PK · FK · UNIQUE · NOT NULL 같은
+  구조 제약만 두고, 허용 값 목록 · 범위 · 공백 금지 같은 값 규칙에는 `CheckConstraint`를 쓰지 않는다.
+  값 규칙은 DTO · 서비스 · ORM 컬럼 타입이 검증한다. `CHECK` 제약보다 마이그레이션이 수월하고(값을 바꿀 때 제약을
+  지우고 다시 만들 필요가 없다), 검증 코드가 애플리케이션 한곳에 모이기 때문이다.
+- **고정된 값 집합은 `StrEnum`으로 정의한다.** 파일은 `models/<이름>_enums.py`(예: `food_enums.py`, `meal_enums.py`)에 두고,
+  DTO와 모델이 같은 enum을 쓴다. 멤버 이름은 대문자로, 값은 API · DB의 기존 값을 그대로 쓴다(`BREAKFAST = "breakfast"`).
+  컬럼은 네이티브 enum 타입 없이 문자열로 저장한다.
+
+  ```python
+  meal_type: Mapped[MealType] = mapped_column(
+      Enum(
+          MealType,
+          native_enum=False,
+          create_constraint=False,
+          length=20,
+          values_callable=lambda e: [m.value for m in e],
+      ),
+      nullable=False,
+  )
+  ```
+
+  `values_callable`은 멤버 이름이 아니라 값(`"breakfast"`)을 저장하게 한다. `create_constraint=False`는 `CHECK` 제약을 만들지 않는다.
 
 **왜 한곳에 모으나.** 이 앱은 여러 테이블을 가로지르는 읽기가 많다(식사 기록 · 추천 · 재료). 모델이 기능
 폴더에 흩어져 있으면 "다른 기능의 모델을 읽어도 되는가"를 매번 따져야 한다. 한곳에 모으면 import 경로가

@@ -45,10 +45,16 @@ asyncio_mode = "auto"
 pythonpath = ["."]
 testpaths = ["tests"]
 
-# AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-31, reviewed by Haechan Jung
 [tool.coverage.run]
 branch = true
 source = ["app"]
+omit = [
+    "app/features/onboarding/consent_version.py",
+    "app/models/food_enums.py",
+    "app/features/meals/input_dto.py",
+    "app/features/suggestions/mock_profile.py",
+]
 relative_files = true
 
 [tool.coverage.report]

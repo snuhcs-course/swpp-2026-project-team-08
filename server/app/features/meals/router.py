@@ -8,15 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.errors import ErrorMappedRoute, ErrorSpec, error_specs
 from app.core.database import get_session
 from app.features.auth.dependencies import CurrentUser
-from app.features.meals.data import (
-    FoodData,
-    FoodReviewData,
-    IngredientData,
-    IngredientReviewData,
-    MealData,
-    ReviewData,
-    SuggestionLinkData,
-)
 from app.features.meals.dto import (
     MealDetailResponse,
     MealFoodsWriteRequest,
@@ -25,7 +16,22 @@ from app.features.meals.dto import (
     MealWriteRequest,
     MealWriteResponse,
 )
-from app.features.meals.present import meal_detail_response, meal_response, meal_review_response
+
+# AI-generated with GPT-6, 2026-10-31, reviewed by Haechan Jung
+from app.features.meals.input_dto import (
+    FoodData,
+    FoodReviewData,
+    IngredientData,
+    IngredientReviewData,
+    MealData,
+    ReviewData,
+    SuggestionLinkData,
+)
+from app.features.meals.serialization import (
+    meal_detail_response,
+    meal_response,
+    meal_review_response,
+)
 from app.features.meals.service import (
     DuplicateIngredientError,
     IngredientNotFoundError,

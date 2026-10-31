@@ -16,6 +16,7 @@
 """
 
 from app.models.ingredient import Ingredient
+from app.models.ingredient_restriction import IngredientRestriction
 from app.models.meal import Meal
 from app.models.meal_food import MealFood
 from app.models.meal_food_ingredient import MealFoodIngredient
@@ -30,7 +31,7 @@ __all__ = ["User"]
 
 __all__ += ["UserProfile", "UserProfileSafeFood", "UserConsent"]
 __all__ += ["UserEmailChangeAttempt"]
-__all__ += ["Ingredient"]
+__all__ += ["Ingredient", "IngredientRestriction"]
 __all__ += ["MealFoodIngredient"]
 __all__ += ["Meal", "MealFood"]
 __all__ += ["UserSuggestion"]

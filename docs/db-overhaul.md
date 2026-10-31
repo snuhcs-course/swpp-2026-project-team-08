@@ -132,12 +132,13 @@ revision `0018_user_email_change_attempts`, down_revision `0017_meal_ingredients
 - 모델 파일 `app/models/food_item.py`를 `app/models/meal_food.py`로 옮기고 클래스 `FoodItem`을 `MealFood`로 바꾼다.
   테이블 이름(`meal_foods`)은 그대로다.
 - `Meal.id`는 이미 `Identity()` 자동 증가이므로 바꾸지 않는다.
-- 다른 `CheckConstraint`(`ck_meals_id_positive` 등)는 이 묶음에서 건드리지 않는다. 값 규칙 `CHECK`의 정리 범위는 4절 결정을 따른다.
+- 값 규칙인 `ck_meals_id_positive`도 삭제한다 (4절). `meal_foods`의 나머지 `CHECK`는 2.3에서 테이블을 재생성하며 사라진다.
 
 #### 이관 규칙
 
 - 컬럼 타입(`VARCHAR(20)`, `VARCHAR(30)`)과 저장 값이 그대로이므로 데이터 이관은 없다.
-- upgrade: 세 `CHECK` 제약을 삭제한다. downgrade: 세 `CHECK` 제약을 다시 만든다. 허용 값 밖의 행이 있으면 downgrade가 실패한다.
+- upgrade: `ck_meals_meal_type`, `ck_meals_setting`, `ck_meals_id_positive`, `ck_meal_foods_cooking_method`를 삭제한다.
+  downgrade: 네 `CHECK` 제약을 다시 만든다. 허용 값 밖의 행이 있으면 downgrade가 실패한다.
 - 모델 파일 이동, 클래스 이름 변경, enum 이름 변경은 DB에 영향이 없다.
 
 #### 깨지는 지점
@@ -265,6 +266,126 @@ revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
   `test_meal_ingredient_migration.py`(구조가 사라지므로 삭제 또는 재작성), `tests/unit/test_remove_exposure_migration.py`(head 단언).
 - 문서: `server/docs/architecture.md`의 "재료 저장 경계" 절.
 
+### 2.4 UserConsent: `kind`를 StrEnum으로
+
+**대상 테이블:** `user_consents`
+
+**마이그레이션:** 파일 `20261030_1300_consent_kind_enum.py`, revision `0021_consent_kind_enum`,
+down_revision `0020_meal_food_restructure`
+
+#### 목표 스키마
+
+- 새 파일 `app/models/user_consent_enums.py`에 `UserConsentKind`(StrEnum)를 정의한다. 값은 현행을 유지하고 멤버 이름만 대문자다.
+
+  | enum | 멤버 = 값 |
+  |---|---|
+  | `UserConsentKind` | `ACCOUNT_PRIVACY="account_privacy"`, `PHOTO_ANALYSIS="photo_analysis"`, `AI_TRAINING="ai_training"` |
+
+- `user_consents.kind`: 길이 없는 `String`에서 `VARCHAR(30) NOT NULL`로 바꾸고, 네이티브 enum 없이 `UserConsentKind`를 저장한다.
+  ORM 매핑은 [architecture.md §2.2](../server/docs/architecture.md)의 규칙을 따른다.
+- `CheckConstraint` `ck_user_consents_kind` 삭제. 허용 값은 enum이 검증한다.
+- 인덱스 `ix_user_consents_user_kind`(`user_id`, `kind`)는 유지한다. 값 규칙인 `ck_user_consents_version`도 삭제한다 (4절).
+
+#### 이관 규칙
+
+- 저장 값이 그대로이므로 데이터 이관은 없다.
+- upgrade: `ck_user_consents_kind`, `ck_user_consents_version`을 삭제하고 `kind`의 타입을 `VARCHAR(30)`으로 바꾼다.
+- downgrade: `kind`의 타입을 길이 없는 `VARCHAR`로 되돌리고 두 `CHECK` 제약을 다시 만든다. 허용 값 밖의 행이 있으면 실패한다.
+
+#### 깨지는 지점
+
+- `UserConsent.kind`의 파이썬 타입이 `str`에서 `UserConsentKind`로 바뀐다.
+  - `app/features/onboarding/dto.py`: `Literal`로 정의한 `ConsentKind`(9행)를 `app/models/user_consent_enums.py`의 `UserConsentKind`로 교체하고,
+    133행·173행의 필드 타입과 145~150행의 문자열 비교를 enum에 맞춘다. JSON 값은 그대로다.
+  - `app/features/onboarding/service.py`: 96~98행(`latest: dict[str, UserConsent]`), 151~161행의 `kind` 사용부.
+- API JSON 값은 그대로이므로 클라이언트 수정은 없다.
+- 잘못된 `kind` 요청이 422로 거절되는 기존 검증은 그대로 통과해야 한다.
+
+### 2.5 UserProfile: 제한 목록 컬럼화와 안전 음식 이름 변경
+
+**대상 테이블:** `user_profiles`(컬럼 변경, 행 삭제), `user_profile_safe_foods`(신규),
+`user_profile_choices`, `safe_foods`(삭제)
+
+**마이그레이션:** 파일 `20261030_1400_user_profile_restrictions.py`,
+revision `0022_user_profile_restrictions`, down_revision `0021_consent_kind_enum`
+
+#### 목표 스키마
+
+새 파일 `app/models/user_profile_enums.py`에 선택지 enum 세 개를 정의한다. 새로 만드는 값이므로 멤버 이름과 값이 같은 대문자 문자열이다.
+
+| enum | 멤버 = 값 |
+|---|---|
+| `AllergyRestriction` | `NONE` `PEANUTS` `TREE_NUTS` `MILK_DAIRY` `EGGS` `SOY` `WHEAT` `FISH` `SHELLFISH` `SESAME` |
+| `VegetarianRestriction` | `DAIRY` `EGGS` `SEAFOOD` `POULTRY` `RED_MEAT` `LEGUMES_SOY` `NUTS_SEEDS` |
+| `DietaryApproach` | `GLUTEN_FREE` `CASEIN_FREE` `LACTOSE_FREE` |
+
+`user_profiles` (모델 `UserProfile`)
+
+| 컬럼 | 타입 | 제약 |
+|---|---|---|
+| `user_id` | BigInteger | PK, FK → `users.id` (변경 없음) |
+| `child_name` | String | NOT NULL (변경 없음) |
+| `age_group` | String | NOT NULL (변경 없음) |
+| `allergy_restrictions` | JSON (Postgres는 JSONB) | NOT NULL, 기본값 없음 |
+| `vegetarian_restrictions` | JSON (Postgres는 JSONB) | NOT NULL, 기본값 `[]` |
+| `dietary_approaches` | JSON (Postgres는 JSONB) | NOT NULL, 기본값 `[]` |
+| `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL (변경 없음) |
+
+- 세 컬럼은 문자열 목록이며 입력 순서를 유지한다. 컬럼 타입은 enum이 아니므로 DTO와 서비스가 원소를 검증한다.
+  - `allergy_restrictions`: `AllergyRestriction` 값만, 1개 이상. `NONE`은 다른 값과 함께 쓸 수 없다. 중복 불가.
+    알러지를 모르는 상태는 없으며 입력은 필수다. 온보딩 임시저장은 클라이언트에만 있고 서버에는 완성된 프로필만 저장하므로
+    이 컬럼은 NULL을 허용하지 않는다.
+  - `vegetarian_restrictions`: `VegetarianRestriction` 값만, 중복 불가. 빈 목록은 해당 없음이다.
+  - `dietary_approaches`: `DietaryApproach` 값만, 중복 불가. 빈 목록은 해당 없음이다.
+- 삭제하는 컬럼: `allergy_status`, `restriction_status`, `safe_food_status`.
+- 삭제하는 `CheckConstraint`: `ck_user_profiles_age_group`, `ck_user_profiles_child_name`과 삭제한 컬럼의 제약 전부.
+- **인덱스는 두지 않는다.** 프로필은 항상 PK(`user_id`)로 조회하고 목록 컬럼으로 사용자 간 검색을 하지 않는다.
+  사용자 간 검색이 필요해지면 그때 JSONB GIN 인덱스를 추가한다.
+
+`user_profile_safe_foods` (모델 `UserProfileSafeFood`, 파일 `app/models/user_profile_safe_food.py`)
+
+| 컬럼 | 타입 | 제약 |
+|---|---|---|
+| `id` | BigInteger | PK, `Identity()` |
+| `user_id` | BigInteger | NOT NULL, FK → `user_profiles.user_id`, index |
+| `name` | String | NOT NULL |
+| `preparation` | String | NOT NULL |
+| `presentation_note` | String | NULL |
+| `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL |
+
+- 순서는 저장하지 않는다. 목록은 `id` 순서로 읽는다. `user_id` 조회를 위해 FK 컬럼에 인덱스를 둔다.
+- 기존 `safe_foods`의 `position` 컬럼과 UNIQUE(`user_id`, `position`), `CheckConstraint`(`position >= 0`, 빈 문자열 금지)는 만들지 않는다.
+  값 규칙은 앱이 검증한다.
+- 삭제하는 모델: `SafeFood`(`safe_food.py`), `UserProfileChoice`(`user_profile_choice.py`).
+
+#### 이관 규칙
+
+- **기존 데이터는 이관하지 않고 버린다.**
+- upgrade 순서: `user_profile_choices`와 `safe_foods`를 삭제하고, `user_profiles`의 모든 행을 삭제한 뒤, 컬럼을 바꾸고
+  (상태 컬럼 3개와 `CHECK` 삭제, 목록 컬럼 3개 추가), `user_profile_safe_foods`를 만든다.
+- 삭제되는 데이터: 모든 아이 프로필(선택한 알러지·제한·선호 음식 포함)과 안전 음식. `users`, `user_consents`, 식사·추천 기록은 유지한다.
+  프로필이 사라지므로 모든 사용자가 프로필을 다시 입력해야 한다.
+- downgrade: 옛 구조(`safe_foods`, `user_profile_choices`, 상태 컬럼)를 빈 상태로 되돌린다. `user_profiles`의 행은 삭제되며 복구되지 않는다.
+
+#### 깨지는 지점
+
+- 모델이 바뀐다: `UserProfile`(상태 컬럼 3개 삭제, 목록 컬럼 3개 추가), `UserProfileChoice` 삭제(알러지·제한·`family_food` 모두),
+  `SafeFood` → `UserProfileSafeFood`(`position` 삭제).
+  - `app/models/__init__.py`
+  - `app/features/auth/queries.py`(43~45행, `delete_user_owned_rows`): `SafeFood`, `UserProfileChoice` 삭제 코드를 `UserProfileSafeFood`로 바꾼다.
+  - `app/features/onboarding/dto.py`, `service.py`, `router.py`
+- **온보딩 API가 바뀐다.**
+  - `safety.allergies`·`safety.restrictions`(`status` + `items`)가 `allergy_restrictions`, `vegetarian_restrictions`,
+    `dietary_approaches` 목록(enum 값)으로 바뀐다. 사용자 직접 입력(`custom_name`)은 더 받지 않는다.
+  - `food_preferences.family_foods`(선호 음식)는 삭제된다.
+  - `safe_foods`는 `status` 없이 항목 목록만 남고, 항목의 순서는 보존하지 않는다.
+  - 클라이언트: `client/src/util/strings.ts`, `client/src/types/profile.ts`, `client/src/features/onboarding/`와 온보딩 DTO를 쓰는 파일.
+- 제한 id 어휘가 바뀐다: `RestrictionId`를 쓰는 `app/features/suggestions/ingredients.py`, `mock_profile.py`, `workflow/state.py`,
+  `mock_ingredients.json`, `docs/food-ingredient-restriction-ids.md`. 기존 알러지 `lupin` `coconut` `buckwheat` `kiwi` `strawberry`와
+  식이 제한 `low-fructose` `no-pork` `no-beef`는 새 enum에 없다. 추천이 새 enum을 어떻게 쓸지는 suggestions 묶음에서 정한다.
+- 테스트: `tests/integration/test_onboarding.py`, `test_onboarding_recovery.py`, `tests/fixtures/onboarding.py`,
+  `tests/unit/test_remove_exposure_migration.py`(head 단언).
+
 ## 3. 진행 상태
 
 (작성 예정)
@@ -282,3 +403,8 @@ revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
 - 식후 리뷰 테이블은 `meal_foods`, `meal_food_ingredients`에 합친다. `outcome`이 NULL이면 미리뷰다. `food_snapshot`과
   `normalized_name`은 버리고, `difficulties`는 `difficulty_reasons`로 이름을 바꾼다.
 - 2.3은 기존 데이터를 이관하지 않고 식사·추천 관련 데이터를 삭제한다.
+- 값 규칙(허용 값, 양수, 빈 문자열 금지 등)의 `CheckConstraint`는 모두 삭제하고 앱이 검증한다. 테이블을 다루는 묶음마다 해당 제약을 삭제한다.
+- 프로필의 제한은 `user_profiles`의 목록 컬럼(`allergy_restrictions`, `vegetarian_restrictions`, `dietary_approaches`)에 둔다.
+  원소는 컬럼별 `StrEnum` 값만 허용한다. 알러지는 모르는 상태 없이 입력을 필수로 하고, 직접 입력(`custom_name`)과
+  선호 음식(`family_foods`), 안전 음식 순서(`position`)는 없앤다. 온보딩 임시저장은 클라이언트에만 둔다.
+- 2.5는 기존 프로필 데이터를 이관하지 않고 삭제한다.

@@ -1,4 +1,4 @@
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-30, reviewed by Jaemin Kim -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim -->
 <!-- Changed: DB 스키마 전면 개편 계획서 -->
 
 # DB 스키마 전면 개편 계획
@@ -30,6 +30,11 @@
 - 모든 `ForeignKey`는 `onupdate="CASCADE", ondelete="CASCADE"`를 지정한다.
 - 정수 PK는 기존 방식을 따른다: `BigInteger().with_variant(Integer, "sqlite")` + `Identity()`.
 - ORM 코드의 주석과 docstring은 한국어로 쓴다.
+- 모든 enum(`StrEnum`)은 멤버 이름과 값을 같은 대문자 문자열로 정의한다. 단계를 점으로 구분하는 경로 값 enum(`DifficultyReason`,
+  `RestrictionType`)은 값에 `.`을, 멤버 이름에 `_`를 쓴다.
+- `user_consents`는 append-only 기록이라 `recorded_at`만 두고 `created_at`, `updated_at`은 두지 않는 예외다.
+- 문자열 목록 컬럼은 공용 타입 `StringList`(JSON, Postgres는 JSONB)를 쓴다. 모델 파일마다 따로 정의하지 않고 `app/core/database.py`에 한 번만 둔다.
+  기존의 `JsonData`는 dict와 객체 목록을 담던 컬럼과 함께 사라진다.
 
 ### 1.4 마이그레이션 규칙
 
@@ -53,7 +58,7 @@
 
 ## 2. 묶음별 계획
 
-묶음 번호는 진행 순서(FK 의존 순서)다. 아래 묶음 외의 테이블은 변경 내용이 확정되면 추가한다.
+묶음 번호는 진행 순서(FK 의존 순서)다. 현재 스키마의 모든 테이블이 어느 한 묶음에 속한다.
 
 ### 2.1 User: 이메일 변경 시도 분리
 
@@ -117,13 +122,14 @@ revision `0018_user_email_change_attempts`, down_revision `0017_meal_ingredients
 
 - 새 파일 `app/models/meal_enums.py`에 `MealType`, `MealSetting`, `MealCookingMethod`(StrEnum)을 정의한다.
   `MealCookingMethod`는 기존 `FoodPreparation`(`app/models/food_enums.py`)의 이름을 바꾼 것이며 `food_enums.py`는 삭제한다.
-  값은 현재 허용 값을 그대로 쓰고, 멤버 이름만 대문자다.
+  값은 현재 허용 값을 대문자로 바꾼 것이며 멤버 이름과 같다. 기존 `RAW_UNHEATED`(`"raw"`)는 값을 대문자로 바꾸면 `RAW`이므로
+  멤버 이름도 `RAW`로 바꾼다.
 
   | enum | 멤버 = 값 |
   |---|---|
-  | `MealType` | `BREAKFAST="breakfast"`, `LUNCH="lunch"`, `DINNER="dinner"`, `SNACK="snack"` |
-  | `MealSetting` | `HOME="home"`, `RESTAURANT="restaurant"`, `SCHOOL="school"`, `OTHERS="others"` |
-  | `MealCookingMethod` | `RAW_UNHEATED="raw"`, `BOILED="boiled"`, `STEAMED="steamed"`, `PAN_FRIED="pan_fried"`, `STIR_FRIED="stir_fried"`, `BAKED_ROASTED="baked_roasted"`, `MASHED_BLENDED="mashed_blended"`, `OTHER="other"` |
+  | `MealType` | `BREAKFAST` `LUNCH` `DINNER` `SNACK` |
+  | `MealSetting` | `HOME` `RESTAURANT` `SCHOOL` `OTHERS` |
+  | `MealCookingMethod` | `RAW` `BOILED` `STEAMED` `PAN_FRIED` `STIR_FRIED` `BAKED_ROASTED` `MASHED_BLENDED` `OTHER` |
 
 - `meals.meal_type`, `meals.setting`: 네이티브 enum 없이 `VARCHAR(20) NOT NULL`로 저장한다. ORM 매핑은
   [architecture.md §2.2](../server/docs/architecture.md)의 `Enum(..., native_enum=False, create_constraint=False)` 규칙을 따른다.
@@ -136,15 +142,16 @@ revision `0018_user_email_change_attempts`, down_revision `0017_meal_ingredients
 
 #### 이관 규칙
 
-- 컬럼 타입(`VARCHAR(20)`, `VARCHAR(30)`)과 저장 값이 그대로이므로 데이터 이관은 없다.
-- upgrade: `ck_meals_meal_type`, `ck_meals_setting`, `ck_meals_id_positive`, `ck_meal_foods_cooking_method`를 삭제한다.
-  downgrade: 네 `CHECK` 제약을 다시 만든다. 허용 값 밖의 행이 있으면 downgrade가 실패한다.
-- 모델 파일 이동, 클래스 이름 변경, enum 이름 변경은 DB에 영향이 없다.
+- 컬럼 타입(`VARCHAR(20)`, `VARCHAR(30)`)은 그대로이고 저장 값만 소문자에서 대문자로 바뀐다.
+- upgrade: `ck_meals_meal_type`, `ck_meals_setting`, `ck_meals_id_positive`, `ck_meal_foods_cooking_method`를 삭제한 뒤
+  (소문자만 허용하므로 먼저 지운다) `meals.meal_type`, `meals.setting`, `meal_foods.cooking_method`를 `upper()`로 갱신한다.
+- downgrade: 세 컬럼을 `lower()`로 갱신한 뒤 네 `CHECK` 제약을 다시 만든다. 허용 값 밖의 행이 있으면 실패한다.
+- 모델 파일 이동과 클래스 이름 변경은 DB에 영향이 없다.
 
 #### 깨지는 지점
 
 - `Meal.meal_type`, `Meal.setting`의 파이썬 타입이 `str`에서 `MealType`, `MealSetting`으로 바뀐다.
-  - `app/features/meals/dto.py`: `Literal`로 정의한 `MealType`, `MealSetting`을 `app/models/meal_enums.py`의 enum으로 교체한다. JSON 값은 그대로다.
+  - `app/features/meals/dto.py`: `Literal`로 정의한 `MealType`, `MealSetting`을 `app/models/meal_enums.py`의 enum으로 교체한다. JSON 값은 대문자로 바뀐다.
   - `app/features/meals/data.py`: `meal_type: str`, `setting: str` 필드 타입.
   - `app/features/meals/service.py`(272~273행), `present.py`(24~25행): enum 값을 주고받는 부분.
 - `FoodPreparation`이 `MealCookingMethod`로 바뀌고 `app/models/food_enums.py`가 사라진다.
@@ -156,7 +163,8 @@ revision `0018_user_email_change_attempts`, down_revision `0017_meal_ingredients
   - 클래스명을 쓰는 곳: `app/features/meals/queries.py`, `app/features/meals/service.py`, `app/features/auth/queries.py`
     (`delete_user_owned_rows`).
   - `tests/`에서는 `FoodItem`을 쓰지 않는다.
-- API JSON 값은 그대로이므로 클라이언트 수정은 없다.
+- **API JSON 값이 대문자로 바뀐다**: `meal_type`, `setting`, `cooking_method`의 요청과 응답 (예: `"breakfast"` → `"BREAKFAST"`).
+  클라이언트에 필요한 변경은 [`api_integration.md`](api_integration.md)에 정리한다.
 - 잘못된 `meal_type`, `setting`, `cooking_method` 요청이 422로 거절되는 기존 검증은 그대로 통과해야 한다.
 
 ### 2.3 MealFood, MealFoodIngredient: 식사 기록 재료 구조 재편
@@ -185,11 +193,11 @@ revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
 서버가 응답으로 돌려준다. 모든 FK는 `onupdate="CASCADE", ondelete="CASCADE"`다. 재생성하는 테이블에는 `CheckConstraint`를 두지 않는다
 (값 규칙은 애플리케이션이 검증한다. [architecture.md §2.2](../server/docs/architecture.md)).
 
-새 enum `EatingOutcome`을 `app/models/meal_enums.py`에 정의한다. 값은 현행을 유지한다.
+새 enum `EatingOutcome`을 `app/models/meal_enums.py`에 정의한다. 값은 기존 `outcome` 값을 대문자로 바꾼 것이며 멤버 이름과 같다.
 
 | enum | 멤버 = 값 |
 |---|---|
-| `EatingOutcome` | `EATEN="eaten"`, `TASTED="tasted"`, `UNTOUCHED="untouched"`, `UNCLEAR="unclear"` |
+| `EatingOutcome` | `EATEN` `TASTED` `UNTOUCHED` `UNCLEAR` |
 
 새 enum `DifficultyReason`을 `app/models/difficulty_enums.py`에 정의한다. 음식이나 재료를 먹기 어려웠던 이유이며, 값의 기준은 PRD의
 "Reason Category and Mapped Values"다.
@@ -243,7 +251,7 @@ revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
 | `serving_note` | Text | NULL |
 | `acceptance` | SmallInteger | NULL (변경 없음) |
 | `outcome` | VARCHAR(20) | NULL, `EatingOutcome`. NULL이면 미리뷰 |
-| `difficulty_reasons` | JSON (Postgres는 JSONB) | NOT NULL, 기본값 `[]` (`server_default '[]'`) |
+| `difficulty_reasons` | `StringList` | NOT NULL, 기본값 `[]` (`server_default '[]'`). 원소는 `DifficultyReason` |
 | `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL |
 
 `meal_food_ingredients` (모델 `MealFoodIngredient`, `app/models/meal_food_ingredient.py`)
@@ -254,7 +262,7 @@ revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
 | `meal_food_id` | BigInteger | NOT NULL, FK → `meal_foods.id`, index |
 | `name` | String | NOT NULL. 사용자가 입력한 이름 |
 | `outcome` | VARCHAR(20) | NULL, `EatingOutcome`. NULL이면 미리뷰 |
-| `difficulty_reasons` | JSON (Postgres는 JSONB) | NOT NULL, 기본값 `[]` |
+| `difficulty_reasons` | `StringList` | NOT NULL, 기본값 `[]`. 원소는 `DifficultyReason` |
 | `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL |
 
 - `suggestion_meal_links`는 이 묶음에서 삭제만 한다. 같은 역할의 새 테이블 `food_recommendation_tries`는 2.7에서 만든다.
@@ -306,11 +314,11 @@ down_revision `0020_meal_food_restructure`
 
 #### 목표 스키마
 
-- 새 파일 `app/models/user_consent_enums.py`에 `UserConsentKind`(StrEnum)를 정의한다. 값은 현행을 유지하고 멤버 이름만 대문자다.
+- 새 파일 `app/models/user_consent_enums.py`에 `UserConsentKind`(StrEnum)를 정의한다. 값은 기존 값을 대문자로 바꾼 것이며 멤버 이름과 같다.
 
   | enum | 멤버 = 값 |
   |---|---|
-  | `UserConsentKind` | `ACCOUNT_PRIVACY="account_privacy"`, `PHOTO_ANALYSIS="photo_analysis"`, `AI_TRAINING="ai_training"` |
+  | `UserConsentKind` | `ACCOUNT_PRIVACY` `PHOTO_ANALYSIS` `AI_TRAINING` |
 
 - `user_consents.kind`: 길이 없는 `String`에서 `VARCHAR(30) NOT NULL`로 바꾸고, 네이티브 enum 없이 `UserConsentKind`를 저장한다.
   ORM 매핑은 [architecture.md §2.2](../server/docs/architecture.md)의 규칙을 따른다.
@@ -319,17 +327,20 @@ down_revision `0020_meal_food_restructure`
 
 #### 이관 규칙
 
-- 저장 값이 그대로이므로 데이터 이관은 없다.
-- upgrade: `ck_user_consents_kind`, `ck_user_consents_version`을 삭제하고 `kind`의 타입을 `VARCHAR(30)`으로 바꾼다.
-- downgrade: `kind`의 타입을 길이 없는 `VARCHAR`로 되돌리고 두 `CHECK` 제약을 다시 만든다. 허용 값 밖의 행이 있으면 실패한다.
+- 기존 동의 기록은 유지하고 `kind`의 저장 값만 소문자에서 대문자로 바꾼다.
+- upgrade: `ck_user_consents_kind`, `ck_user_consents_version`을 삭제하고(소문자만 허용하므로 먼저 지운다) `kind`의 타입을
+  `VARCHAR(30)`으로 바꾼 뒤 `kind`를 `upper()`로 갱신한다.
+- downgrade: `kind`를 `lower()`로 갱신하고 타입을 길이 없는 `VARCHAR`로 되돌린 뒤 두 `CHECK` 제약을 다시 만든다.
+  허용 값 밖의 행이 있으면 실패한다.
 
 #### 깨지는 지점
 
 - `UserConsent.kind`의 파이썬 타입이 `str`에서 `UserConsentKind`로 바뀐다.
   - `app/features/onboarding/dto.py`: `Literal`로 정의한 `ConsentKind`(9행)를 `app/models/user_consent_enums.py`의 `UserConsentKind`로 교체하고,
-    133행·173행의 필드 타입과 145~150행의 문자열 비교를 enum에 맞춘다. JSON 값은 그대로다.
+    133행·173행의 필드 타입과 145~150행의 문자열 비교를 enum에 맞춘다. JSON 값은 대문자로 바뀐다.
   - `app/features/onboarding/service.py`: 96~98행(`latest: dict[str, UserConsent]`), 151~161행의 `kind` 사용부.
-- API JSON 값은 그대로이므로 클라이언트 수정은 없다.
+- **API JSON 값이 대문자로 바뀐다**: 동의 `kind`의 요청과 응답 (예: `"account_privacy"` → `"ACCOUNT_PRIVACY"`).
+  클라이언트에 필요한 변경은 [`api_integration.md`](api_integration.md)에 정리한다.
 - 잘못된 `kind` 요청이 422로 거절되는 기존 검증은 그대로 통과해야 한다.
 
 ### 2.5 UserProfile: 제한 목록 컬럼화와 안전 음식 이름 변경
@@ -342,13 +353,29 @@ revision `0022_user_profile_restrictions`, down_revision `0021_consent_kind_enum
 
 #### 목표 스키마
 
-새 파일 `app/models/user_profile_enums.py`에 선택지 enum 세 개를 정의한다. 새로 만드는 값이므로 멤버 이름과 값이 같은 대문자 문자열이다.
+새 파일 `app/models/user_profile_enums.py`에 `AgeGroup`(StrEnum)을 정의한다. 멤버 이름과 값은 같은 대문자 문자열이다.
 
 | enum | 멤버 = 값 |
 |---|---|
-| `AllergyRestriction` | `NONE` `PEANUTS` `TREE_NUTS` `MILK_DAIRY` `EGGS` `SOY` `WHEAT` `FISH` `SHELLFISH` `SESAME` |
-| `VegetarianRestriction` | `DAIRY` `EGGS` `SEAFOOD` `POULTRY` `RED_MEAT` `LEGUMES_SOY` `NUTS_SEEDS` |
-| `DietaryApproach` | `GLUTEN_FREE` `CASEIN_FREE` `LACTOSE_FREE` |
+| `AgeGroup` | `UNDER_2` `AGE_2_3` `AGE_4_5` `AGE_6_8` `AGE_9_12` `AGE_13_PLUS` |
+
+- `AgeGroup`은 기존 `age_group` 값(`under-2` `2-3` `4-5` `6-8` `9-12` `13-plus`)을 대체한다. 숫자로 시작하거나 `-`를 포함한 값은 멤버
+  이름이 될 수 없어서 `UNDER_2`, `AGE_2_3`처럼 새로 정했다.
+
+새 파일 `app/models/restriction_enums.py`에 `RestrictionType`(StrEnum)을 정의한다. 프로필의 제한과 재료의 판정(2.6)이 함께 쓰는 enum이다.
+값은 category를 점(`.`)으로 구분한 경로 문자열이고, 멤버 이름은 점 대신 `_`를 쓴다. 알러지와 채식의 `EGGS`처럼 값이 겹치는 경우를
+category로 구분한다.
+
+| category | 값 |
+|---|---|
+| `ALLERGY` (10) | `NONE` `PEANUTS` `TREE_NUTS` `MILK_DAIRY` `EGGS` `SOY` `WHEAT` `FISH` `SHELLFISH` `SESAME` |
+| `VEGETARIAN` (7) | `DAIRY` `EGGS` `SEAFOOD` `POULTRY` `RED_MEAT` `LEGUMES_SOY` `NUTS_SEEDS` |
+| `DIETARY_APPROACH` (3) | `GLUTEN_FREE` `CASEIN_FREE` `LACTOSE_FREE` |
+
+예: `ALLERGY_EGGS = "ALLERGY.EGGS"`, `VEGETARIAN_EGGS = "VEGETARIAN.EGGS"`, `ALLERGY_NONE = "ALLERGY.NONE"`,
+`DIETARY_APPROACH_GLUTEN_FREE = "DIETARY_APPROACH.GLUTEN_FREE"`
+
+- 모두 20개다. `ALLERGY.NONE`은 "알러지 없음"이라는 프로필 응답이라 재료의 판정(`ingredient_restrictions`)에는 쓰지 않는다 (재료 쪽은 19개).
 
 `user_profiles` (모델 `UserProfile`)
 
@@ -356,21 +383,21 @@ revision `0022_user_profile_restrictions`, down_revision `0021_consent_kind_enum
 |---|---|---|
 | `user_id` | BigInteger | PK, FK → `users.id` (변경 없음) |
 | `child_name` | String | NOT NULL (변경 없음) |
-| `age_group` | String | NOT NULL (변경 없음) |
-| `allergy_restrictions` | JSON (Postgres는 JSONB) | NOT NULL, 기본값 없음 |
-| `vegetarian_restrictions` | JSON (Postgres는 JSONB) | NOT NULL, 기본값 `[]` |
-| `dietary_approaches` | JSON (Postgres는 JSONB) | NOT NULL, 기본값 `[]` |
+| `age_group` | VARCHAR(20) | NOT NULL. `AgeGroup` (네이티브 enum 없이 문자열로 저장) |
+| `restrictions` | `StringList` | NOT NULL, 기본값 없음. 원소는 `RestrictionType` |
 | `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL (변경 없음) |
 
-- 세 컬럼은 문자열 목록이며 입력 순서를 유지한다. 컬럼 타입은 enum이 아니므로 DTO와 서비스가 원소를 검증한다.
-  - `allergy_restrictions`: `AllergyRestriction` 값만, 1개 이상. `NONE`은 다른 값과 함께 쓸 수 없다. 중복 불가.
-    알러지를 모르는 상태는 없으며 입력은 필수다. 온보딩 임시저장은 클라이언트에만 있고 서버에는 완성된 프로필만 저장하므로
-    이 컬럼은 NULL을 허용하지 않는다.
-  - `vegetarian_restrictions`: `VegetarianRestriction` 값만, 중복 불가. 빈 목록은 해당 없음이다.
-  - `dietary_approaches`: `DietaryApproach` 값만, 중복 불가. 빈 목록은 해당 없음이다.
+- `restrictions`는 알러지, 채식, 식이 제한을 한 목록에 담으며 입력 순서를 유지한다. 컬럼 타입은 enum이 아니므로 DTO와 서비스가
+  원소를 검증한다.
+  - 원소는 `RestrictionType` 값만 허용하고 중복은 불가다.
+  - `ALLERGY.*` 값이 최소 하나 있어야 한다. 알러지를 모르는 상태는 없으며 입력은 필수다. `ALLERGY.NONE`은 다른 `ALLERGY.*` 값과
+    함께 쓸 수 없다.
+  - `VEGETARIAN.*`, `DIETARY_APPROACH.*`는 없어도 된다. 해당 category의 값이 없으면 해당 없음이다.
+  - 온보딩 임시저장은 클라이언트에만 있고 서버에는 완성된 프로필만 저장하므로 이 컬럼은 NULL을 허용하지 않는다.
+- 아이의 제한은 `restrictions`에서 `ALLERGY.NONE`을 뺀 값이다. 재료 쪽 조회(2.6)에 그대로 쓴다.
 - 삭제하는 컬럼: `allergy_status`, `restriction_status`, `safe_food_status`.
 - 삭제하는 `CheckConstraint`: `ck_user_profiles_age_group`, `ck_user_profiles_child_name`과 삭제한 컬럼의 제약 전부.
-- **인덱스는 두지 않는다.** 프로필은 항상 PK(`user_id`)로 조회하고 목록 컬럼으로 사용자 간 검색을 하지 않는다.
+- **인덱스는 두지 않는다.** 프로필은 항상 PK(`user_id`)로 조회하고 `restrictions`로 사용자 간 검색을 하지 않는다.
   사용자 간 검색이 필요해지면 그때 JSONB GIN 인덱스를 추가한다.
 
 `user_profile_safe_foods` (모델 `UserProfileSafeFood`, 파일 `app/models/user_profile_safe_food.py`)
@@ -393,21 +420,22 @@ revision `0022_user_profile_restrictions`, down_revision `0021_consent_kind_enum
 
 - **기존 데이터는 이관하지 않고 버린다.**
 - upgrade 순서: `user_profile_choices`와 `safe_foods`를 삭제하고, `user_profiles`의 모든 행을 삭제한 뒤, 컬럼을 바꾸고
-  (상태 컬럼 3개와 `CHECK` 삭제, 목록 컬럼 3개 추가), `user_profile_safe_foods`를 만든다.
+  (상태 컬럼 3개와 `CHECK` 삭제, `restrictions` 추가), `user_profile_safe_foods`를 만든다.
 - 삭제되는 데이터: 모든 아이 프로필(선택한 알러지·제한·선호 음식 포함)과 안전 음식. `users`, `user_consents`, 식사·추천 기록은 유지한다.
   프로필이 사라지므로 모든 사용자가 프로필을 다시 입력해야 한다.
 - downgrade: 옛 구조(`safe_foods`, `user_profile_choices`, 상태 컬럼)를 빈 상태로 되돌린다. `user_profiles`의 행은 삭제되며 복구되지 않는다.
 
 #### 깨지는 지점
 
-- 모델이 바뀐다: `UserProfile`(상태 컬럼 3개 삭제, 목록 컬럼 3개 추가), `UserProfileChoice` 삭제(알러지·제한·`family_food` 모두),
+- 모델이 바뀐다: `UserProfile`(상태 컬럼 3개 삭제, `restrictions` 추가, `age_group` 타입 변경), `UserProfileChoice` 삭제(알러지·제한·`family_food` 모두),
   `SafeFood` → `UserProfileSafeFood`(`position` 삭제).
   - `app/models/__init__.py`
   - `app/features/auth/queries.py`(43~45행, `delete_user_owned_rows`): `SafeFood`, `UserProfileChoice` 삭제 코드를 `UserProfileSafeFood`로 바꾼다.
   - `app/features/onboarding/dto.py`, `service.py`, `router.py`
 - **온보딩 API가 바뀐다.**
-  - `safety.allergies`·`safety.restrictions`(`status` + `items`)가 `allergy_restrictions`, `vegetarian_restrictions`,
-    `dietary_approaches` 목록(enum 값)으로 바뀐다. 사용자 직접 입력(`custom_name`)은 더 받지 않는다.
+  - `safety.allergies`·`safety.restrictions`(`status` + `items`)가 `restrictions` 목록 하나(`RestrictionType` 값, 예:
+    `"ALLERGY.PEANUTS"`, `"VEGETARIAN.DAIRY"`)로 바뀐다. 사용자 직접 입력(`custom_name`)은 더 받지 않는다.
+  - `age_group`의 값이 `AgeGroup`으로 바뀐다 (예: `"under-2"` → `"UNDER_2"`, `"13-plus"` → `"AGE_13_PLUS"`).
   - `food_preferences.family_foods`(선호 음식)는 삭제된다.
   - `safe_foods`는 `status` 없이 항목 목록만 남고, 항목의 순서는 보존하지 않는다.
   - 클라이언트: `client/src/util/strings.ts`, `client/src/types/profile.ts`, `client/src/features/onboarding/`와 온보딩 DTO를 쓰는 파일.
@@ -429,18 +457,10 @@ down_revision `0022_user_profile_restrictions`
 
 #### 목표 스키마
 
-새 파일 `app/models/ingredient_enums.py`에 enum 두 개를 정의한다.
+`RestrictionType`은 프로필과 공유하는 enum이며 2.5의 `app/models/restriction_enums.py`에 정의했다. 재료의 판정에는 `ALLERGY.NONE`을
+제외한 19개만 쓰고, 서비스가 `ALLERGY.NONE`을 거절한다.
 
-`RestrictionType`: 프로필의 제한 값을 category와 함께 점으로 구분한 경로 문자열이다 (19개). 멤버 이름은 점 대신 `_`를 쓴다.
-알러지와 채식의 `EGGS`처럼 값이 겹치는 경우를 category로 구분한다. 프로필 값에서 `f"{category}.{값}"`으로 만든다.
-
-| category | 값 |
-|---|---|
-| `ALLERGY` (9) | `PEANUTS` `TREE_NUTS` `MILK_DAIRY` `EGGS` `SOY` `WHEAT` `FISH` `SHELLFISH` `SESAME` (`NONE`은 제외) |
-| `VEGETARIAN` (7) | `DAIRY` `EGGS` `SEAFOOD` `POULTRY` `RED_MEAT` `LEGUMES_SOY` `NUTS_SEEDS` |
-| `DIETARY_APPROACH` (3) | `GLUTEN_FREE` `CASEIN_FREE` `LACTOSE_FREE` |
-
-예: `ALLERGY_EGGS = "ALLERGY.EGGS"`, `VEGETARIAN_EGGS = "VEGETARIAN.EGGS"`, `DIETARY_APPROACH_GLUTEN_FREE = "DIETARY_APPROACH.GLUTEN_FREE"`
+새 파일 `app/models/ingredient_enums.py`에 `RestrictionDegree`(StrEnum)를 정의한다.
 
 `RestrictionDegree`: 재료가 제한에 걸리는 정도. 순서가 있는 척도다. 섭취량이나 증상의 심각도가 아니다.
 
@@ -468,7 +488,7 @@ down_revision `0022_user_profile_restrictions`
 |---|---|---|
 | `id` | BigInteger | PK, `Identity()` |
 | `ingredient_id` | BigInteger | NOT NULL, FK → `ingredients.id` |
-| `restriction_type` | VARCHAR(40) | NOT NULL. `RestrictionType` |
+| `restriction_type` | VARCHAR(40) | NOT NULL. `RestrictionType` (`ALLERGY.NONE` 제외) |
 | `degree` | VARCHAR(20) | NOT NULL. `RestrictionDegree` |
 | `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL |
 
@@ -480,7 +500,7 @@ down_revision `0022_user_profile_restrictions`
 - 판정이 끝난 쌍은 `NEVER`도 포함해 모두 저장한다. **행이 없으면 아직 판정하지 않은 것**이다. 판정이 없는 쌍은 안전하게 취급해
   그 제한을 가진 아이의 후보에서 제외한다.
 - 추천 후보는 아이의 제한마다 `degree = NEVER`인 행이 있는 재료다. 제한이 없는 아이는 전체 재료가 후보다.
-  아이의 제한은 프로필에서 만든다: `allergy_restrictions`(`NONE` 제외), `vegetarian_restrictions`, `dietary_approaches`.
+  아이의 제한은 프로필의 `restrictions`에서 `ALLERGY.NONE`을 뺀 값이며, 변환 없이 `restriction_type`과 비교한다.
   알러지와 식이 제한에 `NEVER`만 허용할지의 정책은 suggestions 묶음에서 정한다.
 
 #### 이관 규칙
@@ -512,16 +532,14 @@ down_revision `0023_ingredient_restrictions`
 
 #### 목표 스키마
 
-새 파일 `app/models/food_recommendation_enums.py`에 enum 세 개를 정의한다. 이미 값이 있는 집합은 값을 유지하고 멤버 이름만 대문자로 하며,
-새로 만드는 집합은 멤버 이름과 값이 같은 대문자 문자열이다.
+새 파일 `app/models/food_recommendation_enums.py`에 enum 세 개를 정의한다. 멤버 이름과 값은 같은 대문자 문자열이다.
 
 | enum | 멤버 = 값 |
 |---|---|
-| `FoodRecommendationStatus` | `PENDING="pending"`, `SAVED="saved"`, `DISMISSED="dismissed"`, `TRIED="tried"` |
+| `FoodRecommendationStatus` | `PENDING` `SAVED` `DISMISSED` `TRIED` |
 | `FoodRecommendationDismissReason` | `RESTRICTION` `DISLIKE` `NOT_FIT` `TOO_MUCH_PREPARATION` `INGREDIENT_HARD_TO_GET` `ALREADY_TRIED` |
-| `FoodRecommendationFeedback` | `HELPFUL="helpful"`, `NOT_HELPFUL="not_helpful"`, `NOT_SURE="not_sure"` |
+| `FoodRecommendationFeedback` | `HELPFUL` `NOT_HELPFUL` `NOT_SURE` |
 
-- `TRIED`는 기존 상태 집합에 더하는 값이라 같은 enum 안에서 대소문자를 섞지 않도록 소문자 값 `"tried"`로 한다.
 - 이전 `DismissReason`과의 대응(참고용, 데이터는 이관하지 않음): `restriction_conflict` → `RESTRICTION`, `disliked_food_or_form` → `DISLIKE`,
   `food_preferences` → `NOT_FIT`, `too_much_preparation` → `TOO_MUCH_PREPARATION`, `ingredient_unavailable` → `INGREDIENT_HARD_TO_GET`,
   `already_tried` → `ALREADY_TRIED`.
@@ -536,11 +554,11 @@ down_revision `0023_ingredient_restrictions`
 | `what_to_try` | Text | NOT NULL (변경 없음) |
 | `why_this_may_help` | Text | NOT NULL (변경 없음) |
 | `serving_tip` | Text | NULL (변경 없음) |
-| `ingredients` | JSON 문자열 목록 (Postgres는 JSONB) | NOT NULL. LLM이 반환한 문자열 목록을 그대로 저장한다 |
+| `ingredients` | `StringList` | NOT NULL. LLM이 반환한 문자열 목록을 그대로 저장한다 |
 | `cooking_method` | VARCHAR(30) | NOT NULL. `MealCookingMethod` |
 | `causes` | Text | NOT NULL. 식후 리뷰에서 참고한 특성(아이가 어려워한 원인)을 LLM이 서술한 문장 |
-| `status` | VARCHAR(20) | NOT NULL, 기본값 `pending`. `FoodRecommendationStatus` |
-| `dismiss_reasons` | JSON 목록 (Postgres는 JSONB) | NOT NULL, 기본값 `[]`. 원소는 `FoodRecommendationDismissReason` |
+| `status` | VARCHAR(20) | NOT NULL, 기본값 `PENDING`. `FoodRecommendationStatus` |
+| `dismiss_reasons` | `StringList` | NOT NULL, 기본값 `[]`. 원소는 `FoodRecommendationDismissReason` |
 | `saved_at` | DateTime(timezone=True) | NULL (변경 없음) |
 | `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL (`updated_at`은 새로 추가) |
 
@@ -578,9 +596,10 @@ down_revision `0023_ingredient_restrictions`
   - `app/features/meals/`의 `dto.py`, `present.py`, `queries.py`, `service.py`(추천 연결 처리)
 - **API가 바뀐다.**
   - `SuggestionResponse`에서 `meal_id`, `ingredient_id`, `food_snapshot`이 사라지고 `food_id`는 `origin_food_id`가 된다.
-    `ingredients`, `cooking_method`, `causes`가 추가되고 `status`에 `tried`가 더해진다.
+    `ingredients`, `cooking_method`, `causes`가 추가되고 `status`에 `TRIED`가 더해진다.
   - `SuggestionTarget`의 `ingredient_id`가 사라져 추천은 음식 단위로만 만든다.
-  - `dismiss_reasons`의 값이 새 `FoodRecommendationDismissReason`으로 바뀐다.
+  - `status`와 `feedback`의 값이 대문자로 바뀌고(`"saved"` → `"SAVED"`, `"helpful"` → `"HELPFUL"`), `dismiss_reasons`의 값이 새
+    `FoodRecommendationDismissReason`으로 바뀐다. 추천 목록 조회의 `status` 쿼리 값(`saved`, `all`)도 대문자로 맞춘다.
   - LLM 초안(`SuggestionDraft`)에 `cooking_method`와 `causes`가 추가되고, 기존 `used_ingredients`가 `ingredients`로 저장된다.
   - 클라이언트: `client/src/data/dto/suggestionDto.ts`, `types/suggestionRecord.ts`, `features/suggestions/`,
     `features/meal-checkin/hooks/useMealSuggestions.ts`, `rules/recommendationPresentation.ts`, `util/strings.ts`와 추천 응답을 쓰는 화면.
@@ -591,7 +610,20 @@ down_revision `0023_ingredient_restrictions`
 
 ## 3. 진행 상태
 
-(작성 예정)
+계획은 모두 작성했고 팀 확인 전이다. 구현은 팀 확인 뒤에 2.1부터 순서대로 진행한다.
+
+| 묶음 | 마이그레이션 | 계획 | ORM·마이그레이션 구현 |
+|---|---|---|---|
+| 2.1 User | `0018_user_email_change_attempts` | 작성 | 미착수 |
+| 2.2 Meal·MealFood | `0019_meal_enums` | 작성 | 미착수 |
+| 2.3 식사 기록 재료 재편 | `0020_meal_food_restructure` | 작성 | 미착수 |
+| 2.4 UserConsent | `0021_consent_kind_enum` | 작성 | 미착수 |
+| 2.5 UserProfile | `0022_user_profile_restrictions` | 작성 | 미착수 |
+| 2.6 Ingredient | `0023_ingredient_restrictions` | 작성 | 미착수 |
+| 2.7 FoodRecommendation | `0024_food_recommendations` | 작성 | 미착수 |
+
+- `tests/unit/test_remove_exposure_migration.py`의 head 단언은 구현이 끝났을 때 최종 head `0024_food_recommendations`로 한 번에 맞춘다.
+- 클라이언트에 필요한 변경은 [`api_integration.md`](api_integration.md)에 정리한다.
 
 ## 4. 결정 기록
 
@@ -600,16 +632,22 @@ down_revision `0023_ingredient_restrictions`
 - 값의 유효성은 DB `CHECK`가 아니라 애플리케이션 로직으로 검증한다. 이 규칙은 개편 뒤에도 유지하므로
   [server/docs/architecture.md §2.2](../server/docs/architecture.md)에 기록했다.
   이유는 `CHECK`보다 마이그레이션이 수월하고 검증 코드가 애플리케이션에 모이기 때문이다.
-- `StrEnum`의 멤버 이름은 대문자로 하고, 값은 현행(소문자 등)을 유지한다. API · DB 값이 바뀌지 않으므로 데이터 이관과 클라이언트 수정이 없다.
+- 모든 `StrEnum`은 멤버 이름과 값을 같은 대문자 문자열로 통일한다. 값이 고정된 집합이라는 것이 값에서 드러나게 하려는 것이다.
+  기존 소문자 enum의 값도 대문자로 바꾸므로 보존되는 데이터(`meals`, `user_consents`)는 `upper()`로 갱신하고(2.2, 2.4) API 값이
+  바뀐다. 클라이언트에 필요한 변경은 [`api_integration.md`](api_integration.md)에 정리한다.
+  단계를 점으로 구분하는 경로 값 enum(`DifficultyReason`, `RestrictionType`)은 값에 `.`을, 멤버 이름에 `_`를 쓴다.
 - `ingredients`(추천용 카탈로그)와 `meal_food_ingredients`(사용자 입력 기록)는 서로 참조하지 않는 별개 계열이다.
 - `MealFood.id`와 `MealFoodIngredient.id`는 서버 자동 증가이며 서버가 응답으로 돌려준다.
 - 식후 리뷰 테이블은 `meal_foods`, `meal_food_ingredients`에 합친다. `outcome`이 NULL이면 미리뷰다. `food_snapshot`과
   `normalized_name`은 버리고, `difficulties`는 `difficulty_reasons`로 이름을 바꾼다.
 - 2.3은 기존 데이터를 이관하지 않고 식사·추천 관련 데이터를 삭제한다.
 - 값 규칙(허용 값, 양수, 빈 문자열 금지 등)의 `CheckConstraint`는 모두 삭제하고 앱이 검증한다. 테이블을 다루는 묶음마다 해당 제약을 삭제한다.
-- 프로필의 제한은 `user_profiles`의 목록 컬럼(`allergy_restrictions`, `vegetarian_restrictions`, `dietary_approaches`)에 둔다.
-  원소는 컬럼별 `StrEnum` 값만 허용한다. 알러지는 모르는 상태 없이 입력을 필수로 하고, 직접 입력(`custom_name`)과
-  선호 음식(`family_foods`), 안전 음식 순서(`position`)는 없앤다. 온보딩 임시저장은 클라이언트에만 둔다.
+- 프로필의 제한은 `user_profiles.restrictions` 목록 하나에 둔다. 원소는 재료 판정과 공유하는 `RestrictionType` 값이다
+  (알러지·채식·식이 제한을 category로 구분). 알러지는 모르는 상태 없이 `ALLERGY.*` 값을 최소 하나 입력해야 하고, 직접 입력
+  (`custom_name`)과 선호 음식(`family_foods`), 안전 음식 순서(`position`)는 없앤다. 온보딩 임시저장은 클라이언트에만 둔다.
+- `age_group`은 `AgeGroup`(StrEnum)으로 바꾼다. 고정된 값 집합은 `StrEnum`으로 정의한다는 규칙에 따른다.
+- `user_consents`는 append-only 기록이라 `created_at`, `updated_at`을 두지 않는 예외다.
+- 문자열 목록 컬럼은 공용 타입 `StringList`를 쓴다. dict와 객체 목록을 담던 `JsonData`는 쓰지 않는다.
 - 2.5는 기존 프로필 데이터를 이관하지 않고 삭제한다.
 - `difficulty_reasons`는 category를 점으로 구분한 경로 값(`TEXTURE.HARDNESS.HARD`)의 평탄한 `StrEnum` 목록이다.
   값의 기준은 PRD이며, category를 별도로 저장하지 않는다.
@@ -623,13 +661,13 @@ down_revision `0023_ingredient_restrictions`
 - 추천(`UserSuggestion` → `FoodRecommendation`)은 음식 단위이고 `origin_food_id`로 근거 음식을 가리킨다. `food_snapshot`은 없앤다.
   `what_to_try`, `why_this_may_help`, `serving_tip`은 유지하고 `ingredients`, `cooking_method`, `causes`를 더한다.
   `cooking_method`는 NULL을 허용하지 않고, `ingredients`는 LLM이 반환한 문자열 목록을 그대로 저장한다.
-- 이미 값이 있는 enum 집합은 현행 값을 유지하고 멤버 이름만 대문자로 한다. 새로 만드는 집합은 이름과 값을 같은 대문자로 한다.
 - 추천의 `TRIED` 상태와 시도 기록(`food_recommendation_tries`)은 중복 정보이며 일관성은 서비스가 지킨다.
 
 ## 5. 후속 작업 (이번 범위 밖)
 
 - 클라이언트에만 있고 PRD에 없는 난이도 항목을 삭제한다: `tasteIntensity`(`mild` `strong`), `shape`(`consistent` `varied`
-  `notSure` `note`), `visibility`(`visible` `hidden` `mixed`), `tasteType`의 `other`. 서버의 `DifficultyReason`에는 포함하지 않았다.
+  `notSure` `note`), `visibility`(`visible` `hidden` `mixed`), `tasteType`의 `other`. 서버의 `DifficultyReason`에는 포함하지 않았으므로
+  서버는 이 값을 422로 거절한다. 그래서 클라이언트가 난이도 사유 변경을 반영할 때 함께 제거해야 한다 ([`api_integration.md`](api_integration.md) 3절).
   이 문서는 개편이 끝나면 삭제되므로, 삭제 전에 이슈로 옮긴다.
 - 재료 판정 데이터(`team_project/ingredient_data`, 데이터 담당):
   - 채식 7개(`VEGETARIAN.*`)의 판정이 없다. 채식 제한을 가진 아이는 판정이 생기기 전까지 후보 재료가 없다.
@@ -639,3 +677,10 @@ down_revision `0023_ingredient_restrictions`
     청둥오리알은 제품 차이가 아니라 종 범위 문제라서 정책(`restriction-policy.md`)의 `DEPENDS_ON_PRODUCT` 정의와 맞지 않는다.
   - `english_name_conflict` 플래그가 모두 `false`인데 영어 이름이 겹치는 재료가 11종(26개) 있다.
   - 기존 mock 카탈로그의 이름(`간장`, `밀가루`)이 판정 데이터에 같은 이름으로 없다.
+- 개편이 끝난 뒤 갱신하거나 정리할 정식 문서:
+  - `server/docs/architecture.md`: "재료 저장 경계" 절(`MealIngredient` 설명), 마이그레이션 `0017` 언급.
+  - `docs/food-ingredient-restriction-ids.md`: `RestrictionId`가 `RestrictionType`으로 대체되므로 새 값 기준으로 다시 쓰거나 삭제한다.
+    이 문서를 읽도록 안내하는 `server/AGENTS.md`, `client/AGENTS.md`의 문장도 함께 고친다.
+  - `swpp-2026-project-team-08.wiki/Design-Documentation.md`: 스키마 표 (1.5).
+  - `docs/api_integration.md`: 클라이언트 반영이 끝나면 삭제한다.
+  - 이 문서(`docs/db-overhaul.md`): 위 항목을 옮긴 뒤 삭제한다.

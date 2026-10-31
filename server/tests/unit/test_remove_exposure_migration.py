@@ -3,6 +3,8 @@
 # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 # Changed: 화면 디자인 및 식사 흐름 개선
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim
+# Changed: 마이그레이션 head 단언을 0024 로 갱신
 """Unit: 마이그레이션의 이력·SQL 생성 계약. DB 적용이나 Postgres 동작은 검사하지 않는다."""
 
 from io import StringIO
@@ -18,7 +20,7 @@ MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0017_meal_ingredients"]
+    assert scripts.get_heads() == ["0024_food_recommendations"]
     assert (
         scripts.get_revision("0017_meal_ingredients").down_revision
         == "0016_remove_profile_questions"

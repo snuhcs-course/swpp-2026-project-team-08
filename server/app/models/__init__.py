@@ -15,6 +15,8 @@
 `create_all` 이 필요로 한다). 새 모델 파일을 만들면 아래에 추가한다.
 """
 
+from app.models.food_recommendation import FoodRecommendation
+from app.models.food_recommendation_try import FoodRecommendationTry
 from app.models.ingredient import Ingredient
 from app.models.ingredient_restriction import IngredientRestriction
 from app.models.meal import Meal
@@ -25,13 +27,18 @@ from app.models.user_consent import UserConsent
 from app.models.user_email_change_attempt import UserEmailChangeAttempt
 from app.models.user_profile import UserProfile
 from app.models.user_profile_safe_food import UserProfileSafeFood
-from app.models.user_suggestion import UserSuggestion
 
-__all__ = ["User"]
-
-__all__ += ["UserProfile", "UserProfileSafeFood", "UserConsent"]
-__all__ += ["UserEmailChangeAttempt"]
-__all__ += ["Ingredient", "IngredientRestriction"]
-__all__ += ["MealFoodIngredient"]
-__all__ += ["Meal", "MealFood"]
-__all__ += ["UserSuggestion"]
+__all__ = [
+    "FoodRecommendation",
+    "FoodRecommendationTry",
+    "Ingredient",
+    "IngredientRestriction",
+    "Meal",
+    "MealFood",
+    "MealFoodIngredient",
+    "User",
+    "UserConsent",
+    "UserEmailChangeAttempt",
+    "UserProfile",
+    "UserProfileSafeFood",
+]

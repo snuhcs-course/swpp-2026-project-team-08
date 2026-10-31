@@ -8,6 +8,8 @@
 
 <!-- AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo -->
 <!-- Changed: 식사 재료와 공용 카탈로그의 저장 경계 -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim -->
+<!-- Changed: 모델 값 검증 규칙과 StrEnum 규칙 추가 -->
 
 # server — 아키텍처
 
@@ -83,6 +85,32 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 - 파일은 테이블(클래스) 하나당 하나, 단수형 snake_case (`user.py`, `meal_log.py`).
 - 새 모델은 `models/__init__.py`에 import해야 `Base.metadata`에 등록된다 (Alembic · 테스트 `create_all`이 필요로 한다).
 - 모든 테이블에 `created_at` / `updated_at`, 모든 `ForeignKey`에 `onupdate="CASCADE", ondelete="CASCADE"`.
+- **값의 유효성은 DB 제약이 아니라 애플리케이션 로직으로 검증한다.** DB에는 PK · FK · UNIQUE · NOT NULL 같은
+  구조 제약만 두고, 허용 값 목록 · 범위 · 공백 금지 같은 값 규칙에는 `CheckConstraint`를 쓰지 않는다.
+  값 규칙은 DTO와 서비스가 검증한다. enum 컬럼 타입은 값을 enum 멤버로 바꿔 줄 뿐 enum에 없는 문자열을 막지는 않는다.
+  `CHECK` 제약보다 마이그레이션이 수월하고(값을 바꿀 때 제약을
+  지우고 다시 만들 필요가 없다), 검증 코드가 애플리케이션 한곳에 모이기 때문이다. 컬럼의 NULL 여부를 정하는 구조 제약
+  (예: 두 컬럼 중 하나는 NOT NULL)은 값 규칙이 아니므로 `CheckConstraint`로 둘 수 있다.
+- **고정된 값 집합은 `StrEnum`으로 정의한다.** 파일은 `models/<이름>_enums.py`(예: `meal_enums.py`, `user_consent_enums.py`)에 두고,
+  DTO와 모델이 같은 enum을 쓴다. 멤버 이름과 값은 같은 대문자 문자열로 정의한다(`BREAKFAST = "BREAKFAST"`).
+  단계를 점(`.`)으로 구분하는 경로 값 enum은 값에 `.`을, 멤버 이름에 `_`를 쓴다(`TEXTURE_HARDNESS_HARD = "TEXTURE.HARDNESS.HARD"`).
+  컬럼은 네이티브 enum 타입 없이 문자열로 저장한다.
+
+  ```python
+  meal_type: Mapped[MealType] = mapped_column(
+      Enum(
+          MealType,
+          native_enum=False,
+          create_constraint=False,
+          length=20,
+      ),
+      nullable=False,
+  )
+  ```
+
+  SQLAlchemy는 기본으로 멤버 이름을 저장하는데, 이름과 값이 같으므로 값 그대로 저장된다. 경로 값 enum은 대부분 JSON 목록 컬럼의 원소를
+  검증하는 데만 쓰고 이 매핑을 쓰지 않는다. 컬럼 타입으로 쓸 때는 이름(`ALLERGY_EGGS`)이 아니라 값(`ALLERGY.EGGS`)이 저장되도록
+  `values_callable=lambda members: [m.value for m in members]`를 더한다. `create_constraint=False`는 `CHECK` 제약을 만들지 않는다.
 
 **왜 한곳에 모으나.** 이 앱은 여러 테이블을 가로지르는 읽기가 많다(식사 기록 · 추천 · 재료). 모델이 기능
 폴더에 흩어져 있으면 "다른 기능의 모델을 읽어도 되는가"를 매번 따져야 한다. 한곳에 모으면 import 경로가

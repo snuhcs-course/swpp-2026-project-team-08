@@ -6,6 +6,8 @@
 # Changed: 식사 기록·로그인 기능 추가
 # AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 # Changed: 추천 카드·저장된 추천 기능 추가
+# AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim
+# Changed: DB 스키마 개편에 맞춰 모델 등록 갱신
 
 """모든 테이블 모델.
 
@@ -13,27 +15,30 @@
 `create_all` 이 필요로 한다). 새 모델 파일을 만들면 아래에 추가한다.
 """
 
-from app.models.food_item import FoodItem
+from app.models.food_recommendation import FoodRecommendation
+from app.models.food_recommendation_try import FoodRecommendationTry
 from app.models.ingredient import Ingredient
+from app.models.ingredient_restriction import IngredientRestriction
 from app.models.meal import Meal
+from app.models.meal_food import MealFood
 from app.models.meal_food_ingredient import MealFoodIngredient
-from app.models.meal_ingredient import MealIngredient
-from app.models.review_food_result import ReviewFoodResult
-from app.models.review_ingredient_result import ReviewIngredientResult
-from app.models.safe_food import SafeFood
 from app.models.user import User
 from app.models.user_consent import UserConsent
+from app.models.user_email_change_attempt import UserEmailChangeAttempt
 from app.models.user_profile import UserProfile
-from app.models.user_profile_choice import UserProfileChoice
-from app.models.user_suggestion import UserSuggestion
+from app.models.user_profile_safe_food import UserProfileSafeFood
 
-__all__ = ["User"]
-
-from app.models.suggestion_meal_link import SuggestionMealLink
-
-__all__ += ["UserProfile", "UserProfileChoice", "SafeFood", "UserConsent"]
-__all__ += ["Ingredient", "MealIngredient"]
-__all__ += ["MealFoodIngredient"]
-__all__ += ["Meal", "FoodItem"]
-__all__ += ["SuggestionMealLink"]
-__all__ += ["ReviewFoodResult", "ReviewIngredientResult", "UserSuggestion"]
+__all__ = [
+    "FoodRecommendation",
+    "FoodRecommendationTry",
+    "Ingredient",
+    "IngredientRestriction",
+    "Meal",
+    "MealFood",
+    "MealFoodIngredient",
+    "User",
+    "UserConsent",
+    "UserEmailChangeAttempt",
+    "UserProfile",
+    "UserProfileSafeFood",
+]

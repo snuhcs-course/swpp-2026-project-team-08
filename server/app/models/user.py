@@ -2,6 +2,8 @@
 # Changed: server bootstraping
 # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 # Changed: 마이페이지·자녀 프로필 추가
+# AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim
+# Changed: 이메일 변경 컬럼을 UserEmailChangeAttempt 로 분리
 
 """사용자 테이블 (SQLAlchemy 2.0 typed mapping).
 
@@ -27,11 +29,6 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    pending_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    email_change_code_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    email_change_expires_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False
     )

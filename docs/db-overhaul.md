@@ -161,8 +161,8 @@ revision `0018_user_email_change_attempts`, down_revision `0017_meal_ingredients
 
 ### 2.3 MealFood, MealFoodIngredient: 식사 기록 재료 구조 재편
 
-**대상 테이블:** `meal_foods`, `meal_food_ingredients`, `suggestion_meal_links`(모두 재생성),
-`meal_ingredients`, `review_food_results`, `review_ingredient_results`(삭제), `meals`, `suggestions`(행 삭제)
+**대상 테이블:** `meal_foods`, `meal_food_ingredients`(재생성),
+`suggestion_meal_links`, `meal_ingredients`, `review_food_results`, `review_ingredient_results`(삭제), `meals`, `suggestions`(행 삭제)
 
 **마이그레이션:** 파일 `20261030_1200_meal_food_restructure.py`,
 revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
@@ -257,19 +257,7 @@ revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
 | `difficulty_reasons` | JSON (Postgres는 JSONB) | NOT NULL, 기본값 `[]` |
 | `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL |
 
-`suggestion_meal_links` (모델 `SuggestionMealLink`)
-
-| 컬럼 | 타입 | 제약 |
-|---|---|---|
-| `id` | BigInteger | PK, `Identity()` |
-| `suggestion_id` | BigInteger | NOT NULL, FK → `suggestions.id` |
-| `meal_id` | BigInteger | NOT NULL, FK → `meals.id` |
-| `meal_food_id` | BigInteger | NOT NULL, FK → `meal_foods.id` |
-| `meal_food_ingredient_id` | BigInteger | NULL, FK → `meal_food_ingredients.id` |
-| `feedback` | Text | NULL (변경 없음) |
-| `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL |
-
-- UNIQUE(`meal_id`, `suggestion_id`)는 유지한다. `meal_id`가 `meal_food_id`의 식사와 같은지는 서비스가 보장한다.
+- `suggestion_meal_links`는 이 묶음에서 삭제만 한다. 같은 역할의 새 테이블 `food_recommendation_tries`는 2.7에서 만든다.
 - 삭제하는 모델: `MealIngredient`(`meal_ingredient.py`), `ReviewFoodResult`(`review_food_result.py`),
   `ReviewIngredientResult`(`review_ingredient_result.py`).
 - 사라지는 컬럼: `food_snapshot`(음식 정보는 `meal_foods` 자체가 갖는다), `normalized_name`, 복합 PK를 이루던 `food_id`·`ingredient_id`.
@@ -280,7 +268,7 @@ revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
 - **기존 데이터는 이관하지 않고 버린다.** 구조가 크게 달라 옛 id를 새 id로 옮기지 않는다.
 - upgrade 순서: `suggestion_meal_links`, `review_ingredient_results`, `review_food_results`, `meal_food_ingredients`,
   `meal_ingredients`, `meal_foods`를 삭제하기 전에 `suggestions`와 `meals`의 행을 삭제한다. 그 뒤 `meal_foods`,
-  `meal_food_ingredients`, `suggestion_meal_links`를 새 구조로 만든다.
+  `meal_food_ingredients`를 새 구조로 만든다.
 - 삭제되는 데이터: 모든 식사, 음식, 재료, 식후 리뷰, 추천, 추천 연결. `users`, 프로필, 동의, `ingredients`는 유지한다.
 - downgrade: 옛 구조의 테이블을 빈 상태로 다시 만든다. 삭제된 데이터는 복구되지 않는다.
 - 운영 DB에 적용하기 전에 삭제 범위를 팀이 확인한다.
@@ -289,7 +277,7 @@ revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
 
 - 삭제되는 모델 `ReviewFoodResult`, `ReviewIngredientResult`, `MealIngredient`와 구조가 바뀌는 `MealFood`(복합 PK `(meal_id, id)` →
   단일 PK `id`), `MealFoodIngredient`(복합 PK → 단일 PK `id`와 `meal_food_id`, `name`, `outcome`, `difficulty_reasons`),
-  `SuggestionMealLink`(`food_id`, `ingredient_id` → `meal_food_id`, `meal_food_ingredient_id`)를 쓰는 서버 코드:
+  `SuggestionMealLink`(삭제되고 2.7의 `FoodRecommendationTry`로 대체)를 쓰는 서버 코드:
   - `app/models/__init__.py`, `app/features/auth/queries.py`(`delete_user_owned_rows`의 삭제 목록)
   - `app/features/meals/`의 `data.py`, `dto.py`, `ingredients.py`, `present.py`, `queries.py`, `router.py`, `service.py`
 - **API가 바뀐다.**
@@ -304,8 +292,7 @@ revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
     `mealReviewApi.ts`, `data/dto/mealDto.ts`, `reviewDto.ts`, `suggestionDto.ts`, `data/storage/afterMealReviewStorage.ts`,
     `features/after-meal-review/`, `features/meal-log/rules.ts`, `rules/recommendationSafety.ts`, `types/afterMealReview.ts`,
     `types/reviewRecord.ts`, `util/strings.ts`.
-- `suggestions` 테이블: `food_id`, `ingredient_id` 컬럼이 각각 `MealFood.id`, `MealFoodIngredient.id`를 뜻하도록 의미가 바뀐다
-  (행은 삭제된다). 컬럼 이름 변경과 FK 추가는 suggestions 묶음에서 정한다.
+- `suggestions` 테이블의 행은 삭제되고, 테이블 자체는 2.7에서 `food_recommendations`로 대체된다.
 - 테스트: `tests/integration/test_api_contract_edges.py`, `test_auth.py`, `test_contract_api.py`, `test_meals_write.py`,
   `test_meal_ingredient_migration.py`(구조가 사라지므로 삭제 또는 재작성), `tests/unit/test_remove_exposure_migration.py`(head 단언).
 - 문서: `server/docs/architecture.md`의 "재료 저장 경계" 절.
@@ -516,6 +503,92 @@ down_revision `0022_user_profile_restrictions`
   머지할 때 그 마이그레이션은 이 설계로 대체한다. 담당자와의 조율은 별도로 한다.
 - `tests/unit/test_remove_exposure_migration.py`: head 단언.
 
+### 2.7 FoodRecommendation: 추천 재편
+
+**대상 테이블:** `food_recommendations`, `food_recommendation_tries`(신규), `suggestions`(삭제)
+
+**마이그레이션:** 파일 `20261030_1600_food_recommendations.py`, revision `0024_food_recommendations`,
+down_revision `0023_ingredient_restrictions`
+
+#### 목표 스키마
+
+새 파일 `app/models/food_recommendation_enums.py`에 enum 세 개를 정의한다. 이미 값이 있는 집합은 값을 유지하고 멤버 이름만 대문자로 하며,
+새로 만드는 집합은 멤버 이름과 값이 같은 대문자 문자열이다.
+
+| enum | 멤버 = 값 |
+|---|---|
+| `FoodRecommendationStatus` | `PENDING="pending"`, `SAVED="saved"`, `DISMISSED="dismissed"`, `TRIED="tried"` |
+| `FoodRecommendationDismissReason` | `RESTRICTION` `DISLIKE` `NOT_FIT` `TOO_MUCH_PREPARATION` `INGREDIENT_HARD_TO_GET` `ALREADY_TRIED` |
+| `FoodRecommendationFeedback` | `HELPFUL="helpful"`, `NOT_HELPFUL="not_helpful"`, `NOT_SURE="not_sure"` |
+
+- `TRIED`는 기존 상태 집합에 더하는 값이라 같은 enum 안에서 대소문자를 섞지 않도록 소문자 값 `"tried"`로 한다.
+- 이전 `DismissReason`과의 대응(참고용, 데이터는 이관하지 않음): `restriction_conflict` → `RESTRICTION`, `disliked_food_or_form` → `DISLIKE`,
+  `food_preferences` → `NOT_FIT`, `too_much_preparation` → `TOO_MUCH_PREPARATION`, `ingredient_unavailable` → `INGREDIENT_HARD_TO_GET`,
+  `already_tried` → `ALREADY_TRIED`.
+
+`food_recommendations` (모델 `FoodRecommendation`, 파일 `app/models/food_recommendation.py`)
+
+| 컬럼 | 타입 | 제약 |
+|---|---|---|
+| `id` | BigInteger | PK, `Identity()` |
+| `user_id` | BigInteger | NOT NULL, FK → `users.id`, index (변경 없음) |
+| `origin_food_id` | BigInteger | NOT NULL, FK → `meal_foods.id`, index. 추천의 근거가 된 음식 (기존 `food_id`) |
+| `what_to_try` | Text | NOT NULL (변경 없음) |
+| `why_this_may_help` | Text | NOT NULL (변경 없음) |
+| `serving_tip` | Text | NULL (변경 없음) |
+| `ingredients` | JSON 문자열 목록 (Postgres는 JSONB) | NOT NULL. LLM이 반환한 문자열 목록을 그대로 저장한다 |
+| `cooking_method` | VARCHAR(30) | NOT NULL. `MealCookingMethod` |
+| `causes` | Text | NOT NULL. 식후 리뷰에서 참고한 특성(아이가 어려워한 원인)을 LLM이 서술한 문장 |
+| `status` | VARCHAR(20) | NOT NULL, 기본값 `pending`. `FoodRecommendationStatus` |
+| `dismiss_reasons` | JSON 목록 (Postgres는 JSONB) | NOT NULL, 기본값 `[]`. 원소는 `FoodRecommendationDismissReason` |
+| `saved_at` | DateTime(timezone=True) | NULL (변경 없음) |
+| `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL (`updated_at`은 새로 추가) |
+
+- 삭제하는 컬럼: `meal_id`, `ingredient_id`, `food_snapshot`. 식사는 `origin_food_id`의 음식(`meal_foods.meal_id`)에서 얻는다.
+- `ingredients`는 카탈로그(`ingredients` 테이블)를 참조하지 않는다. 추천 기록은 카탈로그가 바뀌어도 그대로 남는다.
+- `causes`는 참고한 리뷰 특성을 서술한 문장이고, `why_this_may_help`는 그 시도가 도움이 될 이유를 서술한 문장이다.
+- `status`가 `TRIED`인 추천은 `food_recommendation_tries`에 행이 있어야 한다. 두 정보는 중복이며 일관성은 서비스가 지킨다.
+- 삭제하는 `CheckConstraint`: `ck_suggestions_id_positive`, `ck_suggestions_status`, `ck_suggestions_saved_at`,
+  `ck_suggestions_what_to_try`, `ck_suggestions_why_this_may_help`. 값 규칙은 앱이 검증한다.
+
+`food_recommendation_tries` (모델 `FoodRecommendationTry`, 파일 `app/models/food_recommendation_try.py`)
+
+| 컬럼 | 타입 | 제약 |
+|---|---|---|
+| `id` | BigInteger | PK, `Identity()` |
+| `food_recommendation_id` | BigInteger | NOT NULL, FK → `food_recommendations.id` |
+| `food_id` | BigInteger | NOT NULL, FK → `meal_foods.id`. 추천을 시도한 식사의 음식 |
+| `feedback` | VARCHAR(20) | NULL. `FoodRecommendationFeedback` |
+| `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL |
+
+- UNIQUE(`food_recommendation_id`, `food_id`), 이름 `uq_food_recommendation_tries_pair`.
+- 삭제하는 모델: `UserSuggestion`(`user_suggestion.py`), `SuggestionMealLink`(`suggestion_meal_link.py`).
+
+#### 이관 규칙
+
+- 기존 데이터는 이관하지 않는다. 2.3이 `suggestions`의 행을 이미 삭제하고 `suggestion_meal_links`를 삭제하므로 새 테이블은 빈 상태다.
+- upgrade: `suggestions`를 삭제하고 `food_recommendations`, `food_recommendation_tries`를 만든다.
+- downgrade: 두 새 테이블을 삭제하고 옛 구조의 `suggestions`를 빈 상태로 다시 만든다. 데이터는 복구되지 않는다.
+
+#### 깨지는 지점
+
+- 모델 이름과 파일이 바뀐다: `UserSuggestion` → `FoodRecommendation`, `SuggestionMealLink` → `FoodRecommendationTry`.
+  - `app/models/__init__.py`, `app/features/auth/queries.py`(`delete_user_owned_rows`)
+  - `app/features/suggestions/`의 `dto.py`, `router.py`, `service.py`, `validation.py`, `workflow/prompts.py`, `workflow/schemas.py`, `workflow/state.py`
+  - `app/features/meals/`의 `dto.py`, `present.py`, `queries.py`, `service.py`(추천 연결 처리)
+- **API가 바뀐다.**
+  - `SuggestionResponse`에서 `meal_id`, `ingredient_id`, `food_snapshot`이 사라지고 `food_id`는 `origin_food_id`가 된다.
+    `ingredients`, `cooking_method`, `causes`가 추가되고 `status`에 `tried`가 더해진다.
+  - `SuggestionTarget`의 `ingredient_id`가 사라져 추천은 음식 단위로만 만든다.
+  - `dismiss_reasons`의 값이 새 `FoodRecommendationDismissReason`으로 바뀐다.
+  - LLM 초안(`SuggestionDraft`)에 `cooking_method`와 `causes`가 추가되고, 기존 `used_ingredients`가 `ingredients`로 저장된다.
+  - 클라이언트: `client/src/data/dto/suggestionDto.ts`, `types/suggestionRecord.ts`, `features/suggestions/`,
+    `features/meal-checkin/hooks/useMealSuggestions.ts`, `rules/recommendationPresentation.ts`, `util/strings.ts`와 추천 응답을 쓰는 화면.
+- **`origin_food_id`와 `food_id`는 `meal_foods`를 CASCADE로 참조한다.** 음식이 삭제되면 그 음식에서 나온 추천과 시도 기록도 함께 삭제된다.
+  식사를 수정할 때 음식을 지웠다가 다시 만들면 저장한 추천이 사라지므로, 식사 수정은 기존 음식을 id로 찾아 갱신해야 한다.
+- 테스트: `tests/helpers/suggestions.py`, `tests/integration/test_api_contract_edges.py`, `test_auth.py`, `test_contract_api.py`,
+  `test_meals_write.py`, `test_suggestion_workflow.py`, `tests/unit/test_suggestion_validation.py`, head 단언.
+
 ## 3. 진행 상태
 
 (작성 예정)
@@ -547,6 +620,11 @@ down_revision `0022_user_profile_restrictions`
 - PRD 밖 제한 5개(`gluten-casein-free` `no-added-sugar` `low-fructose` `low-sodium` `ketogenic`)는 판정 데이터에서 제외한다.
 - `Ingredient.id`는 서버 자동 증가이고, `korean_name`과 `english_name`은 둘 다 NULL을 허용하되 하나는 반드시 있어야 한다
   (`CHECK`). 컬럼의 NULL 여부를 정하는 구조 제약은 값 규칙이 아니므로 `CHECK`로 둔다.
+- 추천(`UserSuggestion` → `FoodRecommendation`)은 음식 단위이고 `origin_food_id`로 근거 음식을 가리킨다. `food_snapshot`은 없앤다.
+  `what_to_try`, `why_this_may_help`, `serving_tip`은 유지하고 `ingredients`, `cooking_method`, `causes`를 더한다.
+  `cooking_method`는 NULL을 허용하지 않고, `ingredients`는 LLM이 반환한 문자열 목록을 그대로 저장한다.
+- 이미 값이 있는 enum 집합은 현행 값을 유지하고 멤버 이름만 대문자로 한다. 새로 만드는 집합은 이름과 값을 같은 대문자로 한다.
+- 추천의 `TRIED` 상태와 시도 기록(`food_recommendation_tries`)은 중복 정보이며 일관성은 서비스가 지킨다.
 
 ## 5. 후속 작업 (이번 범위 밖)
 

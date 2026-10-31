@@ -430,6 +430,92 @@ revision `0022_user_profile_restrictions`, down_revision `0021_consent_kind_enum
 - 테스트: `tests/integration/test_onboarding.py`, `test_onboarding_recovery.py`, `tests/fixtures/onboarding.py`,
   `tests/unit/test_remove_exposure_migration.py`(head 단언).
 
+### 2.6 Ingredient: 이름 컬럼과 제한 판정
+
+**대상 테이블:** `ingredients`(컬럼 변경), `ingredient_restrictions`(신규)
+
+**마이그레이션:** 파일 `20261030_1500_ingredient_restrictions.py`, revision `0023_ingredient_restrictions`,
+down_revision `0022_user_profile_restrictions`
+
+`ingredients`는 추천용 공용 카탈로그이고 식사 기록의 재료(`meal_food_ingredients`)와 참조하지 않는다 (2.3).
+`ingredient_restrictions`는 이 카탈로그의 재료가 아이의 제한에 걸리는지를 저장한다.
+
+#### 목표 스키마
+
+새 파일 `app/models/ingredient_enums.py`에 enum 두 개를 정의한다.
+
+`RestrictionType`: 프로필의 제한 값을 category와 함께 점으로 구분한 경로 문자열이다 (19개). 멤버 이름은 점 대신 `_`를 쓴다.
+알러지와 채식의 `EGGS`처럼 값이 겹치는 경우를 category로 구분한다. 프로필 값에서 `f"{category}.{값}"`으로 만든다.
+
+| category | 값 |
+|---|---|
+| `ALLERGY` (9) | `PEANUTS` `TREE_NUTS` `MILK_DAIRY` `EGGS` `SOY` `WHEAT` `FISH` `SHELLFISH` `SESAME` (`NONE`은 제외) |
+| `VEGETARIAN` (7) | `DAIRY` `EGGS` `SEAFOOD` `POULTRY` `RED_MEAT` `LEGUMES_SOY` `NUTS_SEEDS` |
+| `DIETARY_APPROACH` (3) | `GLUTEN_FREE` `CASEIN_FREE` `LACTOSE_FREE` |
+
+예: `ALLERGY_EGGS = "ALLERGY.EGGS"`, `VEGETARIAN_EGGS = "VEGETARIAN.EGGS"`, `DIETARY_APPROACH_GLUTEN_FREE = "DIETARY_APPROACH.GLUTEN_FREE"`
+
+`RestrictionDegree`: 재료가 제한에 걸리는 정도. 순서가 있는 척도다. 섭취량이나 증상의 심각도가 아니다.
+
+| 멤버 = 값 | 뜻 |
+|---|---|
+| `NEVER="NEVER"` | 제한에 걸리지 않음 |
+| `DEPENDS_ON_PRODUCT="DEPENDS_ON_PRODUCT"` | 제품 배합에 따라 걸릴 수 있음 |
+| `ALWAYS="ALWAYS"` | 제한에 항상 걸림 |
+
+`ingredients` (모델 `Ingredient`)
+
+| 컬럼 | 타입 | 제약 |
+|---|---|---|
+| `id` | BigInteger | PK, `Identity()` (서버 자동 증가). 기존 최대 id 다음부터 시작 |
+| `korean_name` | String | NULL 허용, UNIQUE. 기존 `name`의 이름 변경 |
+| `english_name` | String | NULL 허용. 유니크가 아님 (영어 이름이 겹치는 재료가 있다) |
+| `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL |
+
+- `CHECK (korean_name IS NOT NULL OR english_name IS NOT NULL)`: 두 이름 중 하나는 반드시 있다. 이름: `ck_ingredients_name_present`.
+- 삭제하는 제약: `ck_ingredients_id_positive`, `ck_ingredients_name`. 유니크 제약 `uq_ingredients_name`은 `uq_ingredients_korean_name`으로 바꾼다.
+
+`ingredient_restrictions` (모델 `IngredientRestriction`)
+
+| 컬럼 | 타입 | 제약 |
+|---|---|---|
+| `id` | BigInteger | PK, `Identity()` |
+| `ingredient_id` | BigInteger | NOT NULL, FK → `ingredients.id` |
+| `restriction_type` | VARCHAR(40) | NOT NULL. `RestrictionType` |
+| `degree` | VARCHAR(20) | NOT NULL. `RestrictionDegree` |
+| `created_at`, `updated_at` | DateTime(timezone=True) | NOT NULL |
+
+- UNIQUE(`ingredient_id`, `restriction_type`), 이름 `uq_ingredient_restrictions_pair`.
+- 인덱스 (`restriction_type`, `degree`): 제한별 조회용.
+
+#### 저장 규칙과 추천 후보
+
+- 판정이 끝난 쌍은 `NEVER`도 포함해 모두 저장한다. **행이 없으면 아직 판정하지 않은 것**이다. 판정이 없는 쌍은 안전하게 취급해
+  그 제한을 가진 아이의 후보에서 제외한다.
+- 추천 후보는 아이의 제한마다 `degree = NEVER`인 행이 있는 재료다. 제한이 없는 아이는 전체 재료가 후보다.
+  아이의 제한은 프로필에서 만든다: `allergy_restrictions`(`NONE` 제외), `vegetarian_restrictions`, `dietary_approaches`.
+  알러지와 식이 제한에 `NEVER`만 허용할지의 정책은 suggestions 묶음에서 정한다.
+
+#### 이관 규칙
+
+- `ingredients`의 기존 행과 id는 유지한다. `korean_name`에는 기존 `name`이 들어가고 `english_name`은 NULL이다.
+- `ingredient_restrictions`는 빈 상태로 만든다. 판정 데이터의 적재는 이 문서의 범위 밖이다 (`team_project/ingredient_data`의 담당).
+- `ingredients.id`는 현재 최대 id + 1부터 자동 증가하도록 시퀀스를 맞춘다.
+- downgrade: `ingredient_restrictions`를 삭제하고 `ingredients`를 이전 구조로 되돌린다(`id` 자동 증가 해제, `korean_name` → `name`,
+  삭제한 `CHECK` 복원). `english_name`은 삭제되며 복구되지 않는다.
+
+#### 깨지는 지점
+
+- `Ingredient.name`이 `korean_name`으로 바뀌고 NULL을 허용한다: `app/features/ingredients/`의 `service.py`, `queries.py`, `router.py`.
+  API 응답의 이름 필드를 바꿀지는 ingredients 담당이 정한다.
+- 새 모델 `IngredientRestriction`은 `app/models/__init__.py`에 등록한다.
+- 제한 id 어휘가 바뀐다(`RestrictionId` → `RestrictionType`): `app/features/suggestions/ingredients.py`, `mock_profile.py`,
+  `workflow/state.py`, `mock_ingredients.json`, `docs/food-ingredient-restriction-ids.md`와 관련 테스트.
+  카탈로그를 JSON에서 DB로 옮기고 후보를 조회하는 코드는 suggestions 묶음에서 정한다.
+- `feat/ingredient-db` 브랜치(`restrictions`, `ingredient_restrictions` 테이블, `eng_name` 컬럼, `0015_ingredient_restrictions`)와 겹친다.
+  머지할 때 그 마이그레이션은 이 설계로 대체한다. 담당자와의 조율은 별도로 한다.
+- `tests/unit/test_remove_exposure_migration.py`: head 단언.
+
 ## 3. 진행 상태
 
 (작성 예정)
@@ -454,9 +540,24 @@ revision `0022_user_profile_restrictions`, down_revision `0021_consent_kind_enum
 - 2.5는 기존 프로필 데이터를 이관하지 않고 삭제한다.
 - `difficulty_reasons`는 category를 점으로 구분한 경로 값(`TEXTURE.HARDNESS.HARD`)의 평탄한 `StrEnum` 목록이다.
   값의 기준은 PRD이며, category를 별도로 저장하지 않는다.
+- 재료의 제한 판정(`ingredient_restrictions`)은 확정된 쌍을 `NEVER` 포함해 모두 저장하고, 행이 없으면 미판정으로 본다.
+  행이 없는 쌍을 "해당 없음"으로 취급하면 판정되지 않은 재료가 조용히 통과하기 때문이다.
+- 제한은 `RestrictionType` 경로 값(`ALLERGY.EGGS`, `VEGETARIAN.EGGS`)으로 저장한다. 알러지의 달걀과 채식의 달걀은 판정 기준이
+  다를 수 있어 구분한다. 판정 정도 컬럼은 `degree`이며 `NEVER < DEPENDS_ON_PRODUCT < ALWAYS`의 순서가 있다.
+- PRD 밖 제한 5개(`gluten-casein-free` `no-added-sugar` `low-fructose` `low-sodium` `ketogenic`)는 판정 데이터에서 제외한다.
+- `Ingredient.id`는 서버 자동 증가이고, `korean_name`과 `english_name`은 둘 다 NULL을 허용하되 하나는 반드시 있어야 한다
+  (`CHECK`). 컬럼의 NULL 여부를 정하는 구조 제약은 값 규칙이 아니므로 `CHECK`로 둔다.
 
 ## 5. 후속 작업 (이번 범위 밖)
 
 - 클라이언트에만 있고 PRD에 없는 난이도 항목을 삭제한다: `tasteIntensity`(`mild` `strong`), `shape`(`consistent` `varied`
   `notSure` `note`), `visibility`(`visible` `hidden` `mixed`), `tasteType`의 `other`. 서버의 `DifficultyReason`에는 포함하지 않았다.
   이 문서는 개편이 끝나면 삭제되므로, 삭제 전에 이슈로 옮긴다.
+- 재료 판정 데이터(`team_project/ingredient_data`, 데이터 담당):
+  - 채식 7개(`VEGETARIAN.*`)의 판정이 없다. 채식 제한을 가진 아이는 판정이 생기기 전까지 후보 재료가 없다.
+  - 데이터의 제한 id를 `RestrictionType` 값으로 옮긴다 (예: `peanut` → `ALLERGY.PEANUTS`). 17개 중 12개만 쓰고
+    PRD 밖 5개는 제외한다.
+  - 조류 알의 `egg` 판정 기준이 일관되지 않다: 거위알·오리알 `ALWAYS`, 메추리알 보류, 청둥오리알 `DEPENDS_ON_PRODUCT`.
+    청둥오리알은 제품 차이가 아니라 종 범위 문제라서 정책(`restriction-policy.md`)의 `DEPENDS_ON_PRODUCT` 정의와 맞지 않는다.
+  - `english_name_conflict` 플래그가 모두 `false`인데 영어 이름이 겹치는 재료가 11종(26개) 있다.
+  - 기존 mock 카탈로그의 이름(`간장`, `밀가루`)이 판정 데이터에 같은 이름으로 없다.

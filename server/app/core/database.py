@@ -1,5 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
 # Changed: server bootstraping
+# AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim
+# Changed: 문자열 목록 컬럼 타입 StringList 추가
 
 """DB 엔진 / 세션 / 선언적 베이스.
 
@@ -9,6 +11,8 @@ SQLAlchemy 2.0 async 사용.
 
 from collections.abc import AsyncGenerator
 
+from sqlalchemy import JSON
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -36,6 +40,11 @@ AsyncSessionLocal = async_sessionmaker(
 
 class Base(DeclarativeBase):
     """모든 ORM 모델의 베이스. Alembic 의 target_metadata 가 이 metadata 를 본다."""
+
+
+# 문자열 목록 컬럼 타입. Postgres 에서는 JSONB, 그 외(테스트용 SQLite)에서는 JSON 으로 저장한다.
+# 원소 검증은 DB 가 아니라 DTO 와 서비스가 맡는다.
+StringList = JSON().with_variant(JSONB, "postgresql")
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:

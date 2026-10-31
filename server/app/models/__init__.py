@@ -19,17 +19,16 @@ from app.models.ingredient import Ingredient
 from app.models.meal import Meal
 from app.models.meal_food import MealFood
 from app.models.meal_food_ingredient import MealFoodIngredient
-from app.models.safe_food import SafeFood
 from app.models.user import User
 from app.models.user_consent import UserConsent
 from app.models.user_email_change_attempt import UserEmailChangeAttempt
 from app.models.user_profile import UserProfile
-from app.models.user_profile_choice import UserProfileChoice
+from app.models.user_profile_safe_food import UserProfileSafeFood
 from app.models.user_suggestion import UserSuggestion
 
 __all__ = ["User"]
 
-__all__ += ["UserProfile", "UserProfileChoice", "SafeFood", "UserConsent"]
+__all__ += ["UserProfile", "UserProfileSafeFood", "UserConsent"]
 __all__ += ["UserEmailChangeAttempt"]
 __all__ += ["Ingredient"]
 __all__ += ["MealFoodIngredient"]

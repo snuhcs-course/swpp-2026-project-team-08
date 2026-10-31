@@ -191,6 +191,47 @@ revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
 |---|---|
 | `EatingOutcome` | `EATEN="eaten"`, `TASTED="tasted"`, `UNTOUCHED="untouched"`, `UNCLEAR="unclear"` |
 
+새 enum `DifficultyReason`을 `app/models/difficulty_enums.py`에 정의한다. 음식이나 재료를 먹기 어려웠던 이유이며, 값의 기준은 PRD의
+"Reason Category and Mapped Values"다.
+
+- 평탄한 `StrEnum` 하나이고, 값은 category를 점(`.`)으로 구분한 경로 문자열이다. `TEXTURE`는 하위 category가 하나 더 있다.
+  - 형식: `<CATEGORY>.<VALUE>`, `TEXTURE.<SUBCATEGORY>.<VALUE>`, `NOT_SURE`(값 없는 category)
+  - 멤버 이름은 점 대신 `_`를 쓴다. 예: `TEXTURE_HARDNESS_HARD = "TEXTURE.HARDNESS.HARD"`, `COLOR_OTHER = "COLOR.OTHER"`
+- category와 하위 category는 값을 `.`으로 나눠 얻는다. 별도 매핑 표를 두지 않는다.
+- `meal_foods`와 `meal_food_ingredients`의 `difficulty_reasons`는 이 값의 JSON 목록이다. 입력 순서를 유지하고 중복은 불가다.
+  DB 제약 없이 DTO가 `list[DifficultyReason]`으로 검증한다.
+- `outcome`처럼 값이 서버와 클라이언트에서 같아야 하므로 값 목록을 바꾸면 양쪽을 같은 변경에서 고친다.
+
+| category | 값 (총 77개) |
+|---|---|
+| `SMELL` (13) | `FRUIT` `HERB` `MUSHROOM` `TOASTED` `VANILLA` `DAIRY` `MEATY` `SULFUR` `SEA` `FERMENTED` `SPICE` `MINT` `SMOKE` |
+| `TASTE` (5) | `SWEET` `SALTY` `SOUR` `BITTER` `SAVORY` |
+| `ARRANGEMENT` (4) | `EVEN` `UNEVEN` `CLUSTERED` `OTHER` |
+| `PIECE_SIZE` (3) | `FINE` `SMALL` `LARGE` |
+| `TEMPERATURE` (4) | `HOT` `WARM` `COOL` `ROOM` |
+| `COLOR` (6) | `RED` `YELLOW` `GREEN` `BROWN` `WHITE` `OTHER` |
+| `NOT_SURE` (1) | 값 없이 `NOT_SURE` 하나 |
+| `TEXTURE` (41) | 아래 표 |
+
+`TEXTURE`의 하위 category와 값 (PRD의 Texture 표):
+
+| 하위 category | 값 |
+|---|---|
+| `HARDNESS` | `SOFT` `FIRM` `HARD` |
+| `BREAKING` | `CRUMBLY` `CRUNCHY` `BRITTLE` |
+| `CHEWING` | `TENDER` `CHEWY` `TOUGH` |
+| `STICKINESS` | `NON_STICKY` `STICKY` `GUMMY` |
+| `SPRINGINESS` | `SPRINGY` `RUBBERY` |
+| `THICKNESS` | `FLUID` `THIN` `THICK` `VISCOUS` |
+| `MOISTURE` | `DRY` `MOIST` `JUICY` `WET` |
+| `OILINESS` | `NON_FATTY` `OILY` `GREASY` |
+| `GRAININESS` | `GRAINY` `GRITTY` `SANDY` `MEALY` `POWDERY` |
+| `DENSITY` | `DENSE` `AIRY` |
+| `SURFACE` | `SMOOTH` `ROUGH` `BUMPY` `CRUSTY` `FUZZY` |
+| `STRUCTURE` | `FIBROUS` `FLESHY` `LAYERED` `SPONGY` |
+
+- 값 이름(`VANILLA`, `SULFUR` 등)은 PRD에 영문 라벨이 없는 항목이 있어 기존 클라이언트의 값 이름(`vanilla`, `sulfur`)을 대문자로 옮긴 것이다.
+
 `meal_foods` (모델 `MealFood`, `app/models/meal_food.py`)
 
 | 컬럼 | 타입 | 제약 |
@@ -256,6 +297,9 @@ revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
     식사를 수정할 때 기존 음식·재료를 식별하는 방법은 meals 담당이 정한다.
   - 식후 리뷰의 `food_results`·`ingredient_results` 구조는 `MealFood`·`MealFoodIngredient`의 `outcome`, `difficulty_reasons`로 대체된다.
     `food_snapshot` 응답 필드는 사라진다. 요청·응답의 `difficulties` 필드 이름은 이 문서에서 정하지 않는다.
+  - 난이도 사유의 형식이 `{category, subcategory, value}` 객체 목록에서 `DifficultyReason` 문자열 목록으로 바뀐다.
+    서버의 `Difficulty` DTO(`meals/dto.py`)는 삭제하고 `list[DifficultyReason]`으로 대체한다. 클라이언트의 `Difficulty` 타입,
+    `difficultyOptions`, `textureQuestions`와 `reviewDto.ts`의 변환도 새 값에 맞춘다.
   - 클라이언트에서 `difficulties`, `food_snapshot`, `food_id`, `ingredient_id`를 쓰는 파일: `client/src/data/api/mealLogApi.ts`,
     `mealReviewApi.ts`, `data/dto/mealDto.ts`, `reviewDto.ts`, `suggestionDto.ts`, `data/storage/afterMealReviewStorage.ts`,
     `features/after-meal-review/`, `features/meal-log/rules.ts`, `rules/recommendationSafety.ts`, `types/afterMealReview.ts`,
@@ -408,3 +452,11 @@ revision `0022_user_profile_restrictions`, down_revision `0021_consent_kind_enum
   원소는 컬럼별 `StrEnum` 값만 허용한다. 알러지는 모르는 상태 없이 입력을 필수로 하고, 직접 입력(`custom_name`)과
   선호 음식(`family_foods`), 안전 음식 순서(`position`)는 없앤다. 온보딩 임시저장은 클라이언트에만 둔다.
 - 2.5는 기존 프로필 데이터를 이관하지 않고 삭제한다.
+- `difficulty_reasons`는 category를 점으로 구분한 경로 값(`TEXTURE.HARDNESS.HARD`)의 평탄한 `StrEnum` 목록이다.
+  값의 기준은 PRD이며, category를 별도로 저장하지 않는다.
+
+## 5. 후속 작업 (이번 범위 밖)
+
+- 클라이언트에만 있고 PRD에 없는 난이도 항목을 삭제한다: `tasteIntensity`(`mild` `strong`), `shape`(`consistent` `varied`
+  `notSure` `note`), `visibility`(`visible` `hidden` `mixed`), `tasteType`의 `other`. 서버의 `DifficultyReason`에는 포함하지 않았다.
+  이 문서는 개편이 끝나면 삭제되므로, 삭제 전에 이슈로 옮긴다.

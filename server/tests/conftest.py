@@ -1,6 +1,9 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
 # Changed: server bootstraping
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung
+# Changed: 공통 테스트 환경 통합 및 DB 세션 fixture 분리
+
 """테스트 픽스처: 인메모리 SQLite + get_session 오버라이드.
 
 실제 Postgres 없이 라우터~서비스~모델 전 계층을 검증한다.
@@ -22,17 +25,22 @@ from app.main import app
 
 
 @pytest_asyncio.fixture
-async def client() -> AsyncGenerator[AsyncClient, None]:
+async def session_factory() -> AsyncGenerator[async_sessionmaker[AsyncSession], None]:
     engine = create_async_engine(
         "sqlite+aiosqlite:///:memory:",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        yield async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    finally:
+        await engine.dispose()
 
-    session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
+@pytest_asyncio.fixture
+async def api_client(session_factory) -> AsyncGenerator[AsyncClient, None]:
     async def _override_get_session() -> AsyncGenerator[AsyncSession, None]:
         async with session_factory() as session:
             try:
@@ -52,7 +60,6 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
     finally:
         app.dependency_overrides.clear()
         app.dependency_overrides.update(previous_overrides)
-        await engine.dispose()
 
 
 @pytest.fixture(autouse=True)

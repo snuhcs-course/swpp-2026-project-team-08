@@ -1,4 +1,5 @@
-<!-- AI-generated with GPT-6, 2026-10-31, reviewed by Haechan Jung -->
+<!-- AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung -->
+<!-- Changed: 테스트 문서 정리 및 docs 경로 반영 -->
 
 # coverage.py 커버리지
 
@@ -21,7 +22,7 @@ uv run python scripts/coverage_report.py
 
 ### 측정 순서
 
-1. [실행 스크립트](../scripts/coverage_report.py)가 coverage.py를 켜고 pytest로 전체 테스트를 실행한다.
+1. [실행 스크립트](../../scripts/coverage_report.py)가 coverage.py를 켜고 pytest로 전체 테스트를 실행한다.
 2. coverage.py가 실행된 줄과 분기 이동을 기록하고, 측정 대상 코드와 비교해 실행 비율을 계산한다.
    제외 범위를 뺀 측정 대상 중 테스트가 불러오지 않은 파일도 미실행으로 포함한다.
 3. 스크립트가 결과를 계층별로 합산해 `layers.html`을 만들고, 테스트 출력은 `tests.log`에 저장한다.
@@ -36,7 +37,7 @@ uv run python scripts/coverage_report.py
 
 ## 측정 설정
 
-설정 파일은 [pyproject.toml](../pyproject.toml)의 `tool.coverage` 항목이다.
+설정 파일은 [pyproject.toml](../../pyproject.toml)의 `tool.coverage` 항목이다.
 실행 스크립트가 `server/`에서 coverage.py를 호출하면 이 설정을 읽는다.
 개발 의존성은 `coverage>=7.17.0`이며 설치 버전은 `uv.lock`으로 고정한다.
 

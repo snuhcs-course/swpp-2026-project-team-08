@@ -1,4 +1,6 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung
+# Changed: HTTP 테스트 fixture 이름을 api_client로 명확화
 """Shared ingredient catalog and name-based recovery."""
 
 from pathlib import Path
@@ -41,17 +43,17 @@ async def seed_catalog() -> None:
 
 
 @pytest.mark.asyncio
-async def test_shared_catalog_and_name_fallback(client: AsyncClient) -> None:
+async def test_shared_catalog_and_name_fallback(api_client: AsyncClient) -> None:
     await seed_catalog()
-    assert (await client.get("/api/v1/ingredients")).status_code == 401
-    headers = await auth_headers(client, "first@example.com")
-    other_headers = await auth_headers(client, "second@example.com")
+    assert (await api_client.get("/api/v1/ingredients")).status_code == 401
+    headers = await auth_headers(api_client, "first@example.com")
+    other_headers = await auth_headers(api_client, "second@example.com")
     expected = [{"id": "182", "name": "당근"}, {"id": "212", "name": "감자"}]
-    assert (await client.get("/api/v1/ingredients", headers=headers)).json() == expected
-    assert (await client.get("/api/v1/ingredients", headers=other_headers)).json() == expected
+    assert (await api_client.get("/api/v1/ingredients", headers=headers)).json() == expected
+    assert (await api_client.get("/api/v1/ingredients", headers=other_headers)).json() == expected
 
     for ingredient_id in ("212", None, "999", "182", "bad-id", "9" * 5000):
-        response = await client.post(
+        response = await api_client.post(
             "/api/v1/ingredients/resolve",
             headers=headers,
             json={"id": ingredient_id, "name": "  감자  "},
@@ -61,17 +63,17 @@ async def test_shared_catalog_and_name_fallback(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_unknown_or_blank_ingredient_name_is_rejected(client: AsyncClient) -> None:
+async def test_unknown_or_blank_ingredient_name_is_rejected(api_client: AsyncClient) -> None:
     await seed_catalog()
-    headers = await auth_headers(client, "parent@example.com")
-    unknown = await client.post(
+    headers = await auth_headers(api_client, "parent@example.com")
+    unknown = await api_client.post(
         "/api/v1/ingredients/resolve",
         headers=headers,
         json={"id": "212", "name": "없는 재료"},
     )
     assert unknown.status_code == 404
     assert unknown.json()["error_code"] == "INGREDIENT_NOT_FOUND"
-    blank = await client.post(
+    blank = await api_client.post(
         "/api/v1/ingredients/resolve",
         headers=headers,
         json={"id": None, "name": "   "},

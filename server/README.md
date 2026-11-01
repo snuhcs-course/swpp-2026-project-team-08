@@ -1,4 +1,5 @@
-<!-- AI-generated with GPT-6, 2026-10-31, reviewed by Haechan Jung -->
+<!-- AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung -->
+<!-- Changed: 커버리지 안내 및 테스트 문서 경로 반영 -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim -->
 <!-- Changed: server bootstraping -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim -->
@@ -65,7 +66,7 @@ DB 스키마 변경에 사용하는 명령은 다음과 같다. 모두 `server/`
 | 작업 | 명령어 |
 |---|---|
 | 테스트 | `uv run pytest` |
-| 전체 테스트 커버리지 | `uv run python scripts/coverage_report.py` ([범위·Layer 기준](tests/test.md#커버리지-측정)) |
+| 전체 테스트 커버리지 | `uv run python scripts/coverage_report.py` ([범위·Layer 기준](tests/docs/test.md#커버리지-측정)) |
 | 린트 | `uv run ruff check .` |
 | 포맷 검사 | `uv run ruff format --check .` |
 
@@ -93,7 +94,7 @@ docker build -t nurturebites-server .
 ## 문서
 
 - [작업 규칙](AGENTS.md)
-- [테스트 분류와 커버리지](tests/test.md)
+- [테스트 분류와 커버리지](tests/docs/test.md)
 - [프로젝트 아키텍처](docs/architecture.md)
 - [배포와 운영](docs/deploy.md)
 - [추천 정책](docs/recommendation-policy.md)

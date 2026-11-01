@@ -1,6 +1,8 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
 # Changed: server bootstraping
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung
+# Changed: 커버리지 설정 및 기본 테스트에서 예시 제외
 [project]
 name = "server"
 version = "0.1.0"
@@ -43,9 +45,9 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 pythonpath = ["."]
-testpaths = ["tests"]
+testpaths = ["tests/unit", "tests/integration"]
+norecursedirs = ["examples"]
 
-# AI-generated with GPT-6, 2026-10-31, reviewed by Haechan Jung
 [tool.coverage.run]
 branch = true
 source = ["app"]

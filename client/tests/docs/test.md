@@ -17,7 +17,7 @@
 | `integration/` | 실제 React·Provider·Query·API·저장소를 연결한 통합 테스트 |
 | `examples/unit/`·`examples/integration/` | 테스트 작성 시 따르는 레이어별·시나리오별 예시 |
 | `e2e/` | 기기·시뮬레이터에서 실행하는 사용자 흐름과 기기 검사 시나리오 |
-| `test.md`·`c8.md` | 테스트 작성 기준과 커버리지 측정 기준 |
+| `docs/test.md`·`docs/c8.md` | 테스트 작성 기준과 커버리지 측정 기준 |
 | `helpers/` | TS 로더, React 실행 환경, 외부 모듈 대체 등 공통 실행 도구 |
 | `fixtures/` | 테스트 입력과 서버 응답을 만드는 공통 데이터 factory |
 
@@ -38,7 +38,7 @@
 
 ### 검증
 
-변경한 테스트를 개별 실행한 뒤 전체 테스트·린트·타입 검사를 수행한다. 실행 명령은 [README](../README.md#검증), 커버리지 해석은 [c8](c8.md)을 따른다.
+변경한 테스트를 개별 실행한 뒤 전체 테스트·린트·타입 검사를 수행한다. 실행 명령은 [README](../../README.md#검증), 커버리지 해석은 [c8](c8.md)을 따른다.
 실패·건너뜀·미실행 항목은 이유와 함께 기록하고, 기기 입력·권한·화면 배치는 실제 기기나 시뮬레이터에서 확인한다.
 
 예시는 `client/`에서 다음 명령으로 실행한다.
@@ -79,21 +79,21 @@ Unit은 다음 예시에서 대상 레이어의 작성 방식을 따른다.
 
 | 레이어 | 참고 예시 | 확인할 작성 방식 |
 |---|---|---|
-| UI and routes | [ui.test.cjs](examples/unit/ui.test.cjs) | RN 요소 대체, props·접근성·콜백 검사 |
-| Hooks and Providers | [hook.test.cjs](examples/unit/hook.test.cjs) | 초안 fixture, 실제 React 상태 변경, 날짜 경계값 |
-| Data — API·network·DTO | [auth-api.test.cjs](examples/unit/auth-api.test.cjs) | 인증 fixture, 요청 함수 mock, 정상·잘못된 응답·실패 사례 표 |
-| Data — storage·device | [storage.test.cjs](examples/unit/storage.test.cjs) | 세션 fixture, 기기 저장소 대체, 저장 결과·정리 |
-| Data — Query | [query.test.cjs](examples/unit/query.test.cjs) | API mock, 실제 Query 오류 상태·조회 비활성 조건 |
-| Rules | [rules.test.cjs](examples/unit/rules.test.cjs) | 빈 문자열·공백·중복 입력과 기대값을 사례 표로 구성 |
-| Utilities | [utilities.test.cjs](examples/unit/utilities.test.cjs) | 범위의 양 끝·바로 바깥 값·잘못된 형식과 타입 |
+| UI and routes | [ui.test.cjs](../examples/unit/ui.test.cjs) | RN 요소 대체, props·접근성·콜백 검사 |
+| Hooks and Providers | [hook.test.cjs](../examples/unit/hook.test.cjs) | 초안 fixture, 실제 React 상태 변경, 날짜 경계값 |
+| Data — API·network·DTO | [auth-api.test.cjs](../examples/unit/auth-api.test.cjs) | 인증 fixture, 요청 함수 mock, 정상·잘못된 응답·실패 사례 표 |
+| Data — storage·device | [storage.test.cjs](../examples/unit/storage.test.cjs) | 세션 fixture, 기기 저장소 대체, 저장 결과·정리 |
+| Data — Query | [query.test.cjs](../examples/unit/query.test.cjs) | API mock, 실제 Query 오류 상태·조회 비활성 조건 |
+| Rules | [rules.test.cjs](../examples/unit/rules.test.cjs) | 빈 문자열·공백·중복 입력과 기대값을 사례 표로 구성 |
+| Utilities | [utilities.test.cjs](../examples/unit/utilities.test.cjs) | 범위의 양 끝·바로 바깥 값·잘못된 형식과 타입 |
 
 Integration은 연결할 책임과 시나리오에 맞는 예시를 따른다. 실제 앱 모듈을 연결하고 HTTP·기기 경계를 대체한다.
 
 | 시나리오 | 참고 예시 | 확인할 작성 방식 |
 |---|---|---|
-| 조회와 응답 변환 | [meal-query.test.cjs](examples/integration/meal-query.test.cjs) | 서버 응답 fixture → HTTP mock → 실제 API·Query 결과 |
-| 저장·실패·재시도·재조회 복구 | [meal-saving.test.cjs](examples/integration/meal-saving.test.cjs) | 공통 준비 helper와 4개 독립 테스트, 실제 목록·초안·저장 결과 검증 |
-| 계정 전환과 늦은 응답 | [account-switch.test.cjs](examples/integration/account-switch.test.cjs) | 인증·프로필 fixture, 실제 Provider, `deferred`로 응답 순서 제어 |
+| 조회와 응답 변환 | [meal-query.test.cjs](../examples/integration/meal-query.test.cjs) | 서버 응답 fixture → HTTP mock → 실제 API·Query 결과 |
+| 저장·실패·재시도·재조회 복구 | [meal-saving.test.cjs](../examples/integration/meal-saving.test.cjs) | 공통 준비 helper와 4개 독립 테스트, 실제 목록·초안·저장 결과 검증 |
+| 계정 전환과 늦은 응답 | [account-switch.test.cjs](../examples/integration/account-switch.test.cjs) | 인증·프로필 fixture, 실제 Provider, `deferred`로 응답 순서 제어 |
 
 예시는 작성 구조의 기준이다. 실제 기능별 요구사항은 테스트 작성 시에 검증한다.
 

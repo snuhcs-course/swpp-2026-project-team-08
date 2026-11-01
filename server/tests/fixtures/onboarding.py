@@ -1,6 +1,8 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with GPT-6, 2026-10-28, reviewed by Seoyeon Heo
 # Changed: Align onboarding fixture with supported food preferences
+# AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+# Changed: 온보딩 요청을 restrictions 목록과 대문자 enum 값으로 변경
 """Valid onboarding request; each call returns independent nested values."""
 
 
@@ -8,31 +10,20 @@ def request_body() -> dict:
     return {
         "profile": {
             "child_name": "아이",
-            "age_group": "4-5",
-            "safety": {
-                "allergies": {
-                    "status": "specified",
-                    "items": [{"code": "egg", "custom_name": None}],
+            "age_group": "AGE_4_5",
+            "restrictions": ["ALLERGY.EGGS", "VEGETARIAN.DAIRY"],
+            "safe_foods": [
+                {
+                    "name": "감자",
+                    "preparation": "푹 삶기",
+                    "presentation_note": "작게 잘라 제공",
                 },
-                "restrictions": {"status": "none", "items": []},
-            },
-            "food_preferences": {
-                "family_foods": [{"code": "eggs", "custom_name": None}],
-            },
-            "safe_foods": {
-                "status": "listed",
-                "items": [
-                    {
-                        "name": "감자",
-                        "preparation": "푹 삶기",
-                        "presentation_note": "작게 잘라 제공",
-                    }
-                ],
-            },
+                {"name": "쌀밥", "preparation": "질게 짓기", "presentation_note": None},
+            ],
         },
         "consents": [
-            {"kind": "account_privacy", "granted": True},
-            {"kind": "photo_analysis", "granted": True},
-            {"kind": "ai_training", "granted": False},
+            {"kind": "ACCOUNT_PRIVACY", "granted": True},
+            {"kind": "PHOTO_ANALYSIS", "granted": True},
+            {"kind": "AI_TRAINING", "granted": False},
         ],
     }

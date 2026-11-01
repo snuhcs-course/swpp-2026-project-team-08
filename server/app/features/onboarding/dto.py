@@ -1,82 +1,31 @@
-"""Onboarding request and response shapes."""
+# AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+# Changed: 온보딩 요청·응답을 restrictions 목록과 StrEnum 기반으로 재편
+
+"""온보딩 요청과 응답의 모양.
+
+값 검증은 DB 제약이 아니라 이 DTO 가 맡는다. enum 값은 모두 대문자이며,
+허용 값 밖의 값과 정의하지 않은 필드는 422 로 거절된다.
+"""
 
 from datetime import datetime
-from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, StrictBool, field_validator, model_validator
 
-AgeGroup = Literal["under-2", "2-3", "4-5", "6-8", "9-12", "13-plus"]
-ConsentKind = Literal["account_privacy", "photo_analysis", "ai_training"]
+from app.models.restriction_enums import RestrictionType
+from app.models.user_consent_enums import UserConsentKind
+from app.models.user_profile_enums import AgeGroup
 
 
 class StrictDto(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class ProfileChoiceDto(StrictDto):
-    code: str | None
-    custom_name: str | None
-
-    @model_validator(mode="after")
-    def one_value(self) -> "ProfileChoiceDto":
-        if (self.code is None) == (self.custom_name is None):
-            raise ValueError("Exactly one of code or custom_name is required")
-        if self.code is not None and (not self.code.strip() or self.code == "none"):
-            raise ValueError("code must be a selected option")
-        if self.custom_name is not None and not self.custom_name.strip():
-            raise ValueError("custom_name must not be blank")
-        return self
-
-
-class SafetyChoiceDto(StrictDto):
-    status: Literal["unknown", "none_known", "specified"]
-    items: list[ProfileChoiceDto]
-
-    @model_validator(mode="after")
-    def consistent_items(self) -> "SafetyChoiceDto":
-        if (self.status == "specified") != bool(self.items):
-            raise ValueError("items must match status")
-        return self
-
-
-class RestrictionChoiceDto(StrictDto):
-    status: Literal["none", "specified"]
-    items: list[ProfileChoiceDto]
-
-    @model_validator(mode="after")
-    def consistent_items(self) -> "RestrictionChoiceDto":
-        if (self.status == "specified") != bool(self.items):
-            raise ValueError("items must match status")
-        return self
-
-
-class SafetyDto(StrictDto):
-    allergies: SafetyChoiceDto
-    restrictions: RestrictionChoiceDto
-
-
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-class FoodPreferencesDto(StrictDto):
-    family_foods: list[ProfileChoiceDto] = Field(min_length=1)
-
-
 class SafeFoodWriteDto(StrictDto):
-    id: str | None = None
+    """안전 음식 입력. id 는 서버가 발급하므로 받지 않는다."""
+
     name: str
     preparation: str
     presentation_note: str | None
-
-    @field_validator("id")
-    @classmethod
-    def valid_id(cls, value: str | None) -> str | None:
-        if value is not None and (
-            not value.isascii()
-            or not value.isdecimal()
-            or value.startswith("0")
-            or int(value) > 2**63 - 1
-        ):
-            raise ValueError("id must be a positive BIGINT string")
-        return value
 
     @field_validator("name", "preparation")
     @classmethod
@@ -86,27 +35,11 @@ class SafeFoodWriteDto(StrictDto):
         return value
 
 
-class SafeFoodsWriteDto(StrictDto):
-    status: Literal["none", "listed"]
-    items: list[SafeFoodWriteDto]
-
-    @model_validator(mode="after")
-    def consistent_items(self) -> "SafeFoodsWriteDto":
-        if (self.status == "listed") != bool(self.items):
-            raise ValueError("items must match status")
-        ids = [item.id for item in self.items if item.id is not None]
-        if len(ids) != len(set(ids)):
-            raise ValueError("safe food IDs must be unique")
-        return self
-
-
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 class ProfileWriteDto(StrictDto):
     child_name: str
     age_group: AgeGroup
-    safety: SafetyDto
-    food_preferences: FoodPreferencesDto
-    safe_foods: SafeFoodsWriteDto
+    restrictions: list[RestrictionType]
+    safe_foods: list[SafeFoodWriteDto]
 
     @field_validator("child_name")
     @classmethod
@@ -115,22 +48,22 @@ class ProfileWriteDto(StrictDto):
             raise ValueError("child_name must not be blank")
         return value
 
-    @model_validator(mode="after")
-    def no_duplicate_choices(self) -> "ProfileWriteDto":
-        groups = [
-            self.safety.allergies.items,
-            self.safety.restrictions.items,
-            self.food_preferences.family_foods,
-        ]
-        for items in groups:
-            values = [(item.code, item.custom_name) for item in items]
-            if len(values) != len(set(values)):
-                raise ValueError("duplicate profile choices")
-        return self
+    @field_validator("restrictions")
+    @classmethod
+    def valid_restrictions(cls, value: list[RestrictionType]) -> list[RestrictionType]:
+        if len(value) != len(set(value)):
+            raise ValueError("duplicate restrictions")
+        allergies = [item for item in value if item.category == "ALLERGY"]
+        # 알러지를 모르는 상태는 없다. 없으면 ALLERGY.NONE 을 보낸다.
+        if not allergies:
+            raise ValueError("an allergy answer is required; use ALLERGY.NONE for none")
+        if RestrictionType.ALLERGY_NONE in value and len(allergies) > 1:
+            raise ValueError("ALLERGY.NONE cannot be combined with other allergies")
+        return value
 
 
 class ConsentWriteDto(StrictDto):
-    kind: ConsentKind
+    kind: UserConsentKind
     granted: StrictBool
 
 
@@ -141,13 +74,12 @@ class OnboardingWriteRequest(StrictDto):
     @model_validator(mode="after")
     def required_consents(self) -> "OnboardingWriteRequest":
         by_kind = {item.kind: item.granted for item in self.consents}
-        if len(self.consents) != 3 or set(by_kind) != {
-            "account_privacy",
-            "photo_analysis",
-            "ai_training",
-        }:
-            raise ValueError("all three consent kinds are required once")
-        if not by_kind["account_privacy"] or not by_kind["photo_analysis"]:
+        if len(self.consents) != len(UserConsentKind) or set(by_kind) != set(UserConsentKind):
+            raise ValueError("all consent kinds are required once")
+        if (
+            not by_kind[UserConsentKind.ACCOUNT_PRIVACY]
+            or not by_kind[UserConsentKind.PHOTO_ANALYSIS]
+        ):
             raise ValueError("required consents must be granted")
         return self
 
@@ -156,21 +88,19 @@ class SafeFoodDto(SafeFoodWriteDto):
     id: str
 
 
-class SafeFoodsDto(StrictDto):
-    status: Literal["none", "listed"]
-    items: list[SafeFoodDto]
-
-
-class UserProfileDto(ProfileWriteDto):
+class UserProfileDto(StrictDto):
     user_id: str
-    safe_foods: SafeFoodsDto
+    child_name: str
+    age_group: AgeGroup
+    restrictions: list[RestrictionType]
+    safe_foods: list[SafeFoodDto]
     updated_at: datetime
 
 
 class UserConsentDto(StrictDto):
     id: str
     user_id: str
-    kind: ConsentKind
+    kind: UserConsentKind
     granted: bool
     document_version: str
     recorded_at: datetime

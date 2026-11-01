@@ -136,7 +136,36 @@
 - 사용자 직접 입력(`custom_name`)은 더 받지 않는다. 선택지에 있는 값만 보낼 수 있다.
 - `food_preferences.family_foods`(선호 음식)는 없어진다.
 - `age_group`은 2절의 `AgeGroup` 값을 쓴다.
-- `safe_foods`는 `status` 없이 항목 목록만 보낸다. 빈 목록이 "없음"이다. 항목의 순서는 보존되지 않는다.
+- `safe_foods`는 `status` 없이 항목 목록만 보낸다. 빈 목록이 "없음"이다.
+  - 항목은 `name`, `preparation`, `presentation_note`만 보낸다. **`id`는 보내지 않는다.** 서버가 저장할 때마다 목록 전체를
+    요청 순서대로 교체하고, 응답에 새로 발급한 `id`를 돌려준다. `id`가 저장마다 바뀔 수 있으므로 클라이언트는 이 `id`를 서버에
+    다시 보내거나 영구 키로 쓰지 않는다. 서버가 순서를 따로 보장하는 필드는 없지만 저장한 순서(`id` 순)로 돌려준다.
+  - 다른 사용자의 안전 음식을 가리키는 요청이 없어졌으므로 에러 코드 `SAFE_FOOD_NOT_FOUND`는 더 이상 나오지 않는다.
+
+### 요청과 응답
+
+```json
+// PUT /api/v1/onboarding 요청
+{
+  "profile": {
+    "child_name": "아이",
+    "age_group": "AGE_4_5",
+    "restrictions": ["ALLERGY.EGGS", "VEGETARIAN.DAIRY"],
+    "safe_foods": [{ "name": "감자", "preparation": "푹 삶기", "presentation_note": null }]
+  },
+  "consents": [
+    { "kind": "ACCOUNT_PRIVACY", "granted": true },
+    { "kind": "PHOTO_ANALYSIS", "granted": true },
+    { "kind": "AI_TRAINING", "granted": false }
+  ]
+}
+```
+
+- 응답(`GET`, `PUT` 공통)의 `profile`은 같은 필드에 `user_id`, `updated_at`을 더하고, `safe_foods`의 각 항목에 서버가 발급한 `id`가 들어간다.
+  프로필이 아직 없으면 `"profile": null`이다.
+- `consents`는 세 종류가 모두 한 번씩 있어야 하고 `ACCOUNT_PRIVACY`, `PHOTO_ANALYSIS`는 `granted`가 `true`여야 한다.
+- 이전 필드(`safety`, `food_preferences`, 안전 음식의 `status`와 `id`)를 보내면 **422 `VALIDATION_ERROR`**로 거절된다.
+  허용 값 밖의 enum 값(소문자 옛 값 포함)이나 위 규칙을 어긴 값도 같은 에러이며, 이때 저장은 일어나지 않는다.
 
 ### `RestrictionType` 값 (20개)
 

@@ -42,3 +42,8 @@ class RestrictionType(StrEnum):
     DIETARY_APPROACH_GLUTEN_FREE = "DIETARY_APPROACH.GLUTEN_FREE"
     DIETARY_APPROACH_CASEIN_FREE = "DIETARY_APPROACH.CASEIN_FREE"
     DIETARY_APPROACH_LACTOSE_FREE = "DIETARY_APPROACH.LACTOSE_FREE"
+
+    @property
+    def category(self) -> str:
+        """제한의 category (`ALLERGY`, `VEGETARIAN`, `DIETARY_APPROACH`). 값의 점 앞부분이다."""
+        return self.value.partition(".")[0]

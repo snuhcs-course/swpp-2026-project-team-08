@@ -8,8 +8,8 @@
 
 <!-- AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo -->
 <!-- Changed: 식사 재료와 공용 카탈로그의 저장 경계 -->
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim -->
-<!-- Changed: 모델 값 검증 규칙과 StrEnum 규칙 추가 -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim -->
+<!-- Changed: 모델 값 검증·StrEnum 규칙 추가, 재료 저장 경계 갱신, ingredients 기능 제거 -->
 
 # server — 아키텍처
 
@@ -238,14 +238,17 @@ async def list_meal_logs(
 
 ## 재료 저장 경계
 
-`Ingredient`(`ingredients`)는 공용 재료 카탈로그다. 식사 저장·수정은 이 테이블에 쓰지 않는다.
-`MealIngredient`(`meal_ingredients`)는 meal check-in에서 기록한 재료를 저장한다.
-카탈로그에서 선택한 재료도 별도 행으로 복사하고, 자유 입력 재료는 이 테이블에만 생성한다.
-식사와 추천 연결의 재료 FK는 `meal_ingredients`를 참조한다. 식후 결과와 추천 스냅샷은 기록한 ID를 유지한다.
-공용 카탈로그 API는 `Ingredient`만 조회한다. LLM의 제한 검증은 현재 별도 JSON 카탈로그를 사용한다.
+재료를 다루는 테이블은 목적이 다른 두 계열이며 서로 참조하지 않는다.
 
-`0017_meal_ingredients`는 기존 재료 ID와 이름을 복사하고 식사 관련 FK를 옮긴다.
-기존 `ingredients`의 행은 보존한다. 사용자 재료를 공용 카탈로그로 합치지 않도록 자동 downgrade는 제공하지 않는다.
+- `Ingredient`(`ingredients`)는 추천용 공용 카탈로그다. 음식 추천 때 아이의 제한을 지킨 재료 목록을 LLM에게 주기 위해
+  존재하며, 재료마다 제한에 걸리는 정도를 `IngredientRestriction`(`ingredient_restrictions`)에 저장한다.
+  식사 저장·수정은 이 테이블을 읽거나 쓰지 않고, 클라이언트가 직접 조회하는 API도 없다.
+- `MealFoodIngredient`(`meal_food_ingredients`)는 사용자가 식사 안의 음식에 들어갔다고 기록한 재료를 입력한 그대로
+  저장한다. 같은 이름도 음식마다 별도 행이며 카탈로그를 참조하지 않는다. 식후 리뷰 결과(`outcome`, `difficulty_reasons`)도
+  이 행이 갖는다.
+
+추천(`FoodRecommendation`)의 `ingredients`는 LLM이 반환한 재료 이름을 그대로 저장한 문자열 목록이며, 어느 테이블도 참조하지 않는다.
+LLM의 제한 검증은 현재 별도 JSON 카탈로그를 사용한다.
 
 ## 3. 의존성 방향과 기능 간 규칙
 
@@ -475,7 +478,6 @@ async def sign_up(...): ...
 |---|---|
 | `auth` | 회원가입·로그인·토큰 재발급, 사용자 정보 관리 |
 | `onboarding` | 온보딩·자녀 프로필 관리 |
-| `ingredients` | 재료 카탈로그 조회 |
 | `meals` | 식사·음식·식후 기록 관리 |
 | `suggestions` | 추천 생성·조회·관리 |
 

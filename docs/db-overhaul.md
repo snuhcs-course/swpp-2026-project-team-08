@@ -514,8 +514,8 @@ down_revision `0022_user_profile_restrictions`
 
 #### 깨지는 지점
 
-- `Ingredient.name`이 `korean_name`으로 바뀌고 NULL을 허용한다: `app/features/ingredients/`의 `service.py`, `queries.py`, `router.py`.
-  API 응답의 이름 필드를 바꿀지는 ingredients 담당이 정한다.
+- `Ingredient.name`이 `korean_name`으로 바뀌고 NULL을 허용한다. 이 컬럼을 쓰던 재료 카탈로그 API(`app/features/ingredients/`)는
+  클라이언트가 쓰지 않게 되어 기능 전체를 삭제했다 (`GET /ingredients`, `POST /ingredients/resolve`).
 - 새 모델 `IngredientRestriction`은 `app/models/__init__.py`에 등록한다.
 - 제한 id 어휘가 바뀐다(`RestrictionId` → `RestrictionType`): `app/features/suggestions/ingredients.py`, `mock_profile.py`,
   `workflow/state.py`, `mock_ingredients.json`, `docs/food-ingredient-restriction-ids.md`와 관련 테스트.
@@ -663,6 +663,9 @@ down_revision `0023_ingredient_restrictions`
   `what_to_try`, `why_this_may_help`, `serving_tip`은 유지하고 `ingredients`, `cooking_method`, `causes`를 더한다.
   `cooking_method`는 NULL을 허용하지 않고, `ingredients`는 LLM이 반환한 문자열 목록을 그대로 저장한다.
 - 추천의 `TRIED` 상태와 시도 기록(`food_recommendation_tries`)은 중복 정보이며 일관성은 서비스가 지킨다.
+- 재료 카탈로그 API(`GET /ingredients`, `POST /ingredients/resolve`)는 삭제한다. 식사 재료가 카탈로그를 참조하지 않아 클라이언트가
+  쓸 이유가 사라졌고, `resolve`는 호출하는 곳이 없었다. 추천이 카탈로그를 읽는 코드는 `suggestions` 안에 둔다.
+- 서버 기능을 하나씩 새 ORM에 맞추면서 그 기능의 클라이언트도 함께 고친다. 클라이언트 변경 내용은 `api_integration.md`에 기록한다.
 
 ## 5. 후속 작업 (이번 범위 밖)
 

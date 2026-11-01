@@ -1,1 +1,0 @@
-"""Shared ingredient catalog."""

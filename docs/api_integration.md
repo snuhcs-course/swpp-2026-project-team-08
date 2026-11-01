@@ -24,6 +24,12 @@
   캐시는 서버 데이터와 맞지 않으므로 앱을 업데이트할 때 지워야 한다. 모든 사용자가 아이 프로필을 다시 입력해야 한다.
   (동의 기록, 계정 정보는 유지된다.)
 - 서버는 허용 값 밖의 값을 422로 거절한다.
+- **재료 카탈로그 API가 삭제된다.** `GET /api/v1/ingredients`와 `POST /api/v1/ingredients/resolve`는 더 이상 없다.
+  식사의 재료는 사용자가 입력한 이름을 그대로 저장하므로 카탈로그에서 고르거나 id를 맞출 필요가 없다. 카탈로그는 서버 내부에서
+  추천에만 쓴다. **클라이언트 반영 완료**: `src/data/api/ingredientCatalogApi.ts`를 삭제하고 `checkinReferenceQueries.ts`에서
+  `useIngredientCatalog`와 `checkinReferenceKeys.ingredients`를 제거했다(쓰는 화면이 없어 동작은 바뀌지 않는다).
+  `Ingredient` 타입과 `toIngredient`는 식사 DTO가 쓰므로 남겼다. 식사 저장·수정에서 재료가 카탈로그에 없다는
+  에러(`INGREDIENT_NOT_FOUND`)도 더 이상 나오지 않는다(`meals` 단계에서 서버 코드 정리).
 
 ## 2. enum 값 변환표
 
@@ -166,4 +172,3 @@
 | 식사 수정 시 음식·재료 식별 | id가 서버 발급이라 수정 요청에서 기존 항목을 가리키는 방법이 필요하다. 음식을 지우고 다시 만들면 그 음식에서 나온 추천도 함께 삭제된다. |
 | 난이도 사유 필드 이름 | 서버 저장 컬럼은 `difficulty_reasons`다. 요청·응답의 필드 이름은 정하지 않았다. |
 | 추천 목록 조회 필터 | 목록 조회의 `status` 쿼리 값(`saved`, `all`)을 대문자로 맞춘다. `ALL`은 enum 값이 아니라 조회용 값이다. |
-| 재료 카탈로그 응답 | `ingredients`의 이름이 `korean_name`, `english_name`으로 나뉜다. 응답의 이름 필드를 어떻게 줄지 정하지 않았다. |

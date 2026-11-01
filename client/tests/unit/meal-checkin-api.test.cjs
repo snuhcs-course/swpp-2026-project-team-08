@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 삭제된 재료 카탈로그 API 검증 제거
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -12,8 +14,6 @@ mockModules((name) => {
 });
 
 const { prepareMealWrite, writeMeal } = require('../../src/data/api/mealWriteApi.ts');
-
-const { listIngredientCatalog } = require('../../src/data/api/ingredientCatalogApi.ts');
 
 const { listSavedSuggestions } = require('../../src/data/api/savedSuggestionListApi.ts');
 
@@ -52,12 +52,7 @@ test('meal write maps draft food IDs and saved suggestion links to the new contr
   assert.equal(ingredientLink.body.suggestion_links[0].ingredient_id, '212');
 });
 
-test('ingredient catalog and saved suggestions use the new collection routes', async () => {
-  request = async (path) => {
-    assert.equal(path, '/api/v1/ingredients');
-    return [{ id: '212', name: 'Potato' }];
-  };
-  assert.deepEqual(await listIngredientCatalog(), [{ id: '212', name: 'Potato' }]);
+test('saved suggestions and meal details use the new collection routes', async () => {
   request = async (path) => {
     assert.equal(path, '/api/v1/suggestions');
     return [{

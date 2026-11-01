@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
 // Changed: Ingredient interactions and native icon boundary for CI
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 삭제된 재료 카탈로그 훅의 모의 항목 제거
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -46,7 +48,6 @@ Module._load = function (name, ...args) {
   if (name === 'react-native-safe-area-context') return { SafeAreaView: 'SafeAreaView' };
   if (name === '../../../components/AppHeader') return { AppHeader: () => null, topBarStyles: { content: {} } };
   if (name.endsWith('/checkinReferenceQueries')) return {
-    useIngredientCatalog: () => { throw new Error('Free-text input must not load the catalog'); },
     useMealsForCheckin: () => emptyQuery,
     useSavedSuggestionsForCheckin: () => emptyQuery,
   };

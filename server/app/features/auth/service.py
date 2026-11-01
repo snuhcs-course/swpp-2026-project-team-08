@@ -2,6 +2,8 @@
 # Changed: server bootstraping
 # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 # Changed: 마이페이지·자녀 프로필 추가
+# AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+# Changed: 이메일 변경 시도를 UserEmailChangeAttempt 테이블로 저장
 
 """인증/회원 서비스 (유스케이스) + 이 기능의 에러.
 
@@ -30,7 +32,7 @@ from app.features.auth.security import (
     hash_password,
     verify_password,
 )
-from app.models import User
+from app.models import User, UserEmailChangeAttempt
 
 _EMAIL_CODE_TTL = timedelta(minutes=10)
 
@@ -141,32 +143,33 @@ class AuthService:
         if existing is not None and existing.id != user.id:
             raise EmailAlreadyExistsError(email)
         code = issue_email_code()
-        user.pending_email = email
-        user.email_change_code_hash = hash_password(code)
-        user.email_change_expires_at = now_kst() + _EMAIL_CODE_TTL
+        # 사용자당 진행 중인 시도는 하나다. 새 요청은 기존 시도를 덮어쓴다.
+        attempt = await self._session.get(UserEmailChangeAttempt, user.id)
+        if attempt is None:
+            attempt = UserEmailChangeAttempt(user_id=user.id)
+            self._session.add(attempt)
+        attempt.new_email = email
+        attempt.code_hash = hash_password(code)
+        attempt.expires_at = now_kst() + _EMAIL_CODE_TTL
         await self._session.flush()
         return code
 
     async def confirm_email_change(self, user: User, *, email: str, code: str) -> User:
-        pending = user.pending_email
-        hashed = user.email_change_code_hash
-        expires = user.email_change_expires_at
+        attempt = await self._session.get(UserEmailChangeAttempt, user.id)
         if (
-            pending is None
-            or hashed is None
-            or expires is None
-            or pending.lower() != email.lower()
-            or now_kst() > _as_kst(expires)
-            or not verify_password(code, hashed)
+            attempt is None
+            or attempt.new_email.lower() != email.lower()
+            or now_kst() > _as_kst(attempt.expires_at)
+            or not verify_password(code, attempt.code_hash)
         ):
             raise InvalidEmailCodeError()
+        pending = attempt.new_email
         existing = await self._find_by_email(pending)
         if existing is not None and existing.id != user.id:
             raise EmailAlreadyExistsError(pending)
         user.email = pending
-        user.pending_email = None
-        user.email_change_code_hash = None
-        user.email_change_expires_at = None
+        # 확인에 성공한 시도는 삭제한다.
+        await self._session.delete(attempt)
         await self._session.flush()
         await self._session.refresh(user)
         return user

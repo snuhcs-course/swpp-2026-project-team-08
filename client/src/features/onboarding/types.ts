@@ -2,11 +2,13 @@
 // Changed: 제외된 온보딩 질문 타입 제거
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: family 단계를 vegetarian 으로 변경, 안심 음식 없음 플래그 제거
 
 import type { ChildProfile } from '../../types/profile';
 
 export const steps = [
-  'account', 'consent', 'child', 'allergies', 'restrictions', 'family',
+  'account', 'consent', 'child', 'allergies', 'restrictions', 'vegetarian',
   'safe-foods', 'review',
 ] as const;
 
@@ -21,8 +23,8 @@ export function emptyDraft(): OnboardingDraft {
   return {
     step: 'account', caregiverName: '', caregiverEmail: '', childName: '', ageRange: '',
     consent: { accountPrivacy: false, photoAnalysis: false, aiTraining: false },
-    allergies: [], restrictions: [], familyFoods: [],
-    safeFoods: [], noSafeFoods: false,
+    allergies: [], restrictions: [], vegetarianRestrictions: [],
+    safeFoods: [],
     safeFoodInput: { name: '', preparation: '', presentationNote: '' },
   };
 }

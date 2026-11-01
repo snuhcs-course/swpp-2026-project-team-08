@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 채식 제한이 있으면 제한 없음으로 보지 않음
 
 import type { AfterMealReview } from '../types/afterMealReview';
 import type { SavedSuggestion } from '../types/home';
@@ -8,7 +10,8 @@ import type { ChildProfile } from '../types/profile';
 
 export function hasVerifiedNoRestrictions(profile: ChildProfile): boolean {
   return profile.allergies.length === 1 && profile.allergies[0] === 'none'
-    && profile.restrictions.length === 1 && profile.restrictions[0] === 'none';
+    && profile.restrictions.length === 1 && profile.restrictions[0] === 'none'
+    && profile.vegetarianRestrictions.length === 0;
 }
 
 export function hasKnownFoodForm(food: FoodItem): boolean {

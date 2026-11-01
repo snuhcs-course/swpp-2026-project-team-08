@@ -2,6 +2,8 @@
 // Changed: Validate retained recommendation evidence and current server suggestion retry
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Tests legacy evidence compatibility and current API generation; only native storage and HTTP are mocked.
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 프로필 fixture 를 채식 제한 필드와 서버 연령 값으로 변경
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('./helpers/register.cjs');
@@ -15,9 +17,9 @@ const { generateMealSuggestions } = require('../src/data/api/mealSuggestionApi.t
 
 function fixtures(childId = 'child-d') {
   const profile = {
-    id: childId, caregiverName: 'Parent', caregiverEmail: 'parent@example.com', childName: 'Child', ageRange: 'toddler',
+    id: childId, caregiverName: 'Parent', caregiverEmail: 'parent@example.com', childName: 'Child', ageRange: 'AGE_2_3',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
-    allergies: ['none'], restrictions: ['none'], familyFoods: [], safeFoods: [], noSafeFoods: true,
+    allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: [], safeFoods: [],
     updatedAt: '2026-10-08T00:00:00.000Z',
   };
   const draft = newDraft(childId);

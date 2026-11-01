@@ -1,25 +1,24 @@
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 안심 음식 없음 선택 제거
 
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
-import { ChoiceRow } from '../../../components/ChoiceRow';
 import { FormField } from '../../../components/FormField';
 import { copyFor } from '../../../util/strings';
 import type { Language, SafeFood } from '../../../types/profile';
 import type { OnboardingDraft } from '../types';
 import { styles } from './onboardingStyles';
 
-export function SafeFoodsStepView({ language, childName, safeFoods, noSafeFoods, input, canAdd, onToggleNone, onRemove, onInputChange, onAdd }: {
+export function SafeFoodsStepView({ language, childName, safeFoods, input, canAdd, onRemove, onInputChange, onAdd }: {
   language: Language;
   childName?: string;
   safeFoods: SafeFood[];
-  noSafeFoods: boolean;
   input: OnboardingDraft['safeFoodInput'];
   canAdd: boolean;
-  onToggleNone: () => void;
   onRemove: (id: string) => void;
   onInputChange: (field: keyof OnboardingDraft['safeFoodInput'], value: string) => void;
   onAdd: () => void;
@@ -46,12 +45,6 @@ export function SafeFoodsStepView({ language, childName, safeFoods, noSafeFoods,
           <Text style={styles.safeFoodAddPlus}>+</Text>
         </Pressable>
       </View>
-      {!open && (
-        <>
-          <ChoiceRow label={s.onboarding.noSafeFoods} selected={noSafeFoods} multiple onPress={onToggleNone} />
-          <Text style={styles.multipleHint}>{s.onboarding.multipleInput}</Text>
-        </>
-      )}
       {safeFoods.map((food) => (
         <Pressable
           key={food.id}

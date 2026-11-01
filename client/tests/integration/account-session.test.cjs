@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 프로필 기대값을 채식 제한 필드로 변경
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -50,7 +52,7 @@ test('sign-in loads the authenticated profile and persists the confirmed session
   await waitFor(() => harness.current.profile.status === 'ready');
   assert.equal(harness.current.profile.profile.childName, 'Child 1');
   assert.equal(harness.current.profile.profile.caregiverName, 'Parent 1');
-  assert.deepEqual(harness.current.profile.profile.familyFoods, ['eggs']);
+  assert.deepEqual(harness.current.profile.profile.vegetarianRestrictions, ['EGGS']);
   assert.deepEqual(harness.current.profile.profile.consent,
     { accountPrivacy: true, photoAnalysis: true, aiTraining: false });
   assert.equal((await readSession()).user.id, '1');

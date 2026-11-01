@@ -179,6 +179,20 @@
 `no-pork` `no-beef`는 선택지에서 없어진다. 나머지는 위 값으로 옮긴다 (예: `peanut` → `ALLERGY.PEANUTS`, `gluten-free` →
 `DIETARY_APPROACH.GLUTEN_FREE`).
 
+### 클라이언트 반영 상태
+
+**클라이언트 반영 완료.**
+
+- 선택지 id는 서버 값에서 category를 뺀 값이다 (`PEANUTS`, `GLUTEN_FREE`, `DAIRY`, 연령 `AGE_4_5` 등). `src/data/api/onboardingApi.ts`가
+  전송할 때 `ALLERGY.` `DIETARY_APPROACH.` `VEGETARIAN.`을 붙이고 받을 때 뗀다. 응답에 모르는 값이 있으면 오류로 처리한다.
+- 클라이언트 안의 `none`은 서버 값이 아니다. 알러지 `none`은 `ALLERGY.NONE`으로 보내고, 식이 제한 `none`은 보내지 않는다.
+  읽을 때 식이 제한이 비어 있으면 `none`으로 복원한다.
+- `family` 단계는 `vegetarian` 단계(`VEGETARIAN.*`, 프로필 필드 `vegetarianRestrictions`)로 바뀌었고 선택 사항이다.
+  채식 제한이 하나라도 있으면 `hasVerifiedNoRestrictions`는 거짓이다.
+- 안심 음식 단계도 선택 사항이다. `noSafeFoods`는 없어졌고 빈 목록이 "없음"이다. 안심 음식 `id`는 보내지 않는다.
+- 직접 입력(`other`)과 카탈로그 검색, 카탈로그 전용 선택지는 제거했다.
+- 이전 형식의 로컬 초안과 프로필 캐시는 필드 검증에서 걸러져 버려진다.
+
 ## 5. 추천 API
 
 - 추천 응답에서 `meal_id`, `ingredient_id`, `food_snapshot`이 사라지고 `food_id`는 `origin_food_id`가 된다(근거가 된 음식).

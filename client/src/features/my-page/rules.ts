@@ -1,5 +1,7 @@
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 채식 제한 요약으로 변경, 안심 음식 없음 인자 제거
 
 import type { Language, SafeFood } from '../../types/profile';
 import { copyFor, labelFor, type OptionGroup } from '../../util/strings';
@@ -20,12 +22,12 @@ export function safetySummary(allergies: string[], restrictions: string[], langu
   return labels.length ? labels.join(', ') : copyFor(language).myPage.nothing;
 }
 
-export function familySummary(familyFoods: string[], language: Language): string {
-  return optionSummary(familyFoods, 'family', language);
+export function vegetarianSummary(vegetarianRestrictions: string[], language: Language): string {
+  return optionSummary(vegetarianRestrictions, 'vegetarian', language);
 }
 
-export function safeFoodSummary(foods: SafeFood[], noSafeFoods: boolean, language: Language): string {
-  if (noSafeFoods || !foods.length) return copyFor(language).myPage.nothing;
+export function safeFoodSummary(foods: SafeFood[], language: Language): string {
+  if (!foods.length) return copyFor(language).myPage.nothing;
   return foods.map((food) => {
     const detail = [food.preparation, food.presentationNote].filter((value) => value.trim()).join(', ');
     return detail ? `${food.name} (${detail})` : food.name;

@@ -1,28 +1,20 @@
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 서버 restrictions 목록·대문자 enum 계약으로 변환 로직 재작성
+
 import { apiRequest } from '../network/apiClient';
 import { isUserId, type AuthUser } from '../storage/authStorage';
 import type { ChildProfile } from '../../types/profile';
-import { optionsFor, type OptionGroup } from '../../util/strings';
 
-type Choice = { code: string | null; custom_name: string | null };
-type ConsentKind = 'account_privacy' | 'photo_analysis' | 'ai_training';
+type ConsentKind = 'ACCOUNT_PRIVACY' | 'PHOTO_ANALYSIS' | 'AI_TRAINING';
 type Consent = { kind: ConsentKind; granted: boolean };
 
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 type ProfileResponse = {
   user_id: string;
   child_name: string;
   age_group: string;
-  safety: {
-    allergies: { status: string; items: Choice[] };
-    restrictions: { status: string; items: Choice[] };
-  };
-  food_preferences: {
-    family_foods: Choice[];
-  };
-  safe_foods: {
-    status: string;
-    items: { id: string; name: string; preparation: string; presentation_note: string | null }[];
-  };
+  restrictions: string[];
+  safe_foods: { id: string; name: string; preparation: string; presentation_note: string | null }[];
   updated_at: string;
 };
 
@@ -31,16 +23,20 @@ export type OnboardingResponse = {
   consents: (Consent & { id: string; user_id: string; document_version: string; recorded_at: string })[];
 };
 
+// 클라이언트 선택지 id 는 서버 RestrictionType 값에서 category 를 뺀 것과 같다.
+// 서버 값은 `<CATEGORY>.<ID>` 이므로 전송할 때 category 만 붙이고, 받을 때 떼어 낸다.
+const CATEGORY = {
+  allergies: 'ALLERGY',
+  restrictions: 'DIETARY_APPROACH',
+  vegetarian: 'VEGETARIAN',
+} as const;
+type Group = keyof typeof CATEGORY;
+
+const RESTRICTION_PATTERN = /^(ALLERGY|DIETARY_APPROACH|VEGETARIAN)\.[A-Z_]+$/;
+
 const record = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value);
 
-function choiceItems(value: unknown): value is Choice[] {
-  return Array.isArray(value) && value.every((item) => record(item)
-    && ((typeof item.code === 'string' && item.custom_name === null)
-      || (item.code === null && typeof item.custom_name === 'string')));
-}
-
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 function parseResponse(value: unknown): OnboardingResponse {
   if (!record(value) || !Array.isArray(value.consents)) throw new Error('Invalid onboarding response');
   if (!value.consents.every((item: unknown) => record(item) && isUserId(item.id)
@@ -51,72 +47,54 @@ function parseResponse(value: unknown): OnboardingResponse {
   const profile = value.profile;
   if (!record(profile) || !isUserId(profile.user_id) || typeof profile.child_name !== 'string'
     || typeof profile.age_group !== 'string' || typeof profile.updated_at !== 'string'
-    || !record(profile.safety) || !record(profile.food_preferences) || !record(profile.safe_foods)) {
+    || !Array.isArray(profile.restrictions) || !Array.isArray(profile.safe_foods)) {
     throw new Error('Invalid onboarding profile');
   }
-  const allergies = profile.safety.allergies;
-  const restrictions = profile.safety.restrictions;
-  const preferences = profile.food_preferences;
-  const safeFoods = profile.safe_foods;
-  if (!record(allergies) || !choiceItems(allergies.items)
-    || !record(restrictions) || !choiceItems(restrictions.items)
-    || !choiceItems(preferences.family_foods) || !Array.isArray(safeFoods.items)
-    || !safeFoods.items.every((food: unknown) => record(food) && isUserId(food.id)
-      && typeof food.name === 'string' && typeof food.preparation === 'string')) {
+  if (!profile.restrictions.every((item: unknown) => typeof item === 'string' && RESTRICTION_PATTERN.test(item))
+    || !profile.safe_foods.every((food: unknown) => record(food) && isUserId(food.id)
+      && typeof food.name === 'string' && typeof food.preparation === 'string'
+      && (food.presentation_note === null || typeof food.presentation_note === 'string'))) {
     throw new Error('Invalid onboarding profile details');
   }
   return value as OnboardingResponse;
 }
 
-const knownOptions = (groups: OptionGroup[]) => new Set(
-  groups.flatMap((group) => optionsFor(group, 'en').map((option) => option.id)),
-);
-
-function choices(values: string[], groups: OptionGroup[]): Choice[] {
-  const known = knownOptions(groups);
-  return values.filter((value) => value !== 'none').map((value) => known.has(value)
-    ? { code: value, custom_name: null }
-    : { code: null, custom_name: value });
+function toRestrictionTypes(group: Group, ids: string[]): string[] {
+  return ids.filter((id) => id !== 'none').map((id) => `${CATEGORY[group]}.${id}`);
 }
 
-function selected(values: Choice[]): string[] {
-  return values.map((item) => item.code ?? item.custom_name).filter((value): value is string => !!value);
+function fromRestrictionTypes(group: Group, values: string[]): string[] {
+  const prefix = `${CATEGORY[group]}.`;
+  return values.filter((value) => value.startsWith(prefix)).map((value) => value.slice(prefix.length));
 }
 
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// 알레르기는 "없음"도 답이므로 ALLERGY.NONE 으로 보낸다. 나머지 분류는 비어 있으면 보내지 않는다.
 export function toOnboardingWrite(profile: ChildProfile) {
-  const allergies = choices(profile.allergies, ['allergies', 'allergyCatalog']);
-  const restrictions = choices(profile.restrictions, ['restrictions', 'restrictionCatalog']);
+  const allergies = profile.allergies.includes('none')
+    ? ['ALLERGY.NONE'] : toRestrictionTypes('allergies', profile.allergies);
   return {
     profile: {
       child_name: profile.childName,
       age_group: profile.ageRange,
-      safety: {
-        allergies: { status: allergies.length ? 'specified' : 'none_known', items: allergies },
-        restrictions: { status: restrictions.length ? 'specified' : 'none', items: restrictions },
-      },
-      food_preferences: {
-        family_foods: choices(profile.familyFoods, ['family', 'familyCatalog']),
-      },
-      safe_foods: {
-        status: profile.safeFoods.length ? 'listed' : 'none',
-        items: profile.safeFoods.map((food) => ({
-          ...(isUserId(food.id) ? { id: food.id } : {}),
-          name: food.name,
-          preparation: food.preparation,
-          presentation_note: food.presentationNote || null,
-        })),
-      },
+      restrictions: [
+        ...allergies,
+        ...toRestrictionTypes('restrictions', profile.restrictions),
+        ...toRestrictionTypes('vegetarian', profile.vegetarianRestrictions),
+      ],
+      safe_foods: profile.safeFoods.map((food) => ({
+        name: food.name,
+        preparation: food.preparation,
+        presentation_note: food.presentationNote || null,
+      })),
     },
     consents: [
-      { kind: 'account_privacy', granted: profile.consent.accountPrivacy },
-      { kind: 'photo_analysis', granted: profile.consent.photoAnalysis },
-      { kind: 'ai_training', granted: profile.consent.aiTraining },
+      { kind: 'ACCOUNT_PRIVACY', granted: profile.consent.accountPrivacy },
+      { kind: 'PHOTO_ANALYSIS', granted: profile.consent.photoAnalysis },
+      { kind: 'AI_TRAINING', granted: profile.consent.aiTraining },
     ] satisfies Consent[],
   };
 }
 
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 export function fromOnboardingResponse(
   response: OnboardingResponse,
   user: AuthUser,
@@ -125,6 +103,8 @@ export function fromOnboardingResponse(
   if (!source) return null;
   if (source.user_id !== user.id) throw new Error('Onboarding profile belongs to another user');
   const latest = new Map(response.consents.map((item) => [item.kind, item.granted]));
+  const allergies = fromRestrictionTypes('allergies', source.restrictions);
+  const dietary = fromRestrictionTypes('restrictions', source.restrictions);
   return {
     id: source.user_id,
     caregiverName: user.fullName,
@@ -132,20 +112,17 @@ export function fromOnboardingResponse(
     childName: source.child_name,
     ageRange: source.age_group,
     consent: {
-      accountPrivacy: latest.get('account_privacy') ?? false,
-      photoAnalysis: latest.get('photo_analysis') ?? false,
-      aiTraining: latest.get('ai_training') ?? false,
+      accountPrivacy: latest.get('ACCOUNT_PRIVACY') ?? false,
+      photoAnalysis: latest.get('PHOTO_ANALYSIS') ?? false,
+      aiTraining: latest.get('AI_TRAINING') ?? false,
     },
-    allergies: source.safety.allergies.status === 'specified'
-      ? selected(source.safety.allergies.items) : ['none'],
-    restrictions: source.safety.restrictions.status === 'specified'
-      ? selected(source.safety.restrictions.items) : ['none'],
-    familyFoods: selected(source.food_preferences.family_foods),
-    safeFoods: source.safe_foods.items.map((food) => ({
+    allergies: allergies.includes('NONE') ? ['none'] : allergies,
+    restrictions: dietary.length ? dietary : ['none'],
+    vegetarianRestrictions: fromRestrictionTypes('vegetarian', source.restrictions),
+    safeFoods: source.safe_foods.map((food) => ({
       id: food.id, name: food.name, preparation: food.preparation,
       presentationNote: food.presentation_note ?? '',
     })),
-    noSafeFoods: source.safe_foods.status === 'none',
     updatedAt: source.updated_at,
   };
 }

@@ -1,5 +1,7 @@
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 채식 제한 요약·이동으로 변경
 
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
@@ -9,7 +11,7 @@ import { colors } from '../../../util/colors';
 import { useOnboarding } from '../../onboarding/hooks/useOnboarding';
 import type { OnboardingStep } from '../../onboarding/types';
 import { useAccountSession } from '../hooks/useAccountSession';
-import { familySummary, safeFoodSummary, safetySummary } from '../rules';
+import { vegetarianSummary, safeFoodSummary, safetySummary } from '../rules';
 import { ChildProfileView } from './ChildProfileView';
 
 export function ChildProfileScreen() {
@@ -57,8 +59,8 @@ export function ChildProfileScreen() {
       childName={editing ? childName : profile.childName}
       ageRange={editing ? ageRange : profile.ageRange}
       allergies={safetySummary(profile.allergies, profile.restrictions, appProfile.language)}
-      familyFoods={familySummary(profile.familyFoods, appProfile.language)}
-      safeFoods={safeFoodSummary(profile.safeFoods, profile.noSafeFoods, appProfile.language)}
+      vegetarian={vegetarianSummary(profile.vegetarianRestrictions, appProfile.language)}
+      safeFoods={safeFoodSummary(profile.safeFoods, appProfile.language)}
       saving={saving}
       saveError={saveError}
       deleteError={account.deleteError}
@@ -75,7 +77,7 @@ export function ChildProfileScreen() {
       onName={setChildName}
       onAge={setAgeRange}
       onAllergies={() => openOnboarding('allergies')}
-      onFamily={() => openOnboarding('family')}
+      onVegetarian={() => openOnboarding('vegetarian')}
       onSafeFoods={() => openOnboarding('safe-foods')}
       onLogOut={account.onLogOut}
       onDelete={account.onDelete}

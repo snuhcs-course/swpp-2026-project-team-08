@@ -60,13 +60,9 @@ def test_conflicting_restrictions_returns_overlap_sorted():
     assert conflicting_restrictions(milk, restrictions("egg")) == []
 
 
-def test_usable_ingredient_names_filters_candidates():
-    result = usable_ingredient_names(restrictions("peanut"), ["땅콩버터", "carrot", "unknown"])
-    assert result == ["carrot"]  # 제한 재료와 카탈로그에 없는 재료는 빠진다
-
-
-def test_usable_ingredient_names_without_candidates_lists_catalog():
-    names = usable_ingredient_names(restrictions("milk"), [])
+# AI-generated with Claude Sonnet 5.5, 2026-10-23, reviewed by Jaemin Kim
+def test_usable_ingredient_names_excludes_restricted_ingredients():
+    names = usable_ingredient_names(restrictions("milk"))
     assert "rice" in names
     assert "milk" not in names and "cheese" not in names
     assert len(names) == len(set(names))

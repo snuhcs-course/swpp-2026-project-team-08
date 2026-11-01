@@ -132,3 +132,6 @@ The client targets Expo SDK 58. Upgrade validation used Node.js 24.12.0 and npm 
 ## Docs
 
 - [Food ingredient · restriction ids](docs/food-ingredient-restriction-ids.md): 클라이언트와 서버가 공유하는 알러지 · 식이 제한 id
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-26, reviewed by Jaemin Kim -->
+- [Recommendation logic](docs/recommendation-logic.md): 추천을 어떤 데이터로, 어떤 순서와 규칙으로 만드는지
+- [DB schemas](docs/db-schemas.md): 테이블 구성, 테이블 사이의 관계, 이해할 때 유의할 사항

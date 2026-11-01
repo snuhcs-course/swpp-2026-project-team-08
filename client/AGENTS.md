@@ -63,3 +63,6 @@ Expo·EAS·React Native API를 사용하는 코드를 작성하기 전에 다음
 - 화면 변경 시 최초 로딩·빈 상태·재조회·실패를 구분하고, 기존 콘텐츠와 초안이 유지되는지 확인한다.
 - 단계 이동·초안 복원·늦은 응답·빠른 연속 탭에서 잘못된 화면이나 깜빡임이 없는지 실제 실행 환경에서 확인한다.
 - 위 검증과 함께 이 문서의 린트·타입 검사 및 변경에 필요한 테스트를 실행한다.
+
+## Recommendation 관련 변경 시 유의사항
+If the work touches allergy or dietary-restriction ids (`allergies` / `restrictions` in the child profile or the option groups in `src/util/strings.ts`), also read [`docs/food-ingredient-restriction-ids.md`](../docs/food-ingredient-restriction-ids.md). The server defines the same ids (`RestrictionId`), so a change here must be made there in the same change.

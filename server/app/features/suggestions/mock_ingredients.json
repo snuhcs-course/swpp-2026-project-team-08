@@ -1,7 +1,7 @@
 {
   "_meta": {
     "ai_generated": "AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim",
-    "description": "search_available_ingredients 도구가 쓰는 mock 데이터. 재료별로 해당하는 제한 항목(id)을 가진다. restrictions가 빈 배열이면 어떤 제한에도 걸리지 않는 재료다. id는 클라이언트 프로필의 allergies/restrictions 값과 같다."
+    "description": "프롬프트의 쓸 수 있는 재료 목록과 검증이 쓰는 mock 데이터. 재료별로 해당하는 제한 항목(id)을 가진다. restrictions가 빈 배열이면 어떤 제한에도 걸리지 않는 재료다. id는 클라이언트 프로필의 allergies/restrictions 값과 같다."
   },
   "ingredients": [
     { "names": ["peanut", "땅콩"], "restrictions": ["peanut"] },

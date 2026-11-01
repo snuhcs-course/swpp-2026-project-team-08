@@ -507,7 +507,8 @@ down_revision `0022_user_profile_restrictions`
 
 - `ingredients`의 기존 행과 id는 유지한다. `korean_name`에는 기존 `name`이 들어가고 `english_name`은 NULL이다.
 - `ingredient_restrictions`는 빈 상태로 만든다. 판정 데이터의 적재는 이 문서의 범위 밖이다 (`team_project/ingredient_data`의 담당).
-- `ingredients.id`는 현재 최대 id + 1부터 자동 증가하도록 시퀀스를 맞춘다.
+- `ingredients.id`는 현재 최대 id + 1부터 자동 증가하도록 시퀀스를 맞춘다. 실제 DB의 `id`는 `0012`가 만든 `BIGSERIAL`
+  (기본값 `nextval`과 시퀀스)이므로 그것을 없애고 Identity로 대체한다. 이미 Identity인 DB에서는 건너뛴다.
 - downgrade: `ingredient_restrictions`를 삭제하고 `ingredients`를 이전 구조로 되돌린다(`id` 자동 증가 해제, `korean_name` → `name`,
   삭제한 `CHECK` 복원). `english_name`은 삭제되며 복구되지 않는다.
 

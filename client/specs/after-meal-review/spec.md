@@ -1,7 +1,7 @@
 <!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 <!-- Changed: 화면 디자인 및 식사 흐름 개선 -->
-<!-- AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo -->
-<!-- Changed: 식후 검토 글자·줄바꿈 및 전체 버튼 디자인 기준 -->
+<!-- AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo -->
+<!-- Changed: 식후 검토 디자인 및 별도 기록 재료의 어려움 대상·저장 기준 -->
 
 # After-meal Review
 
@@ -20,7 +20,7 @@
 1. 저장된 Meal ID로 식후 검토를 열고 기존 초안을 복원한다.
 2. 식후 사진을 선택·확인하거나 Skip photo로 직접 결과를 입력한다.
 3. 음식 전체의 결과를 선택한다. 별도로 관찰하려는 재료를 토큰에서 골라 그 결과를 입력한다.
-4. 선택적으로 음식별 어려움 원인을 추가하거나 Skip한다.
+4. 선택적으로 음식과 별도 기록하는 재료별 어려움 원인을 추가하거나 Skip한다.
 5. 어려움 화면의 Continue 또는 Skip에서 바로 식후 검토를 저장한다. 저장 중 → 실패 시 Retry 또는 저장 완료로 진행한다.
 6. 저장 성공 후 View Meal Suggestions 또는 홈으로 이동한다.
 
@@ -55,9 +55,13 @@
 
 ### R3 — 선택적 어려움
 
-- 음식별 카테고리·값·Add와 제거 가능한 태그를 제공한다. 카테고리는 Texture, Tastes, Food Smells, Colors, Ingredient Piece Size, Food Arrangement, Serving Temperature, Not sure다.
+- 음식 전체와 R2에서 별도 기록 대상으로 선택한 재료에 각각 어려움을 입력한다. 재료에는 소속 음식 이름을 함께 표시하며 같은 이름의 재료도 음식별 ID로 구분한다.
+- 음식과 재료의 입력값·태그는 독립적으로 관리하고 초안·최종 저장·서버 재조회에 보존한다. 재료 선택 해제 시 해당 대상은 숨기고 초안 입력·태그는 유지한다. 다시 선택하면 복원하며 최종 저장에는 선택한 재료만 포함한다.
+- 음식 편집 시 유지되는 재료 ID의 어려움은 보존하고 삭제된 음식·재료의 어려움은 제거한다.
+
+- 대상별 카테고리·값·Add와 제거 가능한 태그를 제공한다. 카테고리는 Texture, Tastes, Food Smells, Colors, Ingredient Piece Size, Food Arrangement, Serving Temperature, Not sure다.
 - Texture는 2단계 입력으로 식감 질문과 특성을 고른다. 회색 문장 영역에 `{질문} may have caused the refusal, especially {값} trait of the food`를 표시한다. 이는 보호자의 선택적 추정이며 AI가 원인을 확정한 표현으로 사용하지 않는다.
-- 식감 질문과 값은 아래 표를 따른다. 한 음식에 여러 질문·값을 추가할 수 있고 태그에 질문과 값을 함께 보존한다.
+- 식감 질문과 값은 아래 표를 따른다. 한 대상에 여러 질문·값을 추가할 수 있고 태그에 질문과 값을 함께 보존한다.
 
 | 식감 질문 | 값 |
 |---|---|
@@ -75,9 +79,9 @@
 | 속의 구조와 식감 | Fibrous, Fleshy, Layered, Spongy |
 
 - Tastes는 Sweet, Salty, Sour, Bitter, Savory · rich taste, Other taste를 제공하고 예시 음식 설명을 함께 표시한다. Other는 직접 입력 후 Add해야 태그로 확정한다.
-- Food Smells는 음식당 하나만 저장한다. Fruit-like, Fresh herb/leafy, Mushroom-like, Toasted/browned, Sweet/vanilla/caramel, Milk/butter/cheese, Meaty/broth, Egg/cabbage, Sea/seafood, Aged/fermented, Warm/sharp spice, Cool mint, Smoke/char의 13종과 예시를 표시한다. 새 값을 추가하면 같은 음식의 냄새만 교체한다.
+- Food Smells는 대상당 하나만 저장한다. Fruit-like, Fresh herb/leafy, Mushroom-like, Toasted/browned, Sweet/vanilla/caramel, Milk/butter/cheese, Meaty/broth, Egg/cabbage, Sea/seafood, Aged/fermented, Warm/sharp spice, Cool mint, Smoke/char의 13종과 예시를 표시한다. 새 값을 추가하면 같은 대상의 냄새만 교체한다.
 - Colors는 Red/Yellow/Green/Brown/White/Others와 색상 점을 제공하고 복수 태그를 허용한다. Others는 직접 입력 후 추가한다.
-- Food Arrangement는 Evenly distributed/Unevenly distributed/Clustered/Other, Ingredient Piece Size는 Fine/Small/Large, Serving Temperature는 Hot/Warm/Cool-chilled/Room temperature를 제공한다. 배치·크기·온도는 음식별 한 값이며 새 입력은 같은 카테고리의 이전 값만 교체한다.
+- Food Arrangement는 Evenly distributed/Unevenly distributed/Clustered/Other, Ingredient Piece Size는 Fine/Small/Large, Serving Temperature는 Hot/Warm/Cool-chilled/Room temperature를 제공한다. 배치·크기·온도는 대상별 한 값이며 새 입력은 같은 카테고리의 이전 값만 교체한다.
 - Add 후 입력값·식감 질문을 비우고 태그는 유지한다. 태그 ×는 해당 태그만 제거한다. 입력 중 값은 저장된 태그가 아니다.
 - 긴 냄새 목록·식감 질문은 스크롤 가능한 오버레이에 표시한다. 내용·태그·키보드가 하단 Continue/Skip을 가리지 않는다.
 - Continue와 Skip 모두 이미 추가한 태그를 보존하고 바로 최종 저장한다. Did you try a saved suggestion? 후속 화면은 표시하지 않는다.

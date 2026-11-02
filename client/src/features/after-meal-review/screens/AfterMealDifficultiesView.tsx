@@ -1,8 +1,8 @@
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 식후 검토 글자 크기 및 가독성 개선
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: 음식과 별도 기록 재료의 어려움 입력 대상 표시
 
 import { StyleSheet, Text, View } from 'react-native';
 import { DifficultyEditor } from '../components/DifficultyEditor';
@@ -12,7 +12,7 @@ import { abcCopyFor, copyFor } from '../../../util/strings';
 import type { ReviewViewProps } from './reviewViewTypes';
 
 type Props = Pick<ReviewViewProps,
-  'meal' | 'draft' | 'language' | 'difficultyForms' | 'onDifficultyInput' | 'onAddDifficulty' | 'onRemoveDifficulty'>;
+  'meal' | 'draft' | 'language' | 'difficultyTargets' | 'difficultyForms' | 'onDifficultyInput' | 'onAddDifficulty' | 'onRemoveDifficulty'>;
 
 export function AfterMealDifficultiesView({ p }: { p: Props }) {
   const s = copyFor(p.language);
@@ -21,18 +21,18 @@ export function AfterMealDifficultiesView({ p }: { p: Props }) {
   return (
     <View style={styles.root}>
       <Text style={styles.subtitle}>{m.difficultyIntro}</Text>
-      {p.meal.foods.map((food) => {
-        const input = p.draft.difficultyInputs[food.id] ?? { category: null, value: '', note: '', subcategory: '' };
-        const form = p.difficultyForms[food.id] ?? { options: [], canAdd: false, showNote: false };
+      {p.difficultyTargets.map((target) => {
+        const input = p.draft.difficultyInputs[target.id] ?? { category: null, value: '', note: '', subcategory: '' };
+        const form = p.difficultyForms[target.id] ?? { options: [], canAdd: false, showNote: false };
         return (
           <DifficultyEditor
-            key={food.id}
-            foodName={food.name}
+            key={target.id}
+            foodName={target.parentName ? a.ingredientIn(target.name, target.parentName) : target.name}
             category={input.category}
             value={input.value}
             note={input.note}
             subcategory={input.subcategory}
-            tags={p.draft.difficulties[food.id] ?? []}
+            tags={p.draft.difficulties[target.id] ?? []}
             options={form.options}
             canAdd={form.canAdd}
             showNote={form.showNote}
@@ -48,12 +48,12 @@ export function AfterMealDifficultiesView({ p }: { p: Props }) {
               examples: a.examples, close: s.common.close,
               values: { ...m.values, ...a.values } as Record<string, string>,
             }}
-            onCategory={(category) => p.onDifficultyInput(food.id, { category, value: category === 'notSure' ? 'notSure' : '', note: '', subcategory: '' })}
-            onSubcategory={(subcategory) => p.onDifficultyInput(food.id, { subcategory, value: '', note: '' })}
-            onValue={(value) => p.onDifficultyInput(food.id, { value, note: '' })}
-            onNote={(note) => p.onDifficultyInput(food.id, { note })}
-            onAdd={() => p.onAddDifficulty(food.id)}
-            onRemove={(id) => p.onRemoveDifficulty(food.id, id)}
+            onCategory={(category) => p.onDifficultyInput(target.id, { category, value: category === 'notSure' ? 'notSure' : '', note: '', subcategory: '' })}
+            onSubcategory={(subcategory) => p.onDifficultyInput(target.id, { subcategory, value: '', note: '' })}
+            onValue={(value) => p.onDifficultyInput(target.id, { value, note: '' })}
+            onNote={(note) => p.onDifficultyInput(target.id, { note })}
+            onAdd={() => p.onAddDifficulty(target.id)}
+            onRemove={(id) => p.onRemoveDifficulty(target.id, id)}
           />
         );
       })}

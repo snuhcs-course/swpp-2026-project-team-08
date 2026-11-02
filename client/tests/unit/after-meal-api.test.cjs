@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Ingredient difficulty API save and restore coverage
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -76,4 +78,34 @@ test('food edit assigns a fresh ID after deleted food and sends the whole food l
   ];
   const result = await updateReviewMealFoods('8', foods, ['1', '2']);
   assert.equal(result.foodIdMap.get('new-food'), '3');
+});
+
+test('ingredient difficulties survive API saving and restore to their own review targets', async () => {
+  const { newReviewDraft, setOutcome, addDifficulty, reviewFromDraft, reviewDraftFromServer } =
+    require('../../src/features/after-meal-review/rules.ts');
+  const { toMealDetail } = require('../../src/data/dto/mealDto.ts');
+  const detail = toMealDetail(response);
+  const meal = toLegacyMeal(detail);
+  const draft = newReviewDraft(meal);
+  const ingredientId = draft.outcomes[0].ingredients[0].id;
+  draft.outcomes = setOutcome(draft.outcomes, '2', 'tasted');
+  draft.outcomes = setOutcome(draft.outcomes, '2', 'untouched', ingredientId);
+  draft.difficulties['2'] = addDifficulty([], 'smell', 'mint');
+  draft.difficulties[ingredientId] = addDifficulty([], 'texture', 'firm', '', 'hardness');
+  const review = reviewFromDraft(draft, meal);
+  request = async (_path, init) => {
+    const body = JSON.parse(init.body);
+    assert.deepEqual(body.food_results[0].difficulties, [{ category: 'smell', subcategory: null, value: 'mint' }]);
+    assert.deepEqual(body.food_results[0].ingredient_outcomes, [{ ingredient_id: '212', outcome: 'untouched',
+      difficulties: [{ category: 'texture', subcategory: 'hardness', value: 'firm' }] }]);
+    return reviewResponse(response, body);
+  };
+  const saved = await writeMealReview(review, detail);
+  const restored = reviewDraftFromServer(meal, saved);
+  assert.equal(restored.outcomes[0].ingredients[0].selected, true);
+  assert.equal(restored.difficulties[ingredientId][0].category, 'texture');
+  assert.equal(restored.difficulties[ingredientId][0].subcategory, 'hardness');
+  assert.equal(restored.difficulties[ingredientId][0].value, 'firm');
+  assert.equal(restored.difficulties['2'][0].category, 'smell');
+  assert.deepEqual(prepareReviewWrite(reviewFromDraft(restored, meal), saved), prepareReviewWrite(review, detail));
 });

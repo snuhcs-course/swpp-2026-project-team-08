@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: 식후 결과 디자인·뒤로가기 및 하단 버튼 글자 크기 조정
+// Changed: 식후 결과 디자인·뒤로가기 및 재료별 어려움 대상 연결
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
@@ -151,6 +151,7 @@ export function AfterMealReviewView(
                 meal: p.meal,
                 draft: p.draft,
                 language: p.language,
+                difficultyTargets: p.difficultyTargets,
                 difficultyForms: p.difficultyForms,
                 onDifficultyInput: p.onDifficultyInput,
                 onAddDifficulty: p.onAddDifficulty,

@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Ingredient difficulty autosave, food editing, failure and server restoration
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -193,4 +195,79 @@ test('removed food or suggestion cannot create a stale link', async (t) => {
   await act(async () => harness.current.suggestionLinking.onContinue());
   await act(async () => { await harness.current.flush(); });
   assert.deepEqual((await readMealDraft('1')).suggestionLinks ?? [], []);
+});
+
+test('ingredient difficulty edits autosave, survive food editing and failed submission, and restore after save', async t => {
+  const response = mealResponse();
+  response.foods[0].ingredients = [{ id: '101', name: 'Carrot' }, { id: '102', name: 'Egg' }];
+  response.foods.push({ ...response.foods[0], id: '2', name: 'Soup', ingredients: [{ id: '103', name: 'Carrot' }] });
+  let serverMeal = response;
+  let failSave = true;
+  let writes = 0;
+  t.mock.method(global, 'fetch', async (url, init = {}) => {
+    const path = new URL(url).pathname;
+    if (path === '/api/v1/meals/10' && !init.method) return new Response(JSON.stringify(serverMeal));
+    if (path === '/api/v1/meals/10/foods') {
+      const foods = JSON.parse(init.body).foods;
+      serverMeal = { ...serverMeal, foods: foods.map(food => ({ ...food, meal_id: '10',
+        ingredients: food.ingredients.map(ingredient => ({ id: ingredient.name === 'Carrot' ? '101' : '102', name: ingredient.name })),
+      })) };
+      return new Response(JSON.stringify(serverMeal));
+    }
+    assert.equal(path, '/api/v1/meals/10/review');
+    writes++;
+    const body = JSON.parse(init.body);
+    assert.deepEqual(body.food_results[0].difficulties, []);
+    assert.deepEqual(body.food_results[0].ingredient_outcomes, [{ ingredient_id: '101', outcome: 'untouched',
+      difficulties: [{ category: 'smell', subcategory: null, value: 'mint' }] }]);
+    if (failSave) return new Response(JSON.stringify({ error_code: 'UNAVAILABLE' }), { status: 503 });
+    const result = reviewResponse(serverMeal, body);
+    const { meal, ...review } = result;
+    serverMeal = { ...serverMeal, ...meal, review };
+    return new Response(JSON.stringify(result));
+  });
+  const profile = { id: '1' };
+  const h = await renderHook(t, () => useAfterMealReview(profile, '10'));
+  await waitFor(() => h.current.draft !== null);
+  const [carrot, egg] = h.current.draft.outcomes[0].ingredients;
+  await act(async () => {
+    h.current.manual();
+    h.current.chooseOutcome('1', 'tasted');
+    h.current.chooseOutcome('2', 'eaten');
+    h.current.chooseOutcome('1', 'untouched', carrot.id);
+    h.current.setDifficultyInput(carrot.id, { category: 'smell', value: 'fruit', note: '' });
+    h.current.addDifficultyTag(carrot.id);
+    h.current.setDifficultyInput(carrot.id, { category: 'smell', value: 'mint', note: '' });
+    h.current.addDifficultyTag(carrot.id);
+    h.current.setDifficultyInput(egg.id, { category: 'texture', subcategory: 'hardness', value: 'firm', note: '' });
+    h.current.addDifficultyTag(egg.id);
+    h.current.go('difficulties');
+  });
+  assert.deepEqual(h.current.draft.difficulties[carrot.id].map(tag => tag.value), ['mint']);
+  assert.equal(h.current.canContinueOutcomes, true);
+  await act(async () => { await h.current.retrySave(); });
+  assert.equal((await readAfterMealDraft('1', '10')).difficulties[carrot.id][0].value, 'mint');
+  await act(async () => { h.current.toggleIngredient('1', carrot.id); });
+  assert.equal(h.current.draft.difficulties[carrot.id][0].value, 'mint');
+  await act(async () => { h.current.toggleIngredient('1', carrot.id); });
+  await act(async () => { h.current.editFood(h.current.meal.foods[0]); });
+  await act(async () => { h.current.changeFood({ ingredients: ['Carrot'] }); });
+  await act(async () => { await h.current.saveFood(); });
+  assert.equal(h.current.draft.difficulties[carrot.id][0].value, 'mint');
+  assert.equal(h.current.draft.difficulties[egg.id], undefined);
+  assert.equal(h.current.draft.difficultyInputs[egg.id], undefined);
+  await act(async () => { await h.current.removeFood('2'); });
+  assert.equal(h.current.draft.difficulties[carrot.id][0].value, 'mint');
+  assert.equal(h.current.draft.outcomes.length, 1);
+  await act(async () => { assert.equal(await h.current.finish(), false); });
+  assert.equal(h.current.draft.step, 'difficulties');
+  assert.equal(h.current.draft.difficulties[carrot.id][0].value, 'mint');
+  failSave = false;
+  await act(async () => { assert.equal(await h.current.finish(), true); });
+  assert.equal(writes, 2);
+  assert.equal(h.current.draft.step, 'complete');
+  const restored = await renderHook(t, () => useAfterMealReview(profile, '10'));
+  await waitFor(() => restored.current.draft !== null);
+  assert.equal(restored.current.draft.difficulties[carrot.id][0].value, 'mint');
+  assert.equal(restored.current.draft.outcomes[0].ingredients[0].selected, true);
 });

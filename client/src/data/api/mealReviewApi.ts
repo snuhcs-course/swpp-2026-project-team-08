@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Send separately tracked ingredient difficulty tags to the review API
 import type { AfterMealReview } from '../../types/afterMealReview';
 import type { MealDetail } from '../../types/mealRecord';
 import type { MealReviewDraft } from '../../types/reviewRecord';
@@ -10,6 +12,11 @@ export function prepareReviewWrite(review: AfterMealReview, detail: MealDetail):
   if (review.mealId !== detail.id || review.childId !== detail.userId) {
     throw new Error('Review does not match meal');
   }
+  const difficultiesFor = (targetId: string) => (review.difficulties[targetId] ?? []).map(tag => ({
+    category: tag.category,
+    subcategory: tag.subcategory ?? null,
+    value: tag.note ? `${tag.value}: ${tag.note}` : tag.value,
+  }));
   return {
     afterPhotoUri: review.afterPhoto?.uri ?? null,
     foodResults: detail.foods.map((food) => {
@@ -25,15 +32,11 @@ export function prepareReviewWrite(review: AfterMealReview, detail: MealDetail):
       return {
         foodId: food.id,
         outcome: outcome.decision.confirmed,
-        difficulties: (review.difficulties[food.id] ?? []).map((tag) => ({
-          category: tag.category,
-          subcategory: tag.subcategory ?? null,
-          value: tag.note ? `${tag.value}: ${tag.note}` : tag.value,
-        })),
+        difficulties: difficultiesFor(food.id),
         ingredientOutcomes: outcome.ingredients.map((item) => {
           const id = ingredientIds.get(item.id);
           if (!id) throw new Error('Review ingredient is missing');
-          return { ingredientId: id, outcome: item.decision.confirmed, difficulties: [] };
+          return { ingredientId: id, outcome: item.decision.confirmed, difficulties: difficultiesFor(item.id) };
         }),
       };
     }),

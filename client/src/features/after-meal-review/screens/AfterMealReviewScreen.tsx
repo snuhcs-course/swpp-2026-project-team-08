@@ -1,7 +1,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: 식후 검토 디자인 및 음식 결과 단계 뒤로가기 제스처 제한
+// Changed: 식후 검토 디자인·제스처 및 재료별 어려움 입력 연결
 
 import { router, Stack } from 'expo-router';
 import { useEffect } from 'react';
@@ -13,7 +13,7 @@ import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
 import { useAfterMealReview } from '../hooks/useAfterMealReview';
-import { canAddDifficulty, difficultyNeedsNote, difficultyOptions, textureQuestions } from '../rules';
+import { canAddDifficulty, difficultyTargets, difficultyNeedsNote, difficultyOptions, textureQuestions } from '../rules';
 import { AfterMealReviewView } from './AfterMealReviewView';
 
 export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
@@ -50,9 +50,10 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
   );
 
   const draft = review.draft;
-  const difficultyForms = Object.fromEntries(review.meal.foods.map((food) => {
-    const input = draft.difficultyInputs[food.id] ?? { category: null, value: '', note: '' };
-    return [food.id, {
+  const targets = difficultyTargets(review.meal.foods, draft.outcomes);
+  const difficultyForms = Object.fromEntries(targets.map((target) => {
+    const input = draft.difficultyInputs[target.id] ?? { category: null, value: '', note: '' };
+    return [target.id, {
       options: input.category === 'texture' ? textureQuestions[input.subcategory ?? ''] ?? [] : input.category ? difficultyOptions[input.category] : [],
       canAdd: canAddDifficulty(input.category, input.value, input.note, input.category === 'texture' ? input.subcategory ?? '' : undefined),
       showNote: difficultyNeedsNote(input.category, input.value),
@@ -75,6 +76,7 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
         canContinueOutcomes={review.canContinueOutcomes}
         editingFood={review.editingFood}
         ingredient={review.ingredient}
+        difficultyTargets={targets}
         difficultyForms={difficultyForms}
         onBack={back}
         onGo={review.go}

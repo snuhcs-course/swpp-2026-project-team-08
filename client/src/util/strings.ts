@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: Dietary Pattern·한국어 UX 문구 정리 및 미사용 UI 문구 삭제
+// Changed: Dietary Pattern·한국어 UX 문구 및 온보딩 조사 정리, 미사용 문구 삭제
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -318,9 +318,9 @@ const ko = {
     addSafeFood: '익숙한 음식 추가',
     safeFoodExamples: '예: 사과 조각, 흰 빵', safeFoodNameExample: '예: 사과 조각',
     safeFoodPreparationExample: '예: 얇게 썰기, 으깨기, 데우기', safeFoodPresentationExample: '예: 파란 그릇, 동전 모양으로 자르기',
-    safeFoodsDescription: (name: string) => `${name}의 식사에서 익숙한 형태로 꾸준히 먹는 음식을 추가해 주세요. 새로운 음식을 추천할 때 참고해요.`, safeFoodFormHint: (_name: string) => '아이가 편안하게 먹는 음식의 형태를 적어 주세요.', multipleInput: '여러 항목 입력 가능',
+    safeFoodsDescription: (_name: string) => '아이가 익숙한 형태로 꾸준히 먹는 음식을 추가해 주세요. 새로운 음식을 추천할 때 참고해요.', safeFoodFormHint: (_name: string) => '아이가 편안하게 먹는 음식의 형태를 적어 주세요.', multipleInput: '여러 항목 입력 가능',
     dietaryPattern: {
-      helper: (name: string) => `${name}의 식단을 준비할 때 가족이 따르는 식생활 유형을 선택해 주세요. 아이의 음식 취향과는 별개예요.`,
+      helper: (_name: string) => '아이의 식단을 준비할 때 가족이 따르는 식생활 유형을 선택해 주세요. 아이의 음식 취향과는 별개예요.',
       caution: '선택한 식생활 유형이 모든 추천에 반영되지는 않을 수 있어요.',
       notAnswered: '미응답',
       options: [
@@ -335,7 +335,7 @@ const ko = {
     },
     choiceGuidance: {
       childName: '가족이 편하게 부르는 이름을 입력해 주세요.',
-      restrictionsQuestion: (name: string) => `${name}의 식사에서 피해야 할 다른 음식이나 재료가 있나요?`,
+      restrictionsQuestion: (_name: string) => '아이가 피해야 할 다른 음식이나 재료가 있나요?',
       restrictionsTitle: '추천에 반영되는 범위',
       restrictionsBody: '목록의 제한 사항은 확인할 수 있는 규칙과 음식 데이터가 있을 때 추천에 반영돼요. 직접 추가한 제한 사항은 저장되지만 추천을 자동으로 거르지는 않아요.',
       multiple: '여러 항목 선택 가능',
@@ -670,7 +670,7 @@ const abcCopy = {
   ko: {
     linkStep: (step: number) => `2단계 중 ${step}단계`, savedEarlier: '이전에 저장함', selectedSuggestion: '선택한 추천', foodList: '음식 목록', selectMealFood: '추천을 적용한 음식을 선택해 주세요.',
     saveCheckinHeader: '식사 기록 저장', mealSaveFailed: '식사 기록을 저장하지 못했어요', reviewSaveFailed: '식후 기록을 저장하지 못했어요', entriesKept: '입력한 내용을 확인하고 다시 시도해 주세요.', saveWait: '이 식사를 저장하는 동안 잠시 기다려 주세요.', returnEdit: '편집 화면으로 돌아가기', retrySameMeal: '다시 시도하면 같은 식사를 저장해요. 입력한 음식과 결과, 연결한 추천은 유지돼요.', mealCheckinHeader: '식사 기록', reviewSavedHeader: '식후 기록 저장', reviewSavedTitle: '식후 기록을 저장했어요', returnHome: '홈으로 돌아가기', viewMealSuggestions: '이 식사의 추천 보기', addFoodLabel: '음식 추가',
-    ready: '시작할 준비가 되었어요', readyFor: (name: string) => `${name}의 식사를 기록하고 새로운 음식을 살펴보세요`, next: '홈으로 이동', acceptance: '평소에 얼마나 잘 먹나요?',
+    ready: '시작할 준비가 되었어요', readyFor: (_name: string) => '아이의 식사를 기록하고 새로운 음식을 살펴보세요', next: '홈으로 이동', acceptance: '평소에 얼마나 잘 먹나요?',
     acceptanceHint: '아이가 평소 이 음식을 얼마나 편하게 받아들이는지 선택해 주세요.',
     cooking: '조리 방법', detail: '추가 설명', selectCooking: '조리 방법 선택',
     cookingOptions: ['찜', '삶기', '팬에 굽기', '오븐에 굽기', '로스팅', '직화 구이', '생식', '기타'],

@@ -131,4 +131,4 @@ The client targets Expo SDK 58. Upgrade validation used Node.js 24.12.0 and npm 
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 ## Docs
 
-- [Food ingredient · restriction ids](docs/food-ingredient-restriction-ids.md): 클라이언트와 서버가 공유하는 알러지 · 식이 제한 id
+- [Food ingredient · restriction ids](docs/food-ingredient-restriction-ids.md): 클라이언트 · 서버 · 재료 데이터가 공유하는 알러지 · 채식 · 식이 제한 값(`RestrictionType`)과 재료 판정 규칙

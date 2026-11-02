@@ -225,13 +225,31 @@
 
 ## 5. 추천 API
 
-- 추천 응답에서 `meal_id`, `ingredient_id`, `food_snapshot`이 사라지고 `food_id`는 `origin_food_id`가 된다(근거가 된 음식).
+### 응답 (`SuggestionResponse`)
+
+- `ingredient_id`, `food_snapshot`이 사라지고 `food_id`는 `origin_food_id`가 된다(근거가 된 음식).
+  `meal_id`는 남는다. 서버가 근거 음식에서 채우며, 원본 식사를 찾는 데 쓴다.
 - `ingredients`(문자열 목록), `cooking_method`(2절의 값), `causes`(식후 리뷰에서 참고한 특성을 서술한 문장)가 추가된다.
   `what_to_try`, `why_this_may_help`, `serving_tip`은 그대로다.
-- `status`에 `TRIED`가 추가된다. 추천을 시도한 식사가 기록되면 `TRIED`다.
-- 추천은 음식 단위로만 만든다. 생성 요청의 대상에서 `ingredient_id`가 사라진다.
-- `dismiss_reasons`는 2절의 새 값을 쓴다.
-- 추천을 시도한 기록과 평가(`feedback`)는 추천 시도 항목(`food_recommendation_tries`)으로 관리하며 값은 2절을 따른다.
+- `status`는 `PENDING` `SAVED` `DISMISSED` `TRIED`, `dismiss_reasons`는 2절의 새 값이다.
+
+### 요청과 규칙
+
+- 생성(`POST /meals/{id}/suggestions`)의 대상은 음식 단위다: `{"targets": [{"food_id": "…"}]}`. `ingredient_id`를 보내면 422다.
+  - 식후 리뷰가 없는 식사는 `409 REVIEW_REQUIRED`, 리뷰하지 않은 음식이나 이 식사에 없는 음식은 `422 INVALID_SUGGESTION_TARGET`이다.
+  - 아이의 제한은 프로필의 `restrictions`(`ALLERGY.NONE` 제외)다. 프로필이 없으면 `409 PROFILE_REQUIRED`다.
+  - 추천에 쓰는 재료는 아이의 모든 제한에 `NEVER` 판정이 있는 재료뿐이다 ([제한 id 규칙](food-ingredient-restriction-ids.md)).
+- 결정(`PUT/DELETE /suggestions/{id}/decision`)의 `status`는 `SAVED` `DISMISSED`만 보낸다. `TRIED`인 추천은 결정을 바꿀 수 없다
+  (`409 RECOMMENDATION_ALREADY_TRIED`).
+- 목록(`GET /meals/{id}/suggestions`)의 `status` 쿼리는 `SAVED`(기본) `ALL`이다. `SAVED`는 `SAVED`와 `TRIED`를 함께 보여 주며,
+  저장된 추천 목록(`GET /suggestions`)도 같다. `ALL`은 enum 값이 아니라 조회용 값이다.
+
+### 시도 상태 (`TRIED`)
+
+- 식사를 저장할 때 음식의 `food_recommendation_ids`로 추천을 연결하면(3절) 그 추천은 `TRIED`가 된다. `SAVED`와 `TRIED`인 추천만 연결할 수 있고,
+  이미 `TRIED`인 추천도 다른 식사에 다시 연결할 수 있다.
+- 시도한 식사나 음식을 지워 마지막 시도 기록이 없어지면 추천은 `SAVED`로 돌아간다.
+- 추천의 근거가 된 음식(식사)을 지우면 그 음식에서 나온 추천과 그 추천의 시도 기록도 함께 지워진다.
 
 ## 6. 변경이 없는 API
 
@@ -240,6 +258,4 @@
 
 ## 7. 협의가 필요한 항목
 
-| 항목 | 내용 |
-|---|---|
-| 추천 목록 조회 필터 | 목록 조회의 `status` 쿼리 값(`saved`, `all`)을 대문자로 맞춘다. `ALL`은 enum 값이 아니라 조회용 값이다. |
+남은 협의 항목은 없다.

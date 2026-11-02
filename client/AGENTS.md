@@ -13,9 +13,9 @@ Expo / React Native 모바일 앱이다. 모바일 사용성, 성능, iOS·Andro
 이 디렉터리에서 작업할 때도 루트 [`AGENTS.md`](../AGENTS.md)의 공통 규칙을 함께 따른다.
 
 - [`README.md`](README.md)와 [`docs/architecture.md`](docs/architecture.md)를 먼저 읽고 기존 구조와 작업 규칙을 따른다.
-- 자녀 프로필의 `allergies`·`restrictions`나 `src/util/strings.ts`의 선택 항목을 수정하면
+- 자녀 프로필의 `allergies`·`restrictions`·`vegetarianRestrictions`나 `src/util/strings.ts`의 선택 항목을 수정하면
   [`재료·식이 제한 ID 규칙`](../docs/food-ingredient-restriction-ids.md)도 읽는다.
-  서버의 `RestrictionId`와 같은 ID를 쓰므로 양쪽을 같은 변경에서 수정한다.
+  서버의 `RestrictionType`에서 분류 접두사를 뺀 ID를 쓰므로 양쪽을 같은 변경에서 수정한다.
 
 ## AI 생성 코드 표기
 

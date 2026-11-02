@@ -5,7 +5,7 @@
 
 """인증된 사용자의 식사와 음식, 재료, 식후 리뷰를 저장한다."""
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, exists, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
@@ -26,6 +26,9 @@ from app.models import (
     MealFoodIngredient,
 )
 from app.models.food_recommendation_enums import FoodRecommendationStatus
+
+# 식사에 연결(시도)할 수 있는 추천. 이미 시도한 추천도 다른 식사에 다시 연결할 수 있다.
+LINKABLE_STATUSES = (FoodRecommendationStatus.SAVED, FoodRecommendationStatus.TRIED)
 
 
 class DuplicateIngredientError(AppError):
@@ -123,6 +126,14 @@ class MealService:
                     FoodRecommendationTry(food_recommendation_id=recommendation_id, food_id=item.id)
                 )
         await self._session.flush()
+        # 시도 기록이 생긴 추천은 TRIED 로 바꾼다. 두 정보의 일관성은 서비스가 지킨다.
+        linked = [rid for _, food in created for rid in food.food_recommendation_ids]
+        if linked:
+            await self._session.execute(
+                update(FoodRecommendation)
+                .where(FoodRecommendation.id.in_(linked))
+                .values(status=FoodRecommendationStatus.TRIED)
+            )
         return await meal_records(self._session, meal)
 
     async def update_foods(
@@ -205,7 +216,7 @@ class MealService:
             if (
                 recommendation is None
                 or recommendation.user_id != user_id
-                or recommendation.status != FoodRecommendationStatus.SAVED
+                or recommendation.status not in LINKABLE_STATUSES
             ):
                 raise InvalidRecommendationLinkError()
 
@@ -227,12 +238,56 @@ class MealService:
             self._session.add(MealFoodIngredient(meal_food_id=food_id, name=ingredient.name))
 
     async def _delete_children(self, food_ids: list[int]) -> None:
-        """음식에 딸린 재료와 추천 시도를 지운다. DB 의 CASCADE 에만 맡기지 않는다."""
+        """음식에 딸린 재료, 추천 시도, 그 음식에서 나온 추천을 지운다.
+
+        DB 의 CASCADE 에만 맡기지 않는다. 마지막 시도 기록을 잃은 추천은 SAVED 로 되돌린다.
+        """
         if not food_ids:
             return
         await self._session.execute(
             delete(MealFoodIngredient).where(MealFoodIngredient.meal_food_id.in_(food_ids))
         )
+        origin_ids = list(
+            (
+                await self._session.scalars(
+                    select(FoodRecommendation.id).where(
+                        FoodRecommendation.origin_food_id.in_(food_ids)
+                    )
+                )
+            ).all()
+        )
+        tried_ids = set(
+            (
+                await self._session.scalars(
+                    select(FoodRecommendationTry.food_recommendation_id).where(
+                        FoodRecommendationTry.food_id.in_(food_ids)
+                    )
+                )
+            ).all()
+        )
+        # 이 음식에서 나온 추천은 다른 식사에 남은 시도 기록과 함께 사라진다.
+        if origin_ids:
+            await self._session.execute(
+                delete(FoodRecommendationTry).where(
+                    FoodRecommendationTry.food_recommendation_id.in_(origin_ids)
+                )
+            )
+            await self._session.execute(
+                delete(FoodRecommendation).where(FoodRecommendation.id.in_(origin_ids))
+            )
         await self._session.execute(
             delete(FoodRecommendationTry).where(FoodRecommendationTry.food_id.in_(food_ids))
         )
+        reverted = tried_ids - set(origin_ids)
+        if reverted:
+            await self._session.execute(
+                update(FoodRecommendation)
+                .where(
+                    FoodRecommendation.id.in_(reverted),
+                    FoodRecommendation.status == FoodRecommendationStatus.TRIED,
+                    ~exists().where(
+                        FoodRecommendationTry.food_recommendation_id == FoodRecommendation.id
+                    ),
+                )
+                .values(status=FoodRecommendationStatus.SAVED)
+            )

@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 식사 정보·재료 입력·하단 UI 조정 및 현재 단계별 진행 표시
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: 식사 정보·재료 입력·하단 UI 조정 및 현재 단계별 진행 표시; 사진 확인 후 입력 단계 안내
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -219,7 +219,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             {d.step === "preview" && (
               <AppButton
                 variant="meal"
-                label={m.addFood}
+                label={p.language === 'ko' ? m.manual : m.addFood}
                 icon={<UiAssetIcon name="meal-check" />}
                 disabled={!d.photo || imageError || p.picking}
                 onPress={() => p.onGo("foods")}

@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
-// Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선; 최종 식후 기록 저장 버튼 명확화
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
@@ -195,7 +195,7 @@ export function AfterMealReviewView(
             {p.draft.step === "difficulties" && (
               <>
                 <MealFlowButton
-                  label={s.common.continue}
+                  label={p.language === 'ko' ? m.finish : s.common.continue}
                   disabled={p.saving || !p.canContinueOutcomes}
                   onPress={goAfterDifficulties}
                 />

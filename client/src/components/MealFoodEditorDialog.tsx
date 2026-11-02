@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
-// Changed: Inline ingredients and accessible removal touch targets
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: 재료 입력·접근성 및 음식 수용 정도 안내
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 
@@ -17,7 +17,8 @@ import { FormField } from './FormField';
 type Labels = { 
   cooking: string; 
   detail: string; 
-  acceptance: string; 
+  acceptance: string;
+  acceptanceHint?: string;
   selectCooking: string; 
   cookingOptions: readonly string[] 
 };
@@ -141,6 +142,7 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
     </View>
     <View style={styles.acceptance}>
       <View style={styles.fieldHeading}><Text style={styles.label}>{labels.acceptance}</Text><Text style={styles.optional}>{m.optional}</Text></View>
+      {labels.acceptanceHint && <Text style={styles.label}>{labels.acceptanceHint}</Text>}
       <View accessibilityRole="radiogroup" style={styles.scale}>
         <View pointerEvents="none" style={styles.rail} />
         {food.acceptance != null && <View pointerEvents="none" style={[styles.rail, { width: `${food.acceptance / 3 * 100}%`, backgroundColor: colors.homePrimary }]} />}

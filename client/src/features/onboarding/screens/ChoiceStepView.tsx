@@ -1,4 +1,5 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Dietary Pattern 선택 및 저장
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
@@ -9,6 +10,7 @@ import { Text, View } from 'react-native';
 import { FormField } from '../../../components/FormField';
 import { DropdownChoice } from '../../../components/DropdownChoice';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
+import { ChoiceRow } from '../../../components/ChoiceRow';
 import { MultiChoice } from '../../../components/MultiChoice';
 import { colors } from '../../../util/colors';
 import { copyFor, labelFor, optionsFor } from '../../../util/strings';
@@ -20,9 +22,9 @@ export type ChoiceStep =
   | 'child' | 'allergies' | 'restrictions' | 'family';
 
 type ChoiceValues = Pick<OnboardingDraft,
-  'childName' | 'ageRange' | 'allergies' | 'restrictions' | 'familyFoods'>;
+  'childName' | 'ageRange' | 'allergies' | 'restrictions' | 'familyFoods' | 'dietaryPattern'>;
 type ListField = 'allergies' | 'restrictions' | 'familyFoods';
-type TextField = 'childName' | 'ageRange';
+type TextField = 'childName' | 'ageRange' | 'dietaryPattern';
 
 function Guidance({ title, body, icon = 'info' }: { title?: string; body: string; icon?: 'info' | 'utensils' }) {
   return <View style={styles.infoBanner}>
@@ -48,7 +50,6 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
     const groups = {
       allergies: [values.allergies, 'allergies'],
       restrictions: [values.restrictions, 'restrictions'],
-      family: [values.familyFoods, 'family'],
     } as const;
     const config = groups[step as keyof typeof groups];
     if (!config) return false;
@@ -89,10 +90,25 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
     </View>
   );
 
+  if (step === 'family') return (
+    <View>
+      <Text style={[styles.fieldHint, styles.dietaryPatternHelper]}>{s.onboarding.dietaryPattern.helper(name)}</Text>
+      <View accessibilityRole="radiogroup">
+        {s.onboarding.dietaryPattern.options.map((option) => <ChoiceRow
+          key={option.id}
+          label={option.label}
+          subtitle={option.description}
+          selected={values.dietaryPattern === option.id}
+          onPress={() => onSetField('dietaryPattern', option.id)}
+        />)}
+      </View>
+      <Guidance body={s.onboarding.dietaryPattern.caution} />
+    </View>
+  );
+
   const config = {
     allergies: { field: 'allergies', group: 'allergies', catalog: 'allergyCatalog', none: s.onboarding.noKnownAllergies },
     restrictions: { field: 'restrictions', group: 'restrictions', catalog: 'restrictionCatalog', none: s.onboarding.noOtherRestrictions },
-    family: { field: 'familyFoods', group: 'family', catalog: 'familyCatalog', none: undefined },
   } as const;
   const current = config[step];
   const options = optionsFor(current.group, language);
@@ -104,7 +120,6 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
   return (
     <View>
       {step === 'restrictions' && <Text style={styles.question}>{guidance.restrictionsQuestion(name)}</Text>}
-      {step === 'family' && <Guidance title={guidance.familyTitle} body={guidance.familyBody} icon="utensils" />}
       {step === 'allergies' && (
         <View style={styles.safetyBanner}>
           <View style={styles.safetyIcon}><UiAssetIcon name="onboarding-shield" /></View>
@@ -139,7 +154,6 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
       />
       <Text style={styles.selectionHint}>{guidance.multiple}</Text>
       {step === 'restrictions' && <Guidance title={guidance.restrictionsTitle} body={guidance.restrictionsBody} />}
-      {step === 'family' && <Guidance title={guidance.familyWarningTitle} body={guidance.familyWarningBody} />}
     </View>
   );
 }

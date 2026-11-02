@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 제외된 온보딩 질문 타입 제거
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: 제외된 온보딩 질문 타입 제거; Dietary Pattern
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
 
@@ -21,7 +21,7 @@ export function emptyDraft(): OnboardingDraft {
   return {
     step: 'account', caregiverName: '', caregiverEmail: '', childName: '', ageRange: '',
     consent: { accountPrivacy: false, photoAnalysis: false, aiTraining: false },
-    allergies: [], restrictions: [], familyFoods: [],
+    allergies: [], restrictions: [], familyFoods: [], dietaryPattern: null,
     safeFoods: [], noSafeFoods: false,
     safeFoodInput: { name: '', preparation: '', presentationNote: '' },
   };

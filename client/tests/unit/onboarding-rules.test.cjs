@@ -1,6 +1,8 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: Validate current onboarding requirements and retired dietary-approach migration
+// Dietary Pattern 선택 및 저장
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -23,7 +25,6 @@ const required = [
   ['consent', { consent: { accountPrivacy: true, photoAnalysis: false, aiTraining: false } }],
   ['child', { childName: ' ' }], ['child', { ageRange: '' }],
   ['allergies', { allergies: [] }], ['restrictions', { restrictions: [] }],
-  ['family', { familyFoods: [] }],
 ];
 for (const [step, missing] of required) {
   test(`${step} rejects ${JSON.stringify(missing)} before continuing or finishing`, () => {
@@ -77,4 +78,21 @@ test('draft validation rejects missing fields and invalid consent types', () => 
     { ...emptyDraft(), consent: { accountPrivacy: 'true' } }, { ...emptyDraft(), safeFoodInput: null }]) {
     assert.equal(isDraft(invalid), false);
   }
+});
+
+test('dietary pattern is optional and legacy food groups do not imply an answer', () => {
+  const { restoreDraft } = require('../../src/features/onboarding/rules.ts');
+  const { dietaryPatternLabel } = require('../../src/util/dietaryPattern.ts');
+  const legacy = completeDraft();
+  delete legacy.dietaryPattern;
+  assert.equal(restoreDraft(legacy).dietaryPattern, null);
+  assert.equal(dietaryPatternLabel(null, 'en'), 'Not answered');
+  assert.equal(dietaryPatternLabel('no-specific-pattern', 'en'), 'No specific dietary pattern');
+  for (const dietaryPattern of [null, 'flexitarian', 'no-specific-pattern']) {
+    const draft = { ...completeDraft(), familyFoods: [], dietaryPattern };
+    assert.equal(canContinue('family', draft, ''), true);
+    assert.equal(canFinish(draft), true);
+    assert.equal(restoreDraft(JSON.parse(JSON.stringify(draft))).dietaryPattern, dietaryPattern);
+  }
+  assert.equal(isDraft({ ...legacy, dietaryPattern: 'eggs' }), false);
 });

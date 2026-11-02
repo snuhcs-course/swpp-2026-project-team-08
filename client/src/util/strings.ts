@@ -1,4 +1,5 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Dietary Pattern 선택 및 저장
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -26,14 +27,14 @@ const en = {
     reviewTitle: (name: string) => `Review ${name}’s profile`,
     titles: {
       account: 'Create your caregiver account', consent: 'Data and photo consent', child: 'Tell us about your child',
-      allergies: 'Food allergies', restrictions: 'Other dietary restrictions', family: 'Foods the family includes',
+      allergies: 'Food allergies', restrictions: 'Other dietary restrictions', family: 'Dietary Pattern',
       'safe-foods': 'Safe foods', review: 'Review your child’s profile',
     },
     subtitles: {
       account: 'Welcome! Let’s take this one step at a time.', consent: 'Consent is needed to continue',
       child: 'A few basics help us give better recommendations and output.',
       allergies: 'Select every known allergy. Help avoid foods that should not be suggested to the child.', restrictions: 'Select other required limits or choose None.',
-      family: 'Select food groups your household is comfortable including.',
+      family: 'Which dietary pattern does your family follow?',
       'safe-foods': 'Add foods your child reliably accepts in a familiar form. We can use these foods as familiar starting points when suggesting something new.',
       review: 'You’re in control. Edit any section now or later in Profile Settings.',
     },
@@ -65,6 +66,20 @@ const en = {
     safeFoodExamples: 'e.g. apple slices, white bread', safeFoodNameExample: 'e.g. apple slices',
     safeFoodPreparationExample: 'e.g. sliced, mashed, warmed', safeFoodPresentationExample: 'e.g. blue bowl, cut into coins',
     safeFoodsDescription: (name: string) => `Add foods that ${name} reliably accepts in a familiar form. We can use these foods as familiar starting points when suggesting something new`, safeFoodFormHint: (name: string) => `Add details for a food ${name} can reliably accept.`, multipleInput: 'multiple input available',
+    dietaryPattern: {
+      helper: (name: string) => `Choose the option that best describes the diet your family follows for ${name}. Each option explains which foods it includes. This is about your dietary choices, not foods ${name} currently likes or dislikes.`,
+      caution: 'We’ll try to follow this dietary pattern when suggesting meals, but it may not be fully reflected in every suggestion.',
+      notAnswered: 'Not answered',
+      options: [
+        { id: 'vegan', label: 'Vegan', description: 'Plant foods only; no animal-derived foods.' },
+        { id: 'lacto-vegetarian', label: 'Lacto-vegetarian', description: 'Plant foods and dairy; no eggs, seafood, or meat.' },
+        { id: 'ovo-vegetarian', label: 'Ovo-vegetarian', description: 'Plant foods and eggs; no dairy, seafood, or meat.' },
+        { id: 'lacto-ovo-vegetarian', label: 'Lacto-ovo vegetarian', description: 'Plant foods, dairy, and eggs; no seafood or meat.' },
+        { id: 'pescatarian', label: 'Pescatarian', description: 'Plant foods, seafood, dairy, and eggs; no poultry or red meat.' },
+        { id: 'flexitarian', label: 'Flexitarian', description: 'Mostly plant foods, with occasional meat or seafood; dairy and eggs may also be included.' },
+        { id: 'no-specific-pattern', label: 'No specific dietary pattern', description: 'We don’t follow a particular dietary pattern.' },
+      ],
+    },
     choiceGuidance: {
       childName: 'Use any name your family is comfortable with.',
       age: 'We ask for an age range-not an exact birth date-to reduce unnecessary personal data.',
@@ -80,7 +95,7 @@ const en = {
     choiceSubtitles: {
       restrictions: { none: 'Selecting this clears and disables all other selections.', 'gluten-free': 'Avoids foods containing gluten.', 'lactose-free': 'Limits or avoids lactose-containing foods.', 'low-fructose': 'Limits foods high in fructose.', 'casein-free': 'Avoids foods containing casein.', other: 'Add one or more custom restrictions.' },
     },
-    reviewAllergies: 'Allergies', reviewChild: 'Child basics', reviewSafety: 'Safety restrictions', reviewFamily: 'Family practices',
+    reviewAllergies: 'Allergies', reviewChild: 'Child basics', reviewSafety: 'Safety restrictions', reviewFamily: 'Dietary Pattern',
     reviewSafeFoods: 'Safe foods',
     conflict: 'A safe food name matches a listed restriction. Review it before relying on that food.',
     looksGood: 'Looks good',
@@ -283,7 +298,7 @@ const en = {
     childName: 'CHILD NAME',
     ageGroup: 'AGE GROUP',
     allergies: 'Allergies & Restrictions',
-    familyFoods: 'Foods your family includes',
+    familyFoods: 'Dietary Pattern',
     safeFoods: 'Safe Foods',
     nothing: 'nothing',
     name: 'NAME',
@@ -327,14 +342,14 @@ const ko = {
     reviewTitle: (name: string) => `${name}의 프로필 검토`,
     titles: {
       account: '보호자 정보 입력', consent: '개인정보 동의', child: '아이에 대해 알려주세요',
-      allergies: '식품 알레르기', restrictions: '기타 식이 제한', family: '가족 식단의 식품',
+      allergies: '식품 알레르기', restrictions: '기타 식이 제한', family: '식생활 유형',
       'safe-foods': '안심하고 먹는 음식', review: '프로필 검토',
     },
     subtitles: {
       account: '환영합니다! 한 단계씩 진행해 볼게요.', consent: '맞춤 경험을 위한 동의가 필요합니다.',
       child: '정확한 생년월일 대신 연령대만 입력합니다.',
       allergies: '알고 있는 알레르기를 모두 선택해 주세요. 아이에게 추천하면 안 되는 음식을 피하는 데 사용합니다.', restrictions: '필수 제한을 선택하거나 해당 없음을 선택하세요.',
-      family: '가족 식단에 포함하는 식품을 하나 이상 선택하세요.',
+      family: '가족이 따르는 식생활 유형은 무엇인가요?',
       'safe-foods': '익숙한 형태로 꾸준히 먹는 음식을 추가하세요.',
       review: '저장하기 전에 내용을 확인해 주세요.',
     },
@@ -366,6 +381,20 @@ const ko = {
     safeFoodExamples: '예: 사과 조각, 흰 빵', safeFoodNameExample: '예: 사과 조각',
     safeFoodPreparationExample: '예: 얇게 썰기, 으깨기, 데우기', safeFoodPresentationExample: '예: 파란 그릇, 동전 모양으로 자르기',
     safeFoodsDescription: (name: string) => `${name}이(가) 익숙한 형태로 편하게 먹는 음식을 추가해 주세요. 새로운 음식을 제안할 때 시작점으로 사용할 수 있습니다.`, safeFoodFormHint: (_name: string) => '아이가 편안하게 먹는 음식의 형태를 적어 주세요.', multipleInput: '여러 항목 입력 가능',
+    dietaryPattern: {
+      helper: (name: string) => `${name}을(를) 위해 가족이 따르는 식단에 가장 가까운 항목을 선택해 주세요. 각 항목은 포함하는 음식을 설명합니다. ${name}이(가) 현재 좋아하거나 싫어하는 음식이 아닌 가족의 식생활 선택에 관한 질문입니다.`,
+      caution: '식사 추천 시 이 식생활 유형을 따르려 노력하지만, 모든 추천에 완전히 반영되지 않을 수 있습니다.',
+      notAnswered: '미응답',
+      options: [
+        { id: 'vegan', label: '비건', description: '식물성 식품만 먹으며 동물성 식품은 먹지 않습니다.' },
+        { id: 'lacto-vegetarian', label: '락토 베지테리언', description: '식물성 식품과 유제품을 먹으며 달걀, 해산물, 육류는 먹지 않습니다.' },
+        { id: 'ovo-vegetarian', label: '오보 베지테리언', description: '식물성 식품과 달걀을 먹으며 유제품, 해산물, 육류는 먹지 않습니다.' },
+        { id: 'lacto-ovo-vegetarian', label: '락토 오보 베지테리언', description: '식물성 식품, 유제품, 달걀을 먹으며 해산물과 육류는 먹지 않습니다.' },
+        { id: 'pescatarian', label: '페스카테리언', description: '식물성 식품, 해산물, 유제품, 달걀을 먹으며 가금류와 붉은 고기는 먹지 않습니다.' },
+        { id: 'flexitarian', label: '플렉시테리언', description: '주로 식물성 식품을 먹고 가끔 육류나 해산물을 먹습니다. 유제품과 달걀도 포함할 수 있습니다.' },
+        { id: 'no-specific-pattern', label: '특정 식생활 유형 없음', description: '특정한 식생활 유형을 따르지 않습니다.' },
+      ],
+    },
     choiceGuidance: {
       childName: '가족이 편하게 부르는 이름을 입력해 주세요.',
       age: '불필요한 개인정보 수집을 줄이기 위해 정확한 생년월일 대신 연령대를 묻습니다.',
@@ -381,7 +410,7 @@ const ko = {
     choiceSubtitles: {
       restrictions: { none: '선택하면 다른 선택이 모두 해제됩니다.', 'gluten-free': '글루텐이 든 음식을 피합니다.', 'lactose-free': '유당이 든 음식을 제한합니다.', 'low-fructose': '과당이 많은 음식을 제한합니다.', 'casein-free': '카제인이 든 음식을 피합니다.', other: '다른 제한 사항을 추가합니다.' },
     },
-    reviewAllergies: '알레르기', reviewChild: '아이 기본 정보', reviewSafety: '안전 관련 제한', reviewFamily: '가족 식단',
+    reviewAllergies: '알레르기', reviewChild: '아이 기본 정보', reviewSafety: '안전 관련 제한', reviewFamily: '식생활 유형',
     reviewSafeFoods: '안심 음식',
     conflict: '안심 음식 이름이 제한 항목과 겹칩니다. 해당 음식을 다시 확인해 주세요.',
     looksGood: '확인했어요',
@@ -583,7 +612,7 @@ const ko = {
     childName: '아이 이름',
     ageGroup: '연령대',
     allergies: '알레르기 및 제한',
-    familyFoods: '가족이 먹는 음식',
+    familyFoods: '식생활 유형',
     safeFoods: '안심 음식',
     nothing: '없음',
     name: '이름',

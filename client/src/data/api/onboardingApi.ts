@@ -1,3 +1,11 @@
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Dietary Pattern 선택 및 저장
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+
+import { isDietaryPattern } from '../../util/dietaryPattern';
+import type { DietaryPattern } from '../../types/dietaryPattern';
 import { apiRequest } from '../network/apiClient';
 import { isUserId, type AuthUser } from '../storage/authStorage';
 import type { ChildProfile } from '../../types/profile';
@@ -7,7 +15,6 @@ type Choice = { code: string | null; custom_name: string | null };
 type ConsentKind = 'account_privacy' | 'photo_analysis' | 'ai_training';
 type Consent = { kind: ConsentKind; granted: boolean };
 
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 type ProfileResponse = {
   user_id: string;
   child_name: string;
@@ -18,6 +25,7 @@ type ProfileResponse = {
   };
   food_preferences: {
     family_foods: Choice[];
+    dietary_pattern?: DietaryPattern | null;
   };
   safe_foods: {
     status: string;
@@ -40,7 +48,6 @@ function choiceItems(value: unknown): value is Choice[] {
       || (item.code === null && typeof item.custom_name === 'string')));
 }
 
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 function parseResponse(value: unknown): OnboardingResponse {
   if (!record(value) || !Array.isArray(value.consents)) throw new Error('Invalid onboarding response');
   if (!value.consents.every((item: unknown) => record(item) && isUserId(item.id)
@@ -60,6 +67,7 @@ function parseResponse(value: unknown): OnboardingResponse {
   const safeFoods = profile.safe_foods;
   if (!record(allergies) || !choiceItems(allergies.items)
     || !record(restrictions) || !choiceItems(restrictions.items)
+    || (preferences.dietary_pattern != null && !isDietaryPattern(preferences.dietary_pattern))
     || !choiceItems(preferences.family_foods) || !Array.isArray(safeFoods.items)
     || !safeFoods.items.every((food: unknown) => record(food) && isUserId(food.id)
       && typeof food.name === 'string' && typeof food.preparation === 'string')) {
@@ -83,7 +91,6 @@ function selected(values: Choice[]): string[] {
   return values.map((item) => item.code ?? item.custom_name).filter((value): value is string => !!value);
 }
 
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 export function toOnboardingWrite(profile: ChildProfile) {
   const allergies = choices(profile.allergies, ['allergies', 'allergyCatalog']);
   const restrictions = choices(profile.restrictions, ['restrictions', 'restrictionCatalog']);
@@ -97,6 +104,7 @@ export function toOnboardingWrite(profile: ChildProfile) {
       },
       food_preferences: {
         family_foods: choices(profile.familyFoods, ['family', 'familyCatalog']),
+        dietary_pattern: profile.dietaryPattern ?? null,
       },
       safe_foods: {
         status: profile.safeFoods.length ? 'listed' : 'none',
@@ -116,7 +124,6 @@ export function toOnboardingWrite(profile: ChildProfile) {
   };
 }
 
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 export function fromOnboardingResponse(
   response: OnboardingResponse,
   user: AuthUser,
@@ -141,6 +148,7 @@ export function fromOnboardingResponse(
     restrictions: source.safety.restrictions.status === 'specified'
       ? selected(source.safety.restrictions.items) : ['none'],
     familyFoods: selected(source.food_preferences.family_foods),
+    dietaryPattern: source.food_preferences.dietary_pattern ?? null,
     safeFoods: source.safe_foods.items.map((food) => ({
       id: food.id, name: food.name, preparation: food.preparation,
       presentationNote: food.presentation_note ?? '',
@@ -155,8 +163,12 @@ export async function readOnboarding(): Promise<OnboardingResponse> {
 }
 
 export async function writeOnboarding(profile: ChildProfile): Promise<OnboardingResponse> {
-  return parseResponse(await apiRequest<unknown>('/api/v1/onboarding', {
+  const response = parseResponse(await apiRequest<unknown>('/api/v1/onboarding', {
     method: 'PUT',
     body: JSON.stringify(toOnboardingWrite(profile)),
   }));
+  if (!response.profile || (response.profile.food_preferences.dietary_pattern ?? null) !== (profile.dietaryPattern ?? null)) {
+    throw new Error('Dietary pattern was not saved');
+  }
+  return response;
 }

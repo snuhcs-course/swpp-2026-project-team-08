@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 온보딩 초안 복원, 계정 입력 초기화 및 초기화 후 자동 저장 수정
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: 온보딩 초안 복원, 계정 입력 초기화 및 초기화 후 자동 저장 수정; Dietary Pattern
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -13,6 +13,7 @@ import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingD
 import { useAuth } from '../../providers/AuthProvider';
 import { useProfile } from '../../providers/ProfileProvider';
 import type { ChildProfile, SafeFood } from '../../types/profile';
+import { isDietaryPattern } from '../../util/dietaryPattern';
 import { createDraftSaveGate } from './draftSaveGate';
 import { addUnique, canAddSafeFood, canContinue, canFinish, restoreDraft, toggleExclusive, validEmail } from './rules';
 import { emptyDraft, type OnboardingDraft, type OnboardingStep } from './types';
@@ -96,6 +97,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [draft, ready, loadError, status, profile, editing, persist]);
 
   const setField = useCallback((field: DraftField, value: string) => {
+    if (field === 'dietaryPattern' && !isDietaryPattern(value)) return;
     if (field === 'caregiverName' || field === 'caregiverEmail') accountFieldsInitialized.current = true;
     setDraft((current) => ({ ...current, [field]: value }));
   }, []);

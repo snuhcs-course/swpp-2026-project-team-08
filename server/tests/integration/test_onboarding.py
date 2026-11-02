@@ -1,4 +1,8 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+# Changed: Dietary Pattern 선택 및 저장
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+
 """Onboarding API persistence, ownership, and validation."""
 
 import pytest
@@ -7,7 +11,6 @@ from httpx import AsyncClient
 from app.features.onboarding.consent_version import DOCUMENT_VERSION
 
 
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 def request_body() -> dict:
     return {
         "profile": {
@@ -63,7 +66,10 @@ async def test_onboarding_round_trip_and_idempotent_consents(client: AsyncClient
     written = await client.put("/api/v1/onboarding", headers=headers, json=request_body())
     assert written.status_code == 200, written.text
     body = written.json()
-    assert body["profile"]["food_preferences"] == request_body()["profile"]["food_preferences"]
+    assert body["profile"]["food_preferences"] == {
+        **request_body()["profile"]["food_preferences"],
+        "dietary_pattern": None,
+    }
     assert body["profile"]["user_id"].isdecimal()
     assert body["profile"]["safety"]["allergies"]["items"] == [{"code": "egg", "custom_name": None}]
     food_id = body["profile"]["safe_foods"]["items"][0]["id"]
@@ -133,7 +139,6 @@ async def test_onboarding_is_authenticated_and_isolated(client: AsyncClient) -> 
     }
 
 
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("field", "value"),
@@ -156,3 +161,44 @@ async def test_onboarding_rejects_retired_answers(
     assert response.status_code == 422
     assert response.json()["error_code"] == "VALIDATION_ERROR"
     assert (await client.get("/api/v1/onboarding", headers=headers)).json()["profile"] is None
+
+
+@pytest.mark.asyncio
+async def test_dietary_pattern_save_reload_and_legacy_preservation(client: AsyncClient) -> None:
+    headers = await register(client, "pattern@example.com")
+    body = request_body()
+    legacy = await client.put("/api/v1/onboarding", headers=headers, json=body)
+    assert legacy.status_code == 200
+    assert legacy.json()["profile"]["food_preferences"]["dietary_pattern"] is None
+    for pattern in [
+        "vegan",
+        "lacto-vegetarian",
+        "ovo-vegetarian",
+        "lacto-ovo-vegetarian",
+        "pescatarian",
+        "flexitarian",
+        "no-specific-pattern",
+        None,
+    ]:
+        body["profile"]["food_preferences"]["dietary_pattern"] = pattern
+        written = await client.put("/api/v1/onboarding", headers=headers, json=body)
+        assert written.status_code == 200, written.text
+        loaded = (await client.get("/api/v1/onboarding", headers=headers)).json()["profile"]
+        assert loaded["food_preferences"]["dietary_pattern"] == pattern
+        assert (
+            loaded["food_preferences"]["family_foods"]
+            == body["profile"]["food_preferences"]["family_foods"]
+        )
+        assert loaded["safety"] == body["profile"]["safety"]
+        # Older clients omitting the field must not erase a new selection.
+        omitted = request_body()
+        assert (
+            await client.put("/api/v1/onboarding", headers=headers, json=omitted)
+        ).status_code == 200
+        assert (await client.get("/api/v1/onboarding", headers=headers)).json()["profile"][
+            "food_preferences"
+        ]["dietary_pattern"] == pattern
+    body["profile"]["food_preferences"] = {"family_foods": [], "dietary_pattern": "flexitarian"}
+    assert (await client.put("/api/v1/onboarding", headers=headers, json=body)).status_code == 200
+    body["profile"]["food_preferences"]["dietary_pattern"] = "eggs"
+    assert (await client.put("/api/v1/onboarding", headers=headers, json=body)).status_code == 422

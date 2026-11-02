@@ -1,5 +1,7 @@
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Dietary Pattern 선택 및 저장
 
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
@@ -9,7 +11,8 @@ import { colors } from '../../../util/colors';
 import { useOnboarding } from '../../onboarding/hooks/useOnboarding';
 import type { OnboardingStep } from '../../onboarding/types';
 import { useAccountSession } from '../hooks/useAccountSession';
-import { familySummary, safeFoodSummary, safetySummary } from '../rules';
+import { dietaryPatternLabel } from '../../../util/dietaryPattern';
+import { safeFoodSummary, safetySummary } from '../rules';
 import { ChildProfileView } from './ChildProfileView';
 
 export function ChildProfileScreen() {
@@ -57,7 +60,7 @@ export function ChildProfileScreen() {
       childName={editing ? childName : profile.childName}
       ageRange={editing ? ageRange : profile.ageRange}
       allergies={safetySummary(profile.allergies, profile.restrictions, appProfile.language)}
-      familyFoods={familySummary(profile.familyFoods, appProfile.language)}
+      familyFoods={dietaryPatternLabel(profile.dietaryPattern, appProfile.language)}
       safeFoods={safeFoodSummary(profile.safeFoods, profile.noSafeFoods, appProfile.language)}
       saving={saving}
       saveError={saveError}

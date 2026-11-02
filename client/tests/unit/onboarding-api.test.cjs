@@ -1,4 +1,9 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Dietary Pattern 선택 및 저장
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -32,7 +37,6 @@ const {
 } = require("../../src/data/api/onboardingApi.ts");
 
 const account = { id: "12", email: "parent@example.com", fullName: "Parent" };
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 const profile = {
   id: "12",
   caregiverName: "Parent",
@@ -61,7 +65,6 @@ const profile = {
   updatedAt: "2026-10-21T00:00:00Z",
 };
 
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 function serverResponse() {
   return {
     profile: {
@@ -129,7 +132,6 @@ function serverResponse() {
   };
 }
 
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 test("onboarding write maps codes, custom choices, consents, and safe food IDs", () => {
   const body = toOnboardingWrite(profile);
   assert.deepEqual(body.profile.safety.allergies, {
@@ -145,6 +147,7 @@ test("onboarding write maps codes, custom choices, consents, and safe food IDs",
   });
   assert.deepEqual(body.profile.food_preferences, {
     family_foods: [{ code: "eggs", custom_name: null }],
+    dietary_pattern: null,
   });
   assert.equal(body.profile.safe_foods.items[0].id, undefined);
   assert.equal(body.profile.safe_foods.items[1].id, "501");
@@ -190,5 +193,29 @@ test("onboarding API reads and writes the authenticated account path", async () 
     undefined,
   );
   response = { profile: { user_id: "not-an-id" }, consents: [] };
+  await assert.rejects(readOnboarding());
+});
+
+for (const pattern of [null, 'vegan', 'lacto-vegetarian', 'ovo-vegetarian',
+  'lacto-ovo-vegetarian', 'pescatarian', 'flexitarian', 'no-specific-pattern']) {
+  test(`API preserves ${pattern} independently of legacy food groups`, async () => {
+    const source = { ...profile, dietaryPattern: pattern, familyFoods: [] };
+    const body = toOnboardingWrite(source);
+    assert.equal(body.profile.food_preferences.dietary_pattern, pattern);
+    assert.deepEqual(body.profile.food_preferences.family_foods, []);
+    response = serverResponse();
+    response.profile.food_preferences = body.profile.food_preferences;
+    const saved = await writeOnboarding(source);
+    const restored = fromOnboardingResponse(saved, account);
+    assert.equal(restored.dietaryPattern, pattern);
+    assert.deepEqual(restored.allergies, source.allergies);
+    assert.deepEqual(restored.restrictions, source.restrictions);
+  });
+}
+
+test('save fails when server loses the selected pattern; invalid IDs are rejected', async () => {
+  response = serverResponse();
+  await assert.rejects(writeOnboarding({ ...profile, dietaryPattern: 'flexitarian' }));
+  response.profile.food_preferences.dietary_pattern = 'eggs';
   await assert.rejects(readOnboarding());
 });

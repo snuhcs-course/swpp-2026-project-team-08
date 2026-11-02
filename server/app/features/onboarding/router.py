@@ -1,3 +1,7 @@
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+# Changed: Dietary Pattern 선택 및 저장
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+
 """Authenticated onboarding API."""
 
 from typing import Annotated
@@ -36,7 +40,6 @@ def get_onboarding_service(
     return OnboardingService(session)
 
 
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 def _input(payload: OnboardingWriteRequest) -> OnboardingInput:
     profile = payload.profile
     preferences = profile.food_preferences
@@ -61,6 +64,8 @@ def _input(payload: OnboardingWriteRequest) -> OnboardingInput:
         for position, item in enumerate(profile.safe_foods.items)
     )
     return OnboardingInput(
+        dietary_pattern=preferences.dietary_pattern,
+        dietary_pattern_provided="dietary_pattern" in preferences.model_fields_set,
         child_name=profile.child_name,
         age_group=profile.age_group,
         allergy_status=profile.safety.allergies.status,
@@ -72,7 +77,6 @@ def _input(payload: OnboardingWriteRequest) -> OnboardingInput:
     )
 
 
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 def _response(snapshot: OnboardingSnapshot) -> OnboardingResponse:
     profile = snapshot.profile
     profile_dto = None
@@ -95,6 +99,7 @@ def _response(snapshot: OnboardingSnapshot) -> OnboardingResponse:
             },
             food_preferences={
                 "family_foods": groups.get("family_food", []),
+                "dietary_pattern": profile.dietary_pattern,
             },
             safe_foods=SafeFoodsDto(
                 status=profile.safe_food_status,

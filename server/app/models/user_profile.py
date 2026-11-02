@@ -1,3 +1,6 @@
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+# Changed: Dietary Pattern 선택 및 저장
+
 """One child profile per account."""
 
 from datetime import datetime
@@ -9,7 +12,6 @@ from app.core.database import Base
 from app.core.timezone import now_kst
 
 
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 class UserProfile(Base):
     __tablename__ = "user_profiles"
     __table_args__ = (
@@ -40,6 +42,7 @@ class UserProfile(Base):
     age_group: Mapped[str] = mapped_column(String, nullable=False)
     allergy_status: Mapped[str] = mapped_column(String, nullable=False)
     restriction_status: Mapped[str] = mapped_column(String, nullable=False)
+    dietary_pattern: Mapped[str | None] = mapped_column(String, nullable=True)
     safe_food_status: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False

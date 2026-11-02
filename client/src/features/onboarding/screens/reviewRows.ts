@@ -1,7 +1,10 @@
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Dietary Pattern 선택 및 저장
 
+import { dietaryPatternLabel } from '../../../util/dietaryPattern';
 import type { Language } from '../../../types/profile';
 import { copyFor, labelFor, type OptionGroup } from '../../../util/strings';
 import type { OnboardingDraft, OnboardingStep } from '../types';
@@ -20,7 +23,7 @@ export function reviewRows(draft: OnboardingDraft, language: Language): ReviewRo
   return [
     { step: 'child', title: s.onboarding.reviewChild, value: `${draft.childName || s.common.notEntered} · ${selectedValue('age', draft.ageRange)}` },
     { step: 'allergies', title: s.onboarding.reviewSafety, value: `${s.onboarding.reviewAllergies}: ${listValue('allergies', draft.allergies)}${draft.restrictions.some((value) => value !== 'none') ? ` · ${s.onboarding.titles.restrictions}: ${listValue('restrictions', draft.restrictions)}` : ''}` },
-    { step: 'family', title: s.onboarding.reviewFamily, value: listValue('family', draft.familyFoods) },
+    { step: 'family', title: s.onboarding.reviewFamily, value: dietaryPatternLabel(draft.dietaryPattern, language) },
     {
       step: 'safe-foods',
       title: s.onboarding.reviewSafeFoods,

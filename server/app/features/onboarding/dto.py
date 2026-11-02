@@ -1,3 +1,7 @@
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+# Changed: Dietary Pattern 선택 및 저장
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+
 """Onboarding request and response shapes."""
 
 from datetime import datetime
@@ -55,9 +59,20 @@ class SafetyDto(StrictDto):
     restrictions: RestrictionChoiceDto
 
 
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 class FoodPreferencesDto(StrictDto):
-    family_foods: list[ProfileChoiceDto] = Field(min_length=1)
+    family_foods: list[ProfileChoiceDto] = Field(default_factory=list)
+    dietary_pattern: (
+        Literal[
+            "vegan",
+            "lacto-vegetarian",
+            "ovo-vegetarian",
+            "lacto-ovo-vegetarian",
+            "pescatarian",
+            "flexitarian",
+            "no-specific-pattern",
+        ]
+        | None
+    ) = None
 
 
 class SafeFoodWriteDto(StrictDto):
@@ -100,7 +115,6 @@ class SafeFoodsWriteDto(StrictDto):
         return self
 
 
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 class ProfileWriteDto(StrictDto):
     child_name: str
     age_group: AgeGroup

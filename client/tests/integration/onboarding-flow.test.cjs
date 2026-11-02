@@ -1,6 +1,7 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Verify reset discards pending autosaves and current onboarding fixtures
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Verify reset discards pending autosaves and current onboarding fixtures; Dietary Pattern
+
 // Connects Auth/Profile/Onboarding providers, validation, API conversion and draft storage.
 // Only HTTP and native storage boundaries are mocked.
 const { test, beforeEach } = require('node:test');
@@ -188,4 +189,24 @@ test('reset waits for an in-flight autosave and keeps storage empty until anothe
   await act(async () => hook.current.onboarding.setField('childName', 'New child'));
   await waitFor(() => hook.current.onboarding.saveStatus === 'saved');
   assert.equal((await readDraft()).childName, 'New child');
+});
+
+test('pattern replacement, draft recovery, server save and profile editing retain exact selection', async t => {
+  await saveDraft({ ...completeDraft(), dietaryPattern: 'vegan' });
+  const hook = await mount(t, body => {
+    const response = profileResponse();
+    response.profile.food_preferences = body.profile.food_preferences;
+    return new Response(JSON.stringify(response));
+  });
+  assert.equal(hook.current.onboarding.draft.dietaryPattern, 'vegan');
+  await act(async () => hook.current.onboarding.setField('dietaryPattern', 'flexitarian'));
+  await waitFor(() => hook.current.onboarding.saveStatus === 'saved');
+  assert.equal((await readDraft()).dietaryPattern, 'flexitarian');
+  await act(async () => assert.equal(await hook.current.onboarding.finish(), true));
+  assert.equal(hook.current.profile.profile.dietaryPattern, 'flexitarian');
+  await act(async () => hook.current.onboarding.startProfileEdit());
+  assert.equal(hook.current.onboarding.draft.dietaryPattern, 'flexitarian');
+  await act(async () => hook.current.onboarding.setField('dietaryPattern', 'no-specific-pattern'));
+  await act(async () => assert.equal(await hook.current.onboarding.applyEdit(), true));
+  assert.equal(hook.current.profile.profile.dietaryPattern, 'no-specific-pattern');
 });

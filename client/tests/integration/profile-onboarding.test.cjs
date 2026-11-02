@@ -1,8 +1,9 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Repair onboarding imports and connect the shared storage mock
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Repair onboarding imports and connect the shared storage mock; Dietary Pattern
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+
 const { test } = require("node:test");
 
 const assert = require("node:assert/strict");
@@ -110,7 +111,8 @@ test("saved profile, language, and in-progress draft remain independent", async 
   };
   delete profile.step;
   delete profile.safeFoodInput;
-  assert.equal(canFinish({ ...draft, familyFoods: [] }), false);
+  // Dietary Pattern is optional; legacy food groups no longer block completion.
+  assert.equal(canFinish({ ...draft, familyFoods: [] }), true);
   assert.equal(canFinish(draft), true);
   await saveProfile(profile);
   await saveLanguage("ko");

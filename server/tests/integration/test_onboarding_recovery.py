@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+# Changed: Reject invalid patterns; empty legacy food groups are now valid
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 """Integration: HTTP → onboarding service → SQLite; only storage failure is injected."""
 
@@ -14,7 +16,7 @@ from tests.helpers.auth import auth_headers
     [
         "contradictory-allergy",
         "required-consent",
-        "empty-family-foods",
+        "invalid-dietary-pattern",
         "duplicate-family-foods",
         "nonboolean-consent",
         "invalid-code",
@@ -32,8 +34,8 @@ async def test_invalid_update_preserves_existing_profile_and_consents(client, ca
         invalid["profile"]["safety"]["allergies"]["status"] = "none_known"
     elif case == "required-consent":
         invalid["consents"][0]["granted"] = False
-    elif case == "empty-family-foods":
-        invalid["profile"]["food_preferences"]["family_foods"] = []
+    elif case == "invalid-dietary-pattern":
+        invalid["profile"]["food_preferences"]["dietary_pattern"] = "eggs"
     elif case == "duplicate-family-foods":
         invalid["profile"]["food_preferences"]["family_foods"] *= 2
     elif case == "nonboolean-consent":

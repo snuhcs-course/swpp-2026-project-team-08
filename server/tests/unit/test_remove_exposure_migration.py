@@ -1,5 +1,5 @@
-# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
-# Changed: Verify meal ingredient migration head
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+# Changed: Verify dietary pattern migration head and additive SQL
 # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 # Changed: 화면 디자인 및 식사 흐름 개선
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
@@ -18,7 +18,8 @@ MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0017_meal_ingredients"]
+    assert scripts.get_heads() == ["0018_dietary_pattern"]
+    assert scripts.get_revision("0018_dietary_pattern").down_revision == "0017_meal_ingredients"
     assert (
         scripts.get_revision("0017_meal_ingredients").down_revision
         == "0016_remove_profile_questions"
@@ -223,3 +224,16 @@ def test_food_traits_removal_preserves_review_reasons_and_restores_empty_objects
     assert "ALTER TABLE meal_foods ADD COLUMN traits JSON DEFAULT '{}' NOT NULL" in sql
     assert "ALTER TABLE meal_foods ALTER COLUMN traits DROP DEFAULT" in sql
     assert "meal_reviews" not in sql
+
+
+def test_dietary_pattern_migration_only_adds_nullable_column():
+    migration = run_path(str(MIGRATIONS / "versions" / "20261102_1000_dietary_pattern.py"))
+    output = StringIO()
+    context = MigrationContext.configure(
+        dialect_name="postgresql", opts={"as_sql": True, "output_buffer": output}
+    )
+    with Operations.context(context):
+        migration["upgrade"]()
+    assert output.getvalue().strip() == (
+        "ALTER TABLE user_profiles ADD COLUMN dietary_pattern VARCHAR;"
+    )

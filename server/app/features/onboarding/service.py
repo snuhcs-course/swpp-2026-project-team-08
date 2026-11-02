@@ -1,3 +1,6 @@
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+# Changed: Dietary Pattern 선택 및 저장
+
 """Read and replace one user's onboarding data."""
 
 from dataclasses import dataclass
@@ -38,7 +41,6 @@ class ConsentInput:
     granted: bool
 
 
-# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 @dataclass(frozen=True)
 class OnboardingInput:
     child_name: str
@@ -49,6 +51,8 @@ class OnboardingInput:
     choices: tuple[ChoiceInput, ...]
     safe_foods: tuple[SafeFoodInput, ...]
     consents: tuple[ConsentInput, ...]
+    dietary_pattern: str | None = None
+    dietary_pattern_provided: bool = False
 
 
 @dataclass(frozen=True)
@@ -111,6 +115,8 @@ class OnboardingService:
         if profile is None:
             profile = UserProfile(user_id=user_id)
             self._session.add(profile)
+        if data.dietary_pattern_provided:
+            profile.dietary_pattern = data.dietary_pattern
         profile.child_name = data.child_name
         profile.age_group = data.age_group
         profile.allergy_status = data.allergy_status

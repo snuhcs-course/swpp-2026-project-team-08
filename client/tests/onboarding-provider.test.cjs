@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: 익숙한 음식 추가·삭제·선택 정보 초안 복원 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -203,4 +205,48 @@ test('profile editing cannot restore a cleared account field when another answer
   model = await harness.flush();
   assert.equal(model.draft.caregiverEmail, '');
   assert.equal((await readDraft()).caregiverEmail, '');
+});
+
+
+test('safe foods add without optional details, restore drafts, and keep none mutually exclusive', async () => {
+  values.clear();
+  const harness = mount();
+  let model = await harness.flush();
+  model.setNoSafeFoods(true);
+  model = await harness.flush();
+  model.addSafeFood({ name: '  ', preparation: '', presentationNote: '' });
+  model = await harness.flush();
+  assert.equal(model.draft.safeFoods.length, 0);
+  assert.equal(model.draft.noSafeFoods, true);
+
+  model.setSafeFoodInput('name', '  Apple slices  ');
+  model = await harness.flush();
+  model.addSafeFood(model.draft.safeFoodInput);
+  model = await harness.flush();
+  assert.equal(model.draft.noSafeFoods, false);
+  assert.equal(model.draft.safeFoods[0].name, 'Apple slices');
+  assert.equal(model.draft.safeFoods[0].preparation, '');
+  assert.deepEqual(model.draft.safeFoodInput, { name: '', preparation: '', presentationNote: '' });
+  const apple = model.draft.safeFoods[0];
+  model.addSafeFood({ name: 'Banana', preparation: 'Raw', presentationNote: 'Blue bowl' });
+  model = await harness.flush();
+  const banana = model.draft.safeFoods[1];
+  assert.notEqual(apple.id, banana.id);
+  model.setSafeFoodInput('name', 'Next food');
+  model = await harness.flush();
+  const saved = model.draft;
+  harness.unmount();
+
+  const restored = mount();
+  model = await restored.flush();
+  assert.deepEqual(model.draft, saved);
+  model.removeSafeFood(apple.id);
+  model = await restored.flush();
+  assert.deepEqual(model.draft.safeFoods, [banana]);
+  assert.equal(model.draft.safeFoodInput.name, 'Next food');
+  model.setNoSafeFoods(true);
+  model = await restored.flush();
+  assert.deepEqual(model.draft.safeFoods, []);
+  assert.equal(model.draft.noSafeFoods, true);
+  restored.unmount();
 });

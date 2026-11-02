@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: Dietary Pattern·한국어 UX 문구 및 온보딩 조사 정리, 미사용 문구 삭제
+// Changed: 식생활 유형·한국어 UX 문구·온보딩 조사 및 익숙한 음식 폼 정리
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -60,8 +60,8 @@ const en = {
     treeNutsHint: 'almonds, walnuts, or cashews',
     noKnownAllergies: 'No known food allergies', noOtherRestrictions: 'No other dietary restrictions',
     noSafeFoods: 'No safe foods yet',
-    foodName: 'Food name', preparation: 'Preparation', presentationNote: 'Presentation note',
-    addSafeFood: 'Add safe food',
+    foodName: 'Food name', preparation: 'Cooking method', presentationNote: 'Additional details',
+    addSafeFood: 'Add safe food', addSafeFoodAction: '+ Add',
     safeFoodExamples: 'e.g. apple slices, white bread', safeFoodNameExample: 'e.g. apple slices',
     safeFoodPreparationExample: 'e.g. sliced, mashed, warmed', safeFoodPresentationExample: 'e.g. blue bowl, cut into coins',
     safeFoodsDescription: (name: string) => `Add foods that ${name} reliably accepts in a familiar form. We can use these foods as familiar starting points when suggesting something new`, safeFoodFormHint: (name: string) => `Add details for a food ${name} can reliably accept.`, multipleInput: 'multiple input available',
@@ -314,8 +314,8 @@ const ko = {
     treeNutsHint: '아몬드, 호두, 캐슈넛',
     noKnownAllergies: '알려진 식품 알레르기 없음', noOtherRestrictions: '기타 식이 제한 없음',
     noSafeFoods: '아직 익숙한 음식 없음',
-    foodName: '음식 이름', preparation: '조리 방법', presentationNote: '제공 메모',
-    addSafeFood: '익숙한 음식 추가',
+    foodName: '음식 이름', preparation: '조리 방법', presentationNote: '추가 설명',
+    addSafeFood: '익숙한 음식 추가', addSafeFoodAction: '+ 추가',
     safeFoodExamples: '예: 사과 조각, 흰 빵', safeFoodNameExample: '예: 사과 조각',
     safeFoodPreparationExample: '예: 얇게 썰기, 으깨기, 데우기', safeFoodPresentationExample: '예: 파란 그릇, 동전 모양으로 자르기',
     safeFoodsDescription: (_name: string) => '아이가 익숙한 형태로 꾸준히 먹는 음식을 추가해 주세요. 새로운 음식을 추천할 때 참고해요.', safeFoodFormHint: (_name: string) => '아이가 편안하게 먹는 음식의 형태를 적어 주세요.', multipleInput: '여러 항목 입력 가능',

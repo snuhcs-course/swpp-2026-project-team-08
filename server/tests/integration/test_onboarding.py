@@ -1,6 +1,6 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-# Changed: Dietary Pattern 선택 및 저장
+# Changed: 식생활 유형 및 조리 방법 없는 익숙한 음식 저장·조회 검증
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 
 """Onboarding API persistence, ownership, and validation."""
@@ -202,3 +202,32 @@ async def test_dietary_pattern_save_reload_and_legacy_preservation(client: Async
     assert (await client.put("/api/v1/onboarding", headers=headers, json=body)).status_code == 200
     body["profile"]["food_preferences"]["dietary_pattern"] = "eggs"
     assert (await client.put("/api/v1/onboarding", headers=headers, json=body)).status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_safe_food_optional_details_round_trip_and_blank_name_rejection(
+    client: AsyncClient,
+) -> None:
+    headers = await register(client, "optional-food@example.com")
+    body = request_body()
+    food = body["profile"]["safe_foods"]["items"][0]
+    food["preparation"] = ""
+    food["presentation_note"] = None
+    saved = await client.put("/api/v1/onboarding", headers=headers, json=body)
+    assert saved.status_code == 200, saved.text
+    entry = saved.json()["profile"]["safe_foods"]["items"][0]
+    loaded = await client.get("/api/v1/onboarding", headers=headers)
+    assert loaded.json()["profile"]["safe_foods"]["items"][0] == entry
+    assert entry["preparation"] == ""
+    assert entry["presentation_note"] is None
+
+    food["id"] = entry["id"]
+    food["presentation_note"] = "Blue bowl"
+    updated = await client.put("/api/v1/onboarding", headers=headers, json=body)
+    assert updated.status_code == 200, updated.text
+    assert updated.json()["profile"]["safe_foods"]["items"][0]["id"] == entry["id"]
+    food["name"] = " "
+    invalid = await client.put("/api/v1/onboarding", headers=headers, json=body)
+    assert invalid.status_code == 422
+    loaded = await client.get("/api/v1/onboarding", headers=headers)
+    assert loaded.json()["profile"]["safe_foods"]["items"][0]["name"] == entry["name"]

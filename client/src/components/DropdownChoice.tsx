@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: 네이티브 드롭다운을 부모 입력 영역 너비에 맞춤
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
@@ -20,13 +22,17 @@ export function DropdownChoice({ options, value, onChange, placeholder, displayF
   displayFallback?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [fieldWidth, setFieldWidth] = useState<number>();
   const selected = options.find((option) => option.id === value);
   if (Platform.OS === 'android' || Platform.OS === 'ios') return (
-    <NativeDropdown options={options} value={value} onChange={onChange} label={placeholder}
-      fieldStyle={[styles.field, variant === 'editor' && styles.editorField]}>
-      <Text style={[styles.value, variant === 'editor' && styles.editorValue]}>{selected?.label ?? displayFallback ?? placeholder}</Text>
-      {variant === 'editor' ? <UiAssetIcon name="abc-select" /> : <Feather name="chevron-down" size={15} color={colors.onboardingText} />}
-    </NativeDropdown>
+    <View style={styles.wrap} onLayout={({ nativeEvent }) => setFieldWidth(nativeEvent.layout.width)}>
+      <NativeDropdown options={options} value={value} onChange={onChange} label={placeholder}
+        style={styles.nativeMenu}
+        fieldStyle={[styles.field, variant === 'editor' && styles.editorField, fieldWidth != null && { width: fieldWidth }]}>
+        <Text style={[styles.value, variant === 'editor' && styles.editorValue]}>{selected?.label ?? displayFallback ?? placeholder}</Text>
+        {variant === 'editor' ? <UiAssetIcon name="abc-select" /> : <Feather name="chevron-down" size={15} color={colors.onboardingText} />}
+      </NativeDropdown>
+    </View>
   );
   return (
     <View style={styles.wrap}>
@@ -48,7 +54,8 @@ export function DropdownChoice({ options, value, onChange, placeholder, displayF
 const styles = StyleSheet.create({
   editorField: { height: 38, borderRadius: 10, borderColor: colors.mealReviewBorder, backgroundColor: colors.editorInput },
   editorValue: { color: colors.editorPlaceholder, fontFamily: fonts.poppinsMedium, fontSize: 13 },
-  wrap: { gap: 5 },
+  wrap: { gap: 5, width: '100%' },
+  nativeMenu: { width: '100%' },
   field: { height: 40, borderRadius: 8, borderWidth: 1, borderColor: colors.onboardingBorder, backgroundColor: colors.surface, paddingHorizontal: 11, flexDirection: 'row', alignItems: 'center', gap: 8 },
   activeField: { borderColor: colors.onboardingPrimary, borderWidth: 1.4 },
   value: { flex: 1, color: colors.onboardingText, fontSize: 13, fontFamily: fonts.interMedium },

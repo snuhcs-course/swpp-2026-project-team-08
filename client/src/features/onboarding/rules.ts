@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: 제외된 프로필 질문 제거 및 초안 복원; Dietary Pattern
+// Changed: 프로필 질문·초안 복원·식생활 유형 및 익숙한 음식의 선택 조리 방법
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
@@ -18,7 +18,7 @@ export function validPassword(value: string): boolean {
 }
 
 export function canAddSafeFood(input: OnboardingDraft['safeFoodInput']): boolean {
-  return !!input.name.trim() && !!input.preparation.trim();
+  return !!input.name.trim();
 }
 
 export function toggleExclusive(values: string[], value: string, noneValue = 'none'): string[] {

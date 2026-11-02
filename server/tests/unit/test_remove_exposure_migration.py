@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-# Changed: Verify dietary pattern migration head and additive SQL
+# Changed: 식생활 유형·선택 조리 방법 마이그레이션 이력과 SQL 검증
 # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 # Changed: 화면 디자인 및 식사 흐름 개선
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
@@ -18,7 +18,10 @@ MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0018_dietary_pattern"]
+    assert scripts.get_heads() == ["0019_optional_safe_food_prep"]
+    assert (
+        scripts.get_revision("0019_optional_safe_food_prep").down_revision == "0018_dietary_pattern"
+    )
     assert scripts.get_revision("0018_dietary_pattern").down_revision == "0017_meal_ingredients"
     assert (
         scripts.get_revision("0017_meal_ingredients").down_revision
@@ -236,4 +239,27 @@ def test_dietary_pattern_migration_only_adds_nullable_column():
         migration["upgrade"]()
     assert output.getvalue().strip() == (
         "ALTER TABLE user_profiles ADD COLUMN dietary_pattern VARCHAR;"
+    )
+
+
+def test_optional_safe_food_preparation_preserves_rows_and_other_constraints():
+    migration = run_path(
+        str(MIGRATIONS / "versions" / "20261102_1100_optional_safe_food_preparation.py")
+    )
+    output = StringIO()
+    context = MigrationContext.configure(
+        dialect_name="postgresql", opts={"as_sql": True, "output_buffer": output}
+    )
+    with Operations.context(context):
+        migration["upgrade"]()
+    assert output.getvalue().strip() == (
+        "ALTER TABLE safe_foods DROP CONSTRAINT ck_safe_foods_preparation;"
+    )
+    output.seek(0)
+    output.truncate()
+    with Operations.context(context):
+        migration["downgrade"]()
+    assert output.getvalue().strip() == (
+        "ALTER TABLE safe_foods ADD CONSTRAINT ck_safe_foods_preparation "
+        "CHECK (trim(preparation) <> '');"
     )

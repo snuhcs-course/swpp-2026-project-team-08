@@ -1,6 +1,8 @@
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: 익숙한 음식 필드 라벨과 선택 안내 정렬
 
 import { StyleSheet, Text, TextInput, View, type KeyboardTypeOptions } from 'react-native';
 import { colors } from '../util/colors';
@@ -24,12 +26,12 @@ export function FormField({ label, value, onChangeText, placeholder, error, secu
   return (
     <View style={[styles.wrap, variant === 'editor' && styles.editorWrap, (variant === 'safe' || variant === 'safe-note') && { marginBottom: 0 }]}>
       {!hideLabel && 
-        <View style={[styles.headingRow, variant === 'safe-note' && { justifyContent: 'flex-start', gap: 6 }]}>
-          <Text style={[styles.label, (variant === 'account' || variant === 'safe-note') && { fontSize: 15, lineHeight: 22 }, variant === 'meal' && styles.mealLabel, variant === 'editor' && styles.editorLabel]}>
+        <View style={[styles.headingRow, (variant === 'safe' || variant === 'safe-note') && styles.safeHeading]}>
+          <Text style={[styles.label, variant === 'account' && { fontSize: 15, lineHeight: 22 }, (variant === 'safe' || variant === 'safe-note') && styles.safeLabel, variant === 'meal' && styles.mealLabel, variant === 'editor' && styles.editorLabel]}>
             {label}
             </Text>
             {optionalLabel && 
-            <Text style={[styles.optionalLabel, variant === 'safe-note' && { fontSize: 12, fontFamily: fonts.interBold }]}>
+            <Text style={[styles.optionalLabel, (variant === 'safe' || variant === 'safe-note') && styles.safeOptional]}>
               {optionalLabel}
             </Text>
             }
@@ -52,6 +54,9 @@ export function FormField({ label, value, onChangeText, placeholder, error, secu
 }
 
 const styles = StyleSheet.create({
+  safeHeading: { justifyContent: 'flex-start', gap: 7 },
+  safeLabel: { fontSize: 13, lineHeight: 18 },
+  safeOptional: { color: colors.homeSubtitle, fontSize: 12, fontFamily: fonts.interBold },
   mealLabel: { fontFamily: fonts.poppinsSemiBold, fontSize: 10, textTransform: 'none', color: colors.homeText },
   mealInput: { minHeight: 46, paddingHorizontal: 12, borderRadius: 10, borderColor: colors.homeBorder, fontFamily: fonts.poppinsRegular, color: colors.homeText },
   headingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 4, minHeight: 16 },

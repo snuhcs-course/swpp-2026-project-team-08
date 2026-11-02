@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-# Changed: Dietary Pattern 선택 및 저장
+# Changed: 식생활 유형 저장 및 익숙한 음식의 선택 조리 방법
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 
 """Onboarding request and response shapes."""
@@ -93,7 +93,7 @@ class SafeFoodWriteDto(StrictDto):
             raise ValueError("id must be a positive BIGINT string")
         return value
 
-    @field_validator("name", "preparation")
+    @field_validator("name")
     @classmethod
     def not_blank(cls, value: str) -> str:
         if not value.strip():

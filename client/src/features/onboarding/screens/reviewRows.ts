@@ -2,7 +2,7 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: Dietary Pattern 선택 및 저장
+// Changed: 식생활 유형 및 선택 조리 방법 없는 익숙한 음식 요약
 
 import { dietaryPatternLabel } from '../../../util/dietaryPattern';
 import type { Language } from '../../../types/profile';
@@ -30,7 +30,7 @@ export function reviewRows(draft: OnboardingDraft, language: Language): ReviewRo
       value: draft.noSafeFoods
         ? s.onboarding.noSafeFoods
         : draft.safeFoods.length
-          ? draft.safeFoods.map((food) => `${food.name} · ${food.preparation}`).join(', ')
+          ? draft.safeFoods.map((food) => [food.name, food.preparation].filter(Boolean).join(' · ')).join(', ')
           : s.common.notEntered,
     },
   ];

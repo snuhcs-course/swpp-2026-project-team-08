@@ -1,7 +1,7 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: Validate current onboarding requirements and retired dietary-approach migration
-// Dietary Pattern 선택 및 저장
+// Dietary Pattern 선택 및 저장; 익숙한 음식의 조리 방법 선택 입력 검증
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -60,10 +60,12 @@ test('custom choices are trimmed, case-insensitively unique, and replace none', 
   assert.deepEqual(addUnique(['none'], ' Soup '), ['Soup']);
   assert.deepEqual(input, ['Rice']);
 });
-test('safe foods require a nonblank name and preparation', () => {
+test('safe foods require a nonblank name; cooking method is optional', () => {
   assert.equal(canAddSafeFood({ name: 'Rice', preparation: 'Boiled' }), true);
   assert.equal(canAddSafeFood({ name: ' ', preparation: 'Boiled' }), false);
-  assert.equal(canAddSafeFood({ name: 'Rice', preparation: ' ' }), false);
+  assert.equal(canAddSafeFood({ name: 'Rice', preparation: ' ' }), true);
+  assert.equal(canAddSafeFood({ name: 'Rice', preparation: '' }), true);
+  assert.equal(canAddSafeFood({ name: '', preparation: '' }), false);
 });
 test('safe food warnings match a selected allergy but ignore none', () => {
   const draft = { ...completeDraft(), allergies: ['egg'], safeFoods: [

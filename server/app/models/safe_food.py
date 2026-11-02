@@ -1,3 +1,6 @@
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+# Changed: 익숙한 음식의 조리 방법을 선택 입력으로 허용
+
 """Foods the child reliably accepts."""
 
 from datetime import datetime
@@ -24,7 +27,6 @@ class SafeFood(Base):
         UniqueConstraint("user_id", "position", name="uq_safe_foods_user_position"),
         CheckConstraint("position >= 0", name="ck_safe_foods_position"),
         CheckConstraint("trim(name) <> ''", name="ck_safe_foods_name"),
-        CheckConstraint("trim(preparation) <> ''", name="ck_safe_foods_preparation"),
     )
 
     id: Mapped[int] = mapped_column(

@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: 온보딩 라벨 및 Dietary Pattern 설명 간격
+// Changed: 온보딩 라벨·식생활 설명 간격 및 익숙한 음식 추가 폼
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
@@ -143,18 +143,27 @@ export const styles = StyleSheet.create({
     fontFamily: fonts.interRegular,
     flex: 1,
   },
+  safeFoodChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   safeFoodChip: {
-    borderRadius: 10,
-    backgroundColor: colors.onboardingSelected,
-    padding: 11,
-    marginBottom: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 8, maxWidth: '100%',
+    borderRadius: 16, borderWidth: 1, borderColor: colors.success,
+    backgroundColor: colors.successSurface, paddingLeft: 13, paddingRight: 6, paddingVertical: 6,
   },
-  safeFoodAddRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-  safeFoodQuickInput: { flex: 1, height: 40, borderWidth: 1, borderColor: colors.onboardingBorder, borderRadius: 8, backgroundColor: colors.surface, paddingHorizontal: 10, color: colors.onboardingText, fontSize: 13, fontFamily: fonts.interRegular },
-  safeFoodPlaceholder: { color: colors.homeSubtitle },
-  safeFoodAddButton: { width: 40, height: 40, borderRadius: 8, backgroundColor: colors.onboardingPrimary, alignItems: 'center', justifyContent: 'center' },
-  safeFoodAddPlus: { color: colors.surface, fontSize: 22, fontFamily: fonts.interMedium, lineHeight: 26 },
-  multipleHint: { color: colors.onboardingMuted, fontSize: 8, fontFamily: fonts.interRegular, textAlign: 'right', marginTop: 3 },
+  safeFoodChipCopy: { flexShrink: 1, gap: 1 },
+  safeFoodChipName: { color: colors.onboardingText, fontSize: 13, lineHeight: 18, fontFamily: fonts.poppinsMedium },
+  safeFoodChipDetails: { color: colors.success, fontSize: 11, lineHeight: 15, fontFamily: fonts.interMedium },
+  safeFoodRemove: { minWidth: 24, minHeight: 32, alignItems: 'center', justifyContent: 'center' },
+  safeFoodRemoveText: { color: colors.success, fontSize: 18, fontFamily: fonts.interBold },
+  safeFoodNone: { marginTop: 18 },
+  multipleHint: { color: colors.onboardingMuted, fontSize: 11, fontFamily: fonts.interRegular, textAlign: 'right', marginTop: 3 },
+  safeFoodFormHeading: { gap: 4 },
+  safeFoodFields: { gap: 12 },
+  safeFoodCooking: { gap: 5 },
+  safeFoodFieldHeading: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  safeFoodFieldLabel: { color: colors.onboardingText, fontSize: 13, lineHeight: 18, fontFamily: fonts.poppinsSemiBold },
+  safeFoodOptional: { color: colors.homeSubtitle, fontSize: 12, fontFamily: fonts.interBold },
+  safeFoodSubmit: { alignSelf: 'flex-end', minHeight: 30, borderRadius: 8, paddingHorizontal: 10 },
+  safeFoodSubmitLabel: { fontSize: 13, lineHeight: 18 },
   safeFoodFormTitle: { color: colors.onboardingText, fontSize: 16, fontFamily: fonts.poppinsSemiBold },
   safeFoodFormSubtitle: { color: colors.onboardingMuted, fontSize: 13, lineHeight: 17.55, fontFamily: fonts.poppinsRegular },
   openSafeFood: {

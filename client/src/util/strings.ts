@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: 식생활 유형·한국어 UX 문구·온보딩 조사 및 익숙한 음식 폼 정리
+// Changed: 식생활 유형·한국어 UX·익숙한 음식 폼 및 음식 수용 정도 선택지
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -650,6 +650,8 @@ const abcCopy = {
   en: {
     saveCheckinHeader: 'Save check-in', mealSaveFailed: 'We couldn’t save your check-in', reviewSaveFailed: 'We couldn’t save your meal', entriesKept: 'Your entries are still here. Please try again.', saveWait: 'Please wait while we save this meal.', returnEdit: 'Return back to edit', retrySameMeal: 'Retry continues saving this same meal, not a new record. Your foods, confirmations and links are kept.', mealCheckinHeader: 'Meal check-in', reviewSavedHeader: 'Save After-meal Review', reviewSavedTitle: 'This Meal Review saved', returnHome: 'Return to Home for now', viewMealSuggestions: 'View Meal Suggestions', addFoodLabel: 'Add Food',
     ready: 'You’re ready to begin', readyFor: (name: string) => `Learn what food ${name} can explore`, next: 'Go to home', acceptance: 'Acceptance',
+    acceptanceOptions: ['Unfamiliar', 'Often\nRejected', 'Often\nAccepted', 'Safe Food'] as const,
+    acceptanceUnset: 'Not entered',
     cooking: 'Cooking method', detail: 'Additional detail', selectCooking: 'Select method',
     cookingOptions: ['Steamed', 'Boiled', 'Pan-fried', 'Baked', 'Roasted', 'Grilled', 'Raw', 'Other'],
     missingPhoto: 'No Before-meal photo added', removed: (name: string) => `${name} removed`, undo: 'Undo',
@@ -672,6 +674,8 @@ const abcCopy = {
     saveCheckinHeader: '식사 기록 저장', mealSaveFailed: '식사 기록을 저장하지 못했어요', reviewSaveFailed: '식후 기록을 저장하지 못했어요', entriesKept: '입력한 내용을 확인하고 다시 시도해 주세요.', saveWait: '이 식사를 저장하는 동안 잠시 기다려 주세요.', returnEdit: '편집 화면으로 돌아가기', retrySameMeal: '다시 시도하면 같은 식사를 저장해요. 입력한 음식과 결과, 연결한 추천은 유지돼요.', mealCheckinHeader: '식사 기록', reviewSavedHeader: '식후 기록 저장', reviewSavedTitle: '식후 기록을 저장했어요', returnHome: '홈으로 돌아가기', viewMealSuggestions: '이 식사의 추천 보기', addFoodLabel: '음식 추가',
     ready: '시작할 준비가 되었어요', readyFor: (_name: string) => '아이의 식사를 기록하고 새로운 음식을 살펴보세요', next: '홈으로 이동', acceptance: '평소에 얼마나 잘 먹나요?',
     acceptanceHint: '아이가 평소 이 음식을 얼마나 편하게 받아들이는지 선택해 주세요.',
+    acceptanceOptions: ['낯선 음식', '자주\n거부해요', '자주\n먹어요', '익숙한 음식'] as const,
+    acceptanceUnset: '입력하지 않음',
     cooking: '조리 방법', detail: '추가 설명', selectCooking: '조리 방법 선택',
     cookingOptions: ['찜', '삶기', '팬에 굽기', '오븐에 굽기', '로스팅', '직화 구이', '생식', '기타'],
     missingPhoto: '식전 사진이 없어요', removed: (name: string) => `${name} 삭제됨`, undo: '되돌리기',

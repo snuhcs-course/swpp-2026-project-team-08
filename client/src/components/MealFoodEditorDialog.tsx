@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: 재료 입력·접근성 및 음식 수용 정도 안내
+// Changed: 재료 입력·접근성 및 드래그 가능한 음식 수용 정도 슬라이더
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 
@@ -13,12 +13,15 @@ import { AppButton } from './AppButton';
 import { Dialog } from './Dialog';
 import { DropdownChoice } from './DropdownChoice';
 import { FormField } from './FormField';
+import { AcceptanceSlider } from './AcceptanceSlider';
 
 type Labels = { 
   cooking: string; 
   detail: string; 
   acceptance: string;
   acceptanceHint?: string;
+  acceptanceOptions: readonly [string, string, string, string];
+  acceptanceUnset: string;
   selectCooking: string; 
   cookingOptions: readonly string[] 
 };
@@ -143,13 +146,9 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
     <View style={styles.acceptance}>
       <View style={styles.fieldHeading}><Text style={styles.label}>{labels.acceptance}</Text><Text style={styles.optional}>{m.optional}</Text></View>
       {labels.acceptanceHint && <Text style={styles.label}>{labels.acceptanceHint}</Text>}
-      <View accessibilityRole="radiogroup" style={styles.scale}>
-        <View pointerEvents="none" style={styles.rail} />
-        {food.acceptance != null && <View pointerEvents="none" style={[styles.rail, { width: `${food.acceptance / 3 * 100}%`, backgroundColor: colors.homePrimary }]} />}
-        {[0, 1, 2, 3].map((value) => <Pressable key={value} accessibilityRole="radio" accessibilityLabel={`${labels.acceptance}: ${value}`} accessibilityState={{ checked: food.acceptance === value }} onPress={() => onChange({ acceptance: food.acceptance === value ? null : value })} style={styles.scaleValue}>
-          <View style={[styles.dot, food.acceptance !== value && styles.hiddenDot]} /><Text style={styles.scaleText}>{value}</Text>
-        </Pressable>)}
-      </View>
+      <AcceptanceSlider value={food.acceptance ?? null} label={labels.acceptance}
+        options={labels.acceptanceOptions} unsetLabel={labels.acceptanceUnset}
+        onChange={(acceptance) => onChange({ acceptance })} />
     </View>
   </Dialog>
   );
@@ -176,12 +175,6 @@ const styles = StyleSheet.create({
   ingredientSizer: { opacity: 0 },
   ingredientField: { paddingHorizontal: 8, paddingVertical: 0, borderRadius: 999 },
   acceptance: { gap: 8 },
-  scale: { width: 280, maxWidth: '100%', alignSelf: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  rail: { position: 'absolute', left: 0, right: 0, top: 6, height: 3, backgroundColor: colors.editorRail },
-  scaleValue: { alignItems: 'center', minWidth: 12, paddingTop: 1 },
-  dot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.homePrimary },
-  hiddenDot: { opacity: 0 },
-  scaleText: { color: colors.editorPlaceholder, fontFamily: fonts.interBold, fontSize: 12, lineHeight: 17 },
   actions: { flexDirection: 'row', gap: 8 },
   button: { flex: 1, minHeight: 44, height: 44, borderRadius: 10 },
   buttonText: { fontSize: 13, fontFamily: fonts.poppinsSemiBold },

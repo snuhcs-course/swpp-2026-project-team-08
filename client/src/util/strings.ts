@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: 식생활 유형·한국어 UX·익숙한 음식 폼 및 음식 수용 정도 선택지
+// Changed: 식생활 유형·한국어 UX·익숙한 음식 폼 및 음식 수용 정도 및 식후 검토 화면
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -133,9 +133,19 @@ const en = {
     replace: 'Replace photo', removePhoto: 'Remove photo', usePhoto: 'Use this photo',
     photoLocal: 'Optional photo for your meal record. Enter food outcomes yourself.',
     missingBefore: 'The before-meal photo is unavailable. You can enter outcomes manually.', manual: 'Enter food outcomes', noPhoto: 'Continue without photo',
+    reviewStep: 'AFTER MEAL · STEP 1 OF 5',
+    amountQuestion: (name: string) => `How much did ${name} eat?`,
+    amountHint: 'Think about the food as a whole, slide or tap',
+    reviewIngredients: 'Review ingredients',
+    reviewIngredientsHint: 'Tap an ingredient to add its own review card.',
+    foodSummary: (ingredients: number, details: number) => `${ingredients} ingredient${ingredients === 1 ? '' : 's'}${details ? ` · ${details} detail${details === 1 ? '' : 's'}` : ''}`,
+    ingredientContext: (food: string) => `in ${food}`,
+    toggleFood: (food: string) => `Expand or collapse ${food}`,
+    removeIngredientReview: (name: string) => `Remove ${name} review`,
+    addFood: 'Add a food',
     itemCount: (count: number) => `${count} food item${count === 1 ? '' : 's'}`,
     outcomes: { eaten: 'Eaten', tasted: 'Tasted', untouched: 'Untouched', unclear: 'Unclear' }, definitions: 'Outcome definitions', gotIt: 'Got it',
-    unanswered: 'Unanswered', unansweredHint: 'Choose an outcome for each food and selected ingredient. Choose Unclear when unsure.',
+    unanswered: 'Unanswered', unansweredHint: 'Choose an outcome for each food and selected ingredient.',
     definitionsIntro: 'Use what you observed. You don’t need to estimate exact amounts.',
     outcomeDescriptions: { eaten: 'You observed the child swallow some food.', tasted: 'Licked or tasted, with no confirmed swallow', untouched: 'Neither tasted nor ate', unclear: 'You cannot determine what happened', unanswered: 'This cannot be saved. Choose unclear when the outcome is unknown.' },
     difficultyIntro: 'Some categories allow multiple value selections.', selectCategory: 'Select category', selectValue: 'value',
@@ -382,6 +392,16 @@ const ko = {
     dateLabel: (date: string, today: boolean) => `${today ? '오늘 · ' : ''}${date}`,
   },
   afterMealReview: {
+    reviewStep: '식후 기록 · 5단계 중 1단계',
+    amountQuestion: (name: string) => `${name}의 먹은 결과를 알려주세요`,
+    amountHint: '음식 전체를 기준으로 밀거나 눌러 선택해 주세요',
+    reviewIngredients: '재료별 기록',
+    reviewIngredientsHint: '재료를 누르면 개별 기록 카드가 추가돼요.',
+    foodSummary: (ingredients: number, details: number) => `재료 ${ingredients}개${details ? ` · 개별 기록 ${details}개` : ''}`,
+    ingredientContext: (food: string) => `${food}의 재료`,
+    toggleFood: (food: string) => `${food} 펼치기 또는 접기`,
+    removeIngredientReview: (name: string) => `${name} 기록 삭제`,
+    addFood: '음식 추가',
     titles: { photo: '식후 사진', preview: '사진 확인', compare: '식사 사진 확인', comparing: '사진 비교 중', 'comparison-error': '비교 실패', outcomes: '음식별로 먹은 결과를 알려주세요', difficulties: '먹기 어려워했던 특징이 있나요?', suggestions: '저장한 추천을 시도했나요?', },
     fileHint: '지원되는 이미지 파일만 선택할 수 있어요', draftSaved: '작성 중인 내용은 자동으로 저장돼요.', optional: '선택 사항', photoIntro: '식후 사진 추가', photoRequirement: '사진은 선택 사항이에요. 식사 기록에 함께 남길 수 있어요.',
     photoLabel: '식후 사진', before: '식전', after: '식후', enlarge: '눌러서 크게 보기',
@@ -390,7 +410,7 @@ const ko = {
     missingBefore: '식전 사진을 볼 수 없어요. 먹은 결과는 직접 입력할 수 있어요.', manual: '결과 직접 입력', noPhoto: '사진 없이 입력하기',
     itemCount: (count: number) => `음식 ${count}개`,
     outcomes: { eaten: '먹음', tasted: '맛봄', untouched: '먹거나 맛보지 않음', unclear: '확인 어려움' }, definitions: '결과 설명', gotIt: '확인',
-    unanswered: '미응답', unansweredHint: '모든 음식과 선택한 재료의 결과를 입력해 주세요. 판단하기 어려우면 ‘확인 어려움’을 선택해 주세요.',
+    unanswered: '미응답', unansweredHint: '모든 음식과 선택한 재료의 결과를 입력해 주세요.',
     definitionsIntro: '직접 본 내용을 선택해 주세요. 정확한 양은 입력하지 않아도 돼요.',
     outcomeDescriptions: { eaten: '아이가 음식을 삼키는 모습을 봤어요.', tasted: '핥거나 맛봤지만 삼켰는지는 확인하지 못했어요.', untouched: '먹거나 맛보지 않았어요.', unclear: '먹거나 맛봤는지 판단하기 어려워요.', unanswered: '결과를 선택해야 저장할 수 있어요. 모르면 ‘확인 어려움’을 선택해 주세요.' },
     difficultyIntro: '일부 항목은 특징을 여러 개 추가할 수 있어요.', selectCategory: '항목 선택', selectValue: '특징 선택',

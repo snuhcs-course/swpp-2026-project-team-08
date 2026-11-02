@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: Labeled acceptance slider with continuous dragging and accessible adjustment
+// Changed: Accessible acceptance slider and meal review appearance
 
 import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type GestureResponderEvent } from 'react-native';
@@ -8,23 +8,27 @@ import { fonts } from '../util/fonts';
 
 const TRACK_INSET = 16;
 
-export function AcceptanceSlider({ value, label, options, unsetLabel, onChange }: {
+export function AcceptanceSlider({ value, label, options, unsetLabel, onChange, review = false, clearable = true }: {
+  review?: boolean;
+  clearable?: boolean;
   value: number | null;
   label: string;
-  options: readonly [string, string, string, string];
+  options: readonly string[];
   unsetLabel: string;
   onChange: (value: number | null) => void;
 }) {
   const width = useRef(0);
   const gesture = useRef<{ x: number; pageX: number; value: number | null } | null>(null);
   const [dragPosition, setDragPosition] = useState<number | null>(null);
-  const position = dragPosition ?? (value == null ? null : value / 3);
+  const lastIndex = options.length - 1;
+  const inset = review ? 5 : TRACK_INSET;
+  const position = dragPosition ?? (value == null ? null : value / lastIndex);
 
   function updatePosition(x: number) {
-    if (width.current <= TRACK_INSET * 2 || !gesture.current) return;
-    const fraction = Math.max(0, Math.min(1, (x - TRACK_INSET) / (width.current - TRACK_INSET * 2)));
+    if (width.current <= inset * 2 || !gesture.current) return;
+    const fraction = Math.max(0, Math.min(1, (x - inset) / (width.current - inset * 2)));
     setDragPosition(fraction);
-    const next = Math.round(fraction * 3);
+    const next = Math.round(fraction * lastIndex);
     if (next !== gesture.current.value) {
       gesture.current.value = next;
       onChange(next);
@@ -46,10 +50,10 @@ export function AcceptanceSlider({ value, label, options, unsetLabel, onChange }
       accessible
       accessibilityRole="adjustable"
       accessibilityLabel={label}
-      accessibilityValue={{ min: 0, max: 3, ...(value == null ? {} : { now: value }), text: value == null ? unsetLabel : options[value].replace('\n', ' ') }}
+      accessibilityValue={{ min: 0, max: lastIndex, ...(value == null ? {} : { now: value }), text: value == null ? unsetLabel : options[value].replace('\n', ' ') }}
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={({ nativeEvent: { actionName } }) => {
-        if (actionName === 'increment') onChange(value == null ? 0 : Math.min(3, value + 1));
+        if (actionName === 'increment') onChange(value == null ? 0 : Math.min(lastIndex, value + 1));
         if (actionName === 'decrement') onChange(value == null ? 0 : Math.max(0, value - 1));
       }}
       onLayout={(event) => { width.current = event.nativeEvent.layout.width; }}
@@ -64,10 +68,10 @@ export function AcceptanceSlider({ value, label, options, unsetLabel, onChange }
       onResponderTerminate={finish}
       style={styles.touchArea}
     >
-      <View pointerEvents="none" style={styles.track}>
-        {position != null && <>
-          <View style={[styles.fill, { width: `${position * 100}%` }]} />
-          <View style={[styles.thumb, { left: `${position * 100}%` }]} />
+      <View pointerEvents="none" style={[styles.track, review && styles.reviewTrack]}>
+        {(position != null || review) && <>
+          <View style={[styles.fill, { width: `${(position ?? 0) * 100}%` }]} />
+          <View style={[styles.thumb, { left: `${(position ?? 0) * 100}%` }, review && position == null && styles.unsetThumb]} />
         </>}
       </View>
     </View>
@@ -77,16 +81,19 @@ export function AcceptanceSlider({ value, label, options, unsetLabel, onChange }
         accessibilityRole="radio"
         accessibilityLabel={option.replace('\n', ' ')}
         accessibilityState={{ checked: value === index }}
-        onPress={() => onChange(value === index ? null : index)}
+        onPress={() => onChange(clearable && value === index ? null : index)}
         style={styles.option}
       >
-        <Text style={[styles.text, value === index && styles.selectedText]}>{option}</Text>
+        <Text style={[styles.text, review && styles.reviewText, value === index && styles.selectedText]}>{option}</Text>
       </Pressable>)}
     </View>
   </View>;
 }
 
 const styles = StyleSheet.create({
+  reviewTrack: { marginHorizontal: 5 },
+  reviewText: { fontSize: 12, lineHeight: 15, color: colors.reviewLabel },
+  unsetThumb: { backgroundColor: colors.homeCalendarMuted },
   touchArea: { height: 44, justifyContent: 'center' },
   track: { marginHorizontal: TRACK_INSET, height: 6, borderRadius: 3, backgroundColor: colors.editorDisabled },
   fill: { height: '100%', borderRadius: 3, backgroundColor: colors.homePrimary },

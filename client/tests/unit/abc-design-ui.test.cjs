@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Verify onboarding, navigation, meal flow actions, and step progress
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Verify meal flow actions and redesigned outcome progress
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
@@ -77,7 +77,7 @@ mockModules((name) => {
       useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: bottomInset, left: 0 }),
     };
   if (name === "expo-image") return { Image: primitive("img") };
-  if (name === "@expo/vector-icons") return { Feather: primitive("i") };
+  if (name === "@expo/vector-icons") return { Feather: primitive("i"), Ionicons: primitive("i") };
   if (name.startsWith("@expo/vector-icons/")) return primitive("i");
   return undefined;
 });
@@ -686,23 +686,24 @@ test("before-meal segments follow current screens forward, backward, and without
   }
 });
 
-test("after-meal segments advance to outcomes and stay correct on optional and skipped screens", async (t) => {
+test("after-meal outcome review starts at step one as designed and other screens retain progress", async (t) => {
   const { AfterMealReviewView } = require("../../src/features/after-meal-review/screens/AfterMealReviewView.tsx");
   const { ReviewProgressHeader } = require("../../src/features/after-meal-review/components/ReviewProgressHeader.tsx");
+  const { OutcomesHeader } = require("../../src/features/after-meal-review/components/OutcomesHeader.tsx");
   const base = {
     language: "en", draft: { step: "photo" }, saveStatus: "saved",
     meal: { photo: null, foods: [], mealDate: "2026-10-27", mealType: "lunch", setting: "home" },
   };
   const harness = await renderHook(t, (props) => AfterMealReviewView(props), { props: base });
   for (const [step, filled] of [
-    ["photo", 1], ["preview", 2], ["compare", 3], ["outcomes", 4],
-    ["difficulties", null], ["complete", 5], ["outcomes", 4], ["preview", 2],
-    ["outcomes", 4], ["photo", 1], ["outcomes", 4],
+    ["photo", 1], ["preview", 2], ["compare", 3], ["outcomes", 1],
+    ["difficulties", null], ["complete", 5], ["outcomes", 1], ["preview", 2],
+    ["outcomes", 1], ["photo", 1], ["outcomes", 1],
   ]) {
     await harness.rerender({ ...base, draft: { step } });
-    const header = findElement(harness.current, (node) => node.type === ReviewProgressHeader);
+    const header = findElement(harness.current, (node) => node.type === (step === "outcomes" ? OutcomesHeader : ReviewProgressHeader));
     assert.ok(header);
-    assertSegmentProgress(ReviewProgressHeader(header.props), filled);
+    assertSegmentProgress(header.type(header.props), filled);
   }
 });
 

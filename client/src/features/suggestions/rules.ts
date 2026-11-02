@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Offer only reviewed food items as suggestion targets
 
 import type { MealDetail } from '../../types/mealRecord';
 import type { Suggestion as RecordSuggestion, SuggestionTarget } from '../../types/suggestionRecord';
@@ -12,12 +14,6 @@ export function reviewedSuggestionTargets(meal: MealDetail | null): {
   for (const food of meal.foods) {
     if (!meal.review.foodResults.some((result) => result.foodId === food.id)) continue;
     options.push({ target: { foodId: food.id, ingredientId: null }, name: food.name, detail: '' });
-    for (const ingredient of food.ingredients) {
-      if (!meal.review.ingredientResults.some((result) =>
-        result.foodId === food.id && result.ingredientId === ingredient.id)) continue;
-      options.push({ target: { foodId: food.id, ingredientId: ingredient.id },
-        name: ingredient.name, detail: food.name });
-    }
   }
   return options;
 }

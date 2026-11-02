@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Limit manual suggestion selection to three food items
 
 import { useState } from 'react';
 import { Text, Pressable, View } from 'react-native';
@@ -24,7 +26,7 @@ export function ChangeFoodsSheet({
 }) {
   const [selected, setSelected] = useState(current);
   const c = suggestionCopyFor(language);
-  const changed = selected.length > 0 && (
+  const changed = selected.length > 0 && selected.length <= 3 && (
     selected.length !== current.length
     || selected.some((target) => !current.some((item) => targetKey(item) === targetKey(target)))
   );
@@ -51,10 +53,11 @@ export function ChangeFoodsSheet({
           <Pressable
             key={targetKey(target)}
             accessibilityRole="checkbox"
-            accessibilityState={{ checked }}
+            accessibilityState={{ checked, disabled: !checked && selected.length >= 3 }}
+            disabled={!checked && selected.length >= 3}
             onPress={() => setSelected((old) => checked
               ? old.filter((item) => targetKey(item) !== targetKey(target)) : [...old, target])}
-            style={s.checkRow}
+            style={[s.checkRow, !checked && selected.length >= 3 && s.disabled]}
           >
             <View style={[s.checkbox, checked && s.checkboxChecked]}>
               {checked && <UiAssetIcon name="suggestion-checked" />}

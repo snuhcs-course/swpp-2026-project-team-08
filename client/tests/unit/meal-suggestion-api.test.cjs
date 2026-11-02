@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Verify target choices exclude tracked ingredients
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -25,7 +27,7 @@ const suggestion = {
   status: 'pending', dismiss_reasons: [], saved_at: null, created_at: '2026-10-21T00:00:00Z',
 };
 
-test('meal suggestions list includes all statuses and generation sends food plus ingredient targets', async () => {
+test('meal suggestion API preserves statuses and legacy ingredient target compatibility', async () => {
   request = async (path) => {
     assert.equal(path, '/api/v1/meals/8/suggestions?status=all');
     return [suggestion];
@@ -62,14 +64,14 @@ test('saved, dismissed, and undo decisions use the v1 decision route', async () 
   await assert.rejects(api.decideMealSuggestion('1', '31', 'dismissed'), /Invalid suggestion decision/);
 });
 
-test('target choices contain reviewed food and ingredient targets only', () => {
+test('target choices contain reviewed food items and exclude tracked ingredients', () => {
   const meal = { foods: [{ id: '2', name: 'Potato stew', ingredients: [
     { id: '212', name: 'Potato' }, { id: '182', name: 'Carrot' },
   ] }], review: { foodResults: [{ foodId: '2' }], ingredientResults: [
     { foodId: '2', ingredientId: '212' },
   ] } };
   assert.deepEqual(reviewedSuggestionTargets(meal).map((item) => item.target), [
-    { foodId: '2', ingredientId: null }, { foodId: '2', ingredientId: '212' },
+    { foodId: '2', ingredientId: null },
   ]);
   assert.deepEqual(reviewedSuggestionTargets({ ...meal, review: null }), []);
   assert.deepEqual(unGeneratedTargets(reviewedSuggestionTargets(meal), [{

@@ -296,8 +296,7 @@ revision `0020_meal_food_restructure`, down_revision `0019_meal_enums`
   - 난이도 사유의 형식이 `{category, subcategory, value}` 객체 목록에서 `DifficultyReason` 문자열 목록으로 바뀐다.
     서버의 `Difficulty` DTO(`meals/dto.py`)는 삭제하고 `list[DifficultyReason]`으로 대체한다. 클라이언트의 `Difficulty` 타입,
     `difficultyOptions`, `textureQuestions`와 `reviewDto.ts`의 변환도 새 값에 맞춘다.
-  - 클라이언트에서 `difficulties`, `food_snapshot`, `food_id`, `ingredient_id`를 쓰는 파일: `client/src/data/api/mealLogApi.ts`,
-    `mealReviewApi.ts`, `data/dto/mealDto.ts`, `reviewDto.ts`, `suggestionDto.ts`, `data/storage/afterMealReviewStorage.ts`,
+  - 클라이언트에서 `difficulties`, `food_snapshot`, `food_id`, `ingredient_id`를 쓰는 파일: `client/src/data/api/mealReviewApi.ts`, `data/dto/mealDto.ts`, `reviewDto.ts`, `suggestionDto.ts`, `data/storage/afterMealReviewStorage.ts`,
     `features/after-meal-review/`, `features/meal-log/rules.ts`, `rules/recommendationSafety.ts`, `types/afterMealReview.ts`,
     `types/reviewRecord.ts`, `util/strings.ts`.
 - `suggestions` 테이블의 행은 삭제되고, 테이블 자체는 2.7에서 `food_recommendations`로 대체된다.

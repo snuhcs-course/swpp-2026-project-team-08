@@ -1,8 +1,11 @@
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 리뷰 응답을 식사 상세로 받고 난이도 메모는 보내지 않도록 변경
+
 import type { AfterMealReview } from '../../types/afterMealReview';
 import type { MealDetail } from '../../types/mealRecord';
 import type { MealReviewDraft } from '../../types/reviewRecord';
 import { ingredientId } from '../../rules/ingredientIds';
-import { toMealReviewResponse } from '../dto/mealDto';
+import { toMealDetail } from '../dto/mealDto';
 import { toMealReviewWrite } from '../dto/reviewDto';
 import { apiRequest } from '../network/apiClient';
 
@@ -28,7 +31,7 @@ export function prepareReviewWrite(review: AfterMealReview, detail: MealDetail):
         difficulties: (review.difficulties[food.id] ?? []).map((tag) => ({
           category: tag.category,
           subcategory: tag.subcategory ?? null,
-          value: tag.note ? `${tag.value}: ${tag.note}` : tag.value,
+          value: tag.value,
         })),
         ingredientOutcomes: outcome.ingredients.map((item) => {
           const id = ingredientIds.get(item.id);
@@ -44,12 +47,12 @@ export async function writeMealReview(
   review: AfterMealReview, detail: MealDetail,
 ): Promise<MealDetail> {
   const body = toMealReviewWrite(prepareReviewWrite(review, detail));
-  const response = toMealReviewResponse(await apiRequest<unknown>(
+  const response = toMealDetail(await apiRequest<unknown>(
     `/api/v1/meals/${encodeURIComponent(detail.id)}/review`,
     { method: 'PUT', body: JSON.stringify(body) },
   ));
-  if (response.meal.id !== detail.id || response.meal.userId !== detail.userId) {
+  if (response.id !== detail.id || response.userId !== detail.userId) {
     throw new Error('Mismatched meal review response');
   }
-  return { ...detail, ...response.meal, review: response.review };
+  return response;
 }

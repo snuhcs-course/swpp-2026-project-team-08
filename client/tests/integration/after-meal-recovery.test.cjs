@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 리뷰 요청의 대문자 outcome 과 식사 상세 응답 기준으로 수정
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -51,12 +53,9 @@ test('failed review preserves the draft; retry updates storage, detail cache, an
     assert.equal(new URL(url).pathname, '/api/v1/meals/10/review');
     assert.equal(init.method, 'PUT');
     const body = JSON.parse(init.body);
-    assert.equal(body.food_results[0].outcome, 'tasted');
+    assert.equal(body.food_results[0].outcome, 'TASTED');
     requests++;
-    if (!fails) {
-      const { meal: savedMeal, ...savedReview } = reviewResponse(response, body);
-      serverMeal = { ...response, ...savedMeal, review: savedReview };
-    }
+    if (!fails) serverMeal = reviewResponse(response, body);
     return new Response(JSON.stringify(fails ? { error_code: 'UNAVAILABLE' } : reviewResponse(response, body)),
       { status: fails ? 503 : 200 });
   });

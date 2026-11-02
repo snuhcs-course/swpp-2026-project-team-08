@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 서버가 받지 않는 난이도 카테고리 제거
 
 import type { MealPhoto } from './meal';
 
@@ -14,8 +16,8 @@ export type FoodOutcome = {
 };
 
 export const difficultyCategories = [
-  'texture', 'tasteType', 'tasteIntensity', 'smell', 'color',
-  'shape', 'visibility', 'temperature', 'notSure', 'pieceSize', 'arrangement',
+  'texture', 'tasteType', 'smell', 'color',
+  'temperature', 'notSure', 'pieceSize', 'arrangement',
 ] as const;
 export type DifficultyCategory = (typeof difficultyCategories)[number];
 export type DifficultyTag = {

@@ -1,6 +1,8 @@
 # AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
 # Changed: Register separate check-in ingredient storage in the schema contract
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+# Changed: 테이블 목록과 식사 저장·리뷰 헬퍼를 새 ORM·식사 계약으로 변경
 """Contract edge cases for authenticated meals, reviews, and suggestions."""
 
 from datetime import timedelta
@@ -20,18 +22,16 @@ from tests.helpers.suggestions import batch, install_model
 def test_only_current_tables_and_routes_are_registered() -> None:
     assert set(Base.metadata.tables) == {
         "ingredients",
-        "meal_ingredients",
+        "ingredient_restrictions",
         "meals",
         "meal_foods",
         "meal_food_ingredients",
-        "review_food_results",
-        "review_ingredient_results",
-        "suggestions",
-        "suggestion_meal_links",
+        "food_recommendations",
+        "food_recommendation_tries",
         "users",
+        "user_email_change_attempts",
         "user_profiles",
-        "user_profile_choices",
-        "safe_foods",
+        "user_profile_safe_foods",
         "user_consents",
     }
     assert not any(path.startswith("/api/v1/children/") for path in app.openapi()["paths"])
@@ -42,7 +42,6 @@ async def save_meal(
     headers: dict[str, str],
     meal_date: str,
     *,
-    food_id: str = "1",
     ingredient: bool = False,
 ) -> str:
     response = await client.put(
@@ -50,14 +49,13 @@ async def save_meal(
         headers=headers,
         json={
             "meal_date": meal_date,
-            "meal_type": "lunch",
-            "setting": "home",
+            "meal_type": "LUNCH",
+            "setting": "HOME",
             "before_photo_uri": "before.jpg",
             "foods": [
                 {
-                    "id": food_id,
                     "name": "감자",
-                    "ingredients": [{"id": "212", "name": "감자"}] if ingredient else [],
+                    "ingredients": [{"name": "감자"}] if ingredient else [],
                 }
             ],
         },
@@ -71,10 +69,15 @@ async def review_meal(
     headers: dict[str, str],
     meal_id: str,
     *,
-    food_id: str = "1",
-    ingredient_id: str | None = None,
-    outcome: str | None = None,
+    food_id: str | None = None,
+    outcome: str = "EATEN",
 ) -> object:
+    if food_id is None:
+        # 음식 id 는 서버가 발급하므로 저장된 식사에서 찾는다. 남의 식사면 404 가 그대로 돌아온다.
+        detail = await client.get(f"/api/v1/meals/{meal_id}", headers=headers)
+        if detail.status_code != 200:
+            return detail
+        food_id = detail.json()["foods"][0]["id"]
     return await client.put(
         f"/api/v1/meals/{meal_id}/review",
         headers=headers,
@@ -84,16 +87,8 @@ async def review_meal(
                 {
                     "food_id": food_id,
                     "outcome": outcome,
-                    "difficulties": [],
-                    "ingredient_outcomes": []
-                    if ingredient_id is None
-                    else [
-                        {
-                            "ingredient_id": ingredient_id,
-                            "outcome": "tasted",
-                            "difficulties": [],
-                        }
-                    ],
+                    "difficulty_reasons": [],
+                    "ingredient_outcomes": [],
                 }
             ],
         },
@@ -115,15 +110,15 @@ async def test_meal_history_review_replacement_and_ownership(client: AsyncClient
     assert (await review_meal(client, other, older)).status_code == 404
     assert (await client.delete(f"/api/v1/meals/{older}", headers=other)).status_code == 404
     assert (await review_meal(client, owner, older, food_id="999")).status_code == 422
-    first = await review_meal(client, owner, older, outcome="eaten")
+    first = await review_meal(client, owner, older, outcome="EATEN")
     assert first.status_code == 200, first.text
-    replaced = await review_meal(client, owner, older, outcome="tasted")
+    replaced = await review_meal(client, owner, older, outcome="TASTED")
     assert replaced.status_code == 200, replaced.text
     detail = (await client.get(f"/api/v1/meals/{older}", headers=owner)).json()
     assert detail["before_photo_uri"] == "before.jpg"
     assert detail["after_photo_uri"] == "after.jpg"
-    assert len(detail["review"]["food_results"]) == 1
-    assert detail["review"]["food_results"][0]["outcome"] == "tasted"
+    assert [food["outcome"] for food in detail["foods"]] == ["TASTED"]
+    assert "review" not in detail
 
 
 @pytest.mark.asyncio

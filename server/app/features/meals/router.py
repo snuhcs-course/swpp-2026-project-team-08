@@ -1,4 +1,7 @@
-"""Authenticated meal write API."""
+# AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+# Changed: 저장·수정·리뷰가 상세 응답을 돌려주도록 변경, 카탈로그 오류 제거
+
+"""인증된 사용자의 식사 저장·조회·수정·리뷰 API."""
 
 from typing import Annotated
 
@@ -7,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.errors import ErrorMappedRoute, ErrorSpec, error_specs
 from app.core.database import get_session
+from app.core.errors import AppError
 from app.features.auth.dependencies import CurrentUser
 from app.features.meals.data import (
     FoodData,
@@ -15,22 +19,22 @@ from app.features.meals.data import (
     IngredientReviewData,
     MealData,
     ReviewData,
-    SuggestionLinkData,
 )
 from app.features.meals.dto import (
+    FoodWriteRequest,
     MealDetailResponse,
+    MealFoodCreateRequest,
     MealFoodsWriteRequest,
-    MealReviewResponse,
+    MealFoodUpdateRequest,
     MealReviewWriteRequest,
     MealWriteRequest,
-    MealWriteResponse,
 )
-from app.features.meals.present import meal_detail_response, meal_response, meal_review_response
+from app.features.meals.present import meal_detail_response
 from app.features.meals.service import (
     DuplicateIngredientError,
-    IngredientNotFoundError,
+    InvalidFoodError,
+    InvalidRecommendationLinkError,
     InvalidReviewError,
-    InvalidSuggestionLinkError,
     MealAlreadyReviewedError,
     MealNotFoundError,
     MealService,
@@ -43,52 +47,54 @@ def get_meal_service(session: Annotated[AsyncSession, Depends(get_session)]) -> 
     return MealService(session)
 
 
-@router.put("", response_model=MealWriteResponse, summary="식사 저장")
+def _food_data(
+    food: FoodWriteRequest, *, food_id: str | None, recommendation_ids: list[str]
+) -> FoodData:
+    return FoodData(
+        id=int(food_id) if food_id is not None else None,
+        name=food.name,
+        ingredients=[IngredientData(name=item.name) for item in food.ingredients],
+        cooking_method=food.cooking_method,
+        serving_note=food.serving_note,
+        acceptance=food.acceptance,
+        food_recommendation_ids=[int(item) for item in recommendation_ids],
+    )
+
+
+def _created_food(food: MealFoodCreateRequest) -> FoodData:
+    return _food_data(food, food_id=None, recommendation_ids=food.food_recommendation_ids)
+
+
+def _updated_food(food: MealFoodUpdateRequest) -> FoodData:
+    return _food_data(food, food_id=food.id, recommendation_ids=[])
+
+
+MealId = Annotated[int, Path(ge=1, le=2**63 - 1)]
+MEAL_ERRORS: dict[type[AppError], ErrorSpec] = {
+    MealNotFoundError: ErrorSpec(status_code=404, error_code="MEAL_NOT_FOUND")
+}
+
+
+@router.put("", response_model=MealDetailResponse, summary="식사 저장")
 @error_specs(
     {
-        IngredientNotFoundError: ErrorSpec(status_code=404, error_code="INGREDIENT_NOT_FOUND"),
         DuplicateIngredientError: ErrorSpec(status_code=422, error_code="DUPLICATE_INGREDIENT"),
-        InvalidSuggestionLinkError: ErrorSpec(status_code=422, error_code="INVALID_MEAL_LINK"),
+        InvalidRecommendationLinkError: ErrorSpec(status_code=422, error_code="INVALID_MEAL_LINK"),
     }
 )
 async def write_meal(
     payload: MealWriteRequest,
     current_user: CurrentUser,
     service: Annotated[MealService, Depends(get_meal_service)],
-) -> MealWriteResponse:
+) -> MealDetailResponse:
     data = MealData(
         meal_date=payload.meal_date,
         meal_type=payload.meal_type,
         setting=payload.setting,
         before_photo_uri=payload.before_photo_uri,
-        foods=[
-            FoodData(
-                id=food.id,
-                name=food.name,
-                ingredients=[
-                    IngredientData(id=item.id, name=item.name) for item in food.ingredients
-                ],
-                cooking_method=food.cooking_method.value if food.cooking_method else None,
-                serving_note=food.serving_note,
-                acceptance=food.acceptance,
-            )
-            for food in payload.foods
-        ],
-        suggestion_links=[
-            SuggestionLinkData(
-                suggestion_id=link.suggestion_id,
-                food_id=link.food_id,
-                ingredient_id=link.ingredient_id,
-            )
-            for link in payload.suggestion_links
-        ],
+        foods=[_created_food(food) for food in payload.foods],
     )
-    meal = await service.write(user_id=current_user.id, data=data)
-    return meal_response(meal)
-
-
-MealId = Annotated[int, Path(ge=1, le=2**63 - 1)]
-MEAL_ERRORS = {MealNotFoundError: ErrorSpec(status_code=404, error_code="MEAL_NOT_FOUND")}
+    return meal_detail_response(await service.write(user_id=current_user.id, data=data))
 
 
 @router.get("", response_model=list[MealDetailResponse], summary="식사 기록 목록")
@@ -114,8 +120,8 @@ async def get_meal(
     {
         **MEAL_ERRORS,
         MealAlreadyReviewedError: ErrorSpec(status_code=409, error_code="MEAL_ALREADY_REVIEWED"),
-        IngredientNotFoundError: ErrorSpec(status_code=404, error_code="INGREDIENT_NOT_FOUND"),
         DuplicateIngredientError: ErrorSpec(status_code=422, error_code="DUPLICATE_INGREDIENT"),
+        InvalidFoodError: ErrorSpec(status_code=422, error_code="INVALID_MEAL_FOOD"),
     }
 )
 async def update_meal_foods(
@@ -124,23 +130,13 @@ async def update_meal_foods(
     current_user: CurrentUser,
     service: Annotated[MealService, Depends(get_meal_service)],
 ) -> MealDetailResponse:
-    foods = [
-        FoodData(
-            id=item.id,
-            name=item.name,
-            ingredients=[IngredientData(id=part.id, name=part.name) for part in item.ingredients],
-            cooking_method=item.cooking_method.value if item.cooking_method else None,
-            serving_note=item.serving_note,
-            acceptance=item.acceptance,
-        )
-        for item in payload.foods
-    ]
+    foods = [_updated_food(item) for item in payload.foods]
     return meal_detail_response(
         await service.update_foods(user_id=current_user.id, meal_id=meal_id, foods=foods)
     )
 
 
-@router.put("/{meal_id}/review", response_model=MealReviewResponse, summary="식사 평가 저장")
+@router.put("/{meal_id}/review", response_model=MealDetailResponse, summary="식사 평가 저장")
 @error_specs(
     {
         **MEAL_ERRORS,
@@ -152,19 +148,21 @@ async def write_review(
     payload: MealReviewWriteRequest,
     current_user: CurrentUser,
     service: Annotated[MealService, Depends(get_meal_service)],
-) -> MealReviewResponse:
+) -> MealDetailResponse:
     data = ReviewData(
         after_photo_uri=payload.after_photo_uri,
         food_results=[
             FoodReviewData(
                 food_id=int(item.food_id),
                 outcome=item.outcome,
-                difficulties=[value.model_dump() for value in item.difficulties],
+                difficulty_reasons=[reason.value for reason in item.difficulty_reasons],
                 ingredient_outcomes=[
                     IngredientReviewData(
                         ingredient_id=int(ingredient.ingredient_id),
                         outcome=ingredient.outcome,
-                        difficulties=[value.model_dump() for value in ingredient.difficulties],
+                        difficulty_reasons=[
+                            reason.value for reason in ingredient.difficulty_reasons
+                        ],
                     )
                     for ingredient in item.ingredient_outcomes
                 ],
@@ -172,8 +170,9 @@ async def write_review(
             for item in payload.food_results
         ],
     )
-    records = await service.review(user_id=current_user.id, meal_id=meal_id, data=data)
-    return meal_review_response(records)
+    return meal_detail_response(
+        await service.review(user_id=current_user.id, meal_id=meal_id, data=data)
+    )
 
 
 @router.delete("/{meal_id}", status_code=status.HTTP_204_NO_CONTENT, summary="식사 삭제")

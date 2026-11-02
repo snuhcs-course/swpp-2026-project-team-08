@@ -50,16 +50,33 @@
 ## 3. 식사 API
 
 ### 음식·재료 id
-- 식사를 저장하는 요청에서 음식과 재료의 `id`를 보내지 않는다. 응답에 서버가 발급한 id가 들어온다.
-- 식사를 수정할 때 기존 음식·재료를 어떻게 식별하는지는 7절의 협의 항목이다.
-- 식사 안의 재료(`meal_food_ingredients`)는 사용자가 입력한 이름을 그대로 저장한 기록이다. 추천용 재료 카탈로그와는 별개이며
-  서로 참조하지 않는다.
+- 음식과 재료의 `id`는 서버가 발급한다. 식사를 저장하는 요청(`PUT /meals`)에는 음식과 재료의 `id`를 보내지 않고
+  (보내면 422), 응답(저장·수정·리뷰·조회 공통, `MealDetailResponse`)에 발급된 id가 들어온다.
+- 재료는 이름만 보낸다. 사용자가 입력한 이름을 그대로 저장하며 음식마다 별도 행이다. 같은 음식 안에서 공백·대소문자를
+  무시하고 이름이 겹치면 `422 DUPLICATE_INGREDIENT`다. 추천용 재료 카탈로그를 참조하지 않으므로 `INGREDIENT_NOT_FOUND`는 없다.
+- 식사를 수정할 때(`PUT /meals/{id}/foods`)는 음식 목록 전체를 보낸다.
+  - 기존 음식은 `id`를 함께 보내 갱신하고, `id`가 없는 음식은 새로 만들며, 요청에서 빠진 음식은 삭제한다.
+    삭제한 음식에 붙은 추천 시도 기록도 함께 삭제된다. 이 식사에 속하지 않는 `id`는 `422 INVALID_MEAL_FOOD`다.
+  - 재료는 음식별로 목록 전체를 교체한다. 재료 `id`는 저장할 때마다 새로 발급되므로 서버에 다시 보내거나 영구 키로 쓰지 않는다.
+  - 식후 리뷰가 있는 식사는 수정할 수 없다 (`409 MEAL_ALREADY_REVIEWED`).
+
+### 추천 시도 연결
+- 식사를 저장할 때 음식 객체의 `food_recommendation_ids`(문자열 id 목록)로 이 음식으로 시도한 **저장된 추천**을 연결한다.
+  `suggestion_links`는 없어진다. 재료 단위 연결(`ingredient_id`)도 없어진다.
+- 본인의 `SAVED` 추천이 아니거나 없는 id는 `422 INVALID_MEAL_LINK`다. 같은 추천을 한 식사의 두 음식에 연결하면 `422 VALIDATION_ERROR`다.
+- 응답에서는 음식 객체의 `recommendation_tries`에 `{id, food_recommendation_id, feedback, created_at, updated_at, recommendation}`
+  목록으로 돌아온다. `recommendation`은 `what_to_try`, `why_this_may_help`, `serving_tip`이다. 수정 요청으로는 연결을 추가하지 않는다.
 
 ### 식후 리뷰
-- 리뷰 결과가 음식과 재료 객체 안으로 들어간다. 별도의 `food_results`, `ingredient_results`는 없어진다.
-  - 음식과 재료는 각각 `outcome`(`EatingOutcome` 값 또는 `null`)과 난이도 사유 목록을 가진다. **`outcome`이 `null`이면 아직 리뷰하지 않은 것이다.**
+- `PUT /meals/{id}/review`의 요청은 `food_results[]`(`food_id`, `outcome`, `difficulty_reasons`, `ingredient_outcomes[]`)를 쓰고,
+  응답은 식사 상세(`MealDetailResponse`)다.
+  - 모든 음식을 한 번씩 포함해야 하고 음식의 `outcome`은 필수다 (`null`이면 422). 재료의 `outcome`은 생략할 수 있다.
+  - 요청에 없는 재료는 리뷰하지 않은 상태(`outcome: null`, 사유 `[]`)가 된다. 다시 저장하면 이전 결과를 덮어쓴다.
+  - 음식·재료 id가 이 식사의 것이 아니거나 중복이면 `422 INVALID_MEAL_REVIEW`다.
+- 리뷰 결과가 음식과 재료 객체 안으로 들어간다. 별도의 `review`, `food_results`, `ingredient_results`는 응답에서 없어진다.
+  - 음식과 재료는 각각 `outcome`(`EatingOutcome` 값 또는 `null`)과 `difficulty_reasons`를 가진다. **`outcome`이 `null`이면 아직 리뷰하지 않은 것이다.**
   - 응답의 `food_snapshot`은 사라진다. 음식 정보는 음식 객체가 직접 갖는다.
-- 난이도 사유는 `{category, subcategory, value}` 객체의 목록에서 **문자열 목록**으로 바뀐다. 필드 이름은 7절에서 정한다.
+- 난이도 사유는 `{category, subcategory, value}` 객체의 목록에서 **문자열 목록**(`difficulty_reasons`)으로 바뀐다. 중복은 422다.
 
 ### 난이도 사유 값 (`DifficultyReason`)
 값은 category를 점(`.`)으로 구분한 경로 문자열이다. `texture`만 하위 category가 하나 더 있다.
@@ -114,6 +131,19 @@
 
 - 기존 클라이언트의 `subcategory`가 `TEXTURE`의 하위 category(`hardness` → `HARDNESS` 등)에 해당한다.
 - 기존 `shape`의 `notSure`는 새 값에 대응이 없다. `notSure` category(`NOT_SURE`) 하나만 있다.
+
+### 클라이언트 반영 상태
+
+**클라이언트 반영 완료.**
+
+- 앱 안의 값(`lunch`, `home`, `stir_fried`, `eaten` 등)은 소문자로 두고, 서버의 대문자 값과의 변환은 데이터 계층 경계에서만 한다
+  (`src/data/dto/values.ts`의 `fromApiEnum`, `toApiEnum`). 서버가 소문자를 보내면 오류로 처리한다.
+- 난이도 사유는 앱의 `{category, subcategory, value}` 태그와 서버의 경로 문자열을 `src/data/dto/difficultyReasons.ts`가 변환한다.
+  선택지에서 `tasteIntensity`, `shape`, `visibility`, `tasteType`의 `other`를 제거했다. 난이도 메모는 서버로 보내지 않고, 같은 사유는 한 번만 보낸다.
+- 저장·수정·리뷰 응답은 모두 식사 상세로 받는다. 음식 안의 `outcome`, `difficulty_reasons`에서 앱의 식후 리뷰(`MealDetail.review`)를,
+  `recommendation_tries`에서 추천 연결(`suggestionLinks`, 재료 연결 없음)을 만든다.
+- 앱 안의 음식 id는 서버 id를 받기 전까지의 임시 값이다. 저장 응답의 음식 순서로 서버 id를 대응시키고, 수정할 때는 서버 id를 가진
+  음식만 `id`와 함께 보낸다.
 
 ## 4. 온보딩 API
 
@@ -212,6 +242,4 @@
 
 | 항목 | 내용 |
 |---|---|
-| 식사 수정 시 음식·재료 식별 | id가 서버 발급이라 수정 요청에서 기존 항목을 가리키는 방법이 필요하다. 음식을 지우고 다시 만들면 그 음식에서 나온 추천도 함께 삭제된다. |
-| 난이도 사유 필드 이름 | 서버 저장 컬럼은 `difficulty_reasons`다. 요청·응답의 필드 이름은 정하지 않았다. |
 | 추천 목록 조회 필터 | 목록 조회의 `status` 쿼리 값(`saved`, `all`)을 대문자로 맞춘다. `ALL`은 enum 값이 아니라 조회용 값이다. |

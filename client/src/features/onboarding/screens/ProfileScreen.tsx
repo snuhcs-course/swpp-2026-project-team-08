@@ -5,11 +5,12 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 프로필 화면 언어 변경 버튼 제거
 
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
 import { useAuth } from '../../../providers/AuthProvider';
 import { useProfile } from '../../../providers/ProfileProvider';
@@ -21,20 +22,14 @@ export function ProfileScreen() {
   const model = useOnboarding();
   const auth = useAuth();
   const appProfile = useProfile();
-  const [languageError, setLanguageError] = useState(false);
   if (appProfile.status === 'loading' || !model.ready) return <View style={styles.root} />;
   if (appProfile.status === 'error' || model.loadError || !appProfile.profile) return <Redirect href="/" />;
   const s = copyFor(appProfile.language);
   const profile = appProfile.profile;
   return <View style={styles.root}>
-      <AppHeader title={s.home.profileTitle} accessory={<Pressable onPress={() => {
-        void appProfile.changeLanguage(appProfile.language === 'ko' ? 'en' : 'ko').then(
-          () => setLanguageError(false), () => setLanguageError(true),
-        );
-      }} accessibilityRole="button"><Text style={styles.language}>{s.common.language}</Text></Pressable>} />
+      <AppHeader title={s.home.profileTitle} />
     <ScrollView contentContainerStyle={styles.content}>
 
-      {languageError && <Text style={{ color: colors.error }}>{s.common.saveFailed}</Text>}
       <View style={styles.card}><Text style={styles.label}>{s.home.caregiver}</Text><Text style={styles.value}>{profile.caregiverName}</Text><Text style={styles.detail}>{profile.caregiverEmail}</Text></View>
       <View style={styles.card}><Text style={styles.label}>{s.home.child}</Text><Text style={styles.value}>{profile.childName}</Text><Text style={styles.detail}>{labelFor('age', profile.ageRange, appProfile.language)}</Text></View>
       <AppButton label={s.home.editProfile} onPress={() => { model.startEdit(); router.push({ pathname: '/onboarding/[step]', params: { step: 'review' } }); }} />
@@ -48,7 +43,6 @@ const styles = StyleSheet.create({
   content: { ...topBarStyles.content, paddingBottom: 24, gap: 14 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   title: { color: colors.homeText, fontSize: 24, fontWeight: '800' },
-  language: { color: colors.homePrimary, fontSize: 13, fontWeight: '800' },
   card: { backgroundColor: colors.surface, borderRadius: 18, padding: 18, borderWidth: 1, borderColor: colors.homeBorder, gap: 4 },
   label: { color: colors.homeMuted, fontSize: 11, fontWeight: '700' },
   value: { color: colors.homeText, fontSize: 18, fontWeight: '800' },

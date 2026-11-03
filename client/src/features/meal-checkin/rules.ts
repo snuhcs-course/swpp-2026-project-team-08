@@ -1,6 +1,9 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 미래 식사 날짜 선택 및 저장 방지
 
 import { localDate, validDate } from '../../util/date';
 import {
@@ -27,6 +30,7 @@ export const confirmFoods = (foods: FoodItem[]): FoodItem[] =>
 export function mealFromDraft(draft: MealDraft): Meal {
   if (
     !validDate(draft.mealDate) ||
+    draft.mealDate > localDate() ||
     !draft.mealType ||
     !draft.setting ||
     !draft.foods.length ||
@@ -46,7 +50,6 @@ export function mealFromDraft(draft: MealDraft): Meal {
   };
 }
 
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 export function getIngredientInput(
   input: string,
   selected: string[],

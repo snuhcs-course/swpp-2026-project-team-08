@@ -1,10 +1,13 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 미래 식사 날짜 선택 및 저장 방지
 
 import { useState } from 'react';
 import type { FoodItem, MealDraft } from '../../../types/meal';
-import { localDate } from '../../../util/date';
+import { localDate, validDate } from '../../../util/date';
 import { getIngredientInput } from '../rules';
 
 type DateParts = [number, number, number];
@@ -34,7 +37,10 @@ export function useMealCheckinInputs({
   };
   const toggleDate = () => {
     setDateField(null);
-    if (draft) setDateParts(draft.mealDate.split('-').map(Number) as DateParts);
+    if (draft) {
+      const date = draft.mealDate > localDate() ? localDate() : draft.mealDate;
+      setDateParts(date.split('-').map(Number) as DateParts);
+    }
     setDateOpen((value) => !value);
   };
   const selectDateNumber = (number: number) => {
@@ -42,7 +48,9 @@ export function useMealCheckinInputs({
     const next: DateParts = [...dateParts];
     next[dateField] = number;
     next[2] = Math.min(next[2], new Date(next[0], next[1], 0).getDate());
-    setDateParts(next);
+    const today = new Date();
+    setDateParts(new Date(next[0], next[1] - 1, next[2]) > today
+      ? [today.getFullYear(), today.getMonth() + 1, today.getDate()] : next);
     setDateField(null);
   };
   const changeDate = (date: Date) => {
@@ -53,11 +61,12 @@ export function useMealCheckinInputs({
       ? [date.getFullYear(), date.getMonth() + 1, date.getDate()]
       : dateParts;
     const dayCount = new Date(year, month, 0).getDate();
-    onUpdate({ mealDate: localDate(new Date(year, month - 1, Math.min(day, dayCount))) });
+    const mealDate = localDate(new Date(year, month - 1, Math.min(day, dayCount)));
+    if (!validDate(mealDate) || mealDate > localDate()) return;
+    onUpdate({ mealDate });
     setDateField(null);
     setDateOpen(false);
   };
-  // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
   const ingredientInput = getIngredientInput(
     ingredient, draft?.editingFood?.ingredients ?? [],
   );

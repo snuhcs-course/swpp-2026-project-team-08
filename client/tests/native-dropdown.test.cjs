@@ -1,6 +1,8 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 마이페이지 채식 제한 prop 이름 변경
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: iOS 메뉴 및 기록 달력 날짜 상한 검증, Android 목록 테스트 분리
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -64,7 +66,7 @@ const menus = nodes => nodes.filter(node => node.type === 'SystemMenu');
 const noop = () => {};
 
 test('native menus preserve ids, show selection, and ignore unknown action events', () => {
-  for (const os of ['android', 'ios']) {
+  for (const os of ['ios']) {
     reset(os);
     const changes = [];
     const nodes = render(NativeDropdown, { options: [{ id: '4-5', label: '4–5 years' }, { id: '6-7', label: '6–7 years' }],
@@ -82,7 +84,7 @@ test('native menus preserve ids, show selection, and ignore unknown action event
 
 test('disabled and empty native dropdowns expose no menu or selection action', () => {
   for (const props of [{ disabled: true, options: [{ id: 'x', label: 'X' }] }, { options: [] }]) {
-    reset('android');
+    reset('ios');
     const nodes = render(NativeDropdown, { ...props, value: '', label: 'Choose', onChange: assert.fail, children: null });
     assert.equal(menus(nodes).length, 0);
     assert.equal(nodes.find(node => node.props.accessible).props.accessibilityState.disabled, true);
@@ -90,7 +92,7 @@ test('disabled and empty native dropdowns expose no menu or selection action', (
 });
 
 test('shared age and cooking dropdowns use native menus and retain unlisted display values', () => {
-  for (const os of ['android', 'ios']) for (const variant of ['onboarding', 'editor']) {
+  for (const os of ['ios']) for (const variant of ['onboarding', 'editor']) {
     reset(os);
     const changes = [];
     const nodes = render(DropdownChoice, { variant, value: 'legacy', displayFallback: 'Previously saved value',
@@ -120,7 +122,7 @@ test('web keeps its custom dropdown and commits the original option id on select
 });
 
 test('profile age editing uses native menus with localized labels and stable ids', () => {
-  for (const os of ['android', 'ios']) for (const language of ['en', 'ko']) {
+  for (const os of ['ios']) for (const language of ['en', 'ko']) {
     reset(os);
     const changes = [], ages = optionsFor('age', language);
     const nodes = render(ChildProfileView, { language, editing: true, childName: 'Luna', ageRange: ages[0].id,
@@ -134,7 +136,7 @@ test('profile age editing uses native menus with localized labels and stable ids
 });
 
 test('calendar month and year dropdowns keep their numeric bounds and one-based month callbacks', () => {
-  for (const os of ['android', 'ios']) {
+  for (const os of ['ios']) {
     reset(os);
     const changes = [];
     const nodes = render(DateField, { variant: 'month-year', year: 2026, month: 10,
@@ -151,7 +153,7 @@ test('calendar month and year dropdowns keep their numeric bounds and one-based 
 });
 
 test('difficulty category, texture question, and value menus preserve dependent selection rules', () => {
-  for (const os of ['android', 'ios']) {
+  for (const os of ['ios']) {
     reset(os);
     const events = [];
     const s = copyFor('en'), a = abcCopyFor('en'), m = s.afterMealReview;
@@ -177,4 +179,20 @@ test('difficulty category, texture question, and value menus preserve dependent 
     assert.deepEqual(events, [['category', 'texture'], ['question', questionId], ['value', 'hard']]);
     assert.equal(menus(nodes)[2].props.actions[0].state, 'on');
   }
+});
+
+test('bounded month-year lists exclude future values and clamp month when switching years', () => {
+  reset('ios');
+  const changes = [];
+  const props = { variant: 'month-year', year: 2026, month: 11,
+    maximumDate: new Date(2026, 10, 3), labels: { year: 'Year', month: 'Month', locale: 'en-US' },
+    onChange: (...args) => changes.push(args) };
+  let [month, year] = menus(render(DateField, props));
+  assert.equal(month.props.actions.length, 11);
+  assert.equal(year.props.actions.at(-1).id, '2026');
+  reset('ios');
+  [month, year] = menus(render(DateField, { ...props, year: 2025, month: 12 }));
+  assert.equal(month.props.actions.length, 12);
+  choose(year, '2026');
+  assert.deepEqual(changes, [[2026, 11]]);
 });

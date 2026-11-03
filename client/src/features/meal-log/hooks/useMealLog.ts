@@ -5,14 +5,17 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
 
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 미래 날짜 초기값 및 달력 탐색 차단
+
 import { useCallback, useMemo, useState } from 'react';
-import { validDate } from '../../../util/date';
+import { localDate, validDate } from '../../../util/date';
 import { useMealList } from '../../../data/queries/mealLogQueries';
 import { useMealDraft } from '../../../data/queries/mealQueries';
 import { filterMealDetails, monthKey, shiftMonth, sortMealDetailsLatestFirst } from '../rules';
 
 export function useMealLog(childId: string, initialDate?: string) {
-  const validInitial = initialDate && validDate(initialDate) ? initialDate : null;
+  const validInitial = initialDate && validDate(initialDate) && initialDate <= localDate() ? initialDate : null;
   const now = validInitial ? new Date(`${validInitial}T12:00:00`) : new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
@@ -47,16 +50,19 @@ export function useMealLog(childId: string, initialDate?: string) {
 
   const goMonth = useCallback((delta: number) => {
     const next = shiftMonth(year, month, delta);
+    if (monthKey(next.year, next.month) > localDate().slice(0, 7)) return;
     setYear(next.year);
     setMonth(next.month);
   }, [year, month, setYear, setMonth]);
 
   const setMonthYear = useCallback((nextYear: number, nextMonth: number) => {
+    if (monthKey(nextYear, nextMonth) > localDate().slice(0, 7)) return;
     setYear(nextYear);
     setMonth(nextMonth);
   }, [setYear, setMonth]);
 
   const toggleDate = useCallback((value: string) => {
+    if (!validDate(value) || value > localDate()) return;
     setSelectedDate((current) => {
       if (current === value) return null;
       const [nextYear, nextMonth] = value.split('-').map(Number);

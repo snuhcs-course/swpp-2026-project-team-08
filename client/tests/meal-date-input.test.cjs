@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 미래 날짜와 잘못된 날짜 확정 방지 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -132,4 +134,36 @@ test('Meal Details opens one native picker on mobile and keeps web date parts', 
     assert.equal(nodes.filter(node => node.type === 'NativePicker').length, native ? 1 : 0);
     assert.equal(nodes.filter(node => node.props.testID?.startsWith('date-part-')).length, native ? 0 : 3);
   }
+});
+
+test('native pickers cap selection at the current local day', () => {
+  for (const os of ['android', 'ios']) {
+    const h = harness(os);
+    const picker = os === 'android' ? h.picker() : h.picker().props.children;
+    const max = picker.props.maximumDate;
+    const now = new Date();
+    assert.deepEqual([max.getFullYear(), max.getMonth(), max.getDate()],
+      [now.getFullYear(), now.getMonth(), now.getDate()]);
+  }
+});
+
+test('future and invalid date callbacks never update the meal; today remains allowed', () => {
+  for (const os of ['android', 'ios', 'web']) {
+    const h = harness(os), today = new Date();
+    const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    h.input.onConfirm(tomorrow); h.render();
+    h.input.onConfirm(new Date(NaN)); h.render();
+    assert.equal(h.updates, 0);
+    assert.equal(h.date, '2026-10-27');
+    h.input.onConfirm(today); h.render();
+    assert.equal(h.updates, 1);
+    assert.equal(h.input.open, false);
+  }
+});
+
+test('web year changes clamp future combinations to today', () => {
+  const h = harness('web'), today = new Date();
+  h.input.onFieldChange(0); h.render();
+  h.input.onNumberSelect(today.getFullYear() + 1); h.render();
+  assert.deepEqual(h.input.parts, [today.getFullYear(), today.getMonth() + 1, today.getDate()]);
 });

@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 미래 식사 날짜 저장 거부 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -26,4 +28,14 @@ test('unconfirmed AI and incomplete/empty meals cannot be saved', () => {
 test('stored input is validated, including child ownership and duplicate foods', () => {
   const draft = completeDraft('validate'); assert.equal(isDraft(draft, 'validate'), true); assert.equal(isDraft(draft, 'other-child'), false);
   assert.equal(isDraft({ ...draft, foods: [draft.foods[0], draft.foods[0]] }, 'validate'), false);
+});
+
+
+test('future meals cannot be saved while today can be saved', () => {
+  const { localDate } = require('../../src/util/date.ts');
+  const today = new Date();
+  const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+  const draft = completeDraft('date');
+  assert.throws(() => mealFromDraft({ ...draft, mealDate: localDate(tomorrow) }), /Invalid meal/);
+  assert.equal(mealFromDraft({ ...draft, mealDate: localDate(today) }).mealDate, localDate(today));
 });

@@ -7,9 +7,13 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Match meal calendar layout, density tiles, and date selection to the design
 
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 미래 날짜와 월 탐색 비활성화
+
 import { DateField } from '../../../components/DateField';
 import { Feather } from '@expo/vector-icons';
 import { Pressable, Text, View } from 'react-native';
+import { localDate } from '../../../util/date';
 import { colors } from '../../../util/colors';
 import { calendarCells, densityLevel, mealDateParts } from '../rules';
 import { styles } from '../screens/mealLogStyles';
@@ -66,6 +70,9 @@ export function MealLogCalendar({
   onClear: () => void;
   onMonthYear: (year: number, month: number) => void;
 }) {
+  const today = new Date();
+  const todayKey = localDate(today);
+  const nextDisabled = year * 12 + month >= today.getFullYear() * 12 + today.getMonth();
   const selectedParts = selectedDate ? mealDateParts(selectedDate, locale) : null;
 
   return (
@@ -101,9 +108,11 @@ export function MealLogCalendar({
             <Feather name="chevron-left" size={16} color={colors.homeText} />
           </Pressable>
           <DateField key={`${year}-${month}`} variant="month-year" size={{ height: 32, fontSize: 14, borderRadius: 10 }} year={year} month={month + 1}
-            labels={{ month: monthLabel, year: yearLabel, locale }}
+            maximumDate={today} labels={{ month: monthLabel, year: yearLabel, locale }}
             onChange={(nextYear, nextMonth) => onMonthYear(nextYear, nextMonth - 1)} />
-          <Pressable accessibilityRole="button" accessibilityLabel={nextMonth} onPress={onNext} style={styles.nav}>
+          <Pressable accessibilityRole="button" accessibilityLabel={nextMonth} disabled={nextDisabled}
+            accessibilityState={{ disabled: nextDisabled }} onPress={onNext}
+            style={[styles.nav, nextDisabled && { opacity: 0.35 }]}>
             <Feather name="chevron-right" size={16} color={colors.homeText} />
           </Pressable>
         </View>
@@ -115,6 +124,7 @@ export function MealLogCalendar({
         <View style={styles.grid}>
           {calendarCells(year, month).map((cell) => {
             const count = cell.inMonth ? (counts[cell.date] ?? 0) : 0;
+            const disabled = cell.date > todayKey;
             const selected = selectedDate === cell.date;
             const level = densityLevel(count);
             const fill = densityFill[level];
@@ -123,10 +133,11 @@ export function MealLogCalendar({
               <Pressable
                 key={cell.date}
                 accessibilityRole="button"
-                accessibilityState={{ selected }}
+                disabled={disabled}
+                accessibilityState={{ selected, disabled }}
                 accessibilityLabel={selected ? selectedDayLabel(cell.day) : logsOnDay(cell.day, count)}
                 onPress={() => onToggleDate(cell.date)}
-                style={styles.dayCell}
+                style={[styles.dayCell, disabled && { opacity: 0.35 }]}
               >
                 <View style={[
                   styles.day,

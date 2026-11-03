@@ -3,6 +3,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 식사 날짜와 기록 달력의 선택 범위를 오늘까지 제한
 
 import { useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
@@ -34,6 +36,7 @@ type FullDateProps = SizingProps & {
 };
 type MonthYearProps = SizingProps & {
   variant: 'month-year';
+  maximumDate?: Date;
   year: number;
   /** Calendar months use 1–12 here; adapt zero-based Date months at the call site. */
   month: number;
@@ -45,7 +48,7 @@ export function DateField(props: FullDateProps | MonthYearProps) {
   return props.variant === 'month-year' ? <MonthYearField {...props} /> : <FullDateField {...props} />;
 }
 
-function DateParts({ parts, labels, visibleParts, field, onFieldChange, onSelect, showLabels = false, size }: SizingProps & {
+function DateParts({ parts, labels, visibleParts, field, onFieldChange, onSelect, showLabels = false, size, maximumDate }: SizingProps & {
   parts: Parts;
   labels: Pick<Labels, 'year' | 'month' | 'locale'> & { day?: string };
   visibleParts: readonly Part[];
@@ -53,24 +56,30 @@ function DateParts({ parts, labels, visibleParts, field, onFieldChange, onSelect
   onFieldChange: (field: Part | null) => void;
   onSelect: (part: Part, number: number) => void;
   showLabels?: boolean;
+  maximumDate?: Date;
 }) {
   const [year, month] = parts;
   return <View style={dateStyles.fields}>
     {visibleParts.map(index => <DatePart key={index} index={index} value={parts[index]}
       year={year} month={month} label={[labels.year, labels.month, labels.day ?? ''][index]}
-      locale={labels.locale} open={field === index} showLabel={showLabels} size={size}
+      maximumDate={maximumDate} locale={labels.locale} open={field === index} showLabel={showLabels} size={size}
       onToggle={() => onFieldChange(field === index ? null : index)} onSelect={number => onSelect(index, number)} />)}
   </View>;
 }
 
-function DatePart({ index, value, year, month, label, locale, open, showLabel, onToggle, onSelect, size }: SizingProps & {
+function DatePart({ index, value, year, month, label, locale, open, showLabel, onToggle, onSelect, size, maximumDate }: SizingProps & {
+  maximumDate?: Date;
   index: Part; value: number; year: number; month: number; label: string; locale: string;
   open: boolean; showLabel: boolean; onToggle: () => void; onSelect: (number: number) => void;
 }) {
   const pickerRef = useRef<ScrollViewInstance>(null);
   const inputSize = { height: size?.height ?? 44, borderRadius: size?.borderRadius ?? 10 };
   const textSize = { fontSize: size?.fontSize ?? 13 };
-  const count = index === 0 ? 301 : index === 1 ? 12 : new Date(year, month, 0).getDate();
+  const maxYear = maximumDate?.getFullYear() ?? 2200;
+  const maxMonth = maximumDate && year === maxYear ? maximumDate.getMonth() + 1 : 12;
+  const maxDay = maximumDate && year === maxYear && month === maxMonth
+    ? maximumDate.getDate() : new Date(year, month, 0).getDate();
+  const count = index === 0 ? maxYear - 1900 + 1 : index === 1 ? maxMonth : maxDay;
   const first = index === 0 ? 1900 : 1;
   const offset = Math.max(0, Math.min(value - first - 2, count - 5)) * 36;
   const format = (number: number) => index === 1
@@ -109,13 +118,17 @@ function DatePart({ index, value, year, month, label, locale, open, showLabel, o
   </View>;
 }
 
-function MonthYearField({ year, month, labels, onChange, size }: MonthYearProps) {
+function MonthYearField({ year, month, labels, onChange, size, maximumDate }: MonthYearProps) {
   const [field, setField] = useState<Part | null>(null);
   return <View style={[dateStyles.wrap, dateStyles.monthYear]}>
-    <DateParts parts={[year, month, 1]} labels={labels} visibleParts={[1, 0]} size={size}
+    <DateParts parts={[year, month, 1]} labels={labels} visibleParts={[1, 0]} size={size} maximumDate={maximumDate}
       field={field} onFieldChange={setField} onSelect={(part, number) => {
         setField(null);
-        onChange(part === 0 ? number : year, part === 1 ? number : month);
+        const nextYear = part === 0 ? number : year;
+        const nextMonth = part === 1 ? number : month;
+        const maxMonth = maximumDate && nextYear === maximumDate.getFullYear()
+          ? maximumDate.getMonth() + 1 : 12;
+        onChange(nextYear, Math.min(nextMonth, maxMonth));
       }} />
   </View>;
 }
@@ -137,7 +150,7 @@ function FullDateField({ label, labels, parts, open, field, onToggle, onFieldCha
     {open && !native && <View style={dateStyles.card}>
       <Text style={dateStyles.cardTitle}>{labels.select}</Text>
       <Text style={dateStyles.displayDate}>{displayDate}</Text>
-      <DateParts parts={parts} labels={labels} visibleParts={[1, 2, 0]} showLabels size={size}
+      <DateParts parts={parts} labels={labels} visibleParts={[1, 2, 0]} showLabels size={size} maximumDate={new Date()}
         field={field} onFieldChange={onFieldChange} onSelect={(_, number) => onNumberSelect(number)} />
       <Text style={dateStyles.hint}>{labels.hint}</Text>
       <AppButton variant="meal" label={labels.confirm} style={dateStyles.confirm} onPress={onConfirm} />

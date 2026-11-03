@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // Connects useMealLog → real Query → API/DTO and draft storage. Only HTTP/native boundaries are mocked.
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 식사 기록의 미래 날짜 및 월 탐색 거부 검증
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -62,4 +64,29 @@ test('empty list is a successful empty state', async t => {
   assert.equal(hook.current.error, false);
   assert.equal(hook.current.hasMeals, false);
   assert.deepEqual(hook.current.counts, {});
+});
+
+test('history rejects future initial dates, date taps, next month and dropdown navigation', async t => {
+  const { localDate } = require('../../src/util/date.ts');
+  const now = new Date();
+  const today = localDate(now);
+  const tomorrow = localDate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
+  mockList(t, () => json([]));
+  const hook = await renderHook(t, () => useMealLog('1', tomorrow));
+  await waitFor(() => !hook.current.loading);
+  assert.equal(hook.current.selectedDate, null);
+  assert.equal(hook.current.year, now.getFullYear());
+  assert.equal(hook.current.month, now.getMonth());
+  await act(async () => { hook.current.toggleDate(tomorrow); hook.current.goMonth(1); });
+  assert.equal(hook.current.selectedDate, null);
+  assert.equal(hook.current.month, now.getMonth());
+  await act(async () => hook.current.setMonthYear(now.getFullYear() + 1, 0));
+  assert.equal(hook.current.year, now.getFullYear());
+  await act(async () => hook.current.toggleDate(today));
+  assert.equal(hook.current.selectedDate, today);
+  await act(async () => hook.current.goMonth(-1));
+  const previous = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  assert.equal(hook.current.month, previous.getMonth());
+  await act(async () => hook.current.goMonth(1));
+  assert.equal(hook.current.month, now.getMonth());
 });

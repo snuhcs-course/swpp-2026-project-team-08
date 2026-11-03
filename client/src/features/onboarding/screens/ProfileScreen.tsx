@@ -5,6 +5,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+// Changed: 앱 언어를 영어로 고정하는 동안 언어 전환 버튼 숨김
 
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
@@ -17,6 +19,9 @@ import { colors } from '../../../util/colors';
 import { copyFor, labelFor } from '../../../util/strings';
 import { useOnboarding } from '../hooks/useOnboarding';
 
+// 임시: 앱 언어를 영어로 고정하는 동안 언어 전환 버튼을 숨긴다 (ProfileProvider의 FORCED_LANGUAGE 참고).
+const LANGUAGE_SWITCH_VISIBLE = false;
+
 export function ProfileScreen() {
   const model = useOnboarding();
   const auth = useAuth();
@@ -27,7 +32,7 @@ export function ProfileScreen() {
   const s = copyFor(appProfile.language);
   const profile = appProfile.profile;
   return <View style={styles.root}>
-      <AppHeader title={s.home.profileTitle} accessory={<Pressable onPress={() => {
+      <AppHeader title={s.home.profileTitle} accessory={!LANGUAGE_SWITCH_VISIBLE ? undefined : <Pressable onPress={() => {
         void appProfile.changeLanguage(appProfile.language === 'ko' ? 'en' : 'ko').then(
           () => setLanguageError(false), () => setLanguageError(true),
         );

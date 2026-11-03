@@ -1,5 +1,7 @@
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
+// AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+// Changed: 앱 언어를 임시로 영어로 고정
 
 import { getLocales } from 'expo-localization';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
@@ -22,6 +24,9 @@ type ProfileContextValue = {
 
 const ProfileContext = createContext<ProfileContextValue | null>(null);
 
+// 임시: 영어로 고정한다. null로 바꾸면 기기·저장된 언어 선택이 다시 적용된다.
+const FORCED_LANGUAGE: Language | null = 'en';
+
 function deviceLanguage(): Language {
   return getLocales()[0]?.languageCode === 'ko' ? 'ko' : 'en';
 }
@@ -34,7 +39,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [loadedStatus, setLoadedStatus] = useState<ProfileContextValue['status']>('loading');
   const [storedProfile, setProfile] = useState<ChildProfile | null>(null);
   const [loadedUserId, setLoadedUserId] = useState<string | null>(null);
-  const [language, setLanguage] = useState<Language>(deviceLanguage);
+  const [language, setLanguage] = useState<Language>(() => FORCED_LANGUAGE ?? deviceLanguage());
   const languageQueue = useRef<Promise<void>>(Promise.resolve());
   const mounted = useRef(false);
   const loadSequence = useRef(0);
@@ -45,7 +50,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     setLoadedStatus('loading');
     try {
       const storedLanguage = await readLanguage();
-      if (storedLanguage && mounted.current && sequence === loadSequence.current) setLanguage(storedLanguage);
+      if (!FORCED_LANGUAGE && storedLanguage && mounted.current && sequence === loadSequence.current) setLanguage(storedLanguage);
       if (!user) {
         if (mounted.current && sequence === loadSequence.current) {
           setProfile(null);

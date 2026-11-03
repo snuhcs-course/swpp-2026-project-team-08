@@ -1,7 +1,7 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Verify three sheet heights, collapsed filters, navigation, and meal actions
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 내비게이션 아래 배치 요구에 맞춰 시트 높이 검증
+// Changed: 시트 위 내비게이션 오버레이와 시트 높이 검증
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -35,6 +35,7 @@ mockModules(name => {
   };
   if (name === 'react-native-screens') return {
     ScreenStack: primitive('main'), ScreenStackItem: primitive('article'),
+    FullWindowOverlay: primitive('aside'),
   };
   if (name === '@expo/vector-icons') return { Feather: () => null };
   if (name.startsWith('@expo/vector-icons/')) return () => null;
@@ -70,7 +71,7 @@ test('native sheet waits for layout, leaves controls interactive, and closes on 
   assert.equal(screen.props.sheetLargestUndimmedDetentIndex, 'last');
   assert.equal(screen.props.sheetGrabberVisible, true);
   assert.equal(screen.props.sheetAllowedDetents.length, 3);
-  assert.equal(screen.props.sheetAllowedDetents[0], (28 + 72 + 12) / 800);
+  assert.equal(screen.props.sheetAllowedDetents[0], (28 + 72 + 12 + 60) / 800);
   assert.equal(screen.props.sheetInitialDetentIndex, 0);
   assert.equal(screen.props.sheetAllowedDetents[2], 0.9);
   assert.equal(screen.props.sheetAllowedDetents[1], 270 / 800);
@@ -188,4 +189,18 @@ test('detent changes switch minimum mode and measured filters resize the minimum
   const previousMinimum = screen.props.sheetAllowedDetents[0];
   await hook.rerender({ ...props, filtersHeight: 100 });
   assert.ok(sheetScreen(hook.current).props.sheetAllowedDetents[0] > previousMinimum);
+});
+
+test('iOS navigation stays above the native sheet without hiding accessible content', async t => {
+  const { BottomNavigationOverlay } = require('../../src/components/BottomNavigationOverlay.native.tsx');
+  const navigation = React.createElement('nav', null, 'Navigation');
+  const hook = await renderHook(t, input => BottomNavigationOverlay(input), {
+    props: { overSheet: true, children: navigation },
+  });
+  const [spacer, overlay] = hook.current.props.children;
+  assert.equal(spacer.props.style.height, 94);
+  assert.equal(overlay.props.unstable_accessibilityContainerViewIsModal, false);
+  assert.equal(overlay.props.children.props.children, navigation);
+  await hook.rerender({ overSheet: false, children: navigation });
+  assert.equal(hook.current.props.children, navigation);
 });

@@ -1,13 +1,14 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Three-height native sheet with instant transitions and safe navigation
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 하단 내비게이션 겹침 보정 높이 제거
+// Changed: 내비게이션 오버레이를 위한 시트 최소 높이 확보
 
 import { useState } from 'react';
 import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenStack, ScreenStackItem } from 'react-native-screens';
 import { topBarLayout } from '../../../components/AppHeader';
+import { bottomNavigationHeight } from '../../../components/BottomNavigation';
 import { colors } from '../../../util/colors';
 import { styles } from '../screens/mealLogStyles';
 import { useMealLogSheetDismissal } from '../hooks/useMealLogSheetDismissal';
@@ -22,8 +23,11 @@ export function MealLogSheetLayout({
   const dismissal = useMealLogSheetDismissal(active && stackHeight > 0 && controlsHeight > 0, ref);
   // UIKit presents in the window; Android's BottomSheetBehavior uses this stack's bounds.
   const availableHeight = Platform.OS === 'ios' ? height - insets.top : stackHeight;
+  // UIKit supplies the home-indicator inset separately from the detent's content height.
+  const navigationInset = Platform.OS === 'ios'
+    ? bottomNavigationHeight(insets.bottom) - insets.bottom : 0;
   const minimumHeight = styles.sheetContent.paddingTop + filtersHeight
-    + styles.sheetFilters.paddingBottom;
+    + styles.sheetFilters.paddingBottom + navigationInset;
   const minimumDetent = availableHeight > 0 ? Math.min(0.7, minimumHeight / availableHeight) : 0.2;
   const previousCompactDetent = availableHeight > 0
     ? Math.min(0.5, Math.max(270 / availableHeight,

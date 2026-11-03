@@ -10,6 +10,8 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 추천 모달의 독립적인 안전 여백 컨테이너 검증
 
 const { React, act, renderHook } = require("../helpers/react-harness.cjs");
 
@@ -76,6 +78,7 @@ mockModules((name) => {
   if (name === "react-native-safe-area-context")
     return {
       SafeAreaView: primitive("main"),
+      SafeAreaProvider: primitive("aside"),
       useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: bottomInset, left: 0 }),
     };
   if (name === "expo-image") return { Image: primitive("img") };
@@ -351,6 +354,7 @@ test("draft suggestion linking opens explicitly and shows actual source meal met
       p: { ...p, suggestionLinking: { ...closedLinking, step: 1 } },
     }),
   );
+  assert.match(html, /<aside><main[^>]*><div[^>]*data-testid="app-header"/);
   assert.match(html, /Step 1 of 2/);
   assert.match(html, /Oct 11, 2026/);
   assert.match(html, /Lunch/);

@@ -3,7 +3,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 오늘 상한 및 홈 달력의 UTC 날짜 계산·표시
+// Changed: 홈 달력 UTC 계산 및 이동 범위·비활성 색상
 
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -21,6 +21,7 @@ export function HomeCalendarView({ language, now, meals, onDate }: { language: L
   const locale = language === 'ko' ? 'ko-KR' : 'en-US';
   const [month, setMonth] = useState(() => new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1)));
   const y = month.getUTCFullYear(), m = month.getUTCMonth();
+  const canGoPrevious = y * 12 + m > 1900 * 12;
   const canGoNext = y * 12 + m < now.getFullYear() * 12 + now.getMonth();
   const leading = new Date(Date.UTC(y, m, 1)).getUTCDay();
   const total = Math.ceil((leading + new Date(Date.UTC(y, m + 1, 0)).getUTCDate()) / 7) * 7;
@@ -30,11 +31,11 @@ export function HomeCalendarView({ language, now, meals, onDate }: { language: L
     <View style={styles.legend}>{(['density1', 'density2', 'density3'] as const).map((icon, i) => <View key={icon} style={styles.legendItem}><HomeAssetIcon name={icon} /><Text style={styles.legendText}>{[s.mealLog.legend1, s.mealLog.legend2, s.mealLog.legend3][i]}</Text></View>)}</View>
     <View style={styles.calendar}>
       <View style={styles.nav}>
-        <Pressable accessibilityRole="button" accessibilityLabel={s.mealLog.previousMonth} onPress={() => { setMonth(new Date(Date.UTC(y, m - 1, 1))); }}><HomeAssetIcon name="prev" /></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel={s.mealLog.previousMonth} disabled={!canGoPrevious} accessibilityState={{ disabled: !canGoPrevious }} style={!canGoPrevious && styles.disabledNav} onPress={() => { setMonth(new Date(Date.UTC(y, m - 1, 1))); }}><HomeAssetIcon name="prev" /></Pressable>
         <DateField key={`${y}-${m}`} variant="month-year" size={{ height: 32, fontSize: 13, borderRadius: 10 }} year={y} month={m + 1}
           labels={{ month: s.mealCheckin.month, year: s.mealCheckin.year, locale }}
           onChange={(year, nextMonth) => setMonth(new Date(Date.UTC(year, nextMonth - 1, 1)))} />
-        <Pressable accessibilityRole="button" accessibilityLabel={s.mealLog.nextMonth} disabled={!canGoNext} accessibilityState={{ disabled: !canGoNext }} onPress={() => { setMonth(new Date(Date.UTC(y, m + 1, 1))); }}><HomeAssetIcon name="next" /></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel={s.mealLog.nextMonth} disabled={!canGoNext} accessibilityState={{ disabled: !canGoNext }} style={!canGoNext && styles.disabledNav} onPress={() => { setMonth(new Date(Date.UTC(y, m + 1, 1))); }}><HomeAssetIcon name="next" /></Pressable>
       </View>
       <View style={styles.week}>{Array.from({ length: 7 }, (_, i) => <Text key={i} style={styles.weekday}>{new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(2026, 0, 4 + i)))}</Text>)}</View>
       <View style={styles.days}>{Array.from({ length: total }, (_, i) => {
@@ -47,6 +48,7 @@ export function HomeCalendarView({ language, now, meals, onDate }: { language: L
   </View>;
 }
 const styles = StyleSheet.create({
+  disabledNav: { opacity: 0.3 },
   section: { gap: 10, paddingTop: 7 }, title: { fontFamily: fonts.interBold, fontSize: 16, lineHeight: 21, color: colors.homeCalendarHeading },
   legend: { flexDirection: 'row', gap: 10, justifyContent: 'flex-end', marginTop: 5 }, legendItem: { flexDirection: 'row', gap: 3, alignItems: 'center' }, legendText: { fontFamily: fonts.interMedium, fontSize: 12, color: colors.homeMuted, lineHeight: 15 },
   calendar: { backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.homeCalendarBorder, paddingHorizontal: 6, paddingTop: 8, paddingBottom: 6 },

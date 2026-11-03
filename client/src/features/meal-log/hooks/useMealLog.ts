@@ -5,7 +5,7 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 날짜 선택 기본값과 상한을 현재 날짜로 제한
+// Changed: 오늘 기본값 및 1900년 1월부터 현재 월까지 이동 제한
 
 import { useCallback, useMemo, useState } from 'react';
 import { localDate, validDate } from '../../../util/date';
@@ -49,13 +49,15 @@ export function useMealLog(childId: string, initialDate?: string) {
 
   const goMonth = useCallback((delta: number) => {
     const next = shiftMonth(year, month, delta);
-    if (new Date(next.year, next.month, 1) > new Date()) return;
+    const now = new Date();
+    if (next.year < 1900 || next.year * 12 + next.month > now.getFullYear() * 12 + now.getMonth()) return;
     setYear(next.year);
     setMonth(next.month);
   }, [year, month, setYear, setMonth]);
 
   const setMonthYear = useCallback((nextYear: number, nextMonth: number) => {
-    if (new Date(nextYear, nextMonth, 1) > new Date()) return;
+    const now = new Date();
+    if (nextYear < 1900 || nextYear * 12 + nextMonth > now.getFullYear() * 12 + now.getMonth()) return;
     setYear(nextYear);
     setMonth(nextMonth);
   }, [setYear, setMonth]);

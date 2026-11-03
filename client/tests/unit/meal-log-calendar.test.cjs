@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 쿼리 의존성을 분리한 달력 날짜 선택 훅 단위 테스트
+// Changed: 달력 날짜 선택과 최소·최대 월 이동 제한 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -36,4 +36,17 @@ test('calendar defaults to today and rejects future dates and month navigation',
   const previous = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   assert.equal(hook.current.year, previous.getFullYear());
   assert.equal(hook.current.month, previous.getMonth());
+});
+
+test('calendar stops at January 1900 and still allows moving forward', async t => {
+  const hook = await renderHook(t, () => useMealLog('1', '1900-01-01'));
+  await act(async () => hook.current.goMonth(-1));
+  assert.equal(hook.current.year, 1900);
+  assert.equal(hook.current.month, 0);
+  await act(async () => hook.current.setMonthYear(1899, 11));
+  assert.equal(hook.current.year, 1900);
+  assert.equal(hook.current.month, 0);
+  await act(async () => hook.current.goMonth(1));
+  assert.equal(hook.current.year, 1900);
+  assert.equal(hook.current.month, 1);
 });

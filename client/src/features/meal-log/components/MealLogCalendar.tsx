@@ -7,7 +7,7 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Match meal calendar layout, density tiles, and date selection to the design
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 날짜 선택 기본값과 상한을 현재 날짜로 제한
+// Changed: 날짜 상한 및 달력 이동 범위·비활성 색상
 
 import { DateField } from '../../../components/DateField';
 import { Feather } from '@expo/vector-icons';
@@ -71,7 +71,8 @@ export function MealLogCalendar({
 }) {
   const now = new Date();
   const today = localDate(now);
-  const canGoNext = new Date(year, month + 1, 1) <= now;
+  const canGoPrevious = year * 12 + month > 1900 * 12;
+  const canGoNext = year * 12 + month < now.getFullYear() * 12 + now.getMonth();
   const selectedParts = selectedDate ? mealDateParts(selectedDate, locale) : null;
 
   return (
@@ -103,14 +104,14 @@ export function MealLogCalendar({
       </View>
       <View style={styles.card}>
         <View style={styles.monthRow}>
-          <Pressable accessibilityRole="button" accessibilityLabel={previousMonth} onPress={onPrev} style={styles.nav}>
-            <Feather name="chevron-left" size={16} color={colors.homeText} />
+          <Pressable accessibilityRole="button" accessibilityLabel={previousMonth} disabled={!canGoPrevious} accessibilityState={{ disabled: !canGoPrevious }} onPress={onPrev} style={styles.nav}>
+            <Feather name="chevron-left" size={16} color={canGoPrevious ? colors.homeText : colors.homeCalendarMuted} />
           </Pressable>
           <DateField key={`${year}-${month}`} variant="month-year" size={{ height: 32, fontSize: 14, borderRadius: 10 }} year={year} month={month + 1}
             labels={{ month: monthLabel, year: yearLabel, locale }}
             onChange={(nextYear, nextMonth) => onMonthYear(nextYear, nextMonth - 1)} />
           <Pressable accessibilityRole="button" accessibilityLabel={nextMonth} disabled={!canGoNext} accessibilityState={{ disabled: !canGoNext }} onPress={onNext} style={styles.nav}>
-            <Feather name="chevron-right" size={16} color={colors.homeText} />
+            <Feather name="chevron-right" size={16} color={canGoNext ? colors.homeText : colors.homeCalendarMuted} />
           </Pressable>
         </View>
         <View style={styles.weekRow}>

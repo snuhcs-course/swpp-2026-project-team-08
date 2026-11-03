@@ -2,6 +2,10 @@
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: Automatically generate missing food cards for meals with one to three foods
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 추천 대상을 음식 단위로 비교
+// AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+// Changed: 자동 생성 로직을 음식 단위 추천 위에 반영
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
@@ -29,7 +33,7 @@ export function useRecommendationFlow(userId: string, mealId: string) {
     void refetchSuggestions();
   }, [refetchSource, refetchSuggestions]));
 
-  const items = useMemo(() => (suggestions.data ?? []).filter(item => item.ingredientId === null), [suggestions.data]);
+  const items = useMemo(() => suggestions.data ?? [], [suggestions.data]);
   const current = items.find((item) => item.status === 'pending') ?? null;
   const targetOptions = useMemo(() => reviewedSuggestionTargets(source.data ?? null), [source.data]);
   const availableTargets = useMemo(() => unGeneratedTargets(targetOptions, items), [targetOptions, items]);
@@ -39,16 +43,15 @@ export function useRecommendationFlow(userId: string, mealId: string) {
     && availableTargets.length > 0 && selectedTargets.length === 0 && !generationFailed;
   const generate = actions.generate.mutateAsync;
   const targetItems = selectedTargets.length ? selectedTargets : items.map((item) => ({
-    foodId: item.foodId, ingredientId: item.ingredientId,
+    foodId: item.foodId,
   }));
   const visibleTargets = targetItems.filter((target, index) => targetItems.findIndex((item) =>
-    item.foodId === target.foodId && item.ingredientId === target.ingredientId) === index);
+    item.foodId === target.foodId) === index);
 
   const selectTargets = useCallback(async (targets: SuggestionTarget[]) => {
     if (busy.current || !targets.length || targets.length > 3
       || new Set(targets.map(target => target.foodId)).size !== targets.length
-      || targets.some(target => !targetOptions.some(option =>
-        option.target.foodId === target.foodId && option.target.ingredientId === target.ingredientId))) return false;
+      || targets.some(target => !targetOptions.some(option => option.target.foodId === target.foodId))) return false;
     const missingTargets = targets.filter(target => availableTargets.some(option => option.target.foodId === target.foodId));
     if (!missingTargets.length) return false;
     busy.current = true;
@@ -63,7 +66,7 @@ export function useRecommendationFlow(userId: string, mealId: string) {
     } catch {
       const refreshed = await refetchSuggestions().catch(() => null);
       const created = missingTargets.every(target => refreshed?.data?.some(item => !oldIds.has(item.id)
-        && target.foodId === item.foodId && target.ingredientId === item.ingredientId));
+        && target.foodId === item.foodId));
       setGenerationFailed(!created);
       return !!created;
     } finally {

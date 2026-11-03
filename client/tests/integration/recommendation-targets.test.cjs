@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: Food-only targets, automatic generation, loading and retry boundaries
+// AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+// Changed: 서버 식사 상세·음식 단위 추천 응답 모양으로 수정
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -13,24 +15,24 @@ const { mealKeys } = require('../../src/data/queries/mealQueries.ts');
 const { mealSuggestionKeys } = require('../../src/data/queries/mealSuggestionQueries.ts');
 const { toMealDetail } = require('../../src/data/dto/mealDto.ts');
 const { mealResponse, reviewResponse } = require('../fixtures/server-meal.cjs');
+const { suggestionResponse } = require('../fixtures/server-suggestion.cjs');
 
-function mealWithFoods(count) {
+// 서버는 리뷰 결과를 음식·재료 안에 담아 돌려준다. 리뷰가 있는 식사 상세를 만든다.
+function mealWithFoods(count, reviewed = true) {
   const meal = mealResponse();
   meal.foods = Array.from({ length: count }, (_, index) => ({ ...mealResponse().foods[0], id: String(index + 1),
-    name: `Food ${index + 1}`, ingredients: [{ id: String(101 + index), name: 'Carrot' }] }));
-  const { meal: _record, ...review } = reviewResponse(meal, { after_photo_uri: null,
-    food_results: meal.foods.map(food => ({ food_id: food.id, outcome: 'tasted', difficulties: [],
-      ingredient_outcomes: [{ ingredient_id: food.ingredients[0].id, outcome: 'untouched', difficulties: [] }] })),
+    name: `Food ${index + 1}`, ingredients: [{ id: String(101 + index), name: 'Carrot',
+      outcome: null, difficulty_reasons: [] }] }));
+  if (!count || !reviewed) return meal;
+  return reviewResponse(meal, { after_photo_uri: null,
+    food_results: meal.foods.map(food => ({ food_id: food.id, outcome: 'TASTED', difficulty_reasons: [],
+      ingredient_outcomes: [{ ingredient_id: food.ingredients[0].id, outcome: 'UNTOUCHED', difficulty_reasons: [] }] })),
   });
-  return { ...meal, review };
 }
 
-function card(meal, foodId, id, status = 'pending', ingredientId = null) {
-  const { id: _id, meal_id: _mealId, ...food } = meal.foods.find(food => food.id === foodId);
-  return { id, user_id: '1', meal_id: meal.id, food_id: foodId, ingredient_id: ingredientId,
-    food_snapshot: food, what_to_try: 'Try a little', why_this_may_help: 'Try a different serving', serving_tip: null,
-    status, dismiss_reasons: [], saved_at: status === 'saved' ? '2026-11-02T00:00:00Z' : null,
-    created_at: '2026-11-02T00:00:00Z' };
+function card(meal, foodId, id, status = 'PENDING') {
+  return suggestionResponse({ id, meal_id: meal.id, origin_food_id: foodId, status,
+    saved_at: status === 'SAVED' ? '2026-11-02T00:00:00Z' : null, created_at: '2026-11-02T00:00:00Z' });
 }
 
 function server(t, meal, { existing = [], beforeList, generate } = {}) {
@@ -45,7 +47,8 @@ function server(t, meal, { existing = [], beforeList, generate } = {}) {
       return new Response(JSON.stringify(items));
     }
     const targets = JSON.parse(init.body).targets;
-    assert.ok(targets.every(target => target.ingredient_id === null));
+    // 추천 대상은 음식뿐이라 요청에 재료 필드가 없다.
+    assert.ok(targets.every(target => Object.keys(target).join() === 'food_id'));
     posts.push(targets);
     const created = targets.map((target, index) => card(meal, target.food_id, String(1000 + posts.length * 10 + index)));
     if (generate) {
@@ -65,9 +68,9 @@ for (const count of [1, 2, 3]) {
     const h = await renderHook(t, () => useRecommendationFlow('1', meal.id), { wrapper: child => React.createElement(React.StrictMode, null, child) });
     await waitFor(() => h.current.items.length === count && !h.current.generating);
     assert.equal(posts.length, 1);
-    assert.deepEqual(posts[0], meal.foods.map(food => ({ food_id: food.id, ingredient_id: null })));
+    assert.deepEqual(posts[0], meal.foods.map(food => ({ food_id: food.id })));
     assert.equal(h.current.visibleTargets.length, count);
-    assert.ok(h.current.targetOptions.every(option => option.target.ingredientId === null));
+    assert.ok(h.current.targetOptions.every(option => !('ingredientId' in option.target)));
     await h.rerender();
     await act(async () => { await h.current.refresh(); });
     assert.equal(posts.length, 1);
@@ -76,8 +79,7 @@ for (const count of [1, 2, 3]) {
 
 for (const [name, count, reviewed] of [['empty meal', 0, true], ['four foods', 4, true], ['unreviewed meal', 2, false]]) {
   test(`${name} does not automatically generate`, async t => {
-    const meal = mealWithFoods(count);
-    if (!reviewed) meal.review = null;
+    const meal = mealWithFoods(count, reviewed);
     const { posts } = server(t, meal);
     const h = await renderHook(t, () => useRecommendationFlow('1', meal.id));
     await waitFor(() => h.current.source.isSuccess && h.current.suggestions.isSuccess);
@@ -87,7 +89,7 @@ for (const [name, count, reviewed] of [['empty meal', 0, true], ['four foods', 4
       const targets = h.current.targetOptions.map(option => option.target);
       await act(async () => {
         assert.equal(await h.current.selectTargets(targets), false);
-        assert.equal(await h.current.selectTargets([{ foodId: '1', ingredientId: '101' }]), false);
+        assert.equal(await h.current.selectTargets([{ foodId: '999' }]), false);
         assert.equal(await h.current.selectTargets([targets[0], targets[0]]), false);
         assert.equal(await h.current.selectTargets(targets.slice(0, 3)), true);
       });
@@ -100,16 +102,16 @@ for (const [name, count, reviewed] of [['empty meal', 0, true], ['four foods', 4
 test('waits for existing cards before generating and preserves saved/dismissed food cards', async t => {
   const meal = mealWithFoods(3);
   const listed = deferred();
-  const existing = [card(meal, '1', '901', 'saved'), card(meal, '2', '902', 'dismissed'), card(meal, '3', '903', 'pending', '103')];
+  // 음식 1·2는 이미 카드가 있고 음식 3만 카드가 없다.
+  const existing = [card(meal, '1', '901', 'SAVED'), card(meal, '2', '902', 'DISMISSED')];
   const { posts } = server(t, meal, { existing, beforeList: () => listed.promise });
   const h = await renderHook(t, () => useRecommendationFlow('1', meal.id));
   await waitFor(() => h.current.source.isSuccess);
   assert.equal(posts.length, 0);
   await act(async () => listed.resolve());
   await waitFor(() => h.current.items.length === 3 && !h.current.generating);
-  assert.deepEqual(posts, [[{ food_id: '3', ingredient_id: null }]]);
+  assert.deepEqual(posts, [[{ food_id: '3' }]]);
   assert.equal(h.current.current.foodId, '3');
-  assert.equal(h.current.current.ingredientId, null);
   assert.deepEqual(h.current.items.filter(item => item.status !== 'pending').map(item => item.id), ['901', '902']);
   assert.equal(h.current.visibleTargets.length, 3);
 });
@@ -117,7 +119,7 @@ test('waits for existing cards before generating and preserves saved/dismissed f
 test('cached targets wait for the focus refresh and do not regenerate existing cards', async t => {
   const meal = mealWithFoods(1);
   const listed = deferred();
-  const { posts } = server(t, meal, { existing: [card(meal, '1', '901', 'saved')], beforeList: () => listed.promise });
+  const { posts } = server(t, meal, { existing: [card(meal, '1', '901', 'SAVED')], beforeList: () => listed.promise });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity, gcTime: Infinity } } });
   client.setQueryData(mealKeys.detail('1', meal.id), toMealDetail(meal));
   client.setQueryData(mealSuggestionKeys.all('1', meal.id), []);
@@ -154,6 +156,6 @@ test('a partial server result retries only the missing food card', async t => {
   await waitFor(() => h.current.generationFailed && !h.current.generating);
   assert.equal(h.current.items.length, 1);
   await act(async () => { assert.equal(await h.current.selectTargets(h.current.visibleTargets), true); });
-  assert.deepEqual(posts[1], [{ food_id: '2', ingredient_id: null }]);
+  assert.deepEqual(posts[1], [{ food_id: '2' }]);
   assert.equal(h.current.items.length, 2);
 });

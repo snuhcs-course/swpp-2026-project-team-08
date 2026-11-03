@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 익숙한 음식 폼·선택 조리 방법·토큰 삭제 상호작용 검증
+// AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+// Changed: 안심 음식 없음 선택이 사라진 구조에 맞춰 검증 수정
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -36,9 +38,8 @@ for (const language of ['en', 'ko']) {
     const input = { name: '', preparation: '', presentationNote: '' };
     const foods = [];
     let removed;
-    let none = false;
     const render = () => elements(SafeFoodsStepView({
-      language, childName: 'Max', safeFoods: foods, noSafeFoods: none, input,
+      language, childName: 'Max', safeFoods: foods, input,
       canAdd: canAddSafeFood(input),
       onInputChange: (field, value) => { input[field] = value; },
       onAdd: () => {
@@ -46,7 +47,6 @@ for (const language of ['en', 'ko']) {
         Object.assign(input, { name: '', preparation: '', presentationNote: '' });
       },
       onRemove: id => { removed = id; },
-      onToggleNone: () => { none = !none; },
     }));
     let tree = render();
     assert.equal(tree.find(n => n.type === AppButton).props.disabled, true);
@@ -73,14 +73,15 @@ for (const language of ['en', 'ko']) {
     assert.equal(removed, undefined);
     remove.props.onPress();
     assert.equal(removed, 'apple');
-    tree.find(n => n.type === ChoiceRow).props.onPress();
-    assert.equal(render().find(n => n.type === ChoiceRow).props.selected, true);
+    // "안심 음식 없음" 선택은 없고, 여러 항목을 입력할 수 있다는 안내만 항상 표시한다.
+    assert.equal(tree.some(n => n.type === ChoiceRow), false);
+    assert.ok(tree.some(n => n.props?.children === copyFor(language).onboarding.multipleInput));
   });
 }
 
 test('legacy free-text cooking methods remain visible in a restored form', () => {
   const input = { name: 'Apple', preparation: 'Sliced and warmed', presentationNote: 'Blue bowl' };
-  const tree = elements(SafeFoodsStepView({ language: 'en', safeFoods: [], noSafeFoods: false,
+  const tree = elements(SafeFoodsStepView({ language: 'en', safeFoods: [],
     input, canAdd: true }));
   assert.equal(tree.find(n => n.type === DropdownChoice).props.displayFallback, input.preparation);
   assert.equal(tree.filter(n => n.type === FormField)[1].props.value, input.presentationNote);

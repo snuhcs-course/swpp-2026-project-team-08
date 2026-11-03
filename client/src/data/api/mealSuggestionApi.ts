@@ -1,3 +1,6 @@
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 음식 단위 추천 대상과 대문자 조회 필터로 변경
+
 import type { DismissReason, Suggestion, SuggestionTarget } from '../../types/suggestionRecord';
 import { toSuggestion, toSuggestionDecision, toSuggestionGenerate } from '../dto/suggestionDto';
 import { apiRequest } from '../network/apiClient';
@@ -15,7 +18,7 @@ export async function listMealSuggestions(
   userId: string, mealId: string, signal?: AbortSignal,
 ): Promise<Suggestion[]> {
   const value = await apiRequest<unknown>(
-    `/api/v1/meals/${encodeURIComponent(mealId)}/suggestions?status=all`, { signal },
+    `/api/v1/meals/${encodeURIComponent(mealId)}/suggestions?status=ALL`, { signal },
   );
   return suggestionList(value, mealId, userId);
 }
@@ -28,11 +31,9 @@ export async function generateMealSuggestions(
     { method: 'POST', body: JSON.stringify(toSuggestionGenerate(targets)) },
   );
   const items = suggestionList(value, mealId, userId);
-  const targetKeys = new Set(targets.map((target) => `${target.foodId}:${target.ingredientId ?? ''}`));
-  const itemKeys = new Set(items.map((item) => `${item.foodId}:${item.ingredientId ?? ''}`));
-  if (items.length !== targets.length || itemKeys.size !== targetKeys.size
-    || items.some((item) => item.status !== 'pending'
-      || !targetKeys.has(`${item.foodId}:${item.ingredientId ?? ''}`))) {
+  const targetFoods = new Set(targets.map((target) => target.foodId));
+  if (items.length !== targets.length || new Set(items.map((item) => item.foodId)).size !== targetFoods.size
+    || items.some((item) => item.status !== 'pending' || !targetFoods.has(item.foodId))) {
     throw new Error('Mismatched generated suggestions');
   }
   return items;

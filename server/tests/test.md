@@ -59,7 +59,7 @@ Unit은 `tests/unit/`, Integration은 `tests/integration/`에 둔다. 공통 준
 | 온보딩 요청 데이터 | [`fixtures/onboarding.py`](fixtures/onboarding.py)의 `request_body`: 호출마다 새 객체 |
 | 추천 API의 가짜 LLM 설정 | [`helpers/suggestions.py`](helpers/suggestions.py)의 `install_model`: 생성 함수·그래프는 실제 구현 유지 |
 | 외부 의존성 대체 | pytest의 `monkeypatch`, `unittest.mock`의 `Mock` / `AsyncMock` |
-| LLM 응답·도구 호출 순서 제어 | [`fake_chat_model.py`](helpers/fake_chat_model.py)의 `ScriptedChatModel` |
+| LLM 응답(구조화 출력) 순서 제어 | [`fake_chat_model.py`](helpers/fake_chat_model.py)의 `ScriptedChatModel` |
 | Unit 작성 예 | [`test_suggestion_validation.py`](unit/test_suggestion_validation.py): 입력과 생성 결과의 검증 |
 | API Integration 작성 예 | [`test_auth.py`](integration/test_auth.py): 가입·로그인·인증과 DB 연결 |
 | 그래프 Integration 작성 예 | [`test_suggestion_workflow.py`](integration/test_suggestion_workflow.py): 실제 그래프와 가짜 LLM 연결 |

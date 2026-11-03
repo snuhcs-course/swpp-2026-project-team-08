@@ -1,14 +1,16 @@
-import type { FoodSnapshot } from './reviewRecord';
-import type { Id, IngredientId, TimestampString } from './recordValues';
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 음식 단위 추천(재료 id·음식 스냅샷 제거, 재료·조리법·원인 추가)과 새 상태·사유 값
 
-export type SuggestionStatus = 'pending' | 'saved' | 'dismissed';
+import type { CookingMethod, Id, TimestampString } from './recordValues';
+
+export type SuggestionStatus = 'pending' | 'saved' | 'dismissed' | 'tried';
 export type SuggestionFeedback = 'helpful' | 'not_helpful' | 'not_sure';
 export type DismissReason =
-  | 'restriction_conflict'
-  | 'disliked_food_or_form'
-  | 'food_preferences'
+  | 'restriction'
+  | 'dislike'
+  | 'not_fit'
   | 'too_much_preparation'
-  | 'ingredient_unavailable'
+  | 'ingredient_hard_to_get'
   | 'already_tried';
 
 export type LinkedSuggestion = {
@@ -22,23 +24,26 @@ export type SuggestionMealLink = {
   suggestionId: Id;
   mealId: Id;
   foodId: Id;
-  ingredientId: IngredientId | null;
   feedback: SuggestionFeedback | null;
   createdAt: TimestampString;
   updatedAt: TimestampString;
   suggestion: LinkedSuggestion;
 };
 
+/** 추천은 음식 단위다. `foodId` 는 추천의 근거가 된 음식이다. */
 export type Suggestion = {
   id: Id;
   userId: Id;
   mealId: Id;
   foodId: Id;
-  ingredientId: IngredientId | null;
-  foodSnapshot: FoodSnapshot;
   whatToTry: string;
   whyThisMayHelp: string;
   servingTip: string | null;
+  /** 제안하는 음식에 들어가는 재료 이름 */
+  ingredients: string[];
+  cookingMethod: CookingMethod;
+  /** 식후 리뷰에서 참고한 특성(아이가 어려워한 원인)을 서술한 문장 */
+  causes: string;
   status: SuggestionStatus;
   dismissReasons: DismissReason[];
   savedAt: TimestampString | null;
@@ -47,5 +52,4 @@ export type Suggestion = {
 
 export type SuggestionTarget = {
   foodId: Id;
-  ingredientId: IngredientId | null;
 };

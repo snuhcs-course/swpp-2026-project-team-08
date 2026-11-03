@@ -1,5 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 # Changed: ingredients 구조 bootstrap
+# AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+# Changed: 음식 입력에 식후 리뷰 정보를, 제안에 조리법·원인을 더하고 카탈로그를 그래프 입력으로 변경
 
 """워크플로의 입출력 값과 그래프 상태. ORM 객체가 아니라 평범한 값만 담는다."""
 
@@ -10,29 +12,40 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AnyMessage
 from langgraph.graph.message import add_messages
 
-from app.features.suggestions.ingredients import ChildRestrictions, RestrictionId
+from app.features.suggestions.ingredients import Catalog
+from app.models.meal_enums import MealCookingMethod
 
 
 @dataclass(frozen=True)
 class FoodInput:
-    """제안을 만들 음식 하나."""
+    """제안을 만들 음식 하나와, 아이가 어려워한 원인을 서술하는 데 쓸 식후 리뷰 정보.
+
+    `outcome` 은 `EatingOutcome` 값이고 `difficulty_reasons` 는 `DifficultyReason` 값이다.
+    """
 
     id: str
     name: str
+    ingredients: tuple[str, ...] = ()
+    cooking_method: str | None = None
+    outcome: str = ""
+    difficulty_reasons: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
 class GeneratedSuggestion:
     """LLM이 음식 하나에 대해 만든 제안.
 
-    `used_ingredients`는 제안하는 음식에 들어가는 재료다 (기록된 음식의 재료가 아니다).
+    `ingredients` 와 `cooking_method` 는 제안하는 음식의 것이다 (기록된 음식의 것이 아니다).
+    `causes` 는 참고한 식후 리뷰 특성(아이가 어려워한 원인)을 서술한 문장이다.
     """
 
     food_id: str
     what_to_try: str
     why_this_may_help: str
     serving_tip: str
-    used_ingredients: tuple[str, ...]
+    ingredients: tuple[str, ...]
+    cooking_method: MealCookingMethod
+    causes: str
 
 
 @dataclass(frozen=True)
@@ -45,20 +58,18 @@ class ValidationProblem:
         "duplicate_food",
         "blank_field",
         "empty_ingredients",
-        "unknown_ingredient",
-        "restricted_ingredient",
+        "unavailable_ingredient",
     ]
     food_id: str = ""
     field: str | None = None
     ingredient: str | None = None
-    restrictions: tuple[RestrictionId, ...] = ()
 
 
 class InputState(TypedDict):
     """그래프를 호출할 때 넘기는 값. 이 키들만 받는다."""
 
     foods: list[FoodInput]
-    restrictions: ChildRestrictions
+    catalog: Catalog
 
 
 class OutputState(TypedDict):

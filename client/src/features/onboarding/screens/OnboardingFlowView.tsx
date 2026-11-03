@@ -1,9 +1,11 @@
-// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: Dietary Pattern 선택 및 저장; 동작별 버튼 문구 구분
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Dietary Pattern 선택 및 저장; 동작별 버튼 문구 구분
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 채식 단계의 필수 표시 제거
 
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import type { ReactNode } from 'react';
@@ -76,7 +78,6 @@ export function OnboardingFlowView({
             style={styles.next}
           />
         </View>
-
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

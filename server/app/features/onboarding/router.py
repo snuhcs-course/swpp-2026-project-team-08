@@ -1,35 +1,35 @@
-# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-# Changed: Dietary Pattern 선택 및 저장
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+# AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+# Changed: 온보딩 요청·응답을 restrictions 목록 기반으로 변환하고 SAFE_FOOD_NOT_FOUND 제거
+# AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+# Changed: 식생활 유형을 요청·응답에 반영
 
-"""Authenticated onboarding API."""
+"""로그인한 사용자의 온보딩 API."""
 
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.errors import ErrorMappedRoute, ErrorSpec, error_specs
+from app.api.errors import ErrorMappedRoute
 from app.core.database import get_session
 from app.features.auth.dependencies import CurrentUser
 from app.features.onboarding.dto import (
     OnboardingResponse,
     OnboardingWriteRequest,
-    ProfileChoiceDto,
     SafeFoodDto,
-    SafeFoodsDto,
     UserConsentDto,
     UserProfileDto,
 )
 from app.features.onboarding.service import (
-    ChoiceInput,
     ConsentInput,
     OnboardingInput,
     OnboardingService,
     OnboardingSnapshot,
     SafeFoodInput,
-    SafeFoodNotFoundError,
 )
+from app.models.restriction_enums import RestrictionType
 
 router = APIRouter(prefix="/onboarding", tags=["onboarding"], route_class=ErrorMappedRoute)
 
@@ -42,37 +42,15 @@ def get_onboarding_service(
 
 def _input(payload: OnboardingWriteRequest) -> OnboardingInput:
     profile = payload.profile
-    preferences = profile.food_preferences
-    groups = (
-        ("allergy", profile.safety.allergies.items),
-        ("restriction", profile.safety.restrictions.items),
-        ("family_food", preferences.family_foods),
-    )
-    choices = tuple(
-        ChoiceInput(category, position, item.code, item.custom_name)
-        for category, items in groups
-        for position, item in enumerate(items)
-    )
-    foods = tuple(
-        SafeFoodInput(
-            int(item.id) if item.id is not None else None,
-            position,
-            item.name,
-            item.preparation,
-            item.presentation_note,
-        )
-        for position, item in enumerate(profile.safe_foods.items)
-    )
     return OnboardingInput(
-        dietary_pattern=preferences.dietary_pattern,
-        dietary_pattern_provided="dietary_pattern" in preferences.model_fields_set,
         child_name=profile.child_name,
         age_group=profile.age_group,
-        allergy_status=profile.safety.allergies.status,
-        restriction_status=profile.safety.restrictions.status,
-        safe_food_status=profile.safe_foods.status,
-        choices=choices,
-        safe_foods=foods,
+        restrictions=tuple(profile.restrictions),
+        dietary_pattern=profile.dietary_pattern,
+        safe_foods=tuple(
+            SafeFoodInput(item.name, item.preparation, item.presentation_note)
+            for item in profile.safe_foods
+        ),
         consents=tuple(ConsentInput(item.kind, item.granted) for item in payload.consents),
     )
 
@@ -81,38 +59,21 @@ def _response(snapshot: OnboardingSnapshot) -> OnboardingResponse:
     profile = snapshot.profile
     profile_dto = None
     if profile is not None:
-        groups: dict[str, list[ProfileChoiceDto]] = {}
-        for row in snapshot.choices:
-            groups.setdefault(row.category, []).append(
-                ProfileChoiceDto(code=row.code, custom_name=row.custom_name)
-            )
         profile_dto = UserProfileDto(
             user_id=str(profile.user_id),
             child_name=profile.child_name,
             age_group=profile.age_group,
-            safety={
-                "allergies": {"status": profile.allergy_status, "items": groups.get("allergy", [])},
-                "restrictions": {
-                    "status": profile.restriction_status,
-                    "items": groups.get("restriction", []),
-                },
-            },
-            food_preferences={
-                "family_foods": groups.get("family_food", []),
-                "dietary_pattern": profile.dietary_pattern,
-            },
-            safe_foods=SafeFoodsDto(
-                status=profile.safe_food_status,
-                items=[
-                    SafeFoodDto(
-                        id=str(food.id),
-                        name=food.name,
-                        preparation=food.preparation,
-                        presentation_note=food.presentation_note,
-                    )
-                    for food in snapshot.safe_foods
-                ],
-            ),
+            restrictions=[RestrictionType(item) for item in profile.restrictions],
+            dietary_pattern=profile.dietary_pattern,
+            safe_foods=[
+                SafeFoodDto(
+                    id=str(food.id),
+                    name=food.name,
+                    preparation=food.preparation,
+                    presentation_note=food.presentation_note,
+                )
+                for food in snapshot.safe_foods
+            ],
             updated_at=profile.updated_at,
         )
     return OnboardingResponse(
@@ -140,7 +101,6 @@ async def read_onboarding(
 
 
 @router.put("", response_model=OnboardingResponse)
-@error_specs({SafeFoodNotFoundError: ErrorSpec(status_code=422, error_code="SAFE_FOOD_NOT_FOUND")})
 async def write_onboarding(
     payload: OnboardingWriteRequest,
     current_user: CurrentUser,

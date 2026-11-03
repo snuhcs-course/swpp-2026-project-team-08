@@ -1,5 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 # Changed: add suggestion LLM workflow
+# AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+# Changed: used_ingredients 를 ingredients 로 바꾸고 cooking_method, causes 추가
 
 """LLM 구조화 출력 스키마.
 
@@ -10,6 +12,7 @@ LLM이 돌려주는 값은 외부에서 온 값이므로 Pydantic으로 파싱�
 from pydantic import BaseModel, Field
 
 from app.features.suggestions.workflow.state import GeneratedSuggestion
+from app.models.meal_enums import MealCookingMethod
 
 
 class SuggestionDraft(BaseModel):
@@ -19,8 +22,12 @@ class SuggestionDraft(BaseModel):
     what_to_try: str = Field(description="아이에게 시도해 볼 작은 한 걸음.")
     why_this_may_help: str = Field(description="이 시도가 도움이 될 수 있는 이유.")
     serving_tip: str = Field(description="음식을 내놓을 때의 팁.")
-    used_ingredients: list[str] = Field(
+    ingredients: list[str] = Field(
         description="제안하는 음식에 들어가는 재료. 도구가 허용한 이름 그대로 적는다."
+    )
+    cooking_method: MealCookingMethod = Field(description="제안하는 음식의 조리 방법.")
+    causes: str = Field(
+        description="식후 리뷰에서 참고한 특성, 즉 아이가 어려워했던 원인을 서술한 문장."
     )
 
 
@@ -36,7 +43,9 @@ class SuggestionsDraft(BaseModel):
                 what_to_try=draft.what_to_try,
                 why_this_may_help=draft.why_this_may_help,
                 serving_tip=draft.serving_tip,
-                used_ingredients=tuple(draft.used_ingredients),
+                ingredients=tuple(draft.ingredients),
+                cooking_method=draft.cooking_method,
+                causes=draft.causes,
             )
             for draft in self.suggestions
         ]

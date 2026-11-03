@@ -17,9 +17,9 @@
 - `README.md`(실행 환경 · 기술 구성)와 `docs/architecture.md`를 먼저 읽는다.
 - `Dockerfile`, `deploy/`, `.github/workflows/`, 환경변수를 다루는 작업이면 [`docs/deploy.md`](docs/deploy.md)도
   먼저 읽어야 한다.
-- 알러지 · 식이 제한 id(`RestrictionId`)나 재료 카탈로그를 다루는 작업이면
+- 알러지 · 식이 제한 값(`RestrictionType`)이나 재료 카탈로그 · 판정을 다루는 작업이면
   [`../docs/food-ingredient-restriction-ids.md`](../docs/food-ingredient-restriction-ids.md)도 먼저 읽어야 한다.
-  클라이언트와 id가 같아야 한다.
+  클라이언트 · 재료 데이터와 값이 같아야 한다.
 - LangGraph 같은 LLM 워크플로를 만들거나 고치는 작업이면 `docs/architecture.md` §2.5와 기준 구현인
   `app/features/suggestions/`를 먼저 읽고 그 구조를 따라야 한다.
 - 기존 코드와 패턴을 먼저 확인하고, 필요한 파일만 추가한다.
@@ -45,6 +45,7 @@ DB 데이터나 스키마를 바꾸거나 지울 수 있는 작업은 **실행 �
 - `uv run alembic upgrade ...` / `downgrade ...` (마이그레이션 적용 · 되돌리기)
 - `docker compose down -v` 등 DB 볼륨을 지우는 명령, DB 컨테이너 재생성
 - `DROP` / `TRUNCATE` / `DELETE` 등을 직접 실행하는 SQL, 시드 · 데이터 수정 스크립트 실행
+  (`scripts/load_ingredients.py`는 `--check` 없이 실행하면 DB를 바꾼다)
 
 마이그레이션 파일을 *생성*(`alembic revision`)하거나 `alembic upgrade head --sql`처럼 SQL만 출력하는 것은
 DB를 바꾸지 않으므로 확인 없이 해도 된다.

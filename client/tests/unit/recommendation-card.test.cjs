@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Verify flat card text, flip cancellation, and native swipe spring recovery
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 카드 스와이프의 소유권 유지와 세로 스크롤 보존 검증
 // Runs the real card and React hooks; native views and animation completion are controlled.
 
 const { test, beforeEach } = require('node:test');
@@ -162,6 +164,8 @@ test('swiping stays blocked during a flip and works again after completion', asy
     props: { ...defaults, onSave: () => actions.push('save'), onDismiss: () => actions.push('dismiss') },
   });
   const gesture = { dx: 120, dy: 0, vx: 0 };
+  assert.equal(face(card.current).props.onPanResponderTerminationRequest(), false);
+  assert.equal(face(card.current).props.onMoveShouldSetPanResponder(null, { dx: 5, dy: 100 }), false);
   assert.equal(face(card.current).props.onMoveShouldSetPanResponder(null, gesture), true);
   await act(async () => flipButton(card.current).props.onPress());
   assert.equal(face(card.current).props.onMoveShouldSetPanResponder(null, gesture), false);

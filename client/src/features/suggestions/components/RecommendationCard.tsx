@@ -2,6 +2,8 @@
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
 // Changed: Native flip/swipe animations, stable text and shared progress bar
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 진행 중인 카드 스와이프의 제스처 소유권 유지
 
 import { ProgressBar } from '../../../components/ProgressBar';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -71,7 +73,7 @@ export function RecommendationCard(p: Props) {
           x.setValue(g.dx);
           setDirection(g.dx < 0 ? 'dismissed' : 'saved');
         },
-        onPanResponderTerminationRequest: () => true,
+        onPanResponderTerminationRequest: () => false,
         onPanResponderTerminate: () => {
           Animated.spring(x, { toValue: 0, useNativeDriver: true }).start();
           setDirection(null);

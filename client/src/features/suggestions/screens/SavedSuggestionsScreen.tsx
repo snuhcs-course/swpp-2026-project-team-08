@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 저장한 추천 탭 헤더의 뒤로가기 제거
 
 import { AppHeader } from '../../../components/AppHeader';
 import { BottomSheet } from '../../../components/BottomSheet';
@@ -48,7 +50,7 @@ function SavedContent({ userId, initialId = '' }: { userId: string; initialId?: 
     if (await model.remove() && initialId) router.replace({ pathname: '/section/[name]', params: { name: 'ideas' } });
   };
   return <SafeAreaView style={s.root} edges={[]}>
-    <AppHeader title={c.savedTitle} backLabel={c.back} onBack={() => router.replace('/home')} />
+    <AppHeader title={c.savedTitle} />
     <ScrollView style={s.root} contentContainerStyle={s.savedListContent}>
       {(saved.isPending || saved.isError || !!saved.data?.length) && <Text style={s.savedIntro}>{c.savedIntro}</Text>}
       {saved.isPending ? <ActivityIndicator /> : saved.isError ? <>

@@ -8,7 +8,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 선택지 id·채식 단계 기준으로 테스트 수정, 카탈로그 검색 테스트 교체
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 추천 모달 안전 여백 및 추천 연결 표시 및 MyPage 언어 버튼 검증
+// Changed: 추천 모달 안전 여백 및 추천 연결·언어 버튼 및 공통 Outcome 헤더 검증
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -813,4 +813,18 @@ test("after-meal photo footer preserves navigation, photo validation, and draft 
     }));
     assert.ok(html.includes(`aria-label="${label}"`));
   }
+});
+
+test('Outcome uses the shared header and preserves progress, caption and save errors', () => {
+  const { OutcomesHeader } = require('../../src/features/after-meal-review/components/OutcomesHeader.tsx');
+  const { copyFor } = require('../../src/util/strings.ts');
+  const html = renderToStaticMarkup(React.createElement(OutcomesHeader, {
+    language: 'en', caption: 'Sam · Lunch', saveStatus: 'error', disabled: true, onBack: () => {},
+  }));
+  assert.match(html, /data-testid="app-header"/);
+  assert.match(html, /data-testid="app-header-back"/);
+  assert.match(html, /aria-disabled="true"/);
+  assert.ok(html.includes(copyFor('en').afterMealReview.titles.outcomes));
+  assert.ok(html.includes(copyFor('en').afterMealReview.saveFailed));
+  assert.ok(html.includes('Sam · Lunch'));
 });

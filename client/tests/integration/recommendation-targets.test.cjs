@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: Food-only targets, automatic generation, loading and retry boundaries
+// Changed: Food targets, automatic generation, reselection and retry boundaries
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -156,4 +156,38 @@ test('a partial server result retries only the missing food card', async t => {
   await act(async () => { assert.equal(await h.current.selectTargets(h.current.visibleTargets), true); });
   assert.deepEqual(posts[1], [{ food_id: '2', ingredient_id: null }]);
   assert.equal(h.current.items.length, 2);
+});
+
+test('automatic targets can be changed to existing cards without generating duplicates', async t => {
+  const meal = mealWithFoods(3);
+  const { posts } = server(t, meal);
+  const h = await renderHook(t, () => useRecommendationFlow('1', meal.id));
+  await waitFor(() => h.current.items.length === 3 && !h.current.generating);
+  const originalIds = h.current.items.map(item => item.id);
+  const targets = h.current.targetOptions.map(option => option.target);
+  assert.equal(h.current.availableTargets.length, 0);
+  await act(async () => { assert.equal(await h.current.selectTargets([targets[1]]), true); });
+  assert.deepEqual(h.current.visibleTargets, [targets[1]]);
+  assert.deepEqual(h.current.items.map(item => item.foodId), ['2']);
+  assert.equal(h.current.current.foodId, '2');
+  await act(async () => { assert.equal(await h.current.selectTargets(targets), true); });
+  assert.deepEqual(h.current.items.map(item => item.id), originalIds);
+  assert.equal(h.current.visibleTargets.length, 3);
+  assert.equal(posts.length, 1);
+});
+
+test('adding a new target reuses an existing card and only generates the missing card', async t => {
+  const meal = mealWithFoods(4);
+  const { posts } = server(t, meal, { existing: [card(meal, '1', '901'), card(meal, '2', '902')] });
+  const h = await renderHook(t, () => useRecommendationFlow('1', meal.id));
+  await waitFor(() => h.current.suggestions.isSuccess && h.current.source.isSuccess);
+  await act(async () => { assert.equal(await h.current.selectTargets([
+    { foodId: '2', ingredientId: null }, { foodId: '3', ingredientId: null },
+  ]), true); });
+  assert.deepEqual(posts, [[{ food_id: '3', ingredient_id: null }]]);
+  assert.deepEqual(h.current.items.map(item => item.foodId).sort(), ['2', '3']);
+  assert.equal(h.current.items.find(item => item.foodId === '2').id, '902');
+  await act(async () => { assert.equal(await h.current.selectTargets([{ foodId: '1', ingredientId: null }]), true); });
+  assert.equal(h.current.current.id, '901');
+  assert.equal(posts.length, 1);
 });

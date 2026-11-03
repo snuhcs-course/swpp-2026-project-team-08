@@ -1,8 +1,9 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Keep text outside 3D flips and use native animations for flip and swipe recovery
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: Native flip/swipe animations, stable text and shared progress bar
 
+import { ProgressBar } from '../../../components/ProgressBar';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Pressable, ScrollView, Text, View } from 'react-native';
 import type { Suggestion } from '../../../types/suggestionRecord';
@@ -134,9 +135,8 @@ export function RecommendationCard(p: Props) {
           }),
         }}>
           {!details && <>
-            <View style={s.progress}>
-              <View style={[s.fill, { width: `${(100 * p.index) / p.total}%` }]} />
-            </View>
+            <ProgressBar variant="continuous" current={p.index} total={p.total}
+              style={s.progress} fillStyle={s.fill} accessible={false} />
             <View style={s.row}>
               <Text style={s.cardPosition}>{c.count(p.index, p.total)}</Text>
               <Text style={s.cardFoodName}>{suggestionTargetName(p.item)}</Text>

@@ -1,6 +1,7 @@
-// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: Outcome heading with back button, autosave and progress
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: Outcome heading with back button, autosave and three-step progress; Use shared progress bar
 
+import { ProgressBar } from '../../../components/ProgressBar';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../../util/colors';
@@ -34,9 +35,8 @@ export function OutcomesHeader({ language, caption, saveStatus, onBack, disabled
     </View>
     <Text accessibilityRole="header" style={styles.title}>{s.afterMealReview.titles.outcomes}</Text>
     <Text style={styles.caption}>{caption}</Text>
-    <View accessibilityRole="progressbar" accessibilityValue={{ min: 1, max: 5, now: 1 }} style={styles.progress}>
-      {[0, 1, 2, 3, 4].map(index => <View key={index} style={[styles.segment, index === 0 && styles.active]} />)}
-    </View>
+    <ProgressBar current={2} total={3} style={styles.progress}
+      trackStyle={styles.segment} fillStyle={styles.active} />
   </View>;
 }
 

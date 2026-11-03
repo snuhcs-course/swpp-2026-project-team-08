@@ -1,6 +1,9 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
 
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Keep target chooser available with existing selections and cards
+
 import { AppHeader } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -46,8 +49,8 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
   });
   if (model.sourceUnavailable) return <Redirect href="/home" />;
   const targetSheet = sheet && meal && <ChangeFoodsSheet
-    current={[]}
-    options={model.availableTargets}
+    current={model.visibleTargets}
+    options={model.targetOptions}
     language={language}
     onClose={() => setSheet(false)}
     onUpdate={(targets) => {
@@ -90,7 +93,7 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
         <View style={s.savedCardHeading}>
           <Text style={s.savedFoodName}>{c.targets}</Text>
           <Pressable accessibilityRole="button" accessibilityLabel={c.changeFoods}
-            disabled={model.busy || !model.availableTargets.length}
+            disabled={model.busy || !model.targetOptions.length}
             style={s.changeFoodsAction} onPress={() => setSheet(true)}>
             <Text style={s.changeFoodsLabel}>{c.changeFoods}</Text>
             <UiAssetIcon name="suggestion-edit" />

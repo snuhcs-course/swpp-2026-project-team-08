@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: Three-option outcome sliders and ingredient review interactions
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: Unclear-first outcome slider and ingredient review interactions
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -24,7 +24,7 @@ function elements(node) {
 }
 
 for (const language of ['en', 'ko']) {
-  test(`${language}: three choices, repeated selection, dragging and accessible upper boundary`, async t => {
+  test(`${language}: four choices, repeated selection, dragging and accessible upper boundary`, async t => {
     const m = copyFor(language).afterMealReview;
     const h = await renderHook(t, () => {
       const [value, setValue] = React.useState(null);
@@ -32,8 +32,8 @@ for (const language of ['en', 'ko']) {
     });
     const rail = () => h.current.props.children[0].props;
     const options = () => h.current.props.children[1].props.children;
-    assert.equal(rail().accessibilityValue.max, 2);
-    assert.deepEqual(options().map(n => n.props.accessibilityLabel), [m.outcomes.untouched, m.outcomes.tasted, m.outcomes.eaten]);
+    assert.equal(rail().accessibilityValue.max, 3);
+    assert.deepEqual(options().map(n => n.props.accessibilityLabel), [m.outcomes.unclear, m.outcomes.untouched, m.outcomes.tasted, m.outcomes.eaten]);
     assert.equal(rail().accessibilityValue.now, undefined);
     await act(async () => options()[1].props.onPress());
     await act(async () => options()[1].props.onPress());
@@ -42,7 +42,7 @@ for (const language of ['en', 'ko']) {
     await act(async () => rail().onResponderGrant({ nativeEvent: { locationX: 295, pageX: 295 } }));
     assert.equal(rail().accessibilityValue.text, m.outcomes.eaten);
     await act(async () => rail().onAccessibilityAction({ nativeEvent: { actionName: 'increment' } }));
-    assert.equal(rail().accessibilityValue.now, 2);
+    assert.equal(rail().accessibilityValue.now, 3);
   });
 }
 
@@ -77,9 +77,9 @@ test('ingredient cards gate Continue, retain removed answers, and survive collap
   assert.equal(allOutcomesConfirmed(h.current.outcomes), true);
 });
 
-test('legacy unclear answers do not appear as slider choices', () => {
+test('unclear answers appear as the final slider choice', () => {
   const m = copyFor('en').afterMealReview;
   const slider = MealOutcomeSlider({ value: 'unclear', label: 'Egg', labels: m.outcomes, unsetLabel: m.unanswered, onSelect() {} });
-  assert.equal(slider.props.value, null);
-  assert.equal(slider.props.options.includes(m.outcomes.unclear), false);
+  assert.equal(slider.props.value, 'unclear');
+  assert.equal(slider.props.options[0], m.outcomes.unclear);
 });

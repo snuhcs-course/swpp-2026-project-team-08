@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: 식사 정보·재료 입력·하단 UI 조정 및 현재 단계별 진행 표시; 사진 확인 후 입력 단계 안내
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: 식사 정보·재료 입력·하단 UI 조정 및 현재 단계별 진행 표시; 사진 확인 후 입력 단계 안내; 공통 진행 바 사용
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -9,6 +9,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 
+import { ProgressBar } from '../../../components/ProgressBar';
 import { AppHeader } from '../../../components/AppHeader';
 import { useState } from "react";
 import {
@@ -97,22 +98,9 @@ export function MealCheckinView(p: MealCheckinViewProps) {
               disabled={p.saving} onPress={p.tryingSuggestion.onToggle} style={styles.header}>
               <Text style={ui.text}>{p.tryingSuggestion.checked ? '☑' : '☐'} {suggestionCopyFor(p.language).trying}</Text>
             </Pressable>}
-            <View
-              accessibilityRole="progressbar"
-              accessibilityValue={{ min: 1, max: 5, now: segment + 1 }}
-              style={styles.progress}
-            >
-              {[0, 1, 2, 3, 4].map((i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.segment,
-                    d.step === "photo" && styles.photoSegment,
-                    i <= segment && styles.activeSegment,
-                  ]}
-                />
-              ))}
-            </View>
+            <ProgressBar current={segment + 1} total={5} style={styles.progress}
+              trackStyle={[styles.segment, d.step === 'photo' && styles.photoSegment]}
+              fillStyle={styles.activeSegment} />
             {review && !emptyManual && (
               <View style={styles.reviewIntro}>
                 <Text style={styles.reviewIntroTitle}>

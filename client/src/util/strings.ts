@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: 식생활 유형·한국어 UX·익숙한 음식 폼 및 음식 수용 정도 및 식후 검토 화면
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: 식생활 유형·한국어 UX·익숙한 음식 폼 및 음식 수용 정도 및 식후 검토 3단계 표시
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -133,7 +133,7 @@ const en = {
     replace: 'Replace photo', removePhoto: 'Remove photo', usePhoto: 'Use this photo',
     photoLocal: 'Optional photo for your meal record. Enter food outcomes yourself.',
     missingBefore: 'The before-meal photo is unavailable. You can enter outcomes manually.', manual: 'Enter food outcomes', noPhoto: 'Continue without photo',
-    reviewStep: 'AFTER MEAL · STEP 1 OF 5',
+    reviewStep: 'AFTER MEAL · STEP 2 OF 3',
     amountQuestion: (name: string) => `How much did ${name} eat?`,
     amountHint: 'Think about the food as a whole, slide or tap',
     reviewIngredients: 'Review ingredients',
@@ -392,7 +392,7 @@ const ko = {
     dateLabel: (date: string, today: boolean) => `${today ? '오늘 · ' : ''}${date}`,
   },
   afterMealReview: {
-    reviewStep: '식후 기록 · 5단계 중 1단계',
+    reviewStep: '식후 기록 · 3단계 중 2단계',
     amountQuestion: (name: string) => `${name}의 먹은 결과를 알려주세요`,
     amountHint: '음식 전체를 기준으로 밀거나 눌러 선택해 주세요',
     reviewIngredients: '재료별 기록',

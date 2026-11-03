@@ -2,9 +2,10 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 식후 검토 저장 상태 버튼 디자인 통일
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: 식후 검토 저장 상태 버튼 디자인 통일; 공통 진행 바 사용
 
+import { ProgressBar } from './ProgressBar';
 import { AppHeader, topBarStyles } from './AppHeader';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,7 +29,7 @@ export function MealSaveStatusView({ status, review = false, language, photos, m
   return <SafeAreaView style={styles.root} edges={['top','bottom']}>
     <AppHeader title={review ? a.reviewSavedHeader : a.saveCheckinHeader} backLabel={s.common.back} onBack={onReturn} />
     <View style={topBarStyles.details}>
-      <View style={styles.progress}>{[0,1,2,3,4].map(i=><View key={i} style={styles.segment}/>)}</View>
+      <ProgressBar current={5} total={5} style={styles.progress} trackStyle={styles.segment} accessible={false} />
     </View>
     <ScrollView contentContainerStyle={styles.content}>
       <MealSavedPanel status={status} title={failed?(review?a.reviewSaveFailed:a.mealSaveFailed):(review?a.savingReview:a.savingMeal)}

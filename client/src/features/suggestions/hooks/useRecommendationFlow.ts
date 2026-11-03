@@ -1,7 +1,7 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: Automatically generate missing food cards for meals with one to three foods
+// Changed: Auto-generate food cards and reuse existing cards when targets change
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
@@ -29,10 +29,13 @@ export function useRecommendationFlow(userId: string, mealId: string) {
     void refetchSuggestions();
   }, [refetchSource, refetchSuggestions]));
 
-  const items = useMemo(() => (suggestions.data ?? []).filter(item => item.ingredientId === null), [suggestions.data]);
+  const allItems = useMemo(() => (suggestions.data ?? []).filter(item => item.ingredientId === null), [suggestions.data]);
+  const items = useMemo(() => selectedTargets.length
+    ? allItems.filter(item => selectedTargets.some(target => target.foodId === item.foodId))
+    : allItems, [allItems, selectedTargets]);
   const current = items.find((item) => item.status === 'pending') ?? null;
   const targetOptions = useMemo(() => reviewedSuggestionTargets(source.data ?? null), [source.data]);
-  const availableTargets = useMemo(() => unGeneratedTargets(targetOptions, items), [targetOptions, items]);
+  const availableTargets = useMemo(() => unGeneratedTargets(targetOptions, allItems), [targetOptions, allItems]);
   const foodCount = source.data?.foods.length ?? 0;
   const autoSelect = !!source.data?.review && foodCount > 0 && foodCount <= 3;
   const awaitingAutomaticGeneration = autoSelect && source.isSuccess && suggestions.isSuccess
@@ -50,14 +53,13 @@ export function useRecommendationFlow(userId: string, mealId: string) {
       || targets.some(target => !targetOptions.some(option =>
         option.target.foodId === target.foodId && option.target.ingredientId === target.ingredientId))) return false;
     const missingTargets = targets.filter(target => availableTargets.some(option => option.target.foodId === target.foodId));
-    if (!missingTargets.length) return false;
     busy.current = true;
     setGenerationFailed(false);
     setFailed(false);
     setSelectedTargets(targets);
-    const oldIds = new Set(items.map((item) => item.id));
+    const oldIds = new Set(allItems.map((item) => item.id));
     try {
-      await generate(missingTargets);
+      if (missingTargets.length) await generate(missingTargets);
       setNotice(null);
       return true;
     } catch {
@@ -69,7 +71,7 @@ export function useRecommendationFlow(userId: string, mealId: string) {
     } finally {
       busy.current = false;
     }
-  }, [availableTargets, targetOptions, items, generate, refetchSuggestions]);
+  }, [availableTargets, targetOptions, allItems, generate, refetchSuggestions]);
 
   useEffect(() => {
     const scope = `${userId}:${mealId}`;

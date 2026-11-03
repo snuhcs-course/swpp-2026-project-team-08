@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: 식후 결과 디자인·뒤로가기 및 재료별 어려움 대상 연결
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: 식후 결과 디자인·뒤로가기·재료별 어려움 및 3단계 진행 표시
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
@@ -49,14 +49,14 @@ export function AfterMealReviewView(
   ].includes(p.draft.step);
   const phase = {
     photo: 0,
-    preview: 1,
-    compare: 2,
-    comparing: 2,
-    "comparison-error": 2,
-    outcomes: 3,
-    difficulties: 4,
-    suggestions: 4,
-    complete: 4,
+    preview: 0,
+    compare: 0,
+    comparing: 0,
+    "comparison-error": 0,
+    outcomes: 1,
+    difficulties: 2,
+    suggestions: 2,
+    complete: 2,
   }[p.draft.step];
   const goAfterDifficulties = () => {
     if (p.saving || !p.canContinueOutcomes) return;
@@ -82,7 +82,6 @@ export function AfterMealReviewView(
           caption={p.draft.step === "preview" && !p.meal.photo ? a.draftFor(p.childName) : !["outcomes", "preview"].includes(p.draft.step) ? undefined : `${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${s.mealCheckin.settings[p.meal.setting]}`}
           backLabel={s.common.back}
           progress={phase}
-          hideProgress={p.draft.step === "difficulties"}
           onBack={p.onBack}
           disabled={p.saving}
           optional={p.draft.step === "difficulties" ? m.optional : undefined}

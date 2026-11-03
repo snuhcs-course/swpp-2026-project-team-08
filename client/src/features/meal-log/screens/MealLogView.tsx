@@ -7,7 +7,7 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Three-height native meal sheet defaulting to search and filters only
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 식사 기록 탭 헤더의 뒤로가기 제거
+// Changed: 식사 기록 탭 헤더의 뒤로가기 제거; 식사 기록 배경색 통일
 
 import { AppHeader } from '../../../components/AppHeader';
 import { useState, type Ref } from 'react';
@@ -90,10 +90,10 @@ export function MealLogView({ sheetRef, ...p }: Props) {
         onSearch={p.onSearch} onSubmitSearch={p.onSubmitSearch}
         onToggleUnreviewed={p.onToggleUnreviewed}
         onRefresh={p.onRefresh} onOpenMeal={p.onOpenMeal} onGoCheckin={p.onGoCheckin} />}>
-      <View style={styles.root}>
+      <View style={styles.historyRoot}>
         <AppHeader title={m.title} />
         <ScrollView
-          style={styles.root}
+          style={styles.historyRoot}
           contentContainerStyle={styles.controlsScroll}
           keyboardShouldPersistTaps="handled"
           refreshControl={

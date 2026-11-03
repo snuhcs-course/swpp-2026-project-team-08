@@ -6,6 +6,8 @@
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Meal sheet layout and compact calendar matching the reference design
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 식사 기록 배경색 통일
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
@@ -14,6 +16,7 @@ import { fonts } from '../../../util/fonts';
 
 export const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.surface },
+  historyRoot: { flex: 1, backgroundColor: colors.homeBackground },
   content: { ...topBarStyles.content, paddingBottom: 28, gap: 12 },
   sectionLabel: { color: colors.homeText, fontSize: 16, fontFamily: fonts.poppinsSemiBold },
   continueBlock: { gap: 8 },
@@ -118,6 +121,7 @@ export const styles = StyleSheet.create({
   controlsScroll: { paddingBottom: 220 },
   controls: { ...topBarStyles.content, gap: 12 },
   webSheet: {
+    backgroundColor: colors.surface,
     flex: 1,
     minHeight: 200,
     borderTopLeftRadius: 24,

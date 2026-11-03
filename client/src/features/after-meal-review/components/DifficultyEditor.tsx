@@ -5,6 +5,8 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; modified existing code
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 활성 여부와 무관하게 네이티브 선택 필드 너비 유지
 
 import { UiAssetIcon, type UiAssetIconName } from "../../../components/UiAssetIcon";
 import { MealFlowButton } from "../../../components/MealFlowButton";
@@ -58,15 +60,19 @@ function DifficultySelect({ label, value, placeholder, options, disabled = false
   onChange: (value: string) => void;
   style?: StyleProp<ViewStyle>;
 }) {
+  const [fieldWidth, setFieldWidth] = useState<number>();
   const content = <>
     <Text style={styles.selectText}>{label || placeholder}</Text>
     <UiAssetIcon name="abc-select" />
   </>;
   if (Platform.OS === 'android' || Platform.OS === 'ios') return (
-    <NativeDropdown options={options} value={value} label={placeholder} disabled={disabled}
-      onChange={onChange} style={style} fieldStyle={styles.select}>
-      {content}
-    </NativeDropdown>
+    <View style={style} onLayout={({ nativeEvent }) => setFieldWidth(nativeEvent.layout.width)}>
+      <NativeDropdown options={options} value={value} label={placeholder} disabled={disabled}
+        onChange={onChange} style={styles.nativeMenu}
+        fieldStyle={[styles.select, fieldWidth != null && { width: fieldWidth }]}>
+        {content}
+      </NativeDropdown>
+    </View>
   );
   return <Pressable accessibilityRole="button" accessibilityLabel={placeholder}
     accessibilityState={{ expanded, disabled }} disabled={disabled} onPress={onPress}
@@ -294,6 +300,7 @@ const styles = StyleSheet.create({
     gap: 5,
     maxWidth: "100%",
   },
+  nativeMenu: { width: "100%" },
   categorySelect: { flexBasis: 170, flexGrow: 1, flexShrink: 1 },
   valueSelect: { flexBasis: 120, flexGrow: 1, flexShrink: 1 },
   selectText: {

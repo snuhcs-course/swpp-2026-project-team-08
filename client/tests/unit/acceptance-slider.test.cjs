@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: Verify acceptance dragging, boundaries, optional clearing, and accessibility
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 중간 라벨의 선택 위치 정렬과 양 끝 라벨 경계 검증
 
 // Runs the slider with real React state; only React Native primitives are mocked.
 const { test } = require('node:test');
@@ -95,3 +97,22 @@ for (const language of ['en', 'ko']) {
     assert.equal(h.control().accessibilityValue.text, abcCopyFor(language).acceptanceOptions[2].replace('\n', ' '));
   });
 }
+
+test('middle labels align with slider stops while edge labels stay inside', async t => {
+  const h = await setup(t, null, 'ko');
+  for (const width of [240, 288, 320, 342]) {
+    await act(async () => h.control().onLayout({ nativeEvent: { layout: { width } } }));
+    const options = labels(h.rendered.current);
+    let left = 0;
+    for (let i = 0; i < options.length; i++) {
+      const optionWidth = options[i].props.style[1].width;
+      assert.ok(left >= 0 && left + optionWidth <= width + 1e-9);
+      if (i === 1 || i === 2) {
+        const stop = 16 + (width - 32) * i / 3;
+        assert.ok(Math.abs(left + optionWidth / 2 - stop) < 1e-9);
+      }
+      left += optionWidth;
+    }
+    assert.ok(Math.abs(left - width) < 1e-9);
+  }
+});

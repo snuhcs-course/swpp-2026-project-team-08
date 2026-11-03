@@ -1,6 +1,8 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 마이페이지 채식 제한 prop 이름 변경
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 날짜 상한 및 네이티브 연도 메뉴와 웹 스크롤 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -133,20 +135,57 @@ test('profile age editing uses native menus with localized labels and stable ids
   }
 });
 
-test('calendar month and year dropdowns keep their numeric bounds and one-based month callbacks', () => {
+test('calendar uses native year menus newest first and scrolls web years to selection', t => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date(2026, 10, 3, 12).getTime() });
+  for (const os of ['android', 'ios', 'web']) {
+    reset(os);
+    const changes = [];
+    const props = { variant: 'month-year', year: 2026, month: 10,
+      labels: { year: 'Year', month: 'Month', locale: 'en-US' },
+      onChange: (...value) => changes.push(value) };
+    let nodes = render(DateField, props);
+    if (os !== 'web') {
+      const [month, year] = menus(nodes);
+      assert.equal(month.props.actions.length, 11);
+      assert.equal(month.props.actions[9].title, 'Oct');
+      assert.equal(month.props.actions[9].state, 'on');
+      choose(month, '2');
+      assert.deepEqual(changes, [[2026, 2]]);
+      assert.equal(year.props.actions.length, 127);
+      assert.equal(year.props.actions[0].id, '2026');
+      assert.equal(year.props.actions[0].state, 'on');
+      assert.equal(year.props.actions.at(-1).id, '1900');
+      choose(year, '2024');
+      assert.deepEqual(changes.at(-1), [2024, 10]);
+      assert.equal(nodes.filter(node => node.type === 'ScrollView').length, 0);
+      continue;
+    }
+    nodes.find(node => node.props.testID === 'date-part-0').props.onPress();
+    nodes = render(DateField, props);
+    const list = nodes.find(node => node.type === 'ScrollView');
+    assert.ok(list.props.contentOffset.y > 4000);
+    const options = elements(list).filter(node => node.type === 'Pressable');
+    assert.equal(options.length, 127);
+    assert.equal(elements(options.at(-1)).find(node => node.type === 'Text').props.children, '2026');
+    options.at(-3).props.onPress();
+    assert.deepEqual(changes.at(-1), [2024, 10]);
+    assert.equal(render(DateField, props).filter(node => node.type === 'ScrollView').length, 0);
+  }
+});
+
+test('past calendar years expose December in native month menus', t => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date(2026, 10, 3, 12).getTime() });
   for (const os of ['android', 'ios']) {
     reset(os);
     const changes = [];
-    const nodes = render(DateField, { variant: 'month-year', year: 2026, month: 10,
-      labels: { year: 'Year', month: 'Month', locale: 'en-US' }, onChange: (...value) => changes.push(value) });
-    const [month, year] = menus(nodes);
+    const nodes = render(DateField, { variant: 'month-year', year: 2024, month: 11,
+      labels: { year: 'Year', month: 'Month', locale: 'en-US' },
+      onChange: (...value) => changes.push(value) });
+    const [month] = menus(nodes);
     assert.equal(month.props.actions.length, 12);
-    assert.equal(month.props.actions[9].title, 'Oct');
-    assert.equal(month.props.actions[9].state, 'on');
-    assert.equal(year.props.actions[0].id, '1900');
-    assert.equal(year.props.actions.at(-1).id, '2200');
-    choose(month, '2'); choose(year, '2024');
-    assert.deepEqual(changes, [[2026, 2], [2024, 10]]);
+    assert.deepEqual(month.props.actions.at(-1), { id: '12', title: 'Dec', state: 'off' });
+    choose(month, '12');
+    assert.deepEqual(changes, [[2024, 12]]);
   }
 });
 

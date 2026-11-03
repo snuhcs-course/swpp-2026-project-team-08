@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 오늘 기본값 및 네이티브·웹 미래 날짜 차단 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -132,4 +134,51 @@ test('Meal Details opens one native picker on mobile and keeps web date parts', 
     assert.equal(nodes.filter(node => node.type === 'NativePicker').length, native ? 1 : 0);
     assert.equal(nodes.filter(node => node.props.testID?.startsWith('date-part-')).length, native ? 0 : 3);
   }
+});
+
+test('native pickers cap selection at now and future confirmations cannot be saved', t => {
+  const now = new Date(2026, 10, 3, 12);
+  t.mock.timers.enable({ apis: ['Date'], now: now.getTime() });
+  for (const os of ['android', 'ios']) {
+    const h = harness(os);
+    const view = h.picker();
+    const picker = os === 'android' ? view : view.props.children;
+    assert.equal(picker.props.maximumDate.getTime(), now.getTime());
+    h.input.onConfirm(new Date(2026, 11, 1)); h.render();
+    assert.equal(h.date, '2026-11-03');
+  }
+});
+
+test('new date inputs start today and opening an old draft preserves its date', t => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date(2026, 10, 3, 12).getTime() });
+  slots = []; cursor = 0;
+  const input = useMealCheckinInputs({ draft: null, onUpdate() {} }).date;
+  assert.deepEqual(input.parts, [2026, 11, 3]);
+  assert.deepEqual(harness('web').input.parts, [2026, 10, 27]);
+});
+
+test('web date options end at today and switching from a past December clamps the month', t => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date(2026, 10, 3, 12).getTime() });
+  platform.OS = 'web';
+  const fullLabels = { ...labels, date: 'Date', year: 'Year', month: 'Month', day: 'Day', hint: '' };
+  for (const [part, last] of [[0, '2026'], [1, 'Nov'], [2, '03']]) {
+    slots = []; cursor = 0;
+    const nodes = elements(DateField({ label: '', labels: { ...fullLabels, locale: 'en-US' },
+      parts: [2026, 11, 3], open: true, field: part,
+      onToggle() {}, onFieldChange() {}, onNumberSelect() {}, onDateChange() {}, onConfirm() {} }));
+    const options = nodes.find(node => node.props.testID === `date-options-${part}`);
+    const text = elements(options).filter(node => node.type === 'Text').map(node => node.props.children);
+    assert.equal(text.at(-1), last);
+  }
+  slots = []; cursor = 0;
+  let selected;
+  const props = { variant: 'month-year', year: 2025, month: 12,
+    labels: { ...fullLabels, locale: 'en-US' }, onChange: (...value) => { selected = value; } };
+  let nodes = elements(DateField(props));
+  nodes.find(node => node.props.testID === 'date-part-0').props.onPress();
+  cursor = 0;
+  nodes = elements(DateField(props));
+  const options = nodes.find(node => node.props.testID === 'date-options-0');
+  elements(options).filter(node => node.type === 'Pressable').at(-1).props.onPress();
+  assert.deepEqual(selected, [2026, 11]);
 });

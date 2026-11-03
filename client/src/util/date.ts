@@ -1,6 +1,8 @@
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 날짜 선택 기본값과 상한을 현재 날짜로 제한
 
 export const localDate = (date = new Date()) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -15,4 +17,8 @@ export function validDate(value: unknown): value is string {
 export function displayDate(value: string, language: 'en' | 'ko', short = false): string {
   const [year, month, day] = value.split('-').map(Number);
   return new Date(year, month - 1, day).toLocaleDateString(language === 'ko' ? 'ko-KR' : short ? 'en-US' : 'en-GB', { day: 'numeric', month: short ? 'short' : 'long', year: 'numeric' });
+}
+
+export function capFutureDateAtToday(date: Date, now = new Date()): Date {
+  return date > now ? now : date;
 }

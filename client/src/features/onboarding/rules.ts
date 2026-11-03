@@ -3,6 +3,8 @@
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 채식 단계 선택 사항 처리, 직접 입력·카탈로그 규칙 제거
 
 import { emptyDraft, isStep, type OnboardingDraft, type OnboardingStep } from './types';
 import type { Language } from '../../types/profile';
@@ -35,7 +37,6 @@ export function canContinue(step: OnboardingStep, draft: OnboardingDraft, passwo
     case 'child': return !!draft.childName.trim() && !!draft.ageRange;
     case 'allergies': return draft.allergies.length > 0;
     case 'restrictions': return draft.restrictions.length > 0;
-    case 'family': return draft.familyFoods.length > 0;
     default: return true;
   }
 }
@@ -45,20 +46,13 @@ export function canFinish(draft: OnboardingDraft): boolean {
     && validEmail(draft.caregiverEmail)
     && draft.consent.accountPrivacy && draft.consent.photoAnalysis
     && !!draft.childName.trim() && !!draft.ageRange
-    && draft.allergies.length > 0 && draft.restrictions.length > 0
-    && draft.familyFoods.length > 0;
-}
-
-export function addUnique(values: string[], value: string): string[] {
-  const normalized = value.trim();
-  if (!normalized || values.some((item) => item.toLocaleLowerCase() === normalized.toLocaleLowerCase())) return values;
-  return [...values.filter((item) => item !== 'none'), normalized];
+    && draft.allergies.length > 0 && draft.restrictions.length > 0;
 }
 
 export function matchingSafeFoods(draft: OnboardingDraft, language: Language): string[] {
   const restricted = [
-    ...draft.allergies.filter((item) => item !== 'none').flatMap((item) => [item, labelFor('allergies', item, language), labelFor('allergyCatalog', item, language)]),
-    ...draft.restrictions.filter((item) => item !== 'none').flatMap((item) => [item, labelFor('restrictions', item, language), labelFor('restrictionCatalog', item, language)]),
+    ...draft.allergies.filter((item) => item !== 'none').flatMap((item) => [labelFor('allergies', item, language), labelFor('allergies', item, 'en')]),
+    ...draft.restrictions.filter((item) => item !== 'none').flatMap((item) => [labelFor('restrictions', item, language), labelFor('restrictions', item, 'en')]),
   ].map((item) => item.toLocaleLowerCase());
   return draft.safeFoods.filter((food) => {
     const description = `${food.name} ${food.preparation}`.toLocaleLowerCase();
@@ -80,9 +74,8 @@ export function isDraft(value: unknown): value is OnboardingDraft {
     && typeof draft.ageRange === 'string'
     && !!consent && typeof consent.accountPrivacy === 'boolean'
     && typeof consent.photoAnalysis === 'boolean' && typeof consent.aiTraining === 'boolean'
-    && ['allergies', 'restrictions', 'familyFoods', 'safeFoods']
+    && ['allergies', 'restrictions', 'vegetarianRestrictions', 'safeFoods']
       .every((key) => Array.isArray(draft[key]))
-    && typeof draft.noSafeFoods === 'boolean'
     && !!safeFoodInput && ['name', 'preparation', 'presentationNote'].every((key) => typeof safeFoodInput[key] === 'string');
 }
 
@@ -90,7 +83,7 @@ export function restoreDraft(value: unknown): OnboardingDraft | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const stored = value as Record<string, unknown>;
   if (typeof stored.step !== 'string') return null;
-  const draft = { ...stored, step: isStep(stored.step) ? stored.step : 'family' };
+  const draft = { ...stored, step: isStep(stored.step) ? stored.step : 'vegetarian' };
   if (!isDraft(draft)) return null;
   return Object.fromEntries(
     Object.keys(emptyDraft()).map((key) => [key, draft[key as keyof OnboardingDraft]]),

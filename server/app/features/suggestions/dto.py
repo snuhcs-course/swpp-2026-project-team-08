@@ -1,52 +1,64 @@
-"""Public suggestion requests and responses."""
+# AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+# Changed: 음식 단위 추천, 대문자 enum, 조리법·원인·재료 응답 필드로 재편
+
+"""추천 요청과 응답의 모양.
+
+값 검증은 DB 제약이 아니라 이 DTO 가 맡는다. enum 값은 모두 대문자이며,
+허용 값 밖의 값과 정의하지 않은 필드는 422 로 거절된다.
+"""
 
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
-from app.features.meals.dto import FoodSnapshot
+from app.models.food_recommendation_enums import (
+    FoodRecommendationDismissReason,
+    FoodRecommendationStatus,
+)
+from app.models.meal_enums import MealCookingMethod
 
 BigintId = str
-DismissReason = Literal[
-    "restriction_conflict",
-    "disliked_food_or_form",
-    "food_preferences",
-    "too_much_preparation",
-    "ingredient_unavailable",
-    "already_tried",
+
+
+def _bigint_id(value: str) -> str:
+    if int(value) > 2**63 - 1:
+        raise ValueError("id exceeds BIGINT")
+    return value
+
+
+EntityId = Annotated[
+    str, Field(max_length=19, pattern=r"^[1-9][0-9]*$"), AfterValidator(_bigint_id)
 ]
+
+# 추천을 보여 줄 상태를 고르는 조회용 값이다. ALL 은 enum 값이 아니다.
+ListFilter = Literal["SAVED", "ALL"]
 
 
 class SuggestionResponse(BaseModel):
     id: BigintId
     user_id: BigintId
+    # 추천의 근거가 된 음식과 그 음식이 속한 식사
+    origin_food_id: BigintId
     meal_id: BigintId
-    food_id: BigintId
-    ingredient_id: BigintId | None
-    food_snapshot: FoodSnapshot
     what_to_try: str
     why_this_may_help: str
     serving_tip: str | None
-    status: Literal["pending", "saved", "dismissed"]
-    dismiss_reasons: list[DismissReason]
+    ingredients: list[str]
+    cooking_method: MealCookingMethod
+    causes: str
+    status: FoodRecommendationStatus
+    dismiss_reasons: list[FoodRecommendationDismissReason]
     saved_at: datetime | None
     created_at: datetime
 
 
 class SuggestionTarget(BaseModel):
+    """추천을 만들 음식. 추천은 음식 단위로만 만든다."""
+
     model_config = ConfigDict(extra="forbid")
 
-    food_id: str = Field(max_length=19, pattern=r"^[1-9][0-9]*$")
-    ingredient_id: str | None = Field(default=None, max_length=19, pattern=r"^[1-9][0-9]*$")
-
-    @model_validator(mode="after")
-    def check_bigint(self) -> "SuggestionTarget":
-        if int(self.food_id) > 2**63 - 1 or (
-            self.ingredient_id is not None and int(self.ingredient_id) > 2**63 - 1
-        ):
-            raise ValueError("id exceeds BIGINT")
-        return self
+    food_id: EntityId
 
 
 class SuggestionGenerateRequest(BaseModel):
@@ -56,11 +68,8 @@ class SuggestionGenerateRequest(BaseModel):
 
     @model_validator(mode="after")
     def unique_targets(self) -> "SuggestionGenerateRequest":
-        keys = [
-            (int(item.food_id), int(item.ingredient_id) if item.ingredient_id else None)
-            for item in self.targets
-        ]
-        if len(keys) != len(set(keys)):
+        ids = [item.food_id for item in self.targets]
+        if len(ids) != len(set(ids)):
             raise ValueError("targets must be unique")
         return self
 
@@ -68,14 +77,14 @@ class SuggestionGenerateRequest(BaseModel):
 class SuggestionDecisionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    status: Literal["saved", "dismissed"]
-    dismiss_reasons: list[DismissReason] = Field(default_factory=list)
+    status: Literal[FoodRecommendationStatus.SAVED, FoodRecommendationStatus.DISMISSED]
+    dismiss_reasons: list[FoodRecommendationDismissReason] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def valid_reasons(self) -> "SuggestionDecisionRequest":
-        if self.status == "saved" and self.dismiss_reasons:
+        if self.status == FoodRecommendationStatus.SAVED and self.dismiss_reasons:
             raise ValueError("saved suggestions cannot have dismiss reasons")
-        if self.status == "dismissed" and not self.dismiss_reasons:
+        if self.status == FoodRecommendationStatus.DISMISSED and not self.dismiss_reasons:
             raise ValueError("dismissed suggestions need a reason")
         if len(self.dismiss_reasons) != len(set(self.dismiss_reasons)):
             raise ValueError("dismiss reasons must be unique")

@@ -5,6 +5,8 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 선택지 id·채식 단계 기준으로 테스트 수정, 카탈로그 검색 테스트 교체
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -362,14 +364,14 @@ test("onboarding review has the four summary cards without changing profile answ
   } = require("../../src/features/onboarding/screens/reviewRows.ts");
   const draft = {
     ...emptyDraft(),
-    allergies: ["peanut"],
-    restrictions: ["gluten-free"],
+    allergies: ["PEANUTS"],
+    restrictions: ["GLUTEN_FREE"],
   };
   const before = JSON.stringify(draft);
   const rows = reviewRows(draft, "en");
   assert.deepEqual(
     rows.map((row) => row.step),
-    ["child", "allergies", "family", "safe-foods"],
+    ["child", "allergies", "vegetarian", "safe-foods"],
   );
   assert.match(rows[1].value, /Peanuts/);
   assert.equal(JSON.stringify(draft), before);
@@ -435,24 +437,20 @@ test("account keeps the small password helper separate from the error", () => {
   assert.doesNotMatch(invalid, /Use at least 8 characters/);
 });
 
-test("Figma other-food catalog examples are searchable in both supported languages", () => {
+test("onboarding option ids equal the server enum values without their category", () => {
   const { optionsFor } = require("../../src/util/strings.ts");
-  assert.deepEqual(
-    optionsFor("allergyCatalog", "en")
-      .filter((o) => o.label.toLowerCase().includes("lupin"))
-      .map((o) => o.label),
-    ["Lupin", "Lupin flour", "Lupin seed"],
-  );
-  assert.deepEqual(
-    optionsFor("familyCatalog", "en")
-      .filter((o) => o.label.toLowerCase().includes("plant"))
-      .map((o) => o.label),
-    ["Plant-based milk", "Plant-based yogurt", "Plant-based cheese"],
-  );
-  assert.equal(
-    optionsFor("allergyCatalog", "ko").find((o) => o.id === "lupin").label,
-    "루핀",
-  );
+  const ids = (group) => optionsFor(group, "en").map((o) => o.id);
+  assert.deepEqual(ids("age"), [
+    "UNDER_2", "AGE_2_3", "AGE_4_5", "AGE_6_8", "AGE_9_12", "AGE_13_PLUS",
+  ]);
+  assert.deepEqual(ids("allergies"), [
+    "PEANUTS", "TREE_NUTS", "MILK_DAIRY", "EGGS", "SOY", "WHEAT", "FISH", "SHELLFISH", "SESAME",
+  ]);
+  assert.deepEqual(ids("restrictions"), ["GLUTEN_FREE", "LACTOSE_FREE", "CASEIN_FREE"]);
+  assert.deepEqual(ids("vegetarian"), [
+    "DAIRY", "EGGS", "SEAFOOD", "POULTRY", "RED_MEAT", "LEGUMES_SOY", "NUTS_SEEDS",
+  ]);
+  assert.equal(optionsFor("allergies", "ko").find((o) => o.id === "EGGS").label, "달걀");
 });
 
 test("ongoing meal entry shows real draft metadata and only an explicit continue action", () => {

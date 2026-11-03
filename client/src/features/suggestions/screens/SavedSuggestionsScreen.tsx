@@ -57,7 +57,7 @@ function SavedContent({ userId, initialId = '' }: { userId: string; initialId?: 
       </> : saved.data?.length ? saved.data.map((item) => {
         const meal = sourceMeal(item.mealId);
         return <Pressable key={item.id} accessibilityRole="button" onPress={() => model.setSelectedId(item.id)} style={s.savedCard}>
-          <View style={s.savedCardHeading}><Text style={s.savedFoodName}>{suggestionTargetName(item)}</Text>
+          <View style={s.savedCardHeading}><Text style={s.savedFoodName}>{suggestionTargetName(item, meal)}</Text>
             {!!(meals.data ?? []).find((value) => value.suggestionLinks.some((link) => link.suggestionId === item.id))
               && <View style={s.trialChip}><Text style={s.savedTriedLabel}>{c.tried}</Text></View>}
           </View>
@@ -76,7 +76,7 @@ function SavedContent({ userId, initialId = '' }: { userId: string; initialId?: 
       </View>}
     </ScrollView>
     {!!selectedId && <BottomSheet appearance="suggestion" height={544}
-      title={selected ? suggestionTargetName(selected) : c.savedTitle} closeLabel={c.close} onClose={close}
+      title={selected ? suggestionTargetName(selected, sourceMeal(selected.mealId)) : c.savedTitle} closeLabel={c.close} onClose={close}
       headerContent={selected && <View style={s.detailHeader}>
         <Text style={s.muted}>{sourceMeal(selected.mealId) ? mealLabel(sourceMeal(selected.mealId)!) : selected.createdAt.slice(0, 10)}</Text>
         {linkedMeals.length > 0 && <ScrollView horizontal showsHorizontalScrollIndicator={false}

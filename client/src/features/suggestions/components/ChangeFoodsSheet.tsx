@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 추천 대상 키를 음식 id 로 변경
 
 import { useState } from 'react';
 import { Text, Pressable, View } from 'react-native';
@@ -11,7 +13,7 @@ import type { Language } from '../../../types/profile';
 import { suggestionCopyFor } from '../../../util/strings';
 import { suggestionStyles as s } from '../screens/suggestionStyles';
 
-const targetKey = (target: SuggestionTarget) => `${target.foodId}:${target.ingredientId ?? ''}`;
+const targetKey = (target: SuggestionTarget) => target.foodId;
 
 export function ChangeFoodsSheet({
   current, options, language, onClose, onUpdate,

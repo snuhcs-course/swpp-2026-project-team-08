@@ -3,7 +3,11 @@
 # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 # Changed: 마이페이지·자녀 프로필 추가
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+# Changed: 계정 삭제·이메일 변경 테스트를 새 ORM 구조에 맞춤
 """회원가입 / 로그인 happy-path + 주요 에러 케이스."""
+
+from datetime import date, timedelta
 
 import pytest
 from httpx import AsyncClient
@@ -13,7 +17,22 @@ from app.core.database import get_session
 from app.core.timezone import now_kst
 from app.features.auth.security import create_access_token, decode_token
 from app.main import app
-from app.models import Meal, ReviewFoodResult, UserSuggestion
+from app.models import (
+    FoodRecommendation,
+    FoodRecommendationTry,
+    Meal,
+    MealFood,
+    MealFoodIngredient,
+    User,
+    UserConsent,
+    UserEmailChangeAttempt,
+    UserProfile,
+    UserProfileSafeFood,
+)
+from app.models.food_recommendation_enums import FoodRecommendationStatus
+from app.models.meal_enums import EatingOutcome, MealCookingMethod, MealSetting, MealType
+from app.models.user_consent_enums import UserConsentKind
+from app.models.user_profile_enums import AgeGroup
 
 SIGNUP_PAYLOAD = {
     "email": "user@example.com",
@@ -282,6 +301,72 @@ async def test_email_change_requires_server_code(
 
 
 @pytest.mark.asyncio
+async def test_email_change_keeps_one_attempt_and_clears_it_on_confirm(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    codes = iter(["111111", "222222"])
+    monkeypatch.setattr("app.features.auth.service.issue_email_code", lambda: next(codes))
+    tokens = await _sign_up_and_login(client)
+
+    for email in ("first@example.com", "second@example.com"):
+        sent = await client.post(
+            "/api/v1/auth/email-change", headers=_auth_header(tokens), json={"email": email}
+        )
+        assert sent.status_code == 200
+
+    # 새 요청은 이전 시도를 덮어쓰므로 시도는 하나뿐이고 마지막 요청의 값이다.
+    async for session in app.dependency_overrides[get_session]():
+        attempts = (await session.scalars(select(UserEmailChangeAttempt))).all()
+        assert [a.new_email for a in attempts] == ["second@example.com"]
+
+    stale = await client.post(
+        "/api/v1/auth/email-change/confirm",
+        headers=_auth_header(tokens),
+        json={"email": "first@example.com", "code": "111111"},
+    )
+    assert stale.status_code == 400
+    assert stale.json()["error_code"] == "INVALID_EMAIL_CODE"
+
+    confirmed = await client.post(
+        "/api/v1/auth/email-change/confirm",
+        headers=_auth_header(tokens),
+        json={"email": "second@example.com", "code": "222222"},
+    )
+    assert confirmed.status_code == 200
+
+    # 확인에 성공하면 시도 행이 삭제된다.
+    async for session in app.dependency_overrides[get_session]():
+        assert (await session.scalars(select(UserEmailChangeAttempt))).all() == []
+
+
+@pytest.mark.asyncio
+async def test_email_change_rejects_expired_code(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("app.features.auth.service.issue_email_code", lambda: "482190")
+    tokens = await _sign_up_and_login(client)
+    await client.post(
+        "/api/v1/auth/email-change",
+        headers=_auth_header(tokens),
+        json={"email": "new@example.com"},
+    )
+
+    async for session in app.dependency_overrides[get_session]():
+        attempt = (await session.scalars(select(UserEmailChangeAttempt))).one()
+        attempt.expires_at = now_kst() - timedelta(minutes=1)
+
+    expired = await client.post(
+        "/api/v1/auth/email-change/confirm",
+        headers=_auth_header(tokens),
+        json={"email": "new@example.com", "code": "482190"},
+    )
+    assert expired.status_code == 400
+    assert expired.json()["error_code"] == "INVALID_EMAIL_CODE"
+
+
+@pytest.mark.asyncio
 async def test_email_change_omits_code_outside_local(
     client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
@@ -337,9 +422,9 @@ async def test_email_change_rejects_same_and_taken_email(client: AsyncClient) ->
 
 
 @pytest.mark.asyncio
-async def test_delete_me_removes_user_and_owned_meals_and_suggestions(client: AsyncClient) -> None:
+async def test_delete_me_removes_user_and_all_owned_rows(client: AsyncClient) -> None:
     signup = await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
-    user_id = signup.json()["id"]
+    user_id = int(signup.json()["id"])
     tokens = (
         await client.post(
             "/api/v1/auth/login",
@@ -347,39 +432,69 @@ async def test_delete_me_removes_user_and_owned_meals_and_suggestions(client: As
         )
     ).json()
 
-    meal = await client.put(
-        "/api/v1/meals",
-        headers=_auth_header(tokens),
-        json={
-            "meal_date": "2026-10-20",
-            "meal_type": "lunch",
-            "setting": "home",
-            "foods": [{"id": "1", "name": "감자", "ingredients": []}],
-        },
-    )
-    assert meal.status_code == 200
-    meal_id = meal.json()["id"]
-    reviewed = await client.put(
-        f"/api/v1/meals/{meal_id}/review",
-        headers=_auth_header(tokens),
-        json={
-            "food_results": [
-                {"food_id": "1", "outcome": "eaten", "difficulties": [], "ingredient_outcomes": []}
-            ]
-        },
-    )
-    assert reviewed.status_code == 200
+    # 계정이 소유하는 모든 테이블에 행을 하나씩 만든다.
     async for session in app.dependency_overrides[get_session]():
+        meal = Meal(
+            user_id=user_id,
+            meal_date=date(2026, 10, 20),
+            meal_type=MealType.LUNCH,
+            setting=MealSetting.HOME,
+            saved_at=now_kst(),
+        )
+        session.add(meal)
+        await session.flush()
+        food = MealFood(
+            meal_id=meal.id,
+            name="감자",
+            cooking_method=MealCookingMethod.STEAMED,
+            outcome=EatingOutcome.EATEN,
+            difficulty_reasons=["COLOR.WHITE"],
+        )
+        session.add(food)
+        await session.flush()
         session.add(
-            UserSuggestion(
-                user_id=int(user_id),
-                meal_id=int(meal_id),
-                food_id=1,
-                food_snapshot=reviewed.json()["food_results"][0]["food_snapshot"],
-                what_to_try="작게 제공",
-                why_this_may_help="익숙한 형태",
-                status="saved",
-                saved_at=now_kst(),
+            MealFoodIngredient(meal_food_id=food.id, name="감자", outcome=EatingOutcome.EATEN)
+        )
+        recommendation = FoodRecommendation(
+            user_id=user_id,
+            origin_food_id=food.id,
+            what_to_try="작게 제공",
+            why_this_may_help="익숙한 형태",
+            ingredients=["감자"],
+            cooking_method=MealCookingMethod.STEAMED,
+            causes="흰색 음식이 익숙하다",
+            status=FoodRecommendationStatus.TRIED,
+            saved_at=now_kst(),
+        )
+        session.add(recommendation)
+        await session.flush()
+        session.add(
+            FoodRecommendationTry(food_recommendation_id=recommendation.id, food_id=food.id)
+        )
+        session.add(
+            UserProfile(
+                user_id=user_id,
+                child_name="아이",
+                age_group=AgeGroup.AGE_4_5,
+                restrictions=["ALLERGY.NONE"],
+            )
+        )
+        await session.flush()
+        session.add(UserProfileSafeFood(user_id=user_id, name="밥", preparation="흰쌀밥"))
+        session.add(
+            UserConsent(
+                user_id=user_id,
+                kind=UserConsentKind.ACCOUNT_PRIVACY,
+                granted=True,
+                document_version="v1",
+            )
+        )
+        session.add(
+            UserEmailChangeAttempt(
+                user_id=user_id,
+                new_email="new@example.com",
+                code_hash="hash",
+                expires_at=now_kst() + timedelta(minutes=10),
             )
         )
 
@@ -389,12 +504,20 @@ async def test_delete_me_removes_user_and_owned_meals_and_suggestions(client: As
     me = await client.get("/api/v1/auth/me", headers=_auth_header(tokens))
     assert me.status_code == 401
 
-    leftover = await client.get(f"/api/v1/meals/{meal_id}", headers=_auth_header(tokens))
-    assert leftover.status_code == 401
     async for session in app.dependency_overrides[get_session]():
-        assert (await session.scalars(select(Meal))).all() == []
-        assert (await session.scalars(select(ReviewFoodResult))).all() == []
-        assert (await session.scalars(select(UserSuggestion))).all() == []
+        for model in (
+            User,
+            Meal,
+            MealFood,
+            MealFoodIngredient,
+            FoodRecommendation,
+            FoodRecommendationTry,
+            UserProfile,
+            UserProfileSafeFood,
+            UserConsent,
+            UserEmailChangeAttempt,
+        ):
+            assert (await session.scalars(select(model))).all() == [], model.__name__
 
     login = await client.post(
         "/api/v1/auth/login",

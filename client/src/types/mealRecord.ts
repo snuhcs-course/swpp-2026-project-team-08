@@ -1,3 +1,6 @@
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 음식 단위 추천 연결로 재료 연결 제거
+
 import type { Ingredient, IngredientDraft } from './ingredientRecord';
 import type { MealReview } from './reviewRecord';
 import type { SuggestionMealLink } from './suggestionRecord';
@@ -5,7 +8,6 @@ import type {
   CookingMethod,
   DateString,
   Id,
-  IngredientId,
   MealLocation,
   MealType,
   TimestampString,
@@ -33,7 +35,6 @@ export type FoodDraft = {
 export type SuggestionLinkDraft = {
   suggestionId: Id;
   foodId: Id;
-  ingredientId: IngredientId | null;
 };
 
 export type MealDraft = {

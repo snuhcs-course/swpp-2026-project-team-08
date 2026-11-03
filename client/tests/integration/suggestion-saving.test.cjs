@@ -1,8 +1,11 @@
 // Connects the screen's real mutation/query hooks, QueryClient, HTTP client and DTO parsing.
 // Only fetch and native storage are replaced; responses use the current v1 API contract.
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 대문자 상태·조회 필터와 음식 단위 추천 응답 기준으로 수정
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
+const { suggestionResponse } = require('../fixtures/server-suggestion.cjs');
 const { act, renderHook, waitFor, deferred } = require('../helpers/react-harness.cjs');
 const { values } = require('../helpers/native-boundaries.cjs').nativeBoundaries();
 const { clearSession } = require('../../src/data/storage/authStorage.ts');
@@ -13,14 +16,11 @@ beforeEach(async () => { values.clear(); await clearSession(); });
 const json = value => new Response(JSON.stringify(value));
 const unavailable = () => new Response('{"error_code":"UNAVAILABLE"}', { status: 503 });
 function suggestion(id = '31', status = 'pending') {
-  return {
-    id, user_id: '1', meal_id: '8', food_id: id === '31' ? '2' : '3', ingredient_id: null,
-    food_snapshot: { name: 'Rice', ingredients: [], cooking_method: null,
-      serving_note: null, acceptance: null },
-    what_to_try: 'Try a little', why_this_may_help: 'Familiar texture', serving_tip: null,
-    status, dismiss_reasons: [], saved_at: status === 'saved' ? '2026-10-23T00:00:00Z' : null,
+  return suggestionResponse({
+    id, origin_food_id: id === '31' ? '2' : '3', ingredients: [],
+    status: status.toUpperCase(), saved_at: status === 'saved' ? '2026-10-23T00:00:00Z' : null,
     created_at: '2026-10-23T00:00:00Z',
-  };
+  });
 }
 function setup(t, status = 'pending') {
   const server = {
@@ -33,16 +33,16 @@ function setup(t, status = 'pending') {
   t.mock.method(global, 'fetch', async (url, init = {}) => {
     const path = new URL(url).pathname + new URL(url).search;
     const method = init.method ?? 'GET';
-    if (method === 'GET' && path === '/api/v1/meals/8/suggestions?status=all') {
+    if (method === 'GET' && path === '/api/v1/meals/8/suggestions?status=ALL') {
       return json(server.items);
     }
     if (method === 'GET' && path === '/api/v1/suggestions') {
-      return server.list ? server.list() : json(server.items.filter(item => item.status === 'saved'));
+      return server.list ? server.list() : json(server.items.filter(item => item.status === 'SAVED'));
     }
     assert.equal(path, '/api/v1/suggestions/31/decision');
     assert.ok(['PUT', 'DELETE'].includes(method), `Unexpected method: ${method}`);
     if (method === 'PUT') {
-      assert.deepEqual(JSON.parse(init.body), { status: 'saved', dismiss_reasons: [] });
+      assert.deepEqual(JSON.parse(init.body), { status: 'SAVED', dismiss_reasons: [] });
     } else {
       assert.equal(init.body, undefined);
     }

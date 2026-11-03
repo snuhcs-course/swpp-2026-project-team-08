@@ -3,6 +3,8 @@
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 채식 제한 카드로 변경
 
 import { AppHeader } from '../../../components/AppHeader';
 import Feather from '@expo/vector-icons/Feather';
@@ -17,17 +19,17 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { styles } from './myPageStyles';
 
 export function ChildProfileView({
-  language, editing, childName, ageRange, allergies, familyFoods, safeFoods,
+  language, editing, childName, ageRange, allergies, vegetarian, safeFoods,
   saving, saveError, deleteError, confirm, busy,
   onBack, onEdit, onSave, onName, onAge,
-  onAllergies, onFamily, onSafeFoods, onLogOut, onDelete, onConfirm, onCancelConfirm,
+  onAllergies, onVegetarian, onSafeFoods, onLogOut, onDelete, onConfirm, onCancelConfirm,
 }: {
   language: Language;
   editing: boolean;
   childName: string;
   ageRange: string;
   allergies: string;
-  familyFoods: string;
+  vegetarian: string;
   safeFoods: string;
   saving: boolean;
   saveError: boolean;
@@ -40,7 +42,7 @@ export function ChildProfileView({
   onName: (value: string) => void;
   onAge: (value: string) => void;
   onAllergies: () => void;
-  onFamily: () => void;
+  onVegetarian: () => void;
   onSafeFoods: () => void;
   onLogOut: () => void;
   onDelete: () => void;
@@ -95,7 +97,7 @@ export function ChildProfileView({
           )}
         </View>
         <SummaryCard icon="shield" title={m.allergies} body={allergies} onPress={onAllergies} />
-        <SummaryCard icon="users" title={m.familyFoods} body={familyFoods} onPress={onFamily} />
+        <SummaryCard icon="users" title={m.vegetarian} body={vegetarian} onPress={onVegetarian} />
         <SummaryCard icon="heart" title={m.safeFoods} body={safeFoods} onPress={onSafeFoods} />
       </ScrollView>
       {!editing ? (

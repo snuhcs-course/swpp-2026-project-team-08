@@ -3,7 +3,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 날짜 선택 기본값과 상한을 현재 날짜로 제한
+// Changed: 오늘 기본값·상한 및 시간대 독립적인 선택 일수 계산
 
 import { useState } from 'react';
 import type { FoodItem, MealDraft } from '../../../types/meal';
@@ -45,7 +45,7 @@ export function useMealCheckinInputs({
     if (dateField === null) return;
     const next: DateParts = [...dateParts];
     next[dateField] = number;
-    next[2] = Math.min(next[2], new Date(next[0], next[1], 0).getDate());
+    next[2] = Math.min(next[2], new Date(Date.UTC(next[0], next[1], 0)).getUTCDate());
     changeDate(new Date(next[0], next[1] - 1, next[2]));
     setDateField(null);
   };
@@ -57,7 +57,7 @@ export function useMealCheckinInputs({
     const [year, month, day] = date
       ? [date.getFullYear(), date.getMonth() + 1, date.getDate()]
       : dateParts;
-    const dayCount = new Date(year, month, 0).getDate();
+    const dayCount = new Date(Date.UTC(year, month, 0)).getUTCDate();
     onUpdate({ mealDate: localDate(capFutureDateAtToday(new Date(year, month - 1, Math.min(day, dayCount)))) });
     setDateField(null);
     setDateOpen(false);

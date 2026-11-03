@@ -1,6 +1,6 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 날짜 선택 기본값과 상한을 현재 날짜로 제한
+// Changed: 오늘 상한 및 네이티브 날짜 선택기의 UTC 전달·해석
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Platform } from 'react-native';
 import { AppButton } from './AppButton';
@@ -8,17 +8,24 @@ import { Dialog } from './Dialog';
 import type { NativeDatePickerProps } from './NativeDatePicker';
 
 export function NativeDatePicker({ value, labels, onChange, onConfirm, onClose }: NativeDatePickerProps) {
+  // Encode calendar components as UTC only at the native picker boundary.
+  const pickerDate = (date: Date) => new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const android = Platform.OS === 'android';
   const picker = <DateTimePicker
     testID="native-date-picker"
-    value={value}
+    value={pickerDate(value)}
+    timeZoneName="UTC"
     mode="date"
     themeVariant="light"
     display={android ? 'default' : 'spinner'}
-    minimumDate={new Date(1900, 0, 1)}
-    maximumDate={new Date()}
+    minimumDate={new Date(Date.UTC(1900, 0, 1))}
+    maximumDate={pickerDate(new Date())}
     locale={android ? undefined : labels.locale}
-    onValueChange={(_, date) => android ? onConfirm(date) : onChange(date)}
+    onValueChange={(_, date) => {
+      const selected = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+      if (android) onConfirm(selected);
+      else onChange(selected);
+    }}
     onDismiss={onClose}
   />;
 

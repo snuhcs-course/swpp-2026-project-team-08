@@ -4,7 +4,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 날짜 상한 제한 및 네이티브 연도 메뉴 최신순 표시
+// Changed: 날짜 상한과 네이티브 연도 메뉴 및 시간대 독립적인 월 표시
 
 import { useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
@@ -12,7 +12,6 @@ import { AppButton } from './AppButton';
 import { AppIcon } from './AppIcon';
 import { formStyles as styles } from './formStyles';
 import { colors } from '../util/colors';
-import { capFutureDateAtToday } from '../util/date';
 import { fonts } from '../util/fonts';
 import { NativeDatePicker } from './NativeDatePicker';
 import { NativeDropdown } from './NativeDropdown';
@@ -78,11 +77,11 @@ function DatePart({ index, value, year, month, label, locale, open, showLabel, o
   const count = index === 0 ? now.getFullYear() - 1900 + 1
     : index === 1 ? (currentYear ? now.getMonth() + 1 : 12)
       : currentYear && month === now.getMonth() + 1
-        ? now.getDate() : new Date(year, month, 0).getDate();
+        ? now.getDate() : new Date(Date.UTC(year, month, 0)).getUTCDate();
   const first = index === 0 ? 1900 : 1;
   const offset = Math.max(0, Math.min(value - first - 2, count - 5)) * 36;
   const format = (number: number) => index === 1
-    ? new Date(year, number - 1, 1).toLocaleDateString(locale, { month: 'short' })
+    ? new Date(Date.UTC(2000, number - 1, 1)).toLocaleDateString(locale, { month: 'short', timeZone: 'UTC' })
     : index === 2 ? String(number).padStart(2, '0') : String(number);
   if (Platform.OS === 'android' || Platform.OS === 'ios') return (
     <View style={dateStyles.partWrap}>
@@ -124,10 +123,11 @@ function MonthYearField({ year, month, labels, onChange, size }: MonthYearProps)
     <DateParts parts={[year, month, 1]} labels={labels} visibleParts={[1, 0]} size={size}
       field={field} onFieldChange={setField} onSelect={(part, number) => {
         setField(null);
-        const selected = capFutureDateAtToday(new Date(
-          part === 0 ? number : year, (part === 1 ? number : month) - 1, 1,
-        ));
-        onChange(selected.getFullYear(), selected.getMonth() + 1);
+        const nextYear = part === 0 ? number : year;
+        const nextMonth = part === 1 ? number : month;
+        const now = new Date();
+        onChange(nextYear, nextYear === now.getFullYear()
+          ? Math.min(nextMonth, now.getMonth() + 1) : nextMonth);
       }} />
   </View>;
 }
@@ -136,7 +136,7 @@ function FullDateField({ label, labels, parts, open, field, onToggle, onFieldCha
   const [year, month, day] = parts;
   const native = Platform.OS === 'ios' || Platform.OS === 'android';
   const value = new Date(year, month - 1, day);
-  const displayDate = new Date(year, month - 1, day).toLocaleDateString(labels.locale, { day: 'numeric', month: 'long', year: 'numeric' });
+  const displayDate = new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(labels.locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
   return <View style={dateStyles.wrap}>
     <Text style={styles.label}>{labels.date}</Text>
     {(!open || native) && <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={onToggle} style={[styles.choice, dateStyles.field,

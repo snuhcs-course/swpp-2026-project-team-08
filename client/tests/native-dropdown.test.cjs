@@ -2,7 +2,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 마이페이지 채식 제한 prop 이름 변경
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 날짜 상한 및 네이티브 연도 메뉴와 웹 스크롤 검증
+// Changed: 날짜 상한·네이티브 메뉴 및 과거 연도의 월 이름 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -215,5 +215,19 @@ test('difficulty category, texture question, and value menus preserve dependent 
     choose(menus(nodes)[2], 'hard');
     assert.deepEqual(events, [['category', 'texture'], ['question', questionId], ['value', 'hard']]);
     assert.equal(menus(nodes)[2].props.actions[0].state, 'on');
+  }
+});
+
+test('historical year menus keep month labels paired with their numeric values', () => {
+  const english = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  for (const os of ['ios', 'android']) for (const year of [1900, 1908, 1912, 1954]) {
+    for (const locale of ['ko-KR', 'en-US']) {
+      reset(os);
+      const [month] = menus(render(DateField, { variant: 'month-year', year, month: 3,
+        labels: { year: 'Year', month: 'Month', locale }, onChange: noop }));
+      assert.deepEqual(month.props.actions.map(action => action.title),
+        locale === 'ko-KR' ? Array.from({ length: 12 }, (_, i) => `${i + 1}월`) : english);
+      assert.equal(month.props.actions[2].state, 'on');
+    }
   }
 });

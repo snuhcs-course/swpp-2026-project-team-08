@@ -1,6 +1,9 @@
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 # AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim
 # Changed: 제한 상태 컬럼을 restrictions 목록으로 합치고 age_group 을 StrEnum 으로 변경
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+# AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+# Changed: Dietary Pattern 선택 및 저장을 새 ERD 의 dietary_pattern StrEnum 컬럼으로 반영
 
 """계정당 하나의 자녀 프로필."""
 
@@ -11,7 +14,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base, StringList
 from app.core.timezone import now_kst
-from app.models.user_profile_enums import AgeGroup
+from app.models.user_profile_enums import AgeGroup, DietaryPattern
 
 
 class UserProfile(Base):
@@ -31,6 +34,11 @@ class UserProfile(Base):
     # ALLERGY.* 값이 최소 하나 있어야 하며(알러지 없음은 ALLERGY.NONE),
     # 검증은 DTO 와 서비스가 맡는다.
     restrictions: Mapped[list[str]] = mapped_column(StringList, nullable=False)
+    # 식생활 유형. NULL 은 미응답이고 NO_SPECIFIC_PATTERN 은 "특정 유형 없음" 응답이다.
+    dietary_pattern: Mapped[DietaryPattern | None] = mapped_column(
+        Enum(DietaryPattern, native_enum=False, create_constraint=False, length=30),
+        nullable=True,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False
     )

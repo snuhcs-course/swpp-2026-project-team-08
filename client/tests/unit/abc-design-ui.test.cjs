@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Verify onboarding, navigation, meal flow actions, and step progress
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: Verify meal flow actions and shared three-step after-meal progress
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
@@ -79,7 +79,7 @@ mockModules((name) => {
       useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: bottomInset, left: 0 }),
     };
   if (name === "expo-image") return { Image: primitive("img") };
-  if (name === "@expo/vector-icons") return { Feather: primitive("i") };
+  if (name === "@expo/vector-icons") return { Feather: primitive("i"), Ionicons: primitive("i") };
   if (name.startsWith("@expo/vector-icons/")) return primitive("i");
   return undefined;
 });
@@ -371,7 +371,7 @@ test("onboarding review has the four summary cards without changing profile answ
   const rows = reviewRows(draft, "en");
   assert.deepEqual(
     rows.map((row) => row.step),
-    ["child", "allergies", "vegetarian", "safe-foods"],
+    ["child", "allergies", "family", "safe-foods"],
   );
   assert.match(rows[1].value, /Peanuts/);
   assert.equal(JSON.stringify(draft), before);
@@ -654,20 +654,23 @@ function findElement(node, predicate) {
   return null;
 }
 
-function assertSegmentProgress(root, filled) {
+function assertSegmentProgress(root, filled, total = 5) {
+  const { ProgressBar } = require('../../src/components/ProgressBar.tsx');
+  const shared = findElement(root, node => node.type === ProgressBar);
+  if (shared) root = ProgressBar(shared.props);
   const bar = findElement(root, (node) => node.props?.accessibilityRole === "progressbar");
   if (filled === null) {
     assert.equal(bar, null);
     return;
   }
   assert.ok(bar);
-  assert.deepEqual(bar.props.accessibilityValue, { min: 1, max: 5, now: filled });
+  assert.deepEqual(bar.props.accessibilityValue, { min: 1, max: total, now: filled });
   const container = document.createElement("div");
   container.innerHTML = renderToStaticMarkup(bar);
   const segments = Array.from(container.firstElementChild.children);
   const active = document.createElement("div");
   active.style.backgroundColor = require("../../src/util/colors.ts").colors.homePrimary;
-  assert.equal(segments.length, 5);
+  assert.equal(segments.length, total);
   assert.equal(segments.filter((segment) => segment.style.backgroundColor === active.style.backgroundColor).length, filled);
 }
 
@@ -684,23 +687,24 @@ test("before-meal segments follow current screens forward, backward, and without
   }
 });
 
-test("after-meal segments advance to outcomes and stay correct on optional and skipped screens", async (t) => {
+test("after-meal progress groups photos, outcomes and difficulties into three steps", async (t) => {
   const { AfterMealReviewView } = require("../../src/features/after-meal-review/screens/AfterMealReviewView.tsx");
   const { ReviewProgressHeader } = require("../../src/features/after-meal-review/components/ReviewProgressHeader.tsx");
+  const { OutcomesHeader } = require("../../src/features/after-meal-review/components/OutcomesHeader.tsx");
   const base = {
     language: "en", draft: { step: "photo" }, saveStatus: "saved",
     meal: { photo: null, foods: [], mealDate: "2026-10-27", mealType: "lunch", setting: "home" },
   };
   const harness = await renderHook(t, (props) => AfterMealReviewView(props), { props: base });
   for (const [step, filled] of [
-    ["photo", 1], ["preview", 2], ["compare", 3], ["outcomes", 4],
-    ["difficulties", null], ["complete", 5], ["outcomes", 4], ["preview", 2],
-    ["outcomes", 4], ["photo", 1], ["outcomes", 4],
+    ["photo", 1], ["preview", 1], ["compare", 1], ["outcomes", 2],
+    ["difficulties", 3], ["complete", 3], ["outcomes", 2], ["preview", 1],
+    ["outcomes", 2], ["photo", 1], ["outcomes", 2],
   ]) {
     await harness.rerender({ ...base, draft: { step } });
-    const header = findElement(harness.current, (node) => node.type === ReviewProgressHeader);
+    const header = findElement(harness.current, (node) => node.type === (step === "outcomes" ? OutcomesHeader : ReviewProgressHeader));
     assert.ok(header);
-    assertSegmentProgress(ReviewProgressHeader(header.props), filled);
+    assertSegmentProgress(header.type(header.props), filled, 3);
   }
 });
 

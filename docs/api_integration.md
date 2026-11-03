@@ -165,9 +165,13 @@
 - 화면별로 나눠 보여줄 때는 값의 접두사(`ALLERGY.`, `VEGETARIAN.`, `DIETARY_APPROACH.`)로 구분한다.
 - 사용자 직접 입력(`custom_name`)은 더 받지 않는다. 선택지에 있는 값만 보낼 수 있다.
 - `food_preferences.family_foods`(선호 음식)는 없어진다.
+- `dietary_pattern`(가족 식생활 유형)이 `profile`의 필드로 추가된다. 생략할 수 없고 `null`(미응답)을 보낼 수 있다.
+  값은 `VEGAN` `LACTO_VEGETARIAN` `OVO_VEGETARIAN` `LACTO_OVO_VEGETARIAN` `PESCATARIAN` `FLEXITARIAN`
+  `NO_SPECIFIC_PATTERN` 중 하나이며 `restrictions`와 별개다. 추천 생성에는 적용하지 않는다.
 - `age_group`은 2절의 `AgeGroup` 값을 쓴다.
 - `safe_foods`는 `status` 없이 항목 목록만 보낸다. 빈 목록이 "없음"이다.
-  - 항목은 `name`, `preparation`, `presentation_note`만 보낸다. **`id`는 보내지 않는다.** 서버가 저장할 때마다 목록 전체를
+  - 항목은 `name`, `preparation`, `presentation_note`만 보낸다. `name`은 필수이고 `preparation`(조리 방법)과
+    `presentation_note`는 선택이라 `null`을 보낼 수 있다. 공백뿐인 `preparation`은 `null`로 저장한다. **`id`는 보내지 않는다.** 서버가 저장할 때마다 목록 전체를
     요청 순서대로 교체하고, 응답에 새로 발급한 `id`를 돌려준다. `id`가 저장마다 바뀔 수 있으므로 클라이언트는 이 `id`를 서버에
     다시 보내거나 영구 키로 쓰지 않는다. 서버가 순서를 따로 보장하는 필드는 없지만 저장한 순서(`id` 순)로 돌려준다.
   - 다른 사용자의 안전 음식을 가리키는 요청이 없어졌으므로 에러 코드 `SAFE_FOOD_NOT_FOUND`는 더 이상 나오지 않는다.
@@ -181,6 +185,7 @@
     "child_name": "아이",
     "age_group": "AGE_4_5",
     "restrictions": ["ALLERGY.EGGS", "VEGETARIAN.DAIRY"],
+    "dietary_pattern": null,
     "safe_foods": [{ "name": "감자", "preparation": "푹 삶기", "presentation_note": null }]
   },
   "consents": [
@@ -217,9 +222,12 @@
   전송할 때 `ALLERGY.` `DIETARY_APPROACH.` `VEGETARIAN.`을 붙이고 받을 때 뗀다. 응답에 모르는 값이 있으면 오류로 처리한다.
 - 클라이언트 안의 `none`은 서버 값이 아니다. 알러지 `none`은 `ALLERGY.NONE`으로 보내고, 식이 제한 `none`은 보내지 않는다.
   읽을 때 식이 제한이 비어 있으면 `none`으로 복원한다.
-- `family` 단계는 `vegetarian` 단계(`VEGETARIAN.*`, 프로필 필드 `vegetarianRestrictions`)로 바뀌었고 선택 사항이다.
-  채식 제한이 하나라도 있으면 `hasVerifiedNoRestrictions`는 거짓이다.
+- `family` 단계는 식생활 유형(`dietary_pattern`) 단일 선택이며 선택 사항이다. 앱 안의 값은 `lacto_ovo_vegetarian`처럼
+  소문자 snake_case이고 `onboardingApi.ts`가 `fromApiEnum`/`toApiEnum`으로 서버 값과 바꾼다. 식생활 유형은 추천 제한이 아니다.
+- 채식 제한(`VEGETARIAN.*`, 프로필 필드 `vegetarianRestrictions`)은 입력 화면이 없다. 서버에 이미 저장된 값만 저장할 때 그대로
+  다시 보내 보존한다. 채식 제한이 하나라도 있으면 `hasVerifiedNoRestrictions`는 거짓이다.
 - 안심 음식 단계도 선택 사항이다. `noSafeFoods`는 없어졌고 빈 목록이 "없음"이다. 안심 음식 `id`는 보내지 않는다.
+  조리 방법(`preparation`)은 선택 입력이라 비워 두면 `null`로 보내고, 받은 `null`은 빈 문자열로 복원한다.
 - 직접 입력(`other`)과 카탈로그 검색, 카탈로그 전용 선택지는 제거했다.
 - 이전 형식의 로컬 초안과 프로필 캐시는 필드 검증에서 걸러져 버려진다.
 

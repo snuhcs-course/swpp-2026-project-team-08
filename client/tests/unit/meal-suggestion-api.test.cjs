@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Verify target choices exclude tracked ingredients
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 음식 단위 추천, 대문자 상태·사유·조회 필터 계약으로 수정
 const { test } = require('node:test');
@@ -101,7 +103,7 @@ test('responses with old lowercase values or the old shape are rejected', async 
   }
 });
 
-test('target choices contain reviewed foods only', () => {
+test('target choices contain reviewed foods only and exclude tracked ingredients', () => {
   const meal = { foods: [
     { id: '2', name: 'Potato stew', ingredients: [{ id: '212', name: 'Potato' }, { id: '182', name: 'Carrot' }] },
     { id: '3', name: 'Rice', ingredients: [] },

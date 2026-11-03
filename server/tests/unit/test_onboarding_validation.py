@@ -1,6 +1,8 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 제한 목록·안전 음식·대문자 enum 기준으로 DTO 검증 테스트 재작성
+# AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+# Changed: 조리 방법 선택 입력(공백은 null)과 식생활 유형 검증으로 기대 동작 변경
 """Unit: onboarding DTO restrictions, safe foods, consent and age range. No HTTP/DB."""
 
 import pytest
@@ -8,7 +10,7 @@ from pydantic import ValidationError
 
 from app.features.onboarding.dto import OnboardingWriteRequest
 from app.models.restriction_enums import RestrictionType
-from app.models.user_profile_enums import AgeGroup
+from app.models.user_profile_enums import AgeGroup, DietaryPattern
 from tests.fixtures.onboarding import request_body
 
 
@@ -137,15 +139,38 @@ def test_safe_foods_may_be_empty():
     "food",
     [
         {"name": " ", "preparation": "삶기", "presentation_note": None},
-        {"name": "감자", "preparation": " ", "presentation_note": None},
         {"name": "감자", "preparation": "삶기"},
+        {"name": "감자", "presentation_note": None},
         {"id": "1", "name": "감자", "preparation": "삶기", "presentation_note": None},
     ],
-    ids=["blank-name", "blank-preparation", "missing-note", "client-id-not-accepted"],
+    ids=["blank-name", "missing-note", "missing-preparation", "client-id-not-accepted"],
 )
 def test_invalid_safe_foods_are_rejected(food):
     body = request_body()
     body["profile"]["safe_foods"] = [food]
+    with pytest.raises(ValidationError):
+        OnboardingWriteRequest.model_validate(body)
+
+
+@pytest.mark.parametrize("preparation", [None, "", "  "], ids=["null", "empty", "blank"])
+def test_safe_food_preparation_is_optional_and_blank_becomes_null(preparation):
+    # 조리 방법은 선택 입력이다. 이전 계약은 공백을 거절했지만 이제 null 로 정규화한다.
+    body = request_body()
+    body["profile"]["safe_foods"] = [
+        {"name": "감자", "preparation": preparation, "presentation_note": None}
+    ]
+    food = OnboardingWriteRequest.model_validate(body).profile.safe_foods[0]
+    assert food.preparation is None
+
+
+def test_dietary_pattern_is_required_and_nullable():
+    body = request_body()
+    assert OnboardingWriteRequest.model_validate(body).profile.dietary_pattern is None
+    body["profile"]["dietary_pattern"] = "VEGAN"
+    assert (
+        OnboardingWriteRequest.model_validate(body).profile.dietary_pattern is DietaryPattern.VEGAN
+    )
+    del body["profile"]["dietary_pattern"]
     with pytest.raises(ValidationError):
         OnboardingWriteRequest.model_validate(body)
 

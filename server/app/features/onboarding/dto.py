@@ -1,5 +1,9 @@
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 온보딩 요청·응답을 restrictions 목록과 StrEnum 기반으로 재편
+# AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+# Changed: 식생활 유형 추가, 익숙한 음식의 조리 방법을 선택 입력으로 변경
 
 """온보딩 요청과 응답의 모양.
 
@@ -13,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, StrictBool, field_validator, model_v
 
 from app.models.restriction_enums import RestrictionType
 from app.models.user_consent_enums import UserConsentKind
-from app.models.user_profile_enums import AgeGroup
+from app.models.user_profile_enums import AgeGroup, DietaryPattern
 
 
 class StrictDto(BaseModel):
@@ -21,17 +25,27 @@ class StrictDto(BaseModel):
 
 
 class SafeFoodWriteDto(StrictDto):
-    """안전 음식 입력. id 는 서버가 발급하므로 받지 않는다."""
+    """안전 음식 입력. id 는 서버가 발급하므로 받지 않는다.
+
+    조리 방법과 제공 메모는 선택 입력이다. 공백뿐인 조리 방법은 null 로 저장한다.
+    """
 
     name: str
-    preparation: str
+    preparation: str | None
     presentation_note: str | None
 
-    @field_validator("name", "preparation")
+    @field_validator("name")
     @classmethod
     def not_blank(cls, value: str) -> str:
         if not value.strip():
             raise ValueError("value must not be blank")
+        return value
+
+    @field_validator("preparation")
+    @classmethod
+    def blank_to_none(cls, value: str | None) -> str | None:
+        if value is None or not value.strip():
+            return None
         return value
 
 
@@ -39,6 +53,8 @@ class ProfileWriteDto(StrictDto):
     child_name: str
     age_group: AgeGroup
     restrictions: list[RestrictionType]
+    # 식생활 유형. null 은 미응답이다. 필드는 생략할 수 없다.
+    dietary_pattern: DietaryPattern | None
     safe_foods: list[SafeFoodWriteDto]
 
     @field_validator("child_name")
@@ -93,6 +109,7 @@ class UserProfileDto(StrictDto):
     child_name: str
     age_group: AgeGroup
     restrictions: list[RestrictionType]
+    dietary_pattern: DietaryPattern | None
     safe_foods: list[SafeFoodDto]
     updated_at: datetime
 

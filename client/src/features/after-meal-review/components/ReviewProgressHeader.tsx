@@ -2,15 +2,16 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 식후 검토 글자 크기 및 가독성 개선
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: 식후 검토 가독성 및 3단계 진행 표시; 공통 진행 바 사용
 
+import { ProgressBar } from '../../../components/ProgressBar';
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
 
-export function ReviewProgressHeader({ title, backLabel, progress, onBack, optional, caption, hideProgress, disabled }: {
+export function ReviewProgressHeader({ title, backLabel, progress, onBack, optional, caption, disabled }: {
   title: string;
   backLabel: string;
   progress: number;
@@ -18,7 +19,6 @@ export function ReviewProgressHeader({ title, backLabel, progress, onBack, optio
   optional?: string;
   caption?: string;
   stacked?: boolean;
-  hideProgress?: boolean;
   disabled?: boolean;
 }) {
   return (
@@ -26,9 +26,8 @@ export function ReviewProgressHeader({ title, backLabel, progress, onBack, optio
       <AppHeader title={title} backLabel={backLabel} onBack={onBack} disabled={disabled} accessory={optional ? <Text style={styles.optional}>{optional}</Text> : undefined} />
       <View style={topBarStyles.details}>
       {caption && <Text style={styles.caption}>{caption}</Text>}
-      {!hideProgress && <View accessibilityRole="progressbar" accessibilityValue={{ min: 1, max: 5, now: progress + 1 }} style={styles.progress}>
-        {[0, 1, 2, 3, 4].map((i) => <View key={i} style={[styles.segment, i <= progress && styles.active]} />)}
-      </View>}
+      <ProgressBar current={progress + 1} total={3} style={styles.progress}
+        trackStyle={styles.segment} fillStyle={styles.active} />
       </View>
     </View>
   );

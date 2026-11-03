@@ -1,6 +1,10 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 온보딩 통합 테스트를 restrictions 목록과 안전 음식 전체 교체 기준으로 재작성
+# AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+# Changed: 식생활 유형 저장·조회와 조리 방법 없는 익숙한 음식 검증
 """Onboarding API persistence, ownership, and validation."""
 
 import pytest
@@ -25,11 +29,13 @@ async def test_onboarding_round_trip_and_idempotent_consents(client: AsyncClient
     assert profile["user_id"].isdecimal()
     assert profile["age_group"] == "AGE_4_5"
     assert profile["restrictions"] == ["ALLERGY.EGGS", "VEGETARIAN.DAIRY"]
+    assert profile["dietary_pattern"] is None
     assert set(profile) == {
         "user_id",
         "child_name",
         "age_group",
         "restrictions",
+        "dietary_pattern",
         "safe_foods",
         "updated_at",
     }
@@ -147,6 +153,82 @@ async def test_onboarding_rejects_removed_fields(
     assert response.status_code == 422
     assert response.json()["error_code"] == "VALIDATION_ERROR"
     assert (await client.get("/api/v1/onboarding", headers=headers)).json()["profile"] is None
+
+
+@pytest.mark.asyncio
+async def test_dietary_pattern_save_reload_and_clear(client: AsyncClient) -> None:
+    headers = await auth_headers(client, "pattern@example.com")
+    body = request_body()
+    first = await client.put("/api/v1/onboarding", headers=headers, json=body)
+    assert first.status_code == 200, first.text
+    assert first.json()["profile"]["dietary_pattern"] is None
+    for pattern in [
+        "VEGAN",
+        "LACTO_VEGETARIAN",
+        "OVO_VEGETARIAN",
+        "LACTO_OVO_VEGETARIAN",
+        "PESCATARIAN",
+        "FLEXITARIAN",
+        "NO_SPECIFIC_PATTERN",
+        None,
+    ]:
+        body["profile"]["dietary_pattern"] = pattern
+        written = await client.put("/api/v1/onboarding", headers=headers, json=body)
+        assert written.status_code == 200, written.text
+        loaded = (await client.get("/api/v1/onboarding", headers=headers)).json()["profile"]
+        assert loaded["dietary_pattern"] == pattern
+        # 식생활 유형은 제한 목록과 별개라 제한을 바꾸지 않는다.
+        assert loaded["restrictions"] == body["profile"]["restrictions"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "value", ["vegan", "EGGS", "", 1], ids=["lowercase", "unknown", "empty", "int"]
+)
+async def test_invalid_dietary_pattern_is_rejected_without_saving(
+    client: AsyncClient, value: object
+) -> None:
+    headers = await auth_headers(client, "pattern@example.com")
+    payload = request_body()
+    payload["profile"]["dietary_pattern"] = value
+    response = await client.put("/api/v1/onboarding", headers=headers, json=payload)
+    assert response.status_code == 422
+    assert response.json()["error_code"] == "VALIDATION_ERROR"
+    assert (await client.get("/api/v1/onboarding", headers=headers)).json()["profile"] is None
+
+
+@pytest.mark.asyncio
+async def test_dietary_pattern_field_is_required(client: AsyncClient) -> None:
+    headers = await auth_headers(client, "pattern@example.com")
+    payload = request_body()
+    del payload["profile"]["dietary_pattern"]
+    response = await client.put("/api/v1/onboarding", headers=headers, json=payload)
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_safe_food_preparation_is_optional_and_blank_is_stored_as_null(
+    client: AsyncClient,
+) -> None:
+    headers = await auth_headers(client, "optional-food@example.com")
+    body = request_body()
+    body["profile"]["safe_foods"] = [
+        {"name": "감자", "preparation": None, "presentation_note": None},
+        {"name": "쌀밥", "preparation": "  ", "presentation_note": "작게"},
+        {"name": "바나나", "preparation": "으깨기", "presentation_note": None},
+    ]
+    saved = await client.put("/api/v1/onboarding", headers=headers, json=body)
+    assert saved.status_code == 200, saved.text
+    foods = saved.json()["profile"]["safe_foods"]
+    assert [food["preparation"] for food in foods] == [None, None, "으깨기"]
+    assert (await client.get("/api/v1/onboarding", headers=headers)).json() == saved.json()
+
+    # 이름은 여전히 필수다.
+    body["profile"]["safe_foods"][0]["name"] = " "
+    invalid = await client.put("/api/v1/onboarding", headers=headers, json=body)
+    assert invalid.status_code == 422
+    after = (await client.get("/api/v1/onboarding", headers=headers)).json()
+    assert [food["name"] for food in after["profile"]["safe_foods"]] == ["감자", "쌀밥", "바나나"]
 
 
 @pytest.mark.asyncio

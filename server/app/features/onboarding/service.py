@@ -1,6 +1,9 @@
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 프로필 제한을 restrictions 목록으로 저장하고 안전 음식은 전체 교체로 변경
+# AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+# Changed: 식생활 유형 저장, 조리 방법 없는 안전 음식 허용
 
 """한 사용자의 온보딩 데이터를 읽고 통째로 교체한다."""
 
@@ -14,13 +17,13 @@ from app.features.onboarding.consent_version import DOCUMENT_VERSION
 from app.models import UserConsent, UserProfile, UserProfileSafeFood
 from app.models.restriction_enums import RestrictionType
 from app.models.user_consent_enums import UserConsentKind
-from app.models.user_profile_enums import AgeGroup
+from app.models.user_profile_enums import AgeGroup, DietaryPattern
 
 
 @dataclass(frozen=True)
 class SafeFoodInput:
     name: str
-    preparation: str
+    preparation: str | None
     presentation_note: str | None
 
 
@@ -35,6 +38,7 @@ class OnboardingInput:
     child_name: str
     age_group: AgeGroup
     restrictions: tuple[RestrictionType, ...]
+    dietary_pattern: DietaryPattern | None
     safe_foods: tuple[SafeFoodInput, ...]
     consents: tuple[ConsentInput, ...]
 
@@ -84,6 +88,7 @@ class OnboardingService:
         profile.child_name = data.child_name
         profile.age_group = data.age_group
         profile.restrictions = [item.value for item in data.restrictions]
+        profile.dietary_pattern = data.dietary_pattern
         # 안전 음식만 바뀌어도 프로필의 수정 시각이 갱신되도록 직접 지정한다.
         profile.updated_at = now_kst()
         await self._session.flush()

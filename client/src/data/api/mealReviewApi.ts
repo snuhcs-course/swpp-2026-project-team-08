@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Send separately tracked ingredient difficulty tags to the review API
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 리뷰 응답을 식사 상세로 받고 난이도 메모는 보내지 않도록 변경
 
@@ -13,6 +15,12 @@ export function prepareReviewWrite(review: AfterMealReview, detail: MealDetail):
   if (review.mealId !== detail.id || review.childId !== detail.userId) {
     throw new Error('Review does not match meal');
   }
+  // 난이도 사유는 서버가 정한 값만 보낸다. 메모는 서버로 보내지 않는다.
+  const difficultiesFor = (targetId: string) => (review.difficulties[targetId] ?? []).map(tag => ({
+    category: tag.category,
+    subcategory: tag.subcategory ?? null,
+    value: tag.value,
+  }));
   return {
     afterPhotoUri: review.afterPhoto?.uri ?? null,
     foodResults: detail.foods.map((food) => {
@@ -28,15 +36,11 @@ export function prepareReviewWrite(review: AfterMealReview, detail: MealDetail):
       return {
         foodId: food.id,
         outcome: outcome.decision.confirmed,
-        difficulties: (review.difficulties[food.id] ?? []).map((tag) => ({
-          category: tag.category,
-          subcategory: tag.subcategory ?? null,
-          value: tag.value,
-        })),
+        difficulties: difficultiesFor(food.id),
         ingredientOutcomes: outcome.ingredients.map((item) => {
           const id = ingredientIds.get(item.id);
           if (!id) throw new Error('Review ingredient is missing');
-          return { ingredientId: id, outcome: item.decision.confirmed, difficulties: [] };
+          return { ingredientId: id, outcome: item.decision.confirmed, difficulties: difficultiesFor(item.id) };
         }),
       };
     }),

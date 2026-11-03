@@ -1,6 +1,7 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
-# Changed: 복구 테스트의 잘못된 입력 케이스를 새 온보딩 계약으로 변경
+# Changed: 복구 테스트의 잘못된 입력 케이스를 새 온보딩 계약으로 변경, 잘못된 식생활 유형 거절
 """Integration: HTTP → onboarding service → SQLite; only storage failure is injected."""
 
 import pytest
@@ -17,6 +18,7 @@ from tests.helpers.auth import auth_headers
         "contradictory-allergy",
         "missing-allergy-answer",
         "required-consent",
+        "invalid-dietary-pattern",
         "duplicate-restrictions",
         "nonboolean-consent",
         "unknown-restriction",
@@ -36,6 +38,8 @@ async def test_invalid_update_preserves_existing_profile_and_consents(client, ca
         invalid["profile"]["restrictions"] = ["VEGETARIAN.DAIRY"]
     elif case == "required-consent":
         invalid["consents"][0]["granted"] = False
+    elif case == "invalid-dietary-pattern":
+        invalid["profile"]["dietary_pattern"] = "EGGS"
     elif case == "duplicate-restrictions":
         invalid["profile"]["restrictions"] = ["ALLERGY.EGGS", "ALLERGY.EGGS"]
     elif case == "nonboolean-consent":

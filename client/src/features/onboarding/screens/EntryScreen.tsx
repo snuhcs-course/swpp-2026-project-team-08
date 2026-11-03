@@ -1,4 +1,5 @@
-// AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: 불러오기 오류 문구 구분
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 
@@ -9,7 +10,7 @@ import { AppButton } from '../../../components/AppButton';
 import { useAuth } from '../../../providers/AuthProvider';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { colors } from '../../../util/colors';
-import { copyFor } from '../../../util/strings';
+import { copyFor, strings } from '../../../util/strings';
 import { useOnboarding } from '../hooks/useOnboarding';
 import { styles } from './entryStyles';
 
@@ -25,7 +26,7 @@ export function EntryScreen() {
     <SafeAreaView style={styles.root}>
       <View style={styles.body}>
         <Text style={styles.brand}>{s.common.brand}</Text>
-        <Text style={styles.error}>{s.common.saveFailed}</Text>
+        <Text style={styles.error}>{profile.language === 'ko' ? strings.ko.common.loadFailed : s.common.saveFailed}</Text>
       </View>
       <AppButton label={s.common.retry} onPress={() => {
         if (profile.status === 'error') void profile.retryLoad();

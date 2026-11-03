@@ -1,5 +1,8 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim
 # Changed: SafeFood 를 UserProfileSafeFood 로 바꾸고 position 컬럼과 CHECK 제약 삭제
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+# AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+# Changed: 익숙한 음식의 조리 방법을 선택 입력(NULL 허용)으로 변경
 
 """아이가 안정적으로 먹는 음식.
 
@@ -28,7 +31,8 @@ class UserProfileSafeFood(Base):
         index=True,
     )
     name: Mapped[str] = mapped_column(String, nullable=False)
-    preparation: Mapped[str] = mapped_column(String, nullable=False)
+    # 조리 방법은 선택 입력이다. 입력하지 않으면 NULL 이다.
+    preparation: Mapped[str | None] = mapped_column(String, nullable=True)
     presentation_note: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False

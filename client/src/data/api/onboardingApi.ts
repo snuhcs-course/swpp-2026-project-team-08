@@ -1,10 +1,15 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 서버 restrictions 목록·대문자 enum 계약으로 변환 로직 재작성
+// AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+// Changed: 식생활 유형과 선택 입력인 조리 방법을 새 서버 계약으로 변환
 
 import { apiRequest } from '../network/apiClient';
 import { isUserId, type AuthUser } from '../storage/authStorage';
+import { dietaryPatternIds } from '../../types/dietaryPattern';
 import type { ChildProfile } from '../../types/profile';
+import { fromApiEnum, nullable, toApiEnum } from '../dto/values';
 
 type ConsentKind = 'ACCOUNT_PRIVACY' | 'PHOTO_ANALYSIS' | 'AI_TRAINING';
 type Consent = { kind: ConsentKind; granted: boolean };
@@ -14,7 +19,13 @@ type ProfileResponse = {
   child_name: string;
   age_group: string;
   restrictions: string[];
-  safe_foods: { id: string; name: string; preparation: string; presentation_note: string | null }[];
+  dietary_pattern: string | null;
+  safe_foods: {
+    id: string;
+    name: string;
+    preparation: string | null;
+    presentation_note: string | null;
+  }[];
   updated_at: string;
 };
 
@@ -52,10 +63,13 @@ function parseResponse(value: unknown): OnboardingResponse {
   }
   if (!profile.restrictions.every((item: unknown) => typeof item === 'string' && RESTRICTION_PATTERN.test(item))
     || !profile.safe_foods.every((food: unknown) => record(food) && isUserId(food.id)
-      && typeof food.name === 'string' && typeof food.preparation === 'string'
+      && typeof food.name === 'string'
+      && (food.preparation === null || typeof food.preparation === 'string')
       && (food.presentation_note === null || typeof food.presentation_note === 'string'))) {
     throw new Error('Invalid onboarding profile details');
   }
+  // 모르는 값이 오면 오류로 처리한다.
+  nullable(profile.dietary_pattern, (value) => fromApiEnum(value, dietaryPatternIds));
   return value as OnboardingResponse;
 }
 
@@ -69,6 +83,7 @@ function fromRestrictionTypes(group: Group, values: string[]): string[] {
 }
 
 // 알레르기는 "없음"도 답이므로 ALLERGY.NONE 으로 보낸다. 나머지 분류는 비어 있으면 보내지 않는다.
+// 식생활 유형은 미응답이면 null 을 보낸다.
 export function toOnboardingWrite(profile: ChildProfile) {
   const allergies = profile.allergies.includes('none')
     ? ['ALLERGY.NONE'] : toRestrictionTypes('allergies', profile.allergies);
@@ -81,9 +96,11 @@ export function toOnboardingWrite(profile: ChildProfile) {
         ...toRestrictionTypes('restrictions', profile.restrictions),
         ...toRestrictionTypes('vegetarian', profile.vegetarianRestrictions),
       ],
+      dietary_pattern: nullable(profile.dietaryPattern ?? null,
+        (value) => toApiEnum(value, dietaryPatternIds)),
       safe_foods: profile.safeFoods.map((food) => ({
         name: food.name,
-        preparation: food.preparation,
+        preparation: food.preparation.trim() || null,
         presentation_note: food.presentationNote || null,
       })),
     },
@@ -119,8 +136,10 @@ export function fromOnboardingResponse(
     allergies: allergies.includes('NONE') ? ['none'] : allergies,
     restrictions: dietary.length ? dietary : ['none'],
     vegetarianRestrictions: fromRestrictionTypes('vegetarian', source.restrictions),
+    dietaryPattern: nullable(source.dietary_pattern,
+      (value) => fromApiEnum(value, dietaryPatternIds)),
     safeFoods: source.safe_foods.map((food) => ({
-      id: food.id, name: food.name, preparation: food.preparation,
+      id: food.id, name: food.name, preparation: food.preparation ?? '',
       presentationNote: food.presentation_note ?? '',
     })),
     updatedAt: source.updated_at,
@@ -132,8 +151,14 @@ export async function readOnboarding(): Promise<OnboardingResponse> {
 }
 
 export async function writeOnboarding(profile: ChildProfile): Promise<OnboardingResponse> {
-  return parseResponse(await apiRequest<unknown>('/api/v1/onboarding', {
+  const response = parseResponse(await apiRequest<unknown>('/api/v1/onboarding', {
     method: 'PUT',
     body: JSON.stringify(toOnboardingWrite(profile)),
   }));
+  const saved = response.profile
+    && nullable(response.profile.dietary_pattern, (value) => fromApiEnum(value, dietaryPatternIds));
+  if (!response.profile || saved !== (profile.dietaryPattern ?? null)) {
+    throw new Error('Dietary pattern was not saved');
+  }
+  return response;
 }

@@ -29,7 +29,7 @@ export function ReviewStepView({
       {rows.map((row) => (
         <ReviewCard
           key={row.step}
-          icon={row.step === 'allergies' ? 'review-shield' : row.step === 'vegetarian' ? 'review-users' : row.step === 'safe-foods' ? 'review-heart' : row.step === 'child' ? 'review-utensils' : 'review-info'}
+          icon={row.step === 'allergies' ? 'review-shield' : row.step === 'family' ? 'review-users' : row.step === 'safe-foods' ? 'review-heart' : row.step === 'child' ? 'review-utensils' : 'review-info'}
           title={row.title}
           titleSize={row.step === 'allergies' ? 13 : 15}
           value={row.value}

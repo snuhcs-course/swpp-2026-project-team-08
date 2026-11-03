@@ -1,6 +1,9 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
 
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Pass food and ingredient difficulty targets from Screen to Views
+
 import type { AfterMealReviewDraft, DifficultyCategory, Outcome, ReviewStep } from '../../../types/afterMealReview';
 import type { FoodItem, Meal, PhotoSource } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
@@ -36,9 +39,10 @@ export type ReviewViewProps = {
   onIngredientChange: (value: string) => void;
   onAddIngredient: () => void;
   onRemoveIngredient: (name: string) => void;
-  onDifficultyInput: (foodId: string, patch: Partial<{ category: DifficultyCategory | null; value: string; note: string; subcategory?: string }>) => void;
-  onAddDifficulty: (foodId: string) => void;
-  onRemoveDifficulty: (foodId: string, tagId: string) => void;
+  onDifficultyInput: (targetId: string, patch: Partial<{ category: DifficultyCategory | null; value: string; note: string; subcategory?: string }>) => void;
+  onAddDifficulty: (targetId: string) => void;
+  onRemoveDifficulty: (targetId: string, tagId: string) => void;
+  difficultyTargets: { id: string; name: string; parentName: string | null }[];
   difficultyForms: Record<string, { options: readonly string[]; canAdd: boolean; showNote: boolean }>;
   onSave: () => void;
   onRetrySave: () => void;

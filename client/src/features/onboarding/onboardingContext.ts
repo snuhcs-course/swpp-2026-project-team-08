@@ -1,16 +1,19 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Dietary Pattern 선택 및 저장
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 직접 입력·안심 음식 없음 동작 제거, 채식 필드 이름 변경
+// AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+// Changed: 식생활 유형 필드를 채식 제한 보존 구조 위에 반영
 
 import { createContext } from 'react';
 import type { SafeFood } from '../../types/profile';
 import type { OnboardingDraft, OnboardingStep } from './types';
 
 export type SaveStatus = 'saving' | 'saved' | 'error';
-export type DraftField = keyof Pick<OnboardingDraft, 'caregiverName' | 'caregiverEmail' | 'childName' | 'ageRange'>;
-export type ListField = keyof Pick<OnboardingDraft, 'allergies' | 'restrictions' | 'vegetarianRestrictions'>;
+export type DraftField = keyof Pick<OnboardingDraft, 'caregiverName' | 'caregiverEmail' | 'childName' | 'ageRange' | 'dietaryPattern'>;
+export type ListField = keyof Pick<OnboardingDraft, 'allergies' | 'restrictions'>;
 export type ConsentField = keyof OnboardingDraft['consent'];
 
 export type OnboardingContextValue = {

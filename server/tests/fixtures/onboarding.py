@@ -3,6 +3,8 @@
 # Changed: Align onboarding fixture with supported food preferences
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 온보딩 요청을 restrictions 목록과 대문자 enum 값으로 변경
+# AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+# Changed: 요청에 dietary_pattern 추가
 """Valid onboarding request; each call returns independent nested values."""
 
 
@@ -12,6 +14,7 @@ def request_body() -> dict:
             "child_name": "아이",
             "age_group": "AGE_4_5",
             "restrictions": ["ALLERGY.EGGS", "VEGETARIAN.DAIRY"],
+            "dietary_pattern": None,
             "safe_foods": [
                 {
                     "name": "감자",

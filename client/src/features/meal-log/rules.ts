@@ -6,6 +6,8 @@
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 추천 연결을 음식 카드에만 연결
 
 import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { FoodItem } from '../../types/meal';
@@ -100,7 +102,7 @@ export function foodResponseCardsFromDetail(meal: MealDetail): FoodResponseCard[
   const cards: FoodResponseCard[] = [];
   for (const food of meal.foods) {
     const result = meal.review?.foodResults.find((item) => item.foodId === food.id);
-    const link = meal.suggestionLinks.find((item) => item.foodId === food.id && item.ingredientId === null);
+    const link = meal.suggestionLinks.find((item) => item.foodId === food.id);
     cards.push({
       foodId: food.id, kind: 'food', parentName: null, name: food.name,
       ingredients: food.ingredients.map((ingredient) => ingredient.name),
@@ -113,18 +115,13 @@ export function foodResponseCardsFromDetail(meal: MealDetail): FoodResponseCard[
     for (const ingredient of food.ingredients) {
       const ingredientResult = meal.review?.ingredientResults.find((item) => item.foodId === food.id
         && item.ingredientId === ingredient.id);
-      const ingredientLink = meal.suggestionLinks.find((item) => item.foodId === food.id
-        && item.ingredientId === ingredient.id);
-      if (!ingredientResult && !ingredientLink) continue;
+      if (!ingredientResult) continue;
       cards.push({
         foodId: `${food.id}:${ingredient.id}`, kind: 'ingredient', parentName: food.name,
         name: ingredient.name, ingredients: [], preparation: '', servingNote: '',
         outcome: ingredientResult?.outcome ?? null,
         reasons: (ingredientResult?.difficulties ?? []).map((item) => ({ category: item.category, value: item.value })),
-        suggestion: ingredientLink ? { id: ingredientLink.suggestionId,
-          title: ingredientLink.suggestion.whatToTry,
-          description: ingredientLink.suggestion.whyThisMayHelp,
-          servingTip: ingredientLink.suggestion.servingTip } : null,
+        suggestion: null,
       });
     }
   }

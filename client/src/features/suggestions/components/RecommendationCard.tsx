@@ -10,11 +10,13 @@ import type { Suggestion } from '../../../types/suggestionRecord';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { suggestionCopyFor } from '../../../util/strings';
-import { GeneratedSuggestionBody, suggestionTargetName } from './GeneratedSuggestionBody';
+import { GeneratedSuggestionBody } from './GeneratedSuggestionBody';
 import { suggestionStyles as s } from '../screens/suggestionStyles';
 
 type Props = {
   item: Suggestion;
+  /** 추천의 근거가 된 음식 이름 */
+  foodName: string;
   language: Language;
   index: number;
   total: number;
@@ -139,7 +141,7 @@ export function RecommendationCard(p: Props) {
               style={s.progress} fillStyle={s.fill} accessible={false} />
             <View style={s.row}>
               <Text style={s.cardPosition}>{c.count(p.index, p.total)}</Text>
-              <Text style={s.cardFoodName}>{suggestionTargetName(p.item)}</Text>
+              <Text style={s.cardFoodName}>{p.foodName}</Text>
             </View>
           </>}
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
@@ -152,7 +154,7 @@ export function RecommendationCard(p: Props) {
             >
               {details && <>
                 <Text style={s.infoLabel}>{c.foodDetails}</Text>
-                <Text style={[s.heading, { marginBottom: 12 }]}>{suggestionTargetName(p.item)}</Text>
+                <Text style={[s.heading, { marginBottom: 12 }]}>{p.foodName}</Text>
               </>}
               <GeneratedSuggestionBody item={p.item} language={p.language} details={details} />
             </Pressable>

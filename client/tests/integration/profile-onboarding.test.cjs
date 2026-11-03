@@ -3,7 +3,10 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
-
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: family 단계를 vegetarian 으로, 채식 제한을 선택 사항으로 수정
+// AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+// Changed: 식생활 유형 단계(family)를 선택 사항으로 되돌려 수정
 const { test } = require("node:test");
 
 const assert = require("node:assert/strict");
@@ -43,15 +46,15 @@ function completedDraft() {
     caregiverName: "Parent",
     caregiverEmail: "parent@example.com",
     childName: "Child",
-    ageRange: "toddler",
+    ageRange: "AGE_2_3",
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
     allergies: ["none"],
     restrictions: ["none"],
-    familyFoods: ["dairy"],
+    vegetarianRestrictions: ["DAIRY"],
   };
 }
 
-test("family foods leads directly to safe foods in both directions", () => {
+test("the dietary pattern step leads directly to safe foods in both directions", () => {
   assert.equal(nextStep("family"), "safe-foods");
   assert.equal(previousStep("safe-foods"), "family");
   assert.equal(steps.length, 8);
@@ -111,8 +114,10 @@ test("saved profile, language, and in-progress draft remain independent", async 
   };
   delete profile.step;
   delete profile.safeFoodInput;
-  // Dietary Pattern is optional; legacy food groups no longer block completion.
-  assert.equal(canFinish({ ...draft, familyFoods: [] }), true);
+  assert.equal(canFinish({ ...draft, restrictions: [] }), false);
+  // 식생활 유형은 선택 사항이라 비워도 완료할 수 있다.
+  assert.equal(canFinish({ ...draft, dietaryPattern: null }), true);
+  assert.equal(canFinish({ ...draft, vegetarianRestrictions: [] }), true);
   assert.equal(canFinish(draft), true);
   await saveProfile(profile);
   await saveLanguage("ko");

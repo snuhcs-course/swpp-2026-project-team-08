@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 초안 fixture 를 채식 제한 필드와 서버 연령 값으로 변경
 const { test } = require('node:test');
 
 const assert = require('node:assert/strict');
@@ -24,9 +26,9 @@ const { readProfile } = require('../../src/data/storage/profileStorage.ts');
 function completedDraft() {
   return {
     ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
-    childName: 'Child', ageRange: 'toddler',
+    childName: 'Child', ageRange: 'AGE_2_3',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
-    allergies: ['none'], restrictions: ['none'], approaches: ['none'], familyFoods: ['dairy'],
+    allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['DAIRY'],
   };
 }
 

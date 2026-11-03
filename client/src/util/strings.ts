@@ -10,6 +10,10 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 온보딩 선택지 id 를 서버 값으로, 채식 단계 문구 재작성, 지원 안 하는 난이도 문구 제거
+// AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+// Changed: 채식 단계 문구를 식생활 유형 문구로 되돌리고 식생활 유형 id 를 snake_case 로 변경
 
 import type { Language } from '../types/profile';
 
@@ -29,12 +33,14 @@ const en = {
     titles: {
       account: 'Create your caregiver account', consent: 'Data and photo consent', child: 'Tell us about your child',
       allergies: 'Food allergies', restrictions: 'Other dietary restrictions', family: 'Dietary Pattern',
+      'safe-foods': 'Safe foods', review: 'Review your child’s profile',
     },
     subtitles: {
       account: 'Welcome! Let’s take this one step at a time.', consent: 'Consent is needed to continue',
       child: 'A few basics help us give better recommendations and output.',
       allergies: 'Select every known allergy. Help avoid foods that should not be suggested to the child.', restrictions: 'Select other required limits or choose None.',
       family: 'Which dietary pattern does your family follow?',
+      'safe-foods': 'Add foods your child reliably accepts in a familiar form. We can use these foods as familiar starting points when suggesting something new.',
       review: 'You’re in control. Edit any section now or later in Profile Settings.',
     },
     caregiverName: 'Caretaker’s Full name', email: 'Email', password: 'Password',
@@ -51,15 +57,10 @@ const en = {
     consentPanelTitle: 'Consent to Collection and Use of Personal Information',
     consentPanelSubtitle: 'Required checks must be completed before continuing.',
     consentSafetyTitle: 'Safety and recommendation limits',
-    searchCatalog: 'Type a food or category.', noMatches: 'No matching catalog items',
-    addOther: 'Other', otherAllergy: 'Other allergy', otherRestrictions: 'Other restrictions',
-    otherFood: 'Other food',
-    otherHint: 'Add one item at a time.',
     allergySafetyTitle: 'Safety-critical',
     allergySafetyBody: 'Always check labels, preparation and cross-contact yourself. The app does not replace medical advice.',
     treeNutsHint: 'almonds, walnuts, or cashews',
     noKnownAllergies: 'No known food allergies', noOtherRestrictions: 'No other dietary restrictions',
-    noSafeFoods: 'No safe foods yet',
     foodName: 'Food name', preparation: 'Cooking method', presentationNote: 'Additional details',
     addSafeFood: 'Add safe food', addSafeFoodAction: '+ Add',
     safeFoodExamples: 'e.g. apple slices, white bread', safeFoodNameExample: 'e.g. apple slices',
@@ -71,23 +72,23 @@ const en = {
       notAnswered: 'Not answered',
       options: [
         { id: 'vegan', label: 'Vegan', description: 'Plant foods only; no animal-derived foods.' },
-        { id: 'lacto-vegetarian', label: 'Lacto-vegetarian', description: 'Plant foods and dairy; no eggs, seafood, or meat.' },
-        { id: 'ovo-vegetarian', label: 'Ovo-vegetarian', description: 'Plant foods and eggs; no dairy, seafood, or meat.' },
-        { id: 'lacto-ovo-vegetarian', label: 'Lacto-ovo vegetarian', description: 'Plant foods, dairy, and eggs; no seafood or meat.' },
+        { id: 'lacto_vegetarian', label: 'Lacto-vegetarian', description: 'Plant foods and dairy; no eggs, seafood, or meat.' },
+        { id: 'ovo_vegetarian', label: 'Ovo-vegetarian', description: 'Plant foods and eggs; no dairy, seafood, or meat.' },
+        { id: 'lacto_ovo_vegetarian', label: 'Lacto-ovo vegetarian', description: 'Plant foods, dairy, and eggs; no seafood or meat.' },
         { id: 'pescatarian', label: 'Pescatarian', description: 'Plant foods, seafood, dairy, and eggs; no poultry or red meat.' },
         { id: 'flexitarian', label: 'Flexitarian', description: 'Mostly plant foods, with occasional meat or seafood; dairy and eggs may also be included.' },
-        { id: 'no-specific-pattern', label: 'No specific dietary pattern', description: 'We don’t follow a particular dietary pattern.' },
+        { id: 'no_specific_pattern', label: 'No specific dietary pattern', description: 'We don’t follow a particular dietary pattern.' },
       ],
     },
     choiceGuidance: {
       childName: 'Use any name your family is comfortable with.',
       restrictionsQuestion: (name: string) => `Are there any other foods or ingredients ${name} needs to avoid?`,
       restrictionsTitle: 'How we use these safely',
-      restrictionsBody: 'Predefined restrictions only affect recommendations when reliable rules and food data exist. Unsupported custom restrictions are stored but do not automatically filter recommendations.',
+      restrictionsBody: 'Restrictions only affect recommendations when reliable rules and food data exist.',
       multiple: 'multiple select available',
     },
     choiceSubtitles: {
-      restrictions: { none: 'Selecting this clears and disables all other selections.', 'gluten-free': 'Avoids foods containing gluten.', 'lactose-free': 'Limits or avoids lactose-containing foods.', 'low-fructose': 'Limits foods high in fructose.', 'casein-free': 'Avoids foods containing casein.', other: 'Add one or more custom restrictions.' },
+      restrictions: { none: 'Selecting this clears and disables all other selections.', GLUTEN_FREE: 'Avoids foods containing gluten.', LACTOSE_FREE: 'Limits or avoids lactose-containing foods.', CASEIN_FREE: 'Avoids foods containing casein.' },
     },
     reviewAllergies: 'Allergies', reviewChild: 'Child basics', reviewSafety: 'Safety restrictions', reviewFamily: 'Dietary Pattern',
     reviewSafeFoods: 'Safe foods',
@@ -149,7 +150,8 @@ const en = {
     definitionsIntro: 'Use what you observed. You don’t need to estimate exact amounts.',
     outcomeDescriptions: { eaten: 'You observed the child swallow some food.', tasted: 'Licked or tasted, with no confirmed swallow', untouched: 'Neither tasted nor ate', unclear: 'You cannot determine what happened', unanswered: 'This cannot be saved. Choose unclear when the outcome is unknown.' },
     difficultyIntro: 'Some categories allow multiple value selections.', selectCategory: 'Select category', selectValue: 'value',
-    note: 'Optional note', addTag: '+ Add', skip: 'Skip',
+    note: 'Optional note', otherValue: 'Describe your answer', addTag: '+ Add', skip: 'Skip',
+    categories: { texture: 'Texture', tasteType: 'Taste type', smell: 'Smell', color: 'Color', temperature: 'Temperature', notSure: 'Not sure' },
     values: { smooth: 'Smooth/creamy', soft: 'Soft/mushy', lumpy: 'Lumpy/chunky', crunchy: 'Crunchy/crisp', chewy: 'Chewy/tough', wet: 'Wet/slippery', mixed: 'Mixed textures', other: 'Other', sweet: 'Sweet', salty: 'Salty', sour: 'Sour', bitter: 'Bitter', spicy: 'Spicy/hot', mild: 'Mild', strong: 'Strong', none: 'No noticeable smell', notSure: 'Not sure', red: 'Red', orange: 'Orange', yellow: 'Yellow', green: 'Green', blue: 'Blue', purple: 'Purple', brown: 'Brown', black: 'Black', white: 'White', gray: 'Gray', consistent: 'Consistent', varied: 'Varied', note: 'Optional note', visible: 'Visible', hidden: 'Hidden', room: 'Room temperature', warm: 'Warm', cool: 'Cool / chilled' },
     finish: 'Save review', saved: 'Your meal review has been saved.',
     missingMeal: 'This saved meal could not be found.', loadFailed: 'Could not restore this review. Retry before continuing.',
@@ -248,7 +250,7 @@ const en = {
     childName: 'CHILD NAME',
     ageGroup: 'AGE GROUP',
     allergies: 'Allergies & Restrictions',
-    familyFoods: 'Dietary Pattern',
+    dietaryPattern: 'Dietary Pattern',
     safeFoods: 'Safe Foods',
     nothing: 'nothing',
     name: 'NAME',
@@ -293,12 +295,14 @@ const ko = {
     titles: {
       account: '보호자 정보 입력', consent: '개인정보 동의', child: '아이에 대해 알려주세요',
       allergies: '식품 알레르기', restrictions: '기타 식이 제한', family: '식생활 유형',
+      'safe-foods': '익숙한 음식', review: '프로필 확인',
     },
     subtitles: {
       account: '계정을 만들 때 사용할 정보를 입력해 주세요.', consent: '필수·선택 항목을 확인하고 동의해 주세요.',
       child: '아이의 별명과 연령대를 입력해 주세요.',
       allergies: '알고 있는 식품 알레르기를 모두 선택해 주세요. 음식 추천에 참고해요.', restrictions: '피해야 할 음식이나 재료가 있으면 선택해 주세요. 없으면 ‘해당 없음’을 선택해 주세요.',
       family: '가족이 따르는 식생활 유형은 무엇인가요?',
+      'safe-foods': '익숙한 형태로 꾸준히 먹는 음식을 추가해 주세요.',
       review: '저장하기 전에 내용을 확인해 주세요.',
     },
     caregiverName: '보호자 이름', email: '이메일 주소', password: '비밀번호',
@@ -315,15 +319,10 @@ const ko = {
     consentPanelTitle: '개인정보 수집 및 이용 동의',
     consentPanelSubtitle: '필수 항목에 동의해야 다음 단계로 갈 수 있어요.',
     consentSafetyTitle: '안전과 신뢰',
-    searchCatalog: '음식이나 종류를 입력해 주세요.', noMatches: '검색 결과가 없어요',
-    addOther: '기타', otherAllergy: '기타 알레르기', otherRestrictions: '기타 식이 제한',
-    otherFood: '기타 식품',
-    otherHint: '한 번에 한 항목씩 추가해 주세요.',
     allergySafetyTitle: '음식을 제공하기 전에 확인해 주세요',
     allergySafetyBody: '식품 표시와 조리 과정을 확인해 주세요. 다른 음식의 알레르기 유발 성분이 섞일 가능성도 확인해 주세요. 앱은 의학적 조언을 대신하지 않아요.',
     treeNutsHint: '아몬드, 호두, 캐슈넛',
     noKnownAllergies: '알려진 식품 알레르기 없음', noOtherRestrictions: '기타 식이 제한 없음',
-    noSafeFoods: '아직 익숙한 음식 없음',
     foodName: '음식 이름', preparation: '조리 방법', presentationNote: '추가 설명',
     addSafeFood: '익숙한 음식 추가', addSafeFoodAction: '+ 추가',
     safeFoodExamples: '예: 사과 조각, 흰 빵', safeFoodNameExample: '예: 사과 조각',
@@ -335,23 +334,23 @@ const ko = {
       notAnswered: '미응답',
       options: [
         { id: 'vegan', label: '비건', description: '식물성 식품만 먹고 동물성 식품은 먹지 않아요.' },
-        { id: 'lacto-vegetarian', label: '락토 베지테리언', description: '식물성 식품과 유제품을 먹어요. 달걀, 해산물, 육류는 먹지 않아요.' },
-        { id: 'ovo-vegetarian', label: '오보 베지테리언', description: '식물성 식품과 달걀을 먹어요. 유제품, 해산물, 육류는 먹지 않아요.' },
-        { id: 'lacto-ovo-vegetarian', label: '락토 오보 베지테리언', description: '식물성 식품, 유제품, 달걀을 먹어요. 해산물과 육류는 먹지 않아요.' },
+        { id: 'lacto_vegetarian', label: '락토 베지테리언', description: '식물성 식품과 유제품을 먹어요. 달걀, 해산물, 육류는 먹지 않아요.' },
+        { id: 'ovo_vegetarian', label: '오보 베지테리언', description: '식물성 식품과 달걀을 먹어요. 유제품, 해산물, 육류는 먹지 않아요.' },
+        { id: 'lacto_ovo_vegetarian', label: '락토 오보 베지테리언', description: '식물성 식품, 유제품, 달걀을 먹어요. 해산물과 육류는 먹지 않아요.' },
         { id: 'pescatarian', label: '페스카테리언', description: '식물성 식품, 해산물, 유제품, 달걀을 먹어요. 닭·오리 등의 가금류와 붉은 고기는 먹지 않아요.' },
         { id: 'flexitarian', label: '플렉시테리언', description: '주로 식물성 식품을 먹고 가끔 육류나 해산물을 먹어요. 유제품과 달걀도 먹을 수 있어요.' },
-        { id: 'no-specific-pattern', label: '특정 식생활 유형 없음', description: '특정한 식생활 유형을 따르지 않아요.' },
+        { id: 'no_specific_pattern', label: '특정 식생활 유형 없음', description: '특정한 식생활 유형을 따르지 않아요.' },
       ],
     },
     choiceGuidance: {
       childName: '가족이 편하게 부르는 이름을 입력해 주세요.',
       restrictionsQuestion: (_name: string) => '아이가 피해야 할 다른 음식이나 재료가 있나요?',
       restrictionsTitle: '추천에 반영되는 범위',
-      restrictionsBody: '목록의 제한 사항은 확인할 수 있는 규칙과 음식 데이터가 있을 때 추천에 반영돼요. 직접 추가한 제한 사항은 저장되지만 추천을 자동으로 거르지는 않아요.',
+      restrictionsBody: '제한 사항은 확인할 수 있는 규칙과 음식 데이터가 있을 때 추천에 반영돼요.',
       multiple: '여러 항목 선택 가능',
     },
     choiceSubtitles: {
-      restrictions: { none: '선택하면 다른 항목의 선택이 모두 해제돼요.', 'gluten-free': '글루텐이 든 음식을 피해요.', 'lactose-free': '유당이 든 음식을 제한해요.', 'low-fructose': '과당이 많은 음식을 제한해요.', 'casein-free': '카제인이 든 음식을 피해요.', other: '다른 제한 사항을 직접 추가해요.' },
+      restrictions: { none: '선택하면 다른 항목의 선택이 모두 해제돼요.', GLUTEN_FREE: '글루텐이 든 음식을 피해요.', LACTOSE_FREE: '유당이 든 음식을 제한해요.', CASEIN_FREE: '카제인이 든 음식을 피해요.' },
     },
     reviewAllergies: '알레르기', reviewChild: '아이 기본 정보', reviewSafety: '안전 관련 제한', reviewFamily: '식생활 유형',
     reviewSafeFoods: '익숙한 음식',
@@ -414,7 +413,8 @@ const ko = {
     definitionsIntro: '직접 본 내용을 선택해 주세요. 정확한 양은 입력하지 않아도 돼요.',
     outcomeDescriptions: { eaten: '아이가 음식을 삼키는 모습을 봤어요.', tasted: '핥거나 맛봤지만 삼켰는지는 확인하지 못했어요.', untouched: '먹거나 맛보지 않았어요.', unclear: '먹거나 맛봤는지 판단하기 어려워요.', unanswered: '결과를 선택해야 저장할 수 있어요. 모르면 ‘확인 어려움’을 선택해 주세요.' },
     difficultyIntro: '일부 항목은 특징을 여러 개 추가할 수 있어요.', selectCategory: '항목 선택', selectValue: '특징 선택',
-    note: '메모 (선택)', addTag: '+ 추가', skip: '건너뛰고 저장',
+    note: '메모 (선택)', otherValue: '직접 입력', addTag: '+ 추가', skip: '건너뛰고 저장',
+    categories: { texture: '식감', tasteType: '맛 종류', smell: '냄새', color: '색', temperature: '온도', notSure: '잘 모르겠음' },
     values: { smooth: '매끄럽고 크림 같음', soft: '부드럽고 무름', lumpy: '덩어리가 있음', crunchy: '바삭함', chewy: '질김', wet: '젖고 미끄러움', mixed: '혼합 식감', other: '기타', sweet: '단맛', salty: '짠맛', sour: '신맛', bitter: '쓴맛', spicy: '매운맛', mild: '약함', strong: '강함', none: '뚜렷한 냄새 없음', notSure: '잘 모르겠음', red: '빨강', orange: '주황', yellow: '노랑', green: '초록', blue: '파랑', purple: '보라', brown: '갈색', black: '검정', white: '흰색', gray: '회색', consistent: '일정함', varied: '다양함', note: '메모 (선택)', visible: '보임', hidden: '숨김', room: '실온', warm: '따뜻함', cool: '차가움' },
     finish: '식후 기록 저장하기', saved: '식후 기록을 저장했어요.',
     missingMeal: '저장된 식사 기록을 찾지 못했어요.', loadFailed: '식후 기록 초안을 불러오지 못했어요. 다시 시도해 주세요.',
@@ -512,7 +512,7 @@ const ko = {
     childName: '아이 이름',
     ageGroup: '연령대',
     allergies: '알레르기 및 제한',
-    familyFoods: '식생활 유형',
+    dietaryPattern: '식생활 유형',
     safeFoods: '익숙한 음식',
     nothing: '없음',
     name: '이름',
@@ -545,43 +545,32 @@ export function copyFor(language: Language) { return strings[language]; }
 
 type Label = { en: string; ko: string };
 type Option = { id: string; label: Label };
-export type OptionGroup = 'age' | 'allergies' | 'allergyCatalog' | 'restrictions' | 'restrictionCatalog' |
-  'family' | 'familyCatalog';
+export type OptionGroup = 'age' | 'allergies' | 'restrictions' | 'vegetarian';
 
+// 선택지 id 는 서버의 `AgeGroup` 값과 `RestrictionType` 값에서 category 를 뺀 것과 같다.
+// 서버에 보낼 때는 `ALLERGY.` / `VEGETARIAN.` / `DIETARY_APPROACH.` 를 앞에 붙이기만 한다.
+// (`none` 은 클라이언트 안에서만 쓰는 "해당 없음" 표식이다.)
 const options: Record<OptionGroup, Option[]> = {
   age: [
-    ['under-2', 'Under 2 years', '2세 미만'], ['2-3', '2-3 years', '2–3세'],
-    ['4-5', '4-5 years', '4–5세'], ['6-8', '6-8 years', '6–8세'],
-    ['9-12', '9-12 years', '9–12세'], ['13-plus', '13+ years', '13세 이상'],
+    ['UNDER_2', 'Under 2 years', '2세 미만'], ['AGE_2_3', '2-3 years', '2–3세'],
+    ['AGE_4_5', '4-5 years', '4–5세'], ['AGE_6_8', '6-8 years', '6–8세'],
+    ['AGE_9_12', '9-12 years', '9–12세'], ['AGE_13_PLUS', '13+ years', '13세 이상'],
   ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
   allergies: [
-    ['peanut', 'Peanuts', '땅콩'], ['tree-nut', 'Tree nuts', '견과류'],
-    ['milk', 'Milk / Dairy', '우유 / 유제품'], ['egg', 'Eggs', '달걀'],
-    ['soy', 'Soy', '대두'], ['wheat', 'Wheat', '밀'],
-    ['fish', 'Fish', '생선'], ['shellfish', 'Shellfish', '갑각류'], ['sesame', 'Sesame', '참깨'],
-  ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
-  allergyCatalog: [
-    ['lupin', 'Lupin', '루핀'], ['lupin-flour', 'Lupin flour', '루핀 가루'], ['lupin-seed', 'Lupin seed', '루핀 씨앗'],
-    ['coconut', 'Coconut', '코코넛'], ['buckwheat', 'Buckwheat', '메밀'],
-    ['kiwi', 'Kiwi', '키위'], ['strawberry', 'Strawberry', '딸기'],
+    ['PEANUTS', 'Peanuts', '땅콩'], ['TREE_NUTS', 'Tree nuts', '견과류'],
+    ['MILK_DAIRY', 'Milk / Dairy', '우유 / 유제품'], ['EGGS', 'Eggs', '달걀'],
+    ['SOY', 'Soy', '대두'], ['WHEAT', 'Wheat', '밀'],
+    ['FISH', 'Fish', '생선'], ['SHELLFISH', 'Shellfish', '갑각류'], ['SESAME', 'Sesame', '참깨'],
   ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
   restrictions: [
-    ['gluten-free', 'Gluten-free', '글루텐 제한'], ['lactose-free', 'Lactose-free', '유당 제한'],
-    ['casein-free', 'Casein-free', '카제인 제한'],
+    ['GLUTEN_FREE', 'Gluten-free', '글루텐 제한'], ['LACTOSE_FREE', 'Lactose-free', '유당 제한'],
+    ['CASEIN_FREE', 'Casein-free', '카제인 제한'],
   ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
-  restrictionCatalog: [
-    ['low-fructose', 'Low fructose', '저과당식'],
-    ['no-pork', 'No pork', '돼지고기 제외'], ['no-beef', 'No beef', '소고기 제외'],
-  ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
-  family: [
-    ['dairy', 'Dairy', '유제품'], ['eggs', 'Eggs', '달걀'],
-    ['seafood', 'Seafood', '해산물'], ['poultry', 'Poultry', '가금류'],
-    ['red-meat', 'Red meat', '붉은 고기'], ['legumes-soy', 'Legumes / soy', '콩류 / 대두'],
-    ['nuts-seeds', 'Nuts / seeds', '견과류 / 씨앗류'],
-  ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
-  familyCatalog: [
-    ['plant-based-milk', 'Plant-based milk', '식물성 음료'], ['plant-based-yogurt', 'Plant-based yogurt', '식물성 요거트'], ['plant-based-cheese', 'Plant-based cheese', '식물성 치즈'],
-    ['legumes', 'Legumes', '콩류'], ['eggs', 'Eggs', '달걀'], ['seaweed', 'Seaweed', '해조류'],
+  vegetarian: [
+    ['DAIRY', 'Dairy', '유제품'], ['EGGS', 'Eggs', '달걀'],
+    ['SEAFOOD', 'Seafood', '해산물'], ['POULTRY', 'Poultry', '가금류'],
+    ['RED_MEAT', 'Red meat', '붉은 고기'], ['LEGUMES_SOY', 'Legumes / soy', '콩류 / 대두'],
+    ['NUTS_SEEDS', 'Nuts / seeds', '견과류 / 씨앗류'],
   ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
 };
 
@@ -589,29 +578,9 @@ export function optionsFor(group: OptionGroup, language: Language) {
   return options[group].map(({ id, label }) => ({ id, label: label[language] }));
 }
 
-const legacyOptionLabels: Partial<Record<OptionGroup, Record<string, { en: string; ko: string }>>> = {
-  age: {
-    toddler: { en: '1–3 years', ko: '1–3세' }, preschool: { en: '4–6 years', ko: '4–6세' },
-    school: { en: '7–12 years', ko: '7–12세' }, teen: { en: '13–17 years', ko: '13–17세' },
-  },
-  restrictions: { 'low-sodium': { en: 'Low sodium', ko: '저염식' } },
-  family: {
-    vegetables: { en: 'Vegetables', ko: '채소' }, fruits: { en: 'Fruits', ko: '과일' },
-    grains: { en: 'Grains', ko: '곡류' }, meat: { en: 'Meat', ko: '육류' },
-    fish: { en: 'Fish', ko: '생선' }, legumes: { en: 'Legumes', ko: '콩류' }, seaweed: { en: 'Seaweed', ko: '해조류' },
-  },
-};
-
 export function labelFor(group: OptionGroup, id: string, language: Language): string {
   if (id === 'none') return strings[language].common.none;
-  const catalog: Partial<Record<OptionGroup, OptionGroup>> = {
-    allergies: 'allergyCatalog', restrictions: 'restrictionCatalog',
-    family: 'familyCatalog',
-  };
-  return options[group].find((option) => option.id === id)?.label[language]
-    ?? (catalog[group] ? options[catalog[group]].find((option) => option.id === id)?.label[language] : undefined)
-    ?? legacyOptionLabels[group]?.[id]?.[language]
-    ?? id;
+  return options[group].find((option) => option.id === id)?.label[language] ?? id;
 }
 
 const suggestionCopy = {
@@ -627,7 +596,8 @@ const suggestionCopy = {
     ingredients: 'Ingredients', cooking: 'Cooking method',
     tapDetails: 'Tap for food details', tapFront: 'Tap to see suggestion',
     save: 'Save suggestion', dismiss: 'Dismiss suggestion', dismissTitle: 'What does not work for you?',
-    reasons: { restriction_conflict: 'This conflicts with an allergy or required restriction', disliked_food_or_form: 'My child dislikes this food or form', food_preferences: 'This does not fit our food preferences', too_much_preparation: 'Too much preparation', ingredient_unavailable: 'The ingredient is hard to get', already_tried: 'We already tried this' }, done: 'Done', skip: 'Skip for now', undo: '↶ Undo',
+    reasons: { restriction: 'This conflicts with an allergy or required restriction', dislike: 'My child dislikes this food or form', not_fit: 'This does not fit our food preferences', too_much_preparation: 'Too much preparation', ingredient_hard_to_get: 'The ingredient is hard to get', already_tried: 'We already tried this' },
+    skipReason: 'Skip', done: 'Done', skip: 'Skip for now', undo: '↶ Undo',
     savedNotice: '✓ Saved to suggestions', dismissedNotice: 'Suggestion dismissed',
     saveFailed: "Changes couldn't be saved. Please try again.", allDone: 'All Suggestions Reviewed!',
     allDoneBody: 'Your saved suggestions are ready whenever you want to try them.', savedTitle: 'Saved Suggestions',
@@ -650,7 +620,8 @@ const suggestionCopy = {
     ingredients: '재료', cooking: '조리 방법',
     tapDetails: '눌러서 음식 정보 보기', tapFront: '눌러서 추천으로 돌아가기',
     save: '추천 저장', dismiss: '추천 제외', dismissTitle: '어떤 점이 맞지 않나요?',
-    reasons: { restriction_conflict: '알레르기나 식이 제한과 맞지 않아요', disliked_food_or_form: '아이가 이 음식이나 모양을 싫어해요', food_preferences: '우리 가족의 음식 취향과 맞지 않아요', too_much_preparation: '준비할 것이 너무 많아요', ingredient_unavailable: '재료를 구하기 어려워요', already_tried: '이미 시도했어요' }, done: '추천 제외하기', skip: '홈으로 이동', undo: '↶ 되돌리기',
+    reasons: { restriction: '알레르기나 식이 제한과 맞지 않아요', dislike: '아이가 이 음식이나 모양을 싫어해요', not_fit: '우리 가족의 음식 취향과 맞지 않아요', too_much_preparation: '준비할 것이 너무 많아요', ingredient_hard_to_get: '재료를 구하기 어려워요', already_tried: '이미 시도했어요' },
+    skipReason: '건너뛰기', done: '추천 제외하기', skip: '홈으로 이동', undo: '↶ 되돌리기',
     savedNotice: '✓ 추천을 저장했어요', dismissedNotice: '추천을 제외했어요',
     saveFailed: '변경을 저장하지 못했어요. 다시 시도해 주세요.', allDone: '추천을 모두 확인했어요',
     allDoneBody: '저장한 추천은 언제든 다시 볼 수 있어요.', savedTitle: '저장된 추천',

@@ -2,6 +2,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
 // Changed: Separate difficulty targets and restore saved selections and notes
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 서버가 받지 않는 난이도 선택지 제거
 
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome, ReviewStep } from '../../types/afterMealReview';
 import type { FoodItem, Meal } from '../../types/meal';
@@ -17,12 +19,9 @@ export function normalizeReviewStep(step: ReviewStep): ReviewStep {
 
 export const difficultyOptions: Record<DifficultyCategory, readonly string[]> = {
   texture: ['soft', 'firm', 'hard'],
-  tasteType: ['sweet', 'salty', 'sour', 'bitter', 'savory', 'other'],
-  tasteIntensity: ['mild', 'strong'],
+  tasteType: ['sweet', 'salty', 'sour', 'bitter', 'savory'],
   smell: ['fruit', 'herb', 'mushroom', 'toasted', 'vanilla', 'dairy', 'meaty', 'sulfur', 'sea', 'fermented', 'spice', 'mint', 'smoke'],
   color: ['red', 'yellow', 'green', 'brown', 'white', 'other'],
-  shape: ['consistent', 'varied', 'notSure', 'note'],
-  visibility: ['visible', 'hidden', 'mixed'],
   temperature: ['hot', 'warm', 'cool', 'room'],
   pieceSize: ['fine', 'small', 'large'],
   arrangement: ['even', 'uneven', 'clustered', 'other'],
@@ -200,13 +199,13 @@ export function addDifficulty(
     value: normalized,
     ...(normalizedNote ? { note: normalizedNote } : {}),
   };
-  const single = category === 'smell' || category === 'tasteIntensity' || category === 'visibility' || category === 'temperature' || category === 'notSure' || category === 'pieceSize' || category === 'arrangement';
+  const single = category === 'smell' || category === 'temperature' || category === 'notSure' || category === 'pieceSize' || category === 'arrangement';
   const retained = single ? tags.filter((item) => item.category !== category) : tags;
   return retained.some((item) => item.id === tag.id) ? retained : [...retained, tag];
 }
 
 export function difficultyNeedsNote(category: DifficultyCategory | null, value: string): boolean {
-  return value === 'other' || value === 'note' || (category === 'shape' && value === 'notSure');
+  return value === 'other';
 }
 
 export function canAddDifficulty(category: DifficultyCategory | null, value: string, note: string, subcategory?: string): boolean {

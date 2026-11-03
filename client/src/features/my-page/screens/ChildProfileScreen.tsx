@@ -2,6 +2,10 @@
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: Dietary Pattern 선택 및 저장
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 채식 제한 요약·이동으로 변경
+// AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+// Changed: 채식 제한 카드를 식생활 유형 카드로 되돌려 반영
 
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
@@ -60,8 +64,8 @@ export function ChildProfileScreen() {
       childName={editing ? childName : profile.childName}
       ageRange={editing ? ageRange : profile.ageRange}
       allergies={safetySummary(profile.allergies, profile.restrictions, appProfile.language)}
-      familyFoods={dietaryPatternLabel(profile.dietaryPattern, appProfile.language)}
-      safeFoods={safeFoodSummary(profile.safeFoods, profile.noSafeFoods, appProfile.language)}
+      dietaryPattern={dietaryPatternLabel(profile.dietaryPattern, appProfile.language)}
+      safeFoods={safeFoodSummary(profile.safeFoods, appProfile.language)}
       saving={saving}
       saveError={saveError}
       deleteError={account.deleteError}
@@ -78,7 +82,7 @@ export function ChildProfileScreen() {
       onName={setChildName}
       onAge={setAgeRange}
       onAllergies={() => openOnboarding('allergies')}
-      onFamily={() => openOnboarding('family')}
+      onDietaryPattern={() => openOnboarding('family')}
       onSafeFoods={() => openOnboarding('safe-foods')}
       onLogOut={account.onLogOut}
       onDelete={account.onDelete}

@@ -2,6 +2,8 @@
 <!-- Changed: 식생활 유형 및 익숙한 음식 추가 폼·선택 조리 방법 -->
 <!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 <!-- Changed: 화면 디자인 및 식사 흐름 개선 -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim -->
+<!-- Changed: 식생활 유형 저장을 새 서버 계약(dietary_pattern, 채식 제한 보존)으로 수정 -->
 
 # Onboarding
 
@@ -84,10 +86,11 @@
    미응답 상태로 Continue를 사용할 수 있다. 별도 Other 입력은 제공하지 않는다.
 3. 항목의 라벨과 설명 전체를 눌러 선택한다. 닉네임을 넣은 안내와 추천 반영 한계 안내를 표시한다.
 4. 초안과 프로필 편집에서 선택을 복원하며 리뷰와 설정에는 선택한 라벨 또는 미응답을 표시한다.
-5. 기존 온보딩 API의 `food_preferences.dietary_pattern`은 nullable 선택 ID다.
-   `family_foods`는 기존 데이터 보존용이며 선택을 추론하는 데 사용하지 않는다.
-6. 서버의 nullable `user_profiles.dietary_pattern`에 선택을 저장한다. 기존 클라이언트가 필드를
-   생략하면 저장된 선택을 보존하고 명시적 null은 미응답을 저장한다.
+5. 온보딩 API의 `profile.dietary_pattern`은 생략할 수 없는 필드이며 값은 `VEGAN`, `LACTO_VEGETARIAN`,
+   `OVO_VEGETARIAN`, `LACTO_OVO_VEGETARIAN`, `PESCATARIAN`, `FLEXITARIAN`, `NO_SPECIFIC_PATTERN` 또는
+   null(미응답)이다. 앱 안의 값은 소문자 snake_case이고 데이터 계층에서 서버 값으로 변환한다.
+6. 서버의 nullable `user_profiles.dietary_pattern`에 선택을 저장한다. 채식 제한(`VEGETARIAN.*`)은
+   입력 화면이 없고, 서버에 이미 저장된 값은 프로필을 저장할 때 그대로 다시 보내 보존한다.
 7. 현재 추천 생성 인터페이스는 음식과 필수 제한만 받는다. 식생활 유형은 프로필에 전달·저장되지만
    추천에 적용되지는 않는다. 식이 선호를 필수 알레르기나 제한으로 변환하지 않는다.
 
@@ -97,14 +100,14 @@
 2. `Add safe food` 카드는 처음부터 표시하며 음식을 추가한 뒤에도 다음 입력을 위해 유지한다.
 3. Food name은 필수다. Cooking method는 기존 식사 입력과 같은 조리 방법 드롭다운이며 선택 입력이다.
    Additional details도 선택 입력이며 두 항목 모두 Optional을 같은 줄에 표시한다.
-   기존 자유 입력 조리 방법은 복원 시 그대로 표시하고 보존한다.
+   기존 자유 입력 조리 방법은 복원 시 그대로 표시하고 보존한다. 조리 방법을 비워 두면 서버에는 null로 저장한다.
 4. 카드의 Add 버튼을 누르면 음식 이름과 입력한 조리·제공 정보가 하나의 Safe Food로 추가되어야 한다.
 5. 추가된 Safe Food는 카드 위에 줄바꿈되는 녹색 토큰으로 표시한다. 음식 이름과 조리·제공 정보를
    두 줄로 표시하고 x 버튼으로만 제거한다. 긴 입력도 화면 너비 안에서 줄바꿈한다.
-6. 아직 Safe Food가 없으면 `No safe foods yet`을 선택할 수 있어야 한다. Safe Food를 추가하면 이 선택은 해제되어야 하며, 선택된 상태에서는 Safe Food가 동시에 저장되지 않아야 한다.
+6. 아직 Safe Food가 없으면 목록을 비워 둔 채 진행할 수 있다. 별도의 `No safe foods yet` 선택은 제공하지 않으며 빈 목록이 곧 없음이다.
 7. Safe Foods 화면에는 Save & exit가 표시되어야 하며, 이를 누르면 현재까지 입력한 답변을 저장하고 나중에 이어서 입력할 수 있어야 한다.
 8. 카드 오른쪽 아래에 작은 `+ Add` 버튼을 표시하며, 음식 이름이 공백이면 비활성화한다.
-   카드 아래에는 `No safe foods yet`과 여러 항목 입력 안내를 항상 표시한다.
+   카드 아래에는 여러 항목을 입력할 수 있다는 안내를 항상 표시한다.
 
 ### R9 — Review profile
 

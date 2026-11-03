@@ -1,7 +1,12 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// Changed: Verify reset discards pending autosaves and current onboarding fixtures
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: Verify reset discards pending autosaves and current onboarding fixtures; Dietary Pattern
-
+// Changed: Dietary Pattern
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 서버 restrictions 목록·대문자 enum 요청 기준으로 수정
+// AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+// Changed: 식생활 유형 요청·응답 기준으로 수정
 // Connects Auth/Profile/Onboarding providers, validation, API conversion and draft storage.
 // Only HTTP and native storage boundaries are mocked.
 const { test, beforeEach } = require('node:test');
@@ -19,9 +24,9 @@ const { saveSession, clearSession } = require('../../src/data/storage/authStorag
 const { profileResponse } = require('../fixtures/account-profile.cjs');
 beforeEach(async () => { await clearSession(); values.clear(); });
 function completeDraft() {
-  return { ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com', childName: 'Child 1', ageRange: '4-5',
+  return { ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com', childName: 'Child 1', ageRange: 'AGE_4_5',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false }, allergies: ['none'], restrictions: ['none'],
-    familyFoods: ['eggs'], step: 'review' };
+    vegetarianRestrictions: ['EGGS'], step: 'review' };
 }
 async function mount(t, put = () => new Response(JSON.stringify(profileResponse()))) {
   await saveSession({ accessToken: 'access', refreshToken: 'refresh', user: { id: '1', email: 'parent@example.com', fullName: 'Parent' } });
@@ -58,22 +63,22 @@ test('invalid draft cannot finish or send a profile write', async t => {
 });
 
 for (const aiTraining of [false, true]) {
-  test(`successful completion restores family foods and all consents (AI training: ${aiTraining})`, async t => {
+  test(`successful completion restores vegetarian restrictions and all consents (AI training: ${aiTraining})`, async t => {
     const draft = completeDraft();
     draft.consent.aiTraining = aiTraining;
     await saveDraft(draft);
     const hook = await mount(t, body => {
-      assert.deepEqual(body.profile.food_preferences.family_foods, [{ code: 'eggs', custom_name: null }]);
+      assert.deepEqual(body.profile.restrictions, ['ALLERGY.NONE', 'VEGETARIAN.EGGS']);
       assert.deepEqual(body.consents, [
-        { kind: 'account_privacy', granted: true },
-        { kind: 'photo_analysis', granted: true },
-        { kind: 'ai_training', granted: aiTraining },
+        { kind: 'ACCOUNT_PRIVACY', granted: true },
+        { kind: 'PHOTO_ANALYSIS', granted: true },
+        { kind: 'AI_TRAINING', granted: aiTraining },
       ]);
       return new Response(JSON.stringify(profileResponse('1', { aiTraining })));
     });
     await act(async () => assert.equal(await hook.current.onboarding.finish(), true));
     await waitFor(() => hook.current.profile.profile?.id === '1');
-    assert.deepEqual(hook.current.profile.profile.familyFoods, ['eggs']);
+    assert.deepEqual(hook.current.profile.profile.vegetarianRestrictions, ['EGGS']);
     assert.deepEqual(hook.current.profile.profile.consent,
       { accountPrivacy: true, photoAnalysis: true, aiTraining });
     assert.equal(await readDraft(), null);
@@ -87,11 +92,11 @@ test('failed completion preserves the draft and retry commits profile before cle
   let fail = true;
   const hook = await mount(t, body => {
     assert.equal(body.profile.child_name, 'Child 1');
-    assert.deepEqual(body.profile.food_preferences.family_foods, [{ code: 'eggs', custom_name: null }]);
+    assert.deepEqual(body.profile.restrictions, ['ALLERGY.NONE', 'VEGETARIAN.EGGS']);
     assert.deepEqual(body.consents, [
-      { kind: 'account_privacy', granted: true },
-      { kind: 'photo_analysis', granted: true },
-      { kind: 'ai_training', granted: false },
+      { kind: 'ACCOUNT_PRIVACY', granted: true },
+      { kind: 'PHOTO_ANALYSIS', granted: true },
+      { kind: 'AI_TRAINING', granted: false },
     ]);
     return fail ? new Response('{}', { status: 503 }) : new Response(JSON.stringify(profileResponse()));
   });
@@ -100,14 +105,14 @@ test('failed completion preserves the draft and retry commits profile before cle
   assert.equal(hook.current.onboarding.saveStatus, 'error');
   const retained = await readDraft();
   assert.equal(retained.childName, 'Child 1');
-  assert.deepEqual(retained.familyFoods, ['eggs']);
+  assert.deepEqual(retained.vegetarianRestrictions, ['EGGS']);
   assert.deepEqual(retained.consent, { accountPrivacy: true, photoAnalysis: true, aiTraining: false });
   assert.equal(hook.current.profile.profile, null);
   fail = false;
   await act(async () => assert.equal(await hook.current.onboarding.finish(), true));
   await waitFor(() => hook.current.profile.profile?.id === '1');
   assert.equal(hook.current.profile.profile.childName, 'Child 1');
-  assert.deepEqual(hook.current.profile.profile.familyFoods, ['eggs']);
+  assert.deepEqual(hook.current.profile.profile.vegetarianRestrictions, ['EGGS']);
   assert.deepEqual(hook.current.profile.profile.consent,
     { accountPrivacy: true, photoAnalysis: true, aiTraining: false });
   assert.equal(await readDraft(), null);
@@ -195,7 +200,7 @@ test('pattern replacement, draft recovery, server save and profile editing retai
   await saveDraft({ ...completeDraft(), dietaryPattern: 'vegan' });
   const hook = await mount(t, body => {
     const response = profileResponse();
-    response.profile.food_preferences = body.profile.food_preferences;
+    response.profile.dietary_pattern = body.profile.dietary_pattern;
     return new Response(JSON.stringify(response));
   });
   assert.equal(hook.current.onboarding.draft.dietaryPattern, 'vegan');
@@ -206,7 +211,7 @@ test('pattern replacement, draft recovery, server save and profile editing retai
   assert.equal(hook.current.profile.profile.dietaryPattern, 'flexitarian');
   await act(async () => hook.current.onboarding.startProfileEdit());
   assert.equal(hook.current.onboarding.draft.dietaryPattern, 'flexitarian');
-  await act(async () => hook.current.onboarding.setField('dietaryPattern', 'no-specific-pattern'));
+  await act(async () => hook.current.onboarding.setField('dietaryPattern', 'no_specific_pattern'));
   await act(async () => assert.equal(await hook.current.onboarding.applyEdit(), true));
-  assert.equal(hook.current.profile.profile.dietaryPattern, 'no-specific-pattern');
+  assert.equal(hook.current.profile.profile.dietaryPattern, 'no_specific_pattern');
 });

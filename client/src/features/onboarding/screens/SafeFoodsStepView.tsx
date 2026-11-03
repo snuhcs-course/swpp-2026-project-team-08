@@ -3,10 +3,13 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 상시 표시 음식 추가 카드·조리 방법 선택·삭제 가능한 토큰
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 안심 음식 없음 선택 제거
+// AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+// Changed: 상시 표시 카드에서 안심 음식 없음 토글을 빼고 입력 안내만 표시
 
 import { Pressable, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
-import { ChoiceRow } from '../../../components/ChoiceRow';
 import { DropdownChoice } from '../../../components/DropdownChoice';
 import { FormField } from '../../../components/FormField';
 import { abcCopyFor, copyFor } from '../../../util/strings';
@@ -14,14 +17,12 @@ import type { Language, SafeFood } from '../../../types/profile';
 import type { OnboardingDraft } from '../types';
 import { styles } from './onboardingStyles';
 
-export function SafeFoodsStepView({ language, childName, safeFoods, noSafeFoods, input, canAdd, onToggleNone, onRemove, onInputChange, onAdd }: {
+export function SafeFoodsStepView({ language, childName, safeFoods, input, canAdd, onRemove, onInputChange, onAdd }: {
   language: Language;
   childName?: string;
   safeFoods: SafeFood[];
-  noSafeFoods: boolean;
   input: OnboardingDraft['safeFoodInput'];
   canAdd: boolean;
-  onToggleNone: () => void;
   onRemove: (id: string) => void;
   onInputChange: (field: keyof OnboardingDraft['safeFoodInput'], value: string) => void;
   onAdd: () => void;
@@ -94,7 +95,6 @@ export function SafeFoodsStepView({ language, childName, safeFoods, noSafeFoods,
         />
       </View>
       <View style={styles.safeFoodNone}>
-        <ChoiceRow label={s.onboarding.noSafeFoods} selected={noSafeFoods} multiple onPress={onToggleNone} />
         <Text style={styles.multipleHint}>{s.onboarding.multipleInput}</Text>
       </View>
     </View>

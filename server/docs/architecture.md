@@ -8,6 +8,8 @@
 
 <!-- AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo -->
 <!-- Changed: 식사 재료와 공용 카탈로그의 저장 경계 -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim -->
+<!-- Changed: 모델 값 검증·StrEnum 규칙 추가, 재료 저장 경계 갱신, ingredients 기능 제거 -->
 
 # server — 아키텍처
 
@@ -83,6 +85,32 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 - 파일은 테이블(클래스) 하나당 하나, 단수형 snake_case (`user.py`, `meal_log.py`).
 - 새 모델은 `models/__init__.py`에 import해야 `Base.metadata`에 등록된다 (Alembic · 테스트 `create_all`이 필요로 한다).
 - 모든 테이블에 `created_at` / `updated_at`, 모든 `ForeignKey`에 `onupdate="CASCADE", ondelete="CASCADE"`.
+- **값의 유효성은 DB 제약이 아니라 애플리케이션 로직으로 검증한다.** DB에는 PK · FK · UNIQUE · NOT NULL 같은
+  구조 제약만 두고, 허용 값 목록 · 범위 · 공백 금지 같은 값 규칙에는 `CheckConstraint`를 쓰지 않는다.
+  값 규칙은 DTO와 서비스가 검증한다. enum 컬럼 타입은 값을 enum 멤버로 바꿔 줄 뿐 enum에 없는 문자열을 막지는 않는다.
+  `CHECK` 제약보다 마이그레이션이 수월하고(값을 바꿀 때 제약을
+  지우고 다시 만들 필요가 없다), 검증 코드가 애플리케이션 한곳에 모이기 때문이다. 컬럼의 NULL 여부를 정하는 구조 제약
+  (예: 두 컬럼 중 하나는 NOT NULL)은 값 규칙이 아니므로 `CheckConstraint`로 둘 수 있다.
+- **고정된 값 집합은 `StrEnum`으로 정의한다.** 파일은 `models/<이름>_enums.py`(예: `meal_enums.py`, `user_consent_enums.py`)에 두고,
+  DTO와 모델이 같은 enum을 쓴다. 멤버 이름과 값은 같은 대문자 문자열로 정의한다(`BREAKFAST = "BREAKFAST"`).
+  단계를 점(`.`)으로 구분하는 경로 값 enum은 값에 `.`을, 멤버 이름에 `_`를 쓴다(`TEXTURE_HARDNESS_HARD = "TEXTURE.HARDNESS.HARD"`).
+  컬럼은 네이티브 enum 타입 없이 문자열로 저장한다.
+
+  ```python
+  meal_type: Mapped[MealType] = mapped_column(
+      Enum(
+          MealType,
+          native_enum=False,
+          create_constraint=False,
+          length=20,
+      ),
+      nullable=False,
+  )
+  ```
+
+  SQLAlchemy는 기본으로 멤버 이름을 저장하는데, 이름과 값이 같으므로 값 그대로 저장된다. 경로 값 enum은 대부분 JSON 목록 컬럼의 원소를
+  검증하는 데만 쓰고 이 매핑을 쓰지 않는다. 컬럼 타입으로 쓸 때는 이름(`ALLERGY_EGGS`)이 아니라 값(`ALLERGY.EGGS`)이 저장되도록
+  `values_callable=lambda members: [m.value for m in members]`를 더한다. `create_constraint=False`는 `CHECK` 제약을 만들지 않는다.
 
 **왜 한곳에 모으나.** 이 앱은 여러 테이블을 가로지르는 읽기가 많다(식사 기록 · 추천 · 재료). 모델이 기능
 폴더에 흩어져 있으면 "다른 기능의 모델을 읽어도 되는가"를 매번 따져야 한다. 한곳에 모으면 import 경로가
@@ -210,14 +238,17 @@ async def list_meal_logs(
 
 ## 재료 저장 경계
 
-`Ingredient`(`ingredients`)는 공용 재료 카탈로그다. 식사 저장·수정은 이 테이블에 쓰지 않는다.
-`MealIngredient`(`meal_ingredients`)는 meal check-in에서 기록한 재료를 저장한다.
-카탈로그에서 선택한 재료도 별도 행으로 복사하고, 자유 입력 재료는 이 테이블에만 생성한다.
-식사와 추천 연결의 재료 FK는 `meal_ingredients`를 참조한다. 식후 결과와 추천 스냅샷은 기록한 ID를 유지한다.
-공용 카탈로그 API는 `Ingredient`만 조회한다. LLM의 제한 검증은 현재 별도 JSON 카탈로그를 사용한다.
+재료를 다루는 테이블은 목적이 다른 두 계열이며 서로 참조하지 않는다.
 
-`0017_meal_ingredients`는 기존 재료 ID와 이름을 복사하고 식사 관련 FK를 옮긴다.
-기존 `ingredients`의 행은 보존한다. 사용자 재료를 공용 카탈로그로 합치지 않도록 자동 downgrade는 제공하지 않는다.
+- `Ingredient`(`ingredients`)는 추천용 공용 카탈로그다. 음식 추천 때 아이의 제한을 지킨 재료 목록을 LLM에게 주기 위해
+  존재하며, 재료마다 제한에 걸리는 정도를 `IngredientRestriction`(`ingredient_restrictions`)에 저장한다.
+  식사 저장·수정은 이 테이블을 읽거나 쓰지 않고, 클라이언트가 직접 조회하는 API도 없다.
+- `MealFoodIngredient`(`meal_food_ingredients`)는 사용자가 식사 안의 음식에 들어갔다고 기록한 재료를 입력한 그대로
+  저장한다. 같은 이름도 음식마다 별도 행이며 카탈로그를 참조하지 않는다. 식후 리뷰 결과(`outcome`, `difficulty_reasons`)도
+  이 행이 갖는다.
+
+추천(`FoodRecommendation`)의 `ingredients`는 LLM이 반환한 재료 이름을 그대로 저장한 문자열 목록이며, 어느 테이블도 참조하지 않는다.
+LLM의 제한 검증은 현재 별도 JSON 카탈로그를 사용한다.
 
 ## 3. 의존성 방향과 기능 간 규칙
 
@@ -447,7 +478,6 @@ async def sign_up(...): ...
 |---|---|
 | `auth` | 회원가입·로그인·토큰 재발급, 사용자 정보 관리 |
 | `onboarding` | 온보딩·자녀 프로필 관리 |
-| `ingredients` | 재료 카탈로그 조회 |
 | `meals` | 식사·음식·식후 기록 관리 |
 | `suggestions` | 추천 생성·조회·관리 |
 

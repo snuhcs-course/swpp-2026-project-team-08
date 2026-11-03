@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 마이페이지 채식 제한 prop 이름 변경
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -122,7 +124,7 @@ test('profile age editing uses native menus with localized labels and stable ids
     reset(os);
     const changes = [], ages = optionsFor('age', language);
     const nodes = render(ChildProfileView, { language, editing: true, childName: 'Luna', ageRange: ages[0].id,
-      allergies: '', familyFoods: '', safeFoods: '', onAge: value => changes.push(value) });
+      allergies: '', vegetarian: '', safeFoods: '', onAge: value => changes.push(value) });
     const [menu] = menus(nodes);
     assert.equal(menu.props.title, copyFor(language).myPage.ageGroup);
     assert.deepEqual(menu.props.actions.map(action => action.title), ages.map(option => option.label));

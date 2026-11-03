@@ -1,64 +1,37 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 # Changed: ingredients 구조 bootstrap
+# AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+# Changed: JSON mock 카탈로그를 DB 에서 읽은 사용 가능 재료 집합으로 교체,
+# 제한 어휘를 RestrictionType 으로 변경
 
-"""재료 카탈로그와 아이의 제한(알러지 · 식이 제한) 판정.
+"""추천에 쓸 수 있는 재료 카탈로그와 아이의 제한(알러지 · 채식 · 식이 제한).
 
-`search_available_ingredients` 도구와 `validation.py`가 같은 카탈로그와 규칙을 쓰도록 한곳에 모았다.
-지금 카탈로그는 `mock_ingredients.json`이며, 실제 출처로 바꿀 때는 `load_catalog`만 교체한다.
+워크플로의 검증은 DB 세션을 열지 않는다. 그래서 서비스가 아이의 제한에 맞는 재료 이름을
+DB 에서 미리 읽어(`catalog.py`) `Catalog` 로 그래프에 넘기고,
+이 모듈은 그 값을 읽는 순수 함수만 둔다.
+프롬프트의 "쓸 수 있는 재료" 목록과 `validation.py`가 같은 카탈로그를 쓴다.
 """
 
-import json
-from dataclasses import dataclass
-from enum import StrEnum
-from functools import lru_cache
-from pathlib import Path
+from dataclasses import dataclass, field
 
-CATALOG_PATH = Path(__file__).parent / "mock_ingredients.json"
-
-
-class RestrictionId(StrEnum):
-    """제한 id. 값은 클라이언트 프로필의 allergies · restrictions 값과 같아야 한다.
-
-    클라이언트 id를 바꾸면 이 enum도 함께 고친다 (`docs/food-ingredient-restriction-ids.md`).
-    """
-
-    # 알러지
-    PEANUT = "peanut"
-    TREE_NUT = "tree-nut"
-    MILK = "milk"
-    EGG = "egg"
-    SOY = "soy"
-    WHEAT = "wheat"
-    FISH = "fish"
-    SHELLFISH = "shellfish"
-    SESAME = "sesame"
-    LUPIN = "lupin"
-    COCONUT = "coconut"
-    BUCKWHEAT = "buckwheat"
-    KIWI = "kiwi"
-    STRAWBERRY = "strawberry"
-    # 식이 제한
-    GLUTEN_FREE = "gluten-free"
-    LACTOSE_FREE = "lactose-free"
-    CASEIN_FREE = "casein-free"
-    LOW_FRUCTOSE = "low-fructose"
-    NO_PORK = "no-pork"
-    NO_BEEF = "no-beef"
+from app.models.restriction_enums import RestrictionType
 
 
 @dataclass(frozen=True)
 class ChildRestrictions:
-    """아이의 제한 목록 (알러지와 식이 제한을 합친 제한 id의 집합)."""
+    """아이의 제한 목록 (알러지 · 채식 · 식이 제한을 합친 `RestrictionType` 의 집합)."""
 
-    ids: frozenset[RestrictionId] = frozenset()
+    types: frozenset[RestrictionType] = frozenset()
 
 
 @dataclass(frozen=True)
-class Ingredient:
-    """카탈로그의 재료 하나. `restrictions`는 이 재료가 걸리는 제한 id다."""
+class Catalog:
+    """이 아이가 쓸 수 있는 재료. 정규화한 이름에서 원래 이름으로 찾는다.
 
-    names: tuple[str, ...]
-    restrictions: frozenset[RestrictionId]
+    목록에 없는 재료는 쓸 수 없거나 알 수 없는 재료다. 둘은 구분하지 않는다.
+    """
+
+    names: dict[str, str] = field(default_factory=dict)
 
 
 def normalize_name(name: str) -> str:
@@ -66,45 +39,20 @@ def normalize_name(name: str) -> str:
     return " ".join(name.split()).casefold()
 
 
-@lru_cache
-def load_catalog() -> dict[str, Ingredient]:
-    """정규화한 재료 이름 → 재료. 한 재료의 모든 이름이 같은 항목을 가리킨다."""
-    raw = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
-    catalog: dict[str, Ingredient] = {}
-    for item in raw["ingredients"]:
-        # 알 수 없는 제한 id는 RestrictionId에서 ValueError가 나 로드 시점에 드러난다.
-        ingredient = Ingredient(
-            names=tuple(item["names"]),
-            restrictions=frozenset(RestrictionId(rid) for rid in item["restrictions"]),
-        )
-        for name in ingredient.names:
-            catalog[normalize_name(name)] = ingredient
-    return catalog
+def build_catalog(names: list[str]) -> Catalog:
+    return Catalog(names={normalize_name(name): name for name in names})
 
 
-def find_ingredient(name: str) -> Ingredient | None:
-    """이름이 카탈로그와 정확히 일치하는 재료를 찾는다. 없으면 None."""
-    return load_catalog().get(normalize_name(name))
+def is_usable(catalog: Catalog, name: str) -> bool:
+    """이름이 카탈로그의 사용 가능한 재료와 정확히 일치하는지 본다."""
+    return normalize_name(name) in catalog.names
 
 
-def conflicting_restrictions(
-    ingredient: Ingredient, restrictions: ChildRestrictions
-) -> list[RestrictionId]:
-    """재료가 걸리는 제한 중 이 아이의 제한과 겹치는 id를 정렬해서 반환한다."""
-    return sorted(ingredient.restrictions & restrictions.ids)
-
-
-def usable_ingredient_names(restrictions: ChildRestrictions, candidates: list[str]) -> list[str]:
+def usable_ingredient_names(catalog: Catalog, candidates: list[str]) -> list[str]:
     """후보 중 이 아이가 쓸 수 있는 재료 이름만 반환한다.
 
-    후보가 비어 있으면 카탈로그 전체에서 쓸 수 있는 재료의 대표 이름(첫 번째 이름)을 반환한다.
+    후보가 비어 있으면 쓸 수 있는 재료 전체를 반환한다.
     """
     if not candidates:
-        unique = {id(i): i for i in load_catalog().values()}.values()
-        return [i.names[0] for i in unique if not conflicting_restrictions(i, restrictions)]
-    usable = []
-    for name in candidates:
-        ingredient = find_ingredient(name)
-        if ingredient is not None and not conflicting_restrictions(ingredient, restrictions):
-            usable.append(name)
-    return usable
+        return sorted(catalog.names.values())
+    return [name for name in candidates if is_usable(catalog, name)]

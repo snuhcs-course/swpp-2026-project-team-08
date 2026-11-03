@@ -1,6 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
-// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: Ingredient difficulty API save and restore coverage
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: Ingredient difficulty API coverage and selection/note round trips
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -109,3 +109,48 @@ test('ingredient difficulties survive API saving and restore to their own review
   assert.equal(restored.difficulties['2'][0].category, 'smell');
   assert.deepEqual(prepareReviewWrite(reviewFromDraft(restored, meal), saved), prepareReviewWrite(review, detail));
 });
+
+for (const [category, value, note, subcategory] of [
+  ['tasteType', 'other', '낯선 맛'],
+  ['color', 'other', '보라색'],
+  ['arrangement', 'other', '소스: 한쪽에 몰림\n음식 위에 있음'],
+  ['shape', 'note', '길쭉한 모양'],
+  ['shape', 'notSure', '모양 확인 필요'],
+  ['texture', 'firm', '씹기 어려움', 'hardness'],
+]) {
+  test(`${category}/${value}: food and ingredient selections and notes survive repeated API saves`, async () => {
+    const { newReviewDraft, setOutcome, addDifficulty, reviewFromDraft, reviewDraftFromServer } =
+      require('../../src/features/after-meal-review/rules.ts');
+    const { toMealDetail } = require('../../src/data/dto/mealDto.ts');
+    let detail = toMealDetail(response);
+    const meal = toLegacyMeal(detail);
+    let draft = newReviewDraft(meal);
+    const ingredientId = draft.outcomes[0].ingredients[0].id;
+    draft.outcomes = setOutcome(draft.outcomes, '2', 'tasted');
+    draft.outcomes = setOutcome(draft.outcomes, '2', 'untouched', ingredientId);
+    for (const targetId of ['2', ingredientId]) {
+      draft.difficulties[targetId] = addDifficulty([], category, value, note, subcategory);
+    }
+    const original = prepareReviewWrite(reviewFromDraft(draft, meal), detail);
+    request = async (path, init) => {
+      assert.equal(path, '/api/v1/meals/8/review');
+      const body = JSON.parse(init.body);
+      const expected = { category, subcategory: subcategory ?? null, value: `${value}: ${note}` };
+      assert.deepEqual(body.food_results[0].difficulties, [expected]);
+      assert.deepEqual(body.food_results[0].ingredient_outcomes[0].difficulties, [expected]);
+      return reviewResponse(response, body);
+    };
+    for (let save = 0; save < 2; save++) {
+      detail = await writeMealReview(reviewFromDraft(draft, meal), detail);
+      draft = reviewDraftFromServer(meal, detail);
+      for (const targetId of ['2', ingredientId]) {
+        const [tag] = draft.difficulties[targetId];
+        assert.equal(tag.category, category);
+        assert.equal(tag.value, value);
+        assert.equal(tag.note, note);
+        assert.equal(tag.subcategory, subcategory);
+      }
+      assert.deepEqual(prepareReviewWrite(reviewFromDraft(draft, meal), detail), original);
+    }
+  });
+}

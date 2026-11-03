@@ -1,7 +1,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
-// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
-// Changed: Separate food and ingredient difficulty targets, persistence and restoration
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: Separate difficulty targets and restore saved selections and notes
 
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome, ReviewStep } from '../../types/afterMealReview';
 import type { FoodItem, Meal } from '../../types/meal';
@@ -65,12 +65,17 @@ export function reconcileDifficultyEntries<T>(entries: Record<string, T>, outcom
 }
 
 function restoredDifficulties(targetId: string, tags: Difficulty[]): DifficultyTag[] {
-  return tags.map((tag, index) => ({
-    id: `${targetId}:${index}`,
-    category: tag.category,
-    value: tag.value,
-    ...(tag.subcategory ? { subcategory: tag.subcategory } : {}),
-  }));
+  return tags.map((tag, index) => {
+    // The API stores selection and note together; keep any later separators in the note.
+    const separator = tag.value.indexOf(': ');
+    return {
+      id: `${targetId}:${index}`,
+      category: tag.category,
+      value: separator < 0 ? tag.value : tag.value.slice(0, separator),
+      ...(separator < 0 ? {} : { note: tag.value.slice(separator + 2) }),
+      ...(tag.subcategory ? { subcategory: tag.subcategory } : {}),
+    };
+  });
 }
 
 export function newReviewDraft(meal: Meal): AfterMealReviewDraft {

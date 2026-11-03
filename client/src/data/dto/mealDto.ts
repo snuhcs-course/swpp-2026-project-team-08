@@ -63,8 +63,6 @@ function toSuggestionMealLink(mealId: string, foodId: string, value: unknown): S
     suggestionId: id(dto.food_recommendation_id),
     mealId,
     foodId,
-    // 서버의 추천 시도는 음식 단위라 재료 연결이 없다.
-    ingredientId: null,
     feedback: nullable(dto.feedback, (feedback) => fromApiEnum(feedback, feedbackValues)),
     createdAt: timestamp(dto.created_at),
     updatedAt: timestamp(dto.updated_at),

@@ -4,6 +4,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 재료 단위 추천 연결 제거
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
@@ -37,12 +39,6 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
   const [targetId, setTargetId] = useState('');
   const resumeLink = useRef(false);
   const selectedSuggestion = suggestions.find((item) => item.id === suggestionId);
-  const canLinkToFood = (suggestion: MealSuggestionOption, food: FoodItem) => {
-    if (suggestion.ingredientId == null) return true;
-    const targetName = suggestion.ingredientName;
-    return !!targetName && food.ingredients.some((name) =>
-      name.toLocaleLowerCase() === targetName.toLocaleLowerCase());
-  };
   useEffect(() => {
     if (!draft?.editingFood && resumeLink.current) {
       resumeLink.current = false;
@@ -193,7 +189,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
         setError('save');
         return null;
       }
-      if (value.foods.length !== 1 || !canLinkToFood(selected, value.foods[0])) {
+      if (value.foods.length !== 1) {
         setSuggestionId(linkSuggestionId);
         setLinkStep(2);
         return null;
@@ -202,7 +198,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
         ...value,
         suggestionLinks: [
           ...(value.suggestionLinks ?? []),
-          { suggestionId: selected.id, foodId: value.foods[0].id, ingredientId: selected.ingredientId,
+          { suggestionId: selected.id, foodId: value.foods[0].id,
             title: selected.title,
             description: selected.description, servingTip: selected.servingTip },
         ],
@@ -284,7 +280,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       selectedSuggestion,
       selectedFoodId: targetId,
       canContinue: !!selectedSuggestion && (linkStep === 1 || !!draft?.foods.some((food) =>
-        food.id === targetId && canLinkToFood(selectedSuggestion, food))),
+        food.id === targetId)),
       onOpen: () => setLinkStep(1),
       onBack: () => setLinkStep(linkStep === 2 ? 1 : 0),
       onSelectSuggestion: (id) => { setSuggestionId(id); setTargetId(''); },
@@ -293,12 +289,10 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
         const value = current.current;
         if (!value || busy.current || !selectedSuggestion) return;
         if (linkStep === 1) { setLinkStep(2); return; }
-        if (linkStep !== 2 || !value.foods.some((food) =>
-          food.id === targetId && canLinkToFood(selectedSuggestion, food))) return;
+        if (linkStep !== 2 || !value.foods.some((food) => food.id === targetId)) return;
         update({ suggestionLinks: [
           ...(value.suggestionLinks ?? []).filter((link) => link.suggestionId !== selectedSuggestion.id),
-          { suggestionId: selectedSuggestion.id, foodId: targetId,
-            ingredientId: selectedSuggestion.ingredientId, title: selectedSuggestion.title,
+          { suggestionId: selectedSuggestion.id, foodId: targetId, title: selectedSuggestion.title,
             description: selectedSuggestion.description, servingTip: selectedSuggestion.servingTip },
         ] });
         setLinkStep(0);

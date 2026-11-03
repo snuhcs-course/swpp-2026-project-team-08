@@ -3,7 +3,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Tests legacy evidence compatibility and current API generation; only native storage and HTTP are mocked.
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
-// Changed: 프로필 fixture 를 채식 제한 필드와 서버 연령 값으로 변경
+// Changed: 프로필 fixture 를 채식 제한·서버 연령 값으로, 추천 생성을 음식 단위 계약으로 변경
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('./helpers/register.cjs');
@@ -14,6 +14,7 @@ const { newReviewDraft, setOutcome, reviewFromDraft } = require('../src/features
 const { recommendationText } = require('../src/rules/recommendationPresentation.ts');
 const { foodFormKey, isCurrentRecommendation } = require('../src/rules/recommendationSafety.ts');
 const { generateMealSuggestions } = require('../src/data/api/mealSuggestionApi.ts');
+const { suggestionResponse } = require('./fixtures/server-suggestion.cjs');
 
 function fixtures(childId = 'child-d') {
   const profile = {
@@ -72,23 +73,18 @@ test('legacy saved evidence stops being actionable when its owner, safety or ser
 });
 
 test('failed server generation preserves requested targets for a successful explicit retry', async t => {
-  const targets = [{ foodId: '2', ingredientId: null }];
+  const targets = [{ foodId: '2' }];
   let calls = 0;
   t.mock.method(global, 'fetch', async (url, init) => {
     assert.equal(new URL(url).pathname, '/api/v1/meals/8/suggestions');
     assert.equal(init.method, 'POST');
-    assert.deepEqual(JSON.parse(init.body), { targets: [{ food_id: '2', ingredient_id: null }] });
+    assert.deepEqual(JSON.parse(init.body), { targets: [{ food_id: '2' }] });
     calls++;
     if (calls === 1) return new Response('{"error_code":"GENERATION_FAILED"}', { status: 502 });
-    return new Response(JSON.stringify([{
-      id: '31', user_id: '1', meal_id: '8', food_id: '2', ingredient_id: null,
-      food_snapshot: { name: 'Rice', ingredients: [], cooking_method: null, serving_note: null, acceptance: null },
-      what_to_try: 'Try a little', why_this_may_help: 'Familiar texture', serving_tip: null,
-      status: 'pending', dismiss_reasons: [], saved_at: null, created_at: '2026-10-21T00:00:00Z',
-    }]));
+    return new Response(JSON.stringify([suggestionResponse()]));
   });
   await assert.rejects(generateMealSuggestions('1', '8', targets), /GENERATION_FAILED/);
-  assert.deepEqual(targets, [{ foodId: '2', ingredientId: null }]);
+  assert.deepEqual(targets, [{ foodId: '2' }]);
   const items = await generateMealSuggestions('1', '8', targets);
   assert.deepEqual(items.map(item => item.id), ['31']);
   assert.equal(calls, 2);

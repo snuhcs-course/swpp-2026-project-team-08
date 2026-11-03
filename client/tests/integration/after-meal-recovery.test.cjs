@@ -161,7 +161,7 @@ test('editing while linking returns to selection and persists the edited food an
   assert.deepEqual(restored.suggestionLinks, [{ suggestionId: '31', foodId: 'rice',
     title: 'Try less', description: 'Keep it separate', servingTip: 'No pressure' }]);
   assert.deepEqual(harness.client.getQueryData(mealKeys.draft('1')).suggestionLinks,
-    restored.suggestionLinks.map(link => ({ ...link, ingredientId: undefined })));
+    restored.suggestionLinks);
 });
 
 test('relinking replaces the previous target and unlinking persists removal', async (t) => {

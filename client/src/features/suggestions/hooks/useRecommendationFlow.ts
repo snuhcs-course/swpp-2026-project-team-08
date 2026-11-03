@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 추천 대상을 음식 단위로 비교
 
 import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
@@ -31,14 +33,14 @@ export function useRecommendationFlow(userId: string, mealId: string) {
   const targetOptions = reviewedSuggestionTargets(source.data ?? null);
   const availableTargets = unGeneratedTargets(targetOptions, items);
   const targetItems = selectedTargets.length ? selectedTargets : items.map((item) => ({
-    foodId: item.foodId, ingredientId: item.ingredientId,
+    foodId: item.foodId,
   }));
   const visibleTargets = targetItems.filter((target, index) => targetItems.findIndex((item) =>
-    item.foodId === target.foodId && item.ingredientId === target.ingredientId) === index);
+    item.foodId === target.foodId) === index);
 
   const selectTargets = async (targets: SuggestionTarget[]) => {
     if (busy.current || !targets.length || targets.some((target) => !availableTargets.some((option) =>
-      option.target.foodId === target.foodId && option.target.ingredientId === target.ingredientId))) return false;
+      option.target.foodId === target.foodId))) return false;
     busy.current = true;
     setGenerationFailed(false);
     setFailed(false);
@@ -51,8 +53,7 @@ export function useRecommendationFlow(userId: string, mealId: string) {
     } catch {
       const refreshed = await suggestions.refetch().catch(() => null);
       const created = refreshed?.data?.some((item) => !oldIds.has(item.id)
-        && targets.some((target) => target.foodId === item.foodId
-          && target.ingredientId === item.ingredientId));
+        && targets.some((target) => target.foodId === item.foodId));
       setGenerationFailed(!created);
       return !!created;
     } finally {

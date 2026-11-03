@@ -1,3 +1,6 @@
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 음식 단위 추천 연결로 재료 연결 제거
+
 import type { Meal as LegacyMeal } from '../../types/meal';
 import type { MealDetail } from '../../types/mealRecord';
 
@@ -25,7 +28,6 @@ export function toLegacyMeal(detail: MealDetail): LegacyMeal {
     suggestionLinks: detail.suggestionLinks.map((link) => ({
       suggestionId: link.suggestionId,
       foodId: link.foodId,
-      ingredientId: link.ingredientId,
       title: link.suggestion.whatToTry,
       description: link.suggestion.whyThisMayHelp,
       servingTip: link.suggestion.servingTip ?? undefined,

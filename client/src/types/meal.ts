@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 추천 연결에서 재료 id 제거
 
 export const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 export const mealSettings = ['home', 'restaurant', 'school', 'others'] as const;
@@ -18,7 +20,6 @@ export type PhotoSource = 'camera' | 'gallery' | 'files';
 export type MealSuggestionLink = {
   suggestionId: string;
   foodId: string;
-  ingredientId?: string | null;
   title: string;
   description: string;
   servingTip?: string;

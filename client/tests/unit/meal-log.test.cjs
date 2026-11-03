@@ -6,7 +6,7 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
-// Changed: 삭제된 mealLogApi 를 검증하던 테스트 제거
+// Changed: 삭제된 mealLogApi 를 검증하던 테스트 제거, 추천 연결을 음식 카드에만 붙이도록 수정
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -107,7 +107,7 @@ test('server meal details drive history search, review filter, and linked sugges
       acceptance: null, ingredients: [{ id: '3', name: 'Egg' }] }],
     review: { foodResults: [{ foodId: '4', outcome: 'tasted', difficulties: [] }],
       ingredientResults: [{ foodId: '4', ingredientId: '3', outcome: 'eaten', difficulties: [] }] },
-    suggestionLinks: [{ id: '10', suggestionId: '20', mealId: '8', foodId: '4', ingredientId: '3',
+    suggestionLinks: [{ id: '10', suggestionId: '20', mealId: '8', foodId: '4',
       suggestion: { whatToTry: 'Try egg', whyThisMayHelp: 'Familiar food', servingTip: 'Small piece' } }],
   };
   const pending = { ...reviewed, id: '9', review: null, suggestionLinks: [] };
@@ -115,8 +115,10 @@ test('server meal details drive history search, review filter, and linked sugges
   assert.deepEqual(filterMealDetails([reviewed, pending], 'egg', true).map((meal) => meal.id), ['9']);
   const cards = foodResponseCardsFromDetail(reviewed);
   assert.deepEqual(cards.map((card) => [card.kind, card.outcome]), [['food', 'tasted'], ['ingredient', 'eaten']]);
-  assert.equal(cards[1].suggestion.title, 'Try egg');
-  assert.equal(cards[1].suggestion.description, 'Familiar food');
+  // 추천 연결은 음식 단위라 음식 카드에만 붙고 재료 카드에는 붙지 않는다.
+  assert.equal(cards[0].suggestion.title, 'Try egg');
+  assert.equal(cards[0].suggestion.description, 'Familiar food');
+  assert.equal(cards[1].suggestion, null);
 });
 
 test('meal history requests use the authenticated v1 collection and delete route', async () => {

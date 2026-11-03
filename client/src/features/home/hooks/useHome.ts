@@ -2,6 +2,8 @@
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 추천의 근거 음식 이름을 원본 식사에서 찾음
 
 import { useCallback, useEffect, useState } from 'react';
 import { useSavedSuggestionsForCheckin } from '../../../data/queries/checkinReferenceQueries';
@@ -29,7 +31,9 @@ export function useHome(profile: ChildProfile) {
   const details = meals.data ?? [];
   const storedMeals = details.map(toLegacyMeal);
   const suggestions = (saved.data ?? []).map((item) => ({
-    id: item.id, title: suggestionTargetName(item), description: item.whatToTry,
+    id: item.id,
+    title: suggestionTargetName(item, details.find((meal) => meal.id === item.mealId)),
+    description: item.whatToTry,
   }));
   return {
     now,

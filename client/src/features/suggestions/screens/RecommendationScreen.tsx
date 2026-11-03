@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 음식 단위 추천 대상과 새 거절 사유 키 적용
 
 import { AppHeader } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
@@ -13,12 +15,13 @@ import { useAuth } from '../../../providers/AuthProvider';
 import type { DismissReason, SuggestionTarget } from '../../../types/suggestionRecord';
 import { suggestionCopyFor, copyFor } from '../../../util/strings';
 import { RecommendationStateCard } from '../components/RecommendationStateCard';
+import { suggestionTargetName } from '../components/GeneratedSuggestionBody';
 import { RecommendationCard } from '../components/RecommendationCard';
 import { ChangeFoodsSheet } from '../components/ChangeFoodsSheet';
 import { useRecommendationFlow } from '../hooks/useRecommendationFlow';
 import { suggestionStyles as s } from './suggestionStyles';
 
-const targetKey = (target: SuggestionTarget) => `${target.foodId}:${target.ingredientId ?? ''}`;
+const targetKey = (target: SuggestionTarget) => target.foodId;
 
 function RecommendationContent({ userId, mealId }: { userId: string; mealId: string }) {
   const { language } = useProfile();
@@ -118,8 +121,7 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
           <View style={[s.stackLayer, s.stackMiddle]} />
           <View style={[s.stackFace, s.dismissCard]}>
             <Text style={s.muted}>
-              {model.targetOptions.find((option) => targetKey(option.target) === targetKey({ foodId: current.foodId, ingredientId: current.ingredientId }))?.name
-                ?? current.foodSnapshot.name}
+              {suggestionTargetName(current, meal)}
             </Text>
             <Text style={s.heading}>{c.dismissTitle}</Text>
             {model.failed && <Text accessibilityRole="alert" style={s.error}>{c.saveFailed}</Text>}
@@ -148,6 +150,7 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
           </View>
         </View> : <RecommendationCard
           key={current.id} item={current} language={language}
+          foodName={suggestionTargetName(current, meal)}
           index={model.items.findIndex((item) => item.id === current.id) + 1}
           total={model.items.length} disabled={model.busy}
           onSave={() => { void model.decide('saved'); }}

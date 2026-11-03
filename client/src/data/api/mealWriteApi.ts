@@ -36,7 +36,6 @@ export function prepareMealWrite(meal: CheckinMeal) {
     suggestionLinks: (meal.suggestionLinks ?? []).map((link) => ({
       suggestionId: link.suggestionId,
       foodId: link.foodId,
-      ingredientId: null,
     })),
   });
   return { body };

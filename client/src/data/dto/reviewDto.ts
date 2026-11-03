@@ -2,7 +2,6 @@
 // Changed: 음식·재료 안의 리뷰 결과와 난이도 사유 문자열 목록 변환으로 재작성
 
 import type {
-  FoodSnapshot,
   MealReview,
   MealReviewDraft,
   ReviewFoodResult,
@@ -11,16 +10,9 @@ import type {
 import { fromDifficultyReason, toDifficultyReason } from './difficultyReasons';
 import { toIngredient } from './ingredientDto';
 import {
-  acceptance, array, choice, cookingMethods, fromApiEnum, id, nullable, object, text, toApiEnum,
+  acceptance, array, cookingMethods, fromApiEnum, id, nullable, object, text, toApiEnum,
 } from './values';
 
-export type FoodSnapshotDto = {
-  name: string;
-  ingredients: { id: string; name: string }[];
-  cooking_method: FoodSnapshot['cookingMethod'];
-  serving_note: string | null;
-  acceptance: number | null;
-};
 export type MealReviewWriteDto = {
   after_photo_uri: string | null;
   food_results: {
@@ -36,17 +28,6 @@ export type MealReviewWriteDto = {
 };
 
 const outcomes = ['eaten', 'tasted', 'untouched', 'unclear'] as const;
-
-export function toFoodSnapshot(value: unknown): FoodSnapshot {
-  const dto = object(value);
-  return {
-    name: text(dto.name),
-    ingredients: array(dto.ingredients, toIngredient),
-    cookingMethod: nullable(dto.cooking_method, (method) => choice(method, cookingMethods)),
-    servingNote: nullable(dto.serving_note, text),
-    acceptance: acceptance(dto.acceptance),
-  };
-}
 
 const reviewOutcome = (value: unknown) => nullable(value, (outcome) => fromApiEnum(outcome, outcomes));
 

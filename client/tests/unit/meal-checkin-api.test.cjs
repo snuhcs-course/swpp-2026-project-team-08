@@ -19,6 +19,8 @@ const { listSavedSuggestions } = require('../../src/data/api/savedSuggestionList
 
 const { listMealDetails } = require('../../src/data/api/mealReadApi.ts');
 
+const { suggestionResponse } = require('../fixtures/server-suggestion.cjs');
+
 const meal = {
   id: 'local-draft', childId: '1', mealDate: '2026-10-21', mealType: 'lunch',
   setting: 'home', photo: null, savedAt: '2026-10-21T00:00:00Z',
@@ -83,14 +85,15 @@ test('meal write rejects a response whose foods do not match the request', async
 test('saved suggestions and meal details use the new collection routes', async () => {
   request = async (path) => {
     assert.equal(path, '/api/v1/suggestions');
-    return [{
-      id: '301', user_id: '1', meal_id: '500', food_id: '1', ingredient_id: null,
-      food_snapshot: { name: 'Potato', ingredients: [{ id: '212', name: 'Potato' }], cooking_method: null, serving_note: null, acceptance: null },
-      what_to_try: 'Try a small serving', why_this_may_help: 'Familiar food', serving_tip: null,
-      status: 'saved', dismiss_reasons: [], saved_at: '2026-10-21T08:00:00Z', created_at: '2026-10-21T07:00:00Z',
-    }];
+    return [suggestionResponse({
+      id: '301', meal_id: '500', origin_food_id: '1',
+      what_to_try: 'Try a small serving', why_this_may_help: 'Familiar food',
+      status: 'SAVED', saved_at: '2026-10-21T08:00:00Z', created_at: '2026-10-21T07:00:00Z',
+    }), suggestionResponse({ id: '302', meal_id: '500', origin_food_id: '1', status: 'TRIED' })];
   };
-  assert.equal((await listSavedSuggestions())[0].foodSnapshot.name, 'Potato');
+  const saved = await listSavedSuggestions();
+  assert.equal(saved[0].whatToTry, 'Try a small serving');
+  assert.deepEqual(saved.map(item => item.status), ['saved', 'tried']);
   request = async (path) => {
     assert.equal(path, '/api/v1/meals');
     return [{ id: '500', user_id: '1', meal_date: '2026-10-20', meal_type: 'LUNCH', setting: 'HOME', before_photo_uri: null, after_photo_uri: null, saved_at: '2026-10-20T08:00:00Z', foods: [{ id: '1', meal_id: '500', name: 'Potato', ingredients: [{ id: '212', name: 'Potato', outcome: null, difficulty_reasons: [] }], cooking_method: null, serving_note: null, acceptance: null, outcome: null, difficulty_reasons: [], recommendation_tries: [] }] }];

@@ -1,5 +1,7 @@
 # AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
 # Changed: Run every client test against the disposable API
+# AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+# Changed: 삭제된 재료 카탈로그용 시드 제거
 """Run the client suite against a real HTTP API backed by disposable PostgreSQL.
 
 Run from server/: uv run python -m tests.run_client_integration
@@ -15,9 +17,9 @@ from pathlib import Path
 import uvicorn
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from app import models  # noqa: F401  (create_all 이 모든 테이블을 만들도록 모델을 등록한다)
 from app.core.database import Base, get_session
 from app.main import create_app
-from app.models import Ingredient
 
 
 async def docker(*arguments: str) -> str:
@@ -80,8 +82,6 @@ async def run_suite(database_url: str) -> int:
     try:
         async with engine.begin() as connection:
             await connection.run_sync(Base.metadata.create_all)
-        async with sessions.begin() as session:
-            session.add(Ingredient(id=1, name="Egg"))
 
         with socket.socket() as listener:
             listener.bind(("127.0.0.1", 0))

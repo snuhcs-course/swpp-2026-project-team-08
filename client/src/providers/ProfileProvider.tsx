@@ -1,10 +1,11 @@
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 언어 전환을 유지하고 시작 언어를 영어로 설정
 
-import { getLocales } from 'expo-localization';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { fromOnboardingResponse, readOnboarding, writeOnboarding } from '../data/api/onboardingApi';
-import { readLanguage, saveLanguage } from '../data/storage/languageStorage';
+import { saveLanguage } from '../data/storage/languageStorage';
 import { ApiError } from '../data/network/apiClient';
 import { clearProfile, saveProfile } from '../data/storage/profileStorage';
 import type { ChildProfile, Language } from '../types/profile';
@@ -22,10 +23,6 @@ type ProfileContextValue = {
 
 const ProfileContext = createContext<ProfileContextValue | null>(null);
 
-function deviceLanguage(): Language {
-  return getLocales()[0]?.languageCode === 'ko' ? 'ko' : 'en';
-}
-
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const auth = useAuth();
   const { signOut } = auth;
@@ -34,7 +31,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [loadedStatus, setLoadedStatus] = useState<ProfileContextValue['status']>('loading');
   const [storedProfile, setProfile] = useState<ChildProfile | null>(null);
   const [loadedUserId, setLoadedUserId] = useState<string | null>(null);
-  const [language, setLanguage] = useState<Language>(deviceLanguage);
+  const [language, setLanguage] = useState<Language>('en');
   const languageQueue = useRef<Promise<void>>(Promise.resolve());
   const mounted = useRef(false);
   const loadSequence = useRef(0);
@@ -44,8 +41,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const sequence = ++loadSequence.current;
     setLoadedStatus('loading');
     try {
-      const storedLanguage = await readLanguage();
-      if (storedLanguage && mounted.current && sequence === loadSequence.current) setLanguage(storedLanguage);
       if (!user) {
         if (mounted.current && sequence === loadSequence.current) {
           setProfile(null);

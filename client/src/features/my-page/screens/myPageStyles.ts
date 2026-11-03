@@ -2,6 +2,8 @@
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
@@ -9,6 +11,7 @@ import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
 
 export const styles = StyleSheet.create({
+  languageButton: { minHeight: 44, minWidth: 44, justifyContent: 'center', alignItems: 'center' },
   root: { flex: 1, backgroundColor: colors.homeBackground },
   body: { ...topBarStyles.content },
   content: { paddingBottom: 28, gap: 12 },

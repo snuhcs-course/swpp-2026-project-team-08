@@ -7,7 +7,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 추천 카드의 재료 이름 표시 제거
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 추천 선택 모달의 독립적인 안전 여백 측정
+// Changed: 추천 모달 안전 여백 및 음식이 있을 때만 추천 연결 표시
 
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { useState } from "react";
@@ -227,7 +227,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
         <Text style={styles.emptyFoodText}>{m.emptyFoodBody}</Text>
       )}
       <View style={[styles.foodList, !d.foods.length && { flex: 1 }]}>{d.foods.map((food) => card(food))}</View>
-      <Pressable
+      {d.foods.length > 0 && <Pressable
         accessibilityRole="button"
         onPress={p.suggestionLinking.onOpen}
         style={styles.suggestionEntry}
@@ -236,7 +236,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
           {a.previousSuggestion}
         </Text>
         <UiAssetIcon name="abc-open" />
-      </Pressable>
+      </Pressable>}
       <Modal
         visible={linkStep !== 0}
         animationType="slide"

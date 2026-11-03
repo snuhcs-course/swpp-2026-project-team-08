@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
 
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator } from 'react-native';
@@ -28,7 +30,6 @@ export default function MealCheckinEntry() {
       startAfterMealId={startAfterMealId}
       tryingSuggestionId={tryingSuggestionId}
       language={model.language}
-      onLanguage={() => model.changeLanguage(model.language === 'ko' ? 'en' : 'ko')}
       afterMealIntent={intent === 'after-meal'}
     />
   );

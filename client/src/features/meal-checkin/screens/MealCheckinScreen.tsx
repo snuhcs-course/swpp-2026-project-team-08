@@ -6,6 +6,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
 
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -25,14 +27,12 @@ import { useMealCheckinInputs } from '../hooks/useMealCheckinInputs';
 export function MealCheckinScreen({
   childId,
   language,
-  onLanguage,
   afterMealIntent,
   startAfterMealId,
   tryingSuggestionId,
 }: {
   childId: string;
   language: Language;
-  onLanguage: () => Promise<void>;
   afterMealIntent: boolean;
   startAfterMealId?: string;
   tryingSuggestionId?: string;
@@ -41,7 +41,6 @@ export function MealCheckinScreen({
   const saved = useMealSuggestions(childId);
   const model = useMealCheckin(childId, startAfterMealId, !!tryingSuggestionId, saved.suggestions, tryingSuggestionId);
   const [trying, setTrying] = useState(true);
-  const [languageError, setLanguageError] = useState(false);
   const inputs = useMealCheckinInputs({
     draft: model.draft,
     onUpdate: model.update,
@@ -132,7 +131,6 @@ export function MealCheckinScreen({
       picking={model.picking}
       saving={model.saving}
       sheet={model.sheet}
-      languageError={languageError}
       dateInput={inputs.date}
       foodInput={inputs.food}
       onUpdate={model.update}
@@ -166,12 +164,6 @@ export function MealCheckinScreen({
       onSheet={model.setSheet}
       onRetryDraft={() => {
         void model.flush();
-      }}
-      onLanguage={() => {
-        void onLanguage().then(
-          () => setLanguageError(false),
-          () => setLanguageError(true),
-        );
       }}
     />
   );

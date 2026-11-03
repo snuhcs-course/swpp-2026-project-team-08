@@ -5,6 +5,8 @@
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
 
 import type { FoodItem, MealDraft, MealStep, PhotoSource } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
@@ -47,7 +49,6 @@ export type MealCheckinViewProps = {
   picking: boolean;
   saving: boolean;
   sheet: 'privacy' | null;
-  languageError: boolean;
   dateInput: DateInput;
   foodInput: FoodInput;
   onUpdate: (value: Partial<MealDraft>) => void;
@@ -66,5 +67,4 @@ export type MealCheckinViewProps = {
   onHome: () => void;
   onSheet: (sheet: 'privacy' | null) => void;
   onRetryDraft: () => void;
-  onLanguage: () => void;
 };

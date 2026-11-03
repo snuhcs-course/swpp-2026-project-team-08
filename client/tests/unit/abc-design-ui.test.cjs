@@ -7,11 +7,11 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 선택지 id·채식 단계 기준으로 테스트 수정, 카탈로그 검색 테스트 교체
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 추천 모달 안전 여백 및 추천 연결 표시 및 MyPage 언어 버튼 검증
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
-// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 추천 모달의 독립적인 안전 여백 컨테이너 검증
 
 const { React, act, renderHook } = require("../helpers/react-harness.cjs");
 
@@ -240,7 +240,7 @@ test("photo-free empty list has only entry guidance and the full-width add actio
   );
 });
 
-test("photo empty list has plain guidance and preserves the suggestion entry", () => {
+test("photo empty list has guidance but hides the suggestion entry", () => {
   const html = renderToStaticMarkup(
     React.createElement(MealFoodsStepView, {
       p: {
@@ -258,7 +258,7 @@ test("photo empty list has plain guidance and preserves the suggestion entry", (
     }),
   );
   assert.match(html, /No foods added yet/);
-  assert.match(html, /Are you trying a previous suggestion/);
+  assert.doesNotMatch(html, /Are you trying a previous suggestion/);
 });
 
 test("after-meal photo choice has no example photo, analysis action, or inferred results", () => {
@@ -801,4 +801,16 @@ test("after-meal photo footer preserves navigation, photo validation, and draft 
   }
   await act(async () => primary().props.onPress());
   assert.deepEqual(calls, ["compare", "manual", "exit", "retry", "manual"]);
+});
+
+ test('MyPage header exposes the language toggle in both languages', () => {
+  const { MyPageView } = require('../../src/features/my-page/screens/MyPageView.tsx');
+  for (const [language, label] of [['en', '한국어'], ['ko', 'English']]) {
+    const html = renderToStaticMarkup(React.createElement(MyPageView, {
+      language, childName: 'Sam', ageLabel: '2–3', caregiver: 'Parent',
+      languageError: false, changingLanguage: false, confirm: null,
+      onLanguage: () => {},
+    }));
+    assert.ok(html.includes(`aria-label="${label}"`));
+  }
 });

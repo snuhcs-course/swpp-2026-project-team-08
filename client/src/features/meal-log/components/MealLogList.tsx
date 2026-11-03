@@ -1,13 +1,13 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Measured sheet filters with minimum-height mode and no refresh gestures
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 시트 목록의 내비게이션 보정 여백 제거
 
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
-import { bottomNavigationHeight } from '../../../components/BottomNavigation';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
@@ -35,7 +35,6 @@ type Props = {
 };
 
 export function MealLogList(p: Props) {
-  const insets = useSafeAreaInsets();
   const s = copyFor(p.language);
   const m = s.mealLog;
   const [searchFocused, setSearchFocused] = useState(false);
@@ -47,10 +46,7 @@ export function MealLogList(p: Props) {
     <ScrollView
       testID="meal-history-list"
       style={styles.root}
-      contentContainerStyle={[styles.sheetContent, Platform.OS === 'ios' && {
-        paddingBottom: styles.sheetContent.paddingBottom
-          + bottomNavigationHeight(insets.bottom) - insets.bottom,
-      }]}
+      contentContainerStyle={styles.sheetContent}
       contentInsetAdjustmentBehavior="automatic"
       stickyHeaderIndices={[0]}
       scrollEnabled={!p.minimum}

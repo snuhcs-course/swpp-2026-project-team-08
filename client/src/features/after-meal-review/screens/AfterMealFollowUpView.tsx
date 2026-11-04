@@ -3,6 +3,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: 식후 검토 글자 확대 및 완료 버튼 디자인 통일
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
 
 import { MealSavedPanel } from '../../../components/MealSavedPanel';
 import { displayDate } from '../../../util/date';
@@ -22,7 +24,8 @@ export function AfterMealFollowUpView({ p }: { p: Props }) {
     date={`${s.mealCheckin.types[p.meal.mealType]}, ${displayDate(p.meal.mealDate, p.language)}`}
     foodNames={p.meal.foods.map((food) => food.name).join(', ')}
     actions={<>
-      <MealFlowButton label={a.viewMealSuggestions} onPress={p.onRecommend} />
+      {p.draft.outcomes.some(food => food.decision.confirmed && food.decision.confirmed !== 'eaten') &&
+        <MealFlowButton label={a.viewMealSuggestions} onPress={p.onRecommend} />}
       <MealTextButton label={a.returnHome} onPress={p.onHome} />
     </>} />;
 }

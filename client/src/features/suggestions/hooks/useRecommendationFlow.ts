@@ -7,6 +7,8 @@
 // Changed: 추천 대상을 음식 단위로 비교
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 자동 생성 로직을 음식 단위 추천 위에 반영
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
@@ -34,14 +36,15 @@ export function useRecommendationFlow(userId: string, mealId: string) {
     void refetchSuggestions();
   }, [refetchSource, refetchSuggestions]));
 
-  const allItems = useMemo(() => (suggestions.data ?? []), [suggestions.data]);
+  const targetOptions = useMemo(() => reviewedSuggestionTargets(source.data ?? null), [source.data]);
+  const allItems = useMemo(() => (suggestions.data ?? []).filter(item =>
+    targetOptions.some(option => option.target.foodId === item.foodId)), [suggestions.data, targetOptions]);
   const items = useMemo(() => selectedTargets.length
     ? allItems.filter(item => selectedTargets.some(target => target.foodId === item.foodId))
     : allItems, [allItems, selectedTargets]);
   const current = items.find((item) => item.status === 'pending') ?? null;
-  const targetOptions = useMemo(() => reviewedSuggestionTargets(source.data ?? null), [source.data]);
   const availableTargets = useMemo(() => unGeneratedTargets(targetOptions, allItems), [targetOptions, allItems]);
-  const foodCount = source.data?.foods.length ?? 0;
+  const foodCount = targetOptions.length;
   const autoSelect = !!source.data?.review && foodCount > 0 && foodCount <= 3;
   const awaitingAutomaticGeneration = autoSelect && source.isSuccess && suggestions.isSuccess
     && availableTargets.length > 0 && selectedTargets.length === 0 && !generationFailed;

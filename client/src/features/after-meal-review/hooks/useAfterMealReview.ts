@@ -4,6 +4,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: Preserve ingredient difficulty drafts across food edits and removal
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -15,7 +17,7 @@ import { newFood } from '../../../rules/foodDraft';
 import type { AfterMealReviewDraft, DifficultyCategory, Outcome, ReviewStep } from '../../../types/afterMealReview';
 import type { FoodItem, PhotoSource } from '../../../types/meal';
 import type { ChildProfile } from '../../../types/profile';
-import { addDifficulty, allOutcomesConfirmed, clearOutcomeSuggestions, canAddDifficulty, newReviewDraft, normalizeReviewStep, reconcileDifficultyEntries, reconcileOutcomes, reviewDraftFromServer, reviewFromDraft, setOutcome, toggleIngredient } from '../rules';
+import { difficultyTargets, addDifficulty, allOutcomesConfirmed, clearOutcomeSuggestions, canAddDifficulty, newReviewDraft, normalizeReviewStep, reconcileDifficultyEntries, reconcileOutcomes, reviewDraftFromServer, reviewFromDraft, setOutcome, toggleIngredient } from '../rules';
 
 type SaveStatus = 'saving' | 'saved' | 'error';
 
@@ -70,6 +72,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
           outcomes: clearOutcomeSuggestions(reconcileOutcomes(base.outcomes, meal.foods)),
           comparisonMethod: 'manual',
         };
+        if (next.step === 'difficulties' && !difficultyTargets(meal.foods, next.outcomes).length) next.step = 'outcomes';
         skipFirstSave.current = true;
         current.current = next;
         setDraft(next);

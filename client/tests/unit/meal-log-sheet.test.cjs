@@ -1,7 +1,7 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Verify three sheet heights, collapsed filters, navigation, and meal actions
-// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: 시트 위 내비게이션 오버레이와 시트 높이 검증
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 시트 높이·내비게이션 및 스택 터치 좌표 배치 검증
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -27,7 +27,7 @@ mockModules(name => {
     TextInput: primitive('input'),
     ScrollView: primitive('section'), ActivityIndicator: primitive('progress'),
     RefreshControl: () => null,
-    StyleSheet: { create: styles => styles },
+    StyleSheet: { create: styles => styles, absoluteFill: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } },
     useWindowDimensions: () => ({ height: 844, width: 390 }),
   };
   if (name === 'react-native-safe-area-context') return {
@@ -88,6 +88,11 @@ test('Android uses its stack height and long calendars retain a usable compact s
   const props = { children: 'Calendar', sheet: 'Meals', controlsHeight: 900, filtersHeight: 72, onMinimumChange: noop, active: true, onBack: noop };
   const hook = await renderHook(t, input => MealLogSheetLayout(input), { props });
   await act(async () => hook.current.props.onLayout({ nativeEvent: { layout: { height: 700 } } }));
+  // Both native screens must overlap in Yoga as well as in Android's ScreenStack.
+  // Otherwise the sheet's measured press region includes the calendar's full height.
+  for (const screen of hook.current.props.children.props.children) {
+    assert.deepEqual(screen.props.style, { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 });
+  }
   assert.equal(sheetScreen(hook.current).props.sheetAllowedDetents[0], (28 + 72 + 12) / 700);
   assert.equal(sheetScreen(hook.current).props.sheetAllowedDetents[1], 270 / 700);
 });

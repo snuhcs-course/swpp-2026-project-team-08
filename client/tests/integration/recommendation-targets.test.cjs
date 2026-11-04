@@ -3,6 +3,8 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 서버 식사 상세·음식 단위 추천 응답 모양으로 수정
 
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 음식 단위 추천 요청 기대값 반영
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -310,7 +312,7 @@ test("adding a new target reuses an existing card and only generates the missing
       true,
     );
   });
-  assert.deepEqual(posts, [[{ food_id: "3", ingredient_id: null }]]);
+  assert.deepEqual(posts, [[{ food_id: "3" }]]);
   assert.deepEqual(h.current.items.map((item) => item.foodId).sort(), [
     "2",
     "3",

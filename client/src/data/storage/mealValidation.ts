@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 입력 없는 첫 단계 식사 초안 저장 및 복원 방지
 
 import {
   mealSettings,
@@ -35,6 +37,7 @@ export function isDraft(v: unknown, childId: string): v is MealDraft {
     typeof v.id === 'string' &&
     v.childId === childId &&
     validDate(v.mealDate) &&
+    (v.initialMealDate === undefined || validDate(v.initialMealDate)) &&
     (v.mealType === null || mealTypes.includes(v.mealType as never)) &&
     (v.setting === null || mealSettings.includes(v.setting as never)) &&
     mealSteps.includes(v.step as never) &&

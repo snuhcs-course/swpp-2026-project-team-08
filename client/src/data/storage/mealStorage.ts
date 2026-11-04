@@ -2,7 +2,10 @@
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 입력 없는 첫 단계 식사 초안 저장 및 복원 방지
 
+import { hasMealDraftInput } from '../../rules/mealDraft';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { FoodItem, Meal, MealDraft } from '../../types/meal';
 import { isDraft, isMeal } from './mealValidation';
@@ -54,6 +57,7 @@ export async function readMealDraft(
   if (!raw) return null;
   const value: unknown = normalizeStoredMeal(JSON.parse(raw));
   if (!isDraft(value, childId)) throw new Error('Invalid meal draft');
+  if (!hasMealDraftInput(value)) return null;
   // Preserve saved receipts and all user-confirmed foods. Old photo fixtures must
   // never reappear as foods the caregiver entered.
   if (value.step === 'complete') return value;
@@ -70,6 +74,10 @@ export async function readMealDraft(
 export const saveMealDraft = (draft: MealDraft) =>
   queued(draft.childId, async () => {
     if (!isDraft(draft, draft.childId)) throw new Error('Invalid meal draft');
+    if (!hasMealDraftInput(draft)) {
+      await AsyncStorage.removeItem(draftKey(draft.childId));
+      return;
+    }
     await AsyncStorage.setItem(draftKey(draft.childId), JSON.stringify(draft));
   });
 export async function readMeals(childId: string): Promise<Meal[]> {

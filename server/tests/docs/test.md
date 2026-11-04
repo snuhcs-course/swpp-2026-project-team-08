@@ -1,6 +1,6 @@
 
 <!-- AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung -->
-<!-- Changed: 테스트 구조 유지 및 최신 main 기준 반영 -->
+<!-- Changed: 테스트 구조 정리 및 전용 서버 실행 도구 안내 제거 -->
 
 # Backend 테스트 기준
 
@@ -22,7 +22,6 @@
 | `helpers/` | 로그인 준비와 가짜 LLM |
 | `fixtures/` | 프로필·식사·리뷰 요청과 추천 응답 데이터 |
 | `docs/test.md`·`docs/coverage.md` | 테스트 작성 기준과 커버리지 측정 기준 |
-| `run_client_integration.py` | 테스트용 PostgreSQL·HTTP 서버로 클라이언트 검사를 실행하는 도구 |
 
 ### 종류 구분
 

@@ -2,6 +2,8 @@
 <!-- Changed: 화면 디자인 및 식사 흐름 개선 -->
 <!-- AI-generated with GPT-6, 2026-10-25, reviewed by Haechan Jung -->
 <!-- Changed: 문서 역할 정리 -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim -->
+<!-- Changed: 추천 입력에 재료별 결과와 아이가 잘 먹는 음식을 반영한 현재 구현 설명 -->
 
 # 추천 정책
 
@@ -21,8 +23,16 @@
 
 현재 [`validation.py`](../app/features/suggestions/validation.py)는 요청 음식의 누락·중복,
 필수 문구, 재료 목록, 알 수 없는 재료와 제한 충돌을 검사한다.
-[`workflow/prompts.py`](../app/features/suggestions/workflow/prompts.py)는 허용 재료 조회와
-음식별 제안 하나 생성을 지시한다. 현재 사용자 프롬프트는 음식 ID와 이름을 전달한다.
+[`workflow/prompts.py`](../app/features/suggestions/workflow/prompts.py)는 음식별 제안 하나 생성을
+지시한다. 사용자 프롬프트는 다음을 전달한다.
+
+- 요청한 음식의 이름·재료·조리 방법과 식후 결과(`outcome`), 어려워한 이유(`difficulty_reasons`),
+  따로 리뷰한 재료의 결과와 이유. 제안은 주어진 이유 중 하나 이상을 직접 줄이는 변화를 담는다.
+- 아이가 잘 먹는다고 기록된 음식([`familiar.py`](../app/features/suggestions/familiar.py)):
+  프로필의 safe food(기록된 조리·제공 형태 포함)와 과거 식사에서 `EATEN`으로 리뷰된 음식(최근 것부터,
+  같은 이름은 한 번만, 이번에 제안할 음식은 제외). 새 제안을 익숙한 것과 잇는 근거로만 쓰며,
+  이 음식의 재료라도 쓸 수 있는 재료 목록에 없으면 제안에 쓰지 않는다.
+- 아이가 쓸 수 있는 재료 목록.
 
 프로필·식후 결과 전체를 활용한 근거 검증, 조리·제품별 불확실성 판단,
 저장된 제안의 안전성 재검증은 위 두 파일의 검사만으로 충족 여부를 보장할 수 없다.

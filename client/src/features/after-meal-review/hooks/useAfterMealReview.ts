@@ -2,6 +2,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Preserve ingredient difficulty drafts across food edits and removal
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -13,7 +15,7 @@ import { newFood } from '../../../rules/foodDraft';
 import type { AfterMealReviewDraft, DifficultyCategory, Outcome, ReviewStep } from '../../../types/afterMealReview';
 import type { FoodItem, PhotoSource } from '../../../types/meal';
 import type { ChildProfile } from '../../../types/profile';
-import { addDifficulty, allOutcomesConfirmed, clearOutcomeSuggestions, canAddDifficulty, newReviewDraft, normalizeReviewStep, reconcileOutcomes, reviewDraftFromServer, reviewFromDraft, setOutcome, toggleIngredient } from '../rules';
+import { addDifficulty, allOutcomesConfirmed, clearOutcomeSuggestions, canAddDifficulty, newReviewDraft, normalizeReviewStep, reconcileDifficultyEntries, reconcileOutcomes, reviewDraftFromServer, reviewFromDraft, setOutcome, toggleIngredient } from '../rules';
 
 type SaveStatus = 'saving' | 'saved' | 'error';
 
@@ -172,26 +174,26 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     if (value) update({ outcomes: setOutcome(value.outcomes, foodId, outcome, ingredientKey) });
   };
 
-  const setDifficultyInput = (foodId: string, patch: Partial<{ category: DifficultyCategory | null; value: string; note: string; subcategory?: string }>) => {
+  const setDifficultyInput = (targetId: string, patch: Partial<{ category: DifficultyCategory | null; value: string; note: string; subcategory?: string }>) => {
     const value = current.current;
     if (!value) return;
-    const old = value.difficultyInputs[foodId] ?? { category: null, value: '', note: '' };
-    update({ difficultyInputs: { ...value.difficultyInputs, [foodId]: { ...old, ...patch } } });
+    const old = value.difficultyInputs[targetId] ?? { category: null, value: '', note: '' };
+    update({ difficultyInputs: { ...value.difficultyInputs, [targetId]: { ...old, ...patch } } });
   };
-  const addDifficultyTag = (foodId: string) => {
+  const addDifficultyTag = (targetId: string) => {
     const value = current.current;
-    const input = value?.difficultyInputs[foodId];
+    const input = value?.difficultyInputs[targetId];
     if (!value || !input || !canAddDifficulty(input.category, input.value, input.note, input.subcategory)) return;
-    const currentTags = value.difficulties[foodId] ?? [];
+    const currentTags = value.difficulties[targetId] ?? [];
     update({
-      difficulties: { ...value.difficulties, [foodId]: addDifficulty(currentTags, input.category!, input.value, input.note, input.subcategory) },
-      difficultyInputs: { ...value.difficultyInputs, [foodId]: { category: input.category, value: '', note: '', subcategory: '' } },
+      difficulties: { ...value.difficulties, [targetId]: addDifficulty(currentTags, input.category!, input.value, input.note, input.subcategory) },
+      difficultyInputs: { ...value.difficultyInputs, [targetId]: { category: input.category, value: '', note: '', subcategory: '' } },
     });
   };
-  const removeDifficultyTag = (foodId: string, tagId: string) => {
+  const removeDifficultyTag = (targetId: string, tagId: string) => {
     const value = current.current;
     if (!value) return;
-    update({ difficulties: { ...value.difficulties, [foodId]: (value.difficulties[foodId] ?? []).filter((tag) => tag.id !== tagId) } });
+    update({ difficulties: { ...value.difficulties, [targetId]: (value.difficulties[targetId] ?? []).filter((tag) => tag.id !== tagId) } });
   };
   const editFood = (food?: FoodItem) => {
     const item = food ?? newFood();
@@ -210,11 +212,15 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
       const saved = await updateMealMutation.mutateAsync({ childId: profile.id, mealId, foods });
       const savedMeal = saved.meal;
       const value = current.current;
-      if (value) update({
-        outcomes: reconcileOutcomes(value.outcomes.map((outcome) => ({ ...outcome, foodId: saved.foodIdMap.get(outcome.foodId) ?? outcome.foodId })), savedMeal.foods),
-        difficulties: Object.fromEntries(savedMeal.foods.map((food) => [food.id, value.difficulties[food.id] ?? []])),
-        difficultyInputs: Object.fromEntries(savedMeal.foods.map((food) => [food.id, value.difficultyInputs[food.id] ?? { category: null, value: '', note: '' }])),
-      });
+      if (value) {
+        const outcomes = reconcileOutcomes(value.outcomes.map(outcome => ({
+          ...outcome, foodId: saved.foodIdMap.get(outcome.foodId) ?? outcome.foodId,
+        })), savedMeal.foods);
+        update({ outcomes,
+          difficulties: reconcileDifficultyEntries(value.difficulties, outcomes),
+          difficultyInputs: reconcileDifficultyEntries(value.difficultyInputs, outcomes),
+        });
+      }
       setEditingFood(null);
     } catch { setSaveStatus('error'); }
     finally { editorBusy.current = false; }
@@ -225,11 +231,13 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     try {
       const savedMeal = (await updateMealMutation.mutateAsync({ childId: profile.id, mealId, foods: meal.foods.filter((food) => food.id !== foodId) })).meal;
       const value = current.current;
-      if (value) update({
-        outcomes: reconcileOutcomes(value.outcomes, savedMeal.foods),
-        difficulties: Object.fromEntries(savedMeal.foods.map((food) => [food.id, value.difficulties[food.id] ?? []])),
-        difficultyInputs: Object.fromEntries(savedMeal.foods.map((food) => [food.id, value.difficultyInputs[food.id] ?? { category: null, value: '', note: '' }])),
-      });
+      if (value) {
+        const outcomes = reconcileOutcomes(value.outcomes, savedMeal.foods);
+        update({ outcomes,
+          difficulties: reconcileDifficultyEntries(value.difficulties, outcomes),
+          difficultyInputs: reconcileDifficultyEntries(value.difficultyInputs, outcomes),
+        });
+      }
     } catch { setSaveStatus('error'); }
     finally { editorBusy.current = false; }
   };

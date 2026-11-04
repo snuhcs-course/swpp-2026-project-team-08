@@ -1,10 +1,12 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: Verify onboarding, navigation, meal flow actions, and step progress
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: Verify meal flow actions and shared three-step after-meal progress
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 선택지 id·채식 단계 기준으로 테스트 수정, 카탈로그 검색 테스트 교체
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -77,7 +79,7 @@ mockModules((name) => {
       useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: bottomInset, left: 0 }),
     };
   if (name === "expo-image") return { Image: primitive("img") };
-  if (name === "@expo/vector-icons") return { Feather: primitive("i") };
+  if (name === "@expo/vector-icons") return { Feather: primitive("i"), Ionicons: primitive("i") };
   if (name.startsWith("@expo/vector-icons/")) return primitive("i");
   return undefined;
 });
@@ -362,8 +364,8 @@ test("onboarding review has the four summary cards without changing profile answ
   } = require("../../src/features/onboarding/screens/reviewRows.ts");
   const draft = {
     ...emptyDraft(),
-    allergies: ["peanut"],
-    restrictions: ["gluten-free"],
+    allergies: ["PEANUTS"],
+    restrictions: ["GLUTEN_FREE"],
   };
   const before = JSON.stringify(draft);
   const rows = reviewRows(draft, "en");
@@ -435,24 +437,20 @@ test("account keeps the small password helper separate from the error", () => {
   assert.doesNotMatch(invalid, /Use at least 8 characters/);
 });
 
-test("Figma other-food catalog examples are searchable in both supported languages", () => {
+test("onboarding option ids equal the server enum values without their category", () => {
   const { optionsFor } = require("../../src/util/strings.ts");
-  assert.deepEqual(
-    optionsFor("allergyCatalog", "en")
-      .filter((o) => o.label.toLowerCase().includes("lupin"))
-      .map((o) => o.label),
-    ["Lupin", "Lupin flour", "Lupin seed"],
-  );
-  assert.deepEqual(
-    optionsFor("familyCatalog", "en")
-      .filter((o) => o.label.toLowerCase().includes("plant"))
-      .map((o) => o.label),
-    ["Plant-based milk", "Plant-based yogurt", "Plant-based cheese"],
-  );
-  assert.equal(
-    optionsFor("allergyCatalog", "ko").find((o) => o.id === "lupin").label,
-    "루핀",
-  );
+  const ids = (group) => optionsFor(group, "en").map((o) => o.id);
+  assert.deepEqual(ids("age"), [
+    "UNDER_2", "AGE_2_3", "AGE_4_5", "AGE_6_8", "AGE_9_12", "AGE_13_PLUS",
+  ]);
+  assert.deepEqual(ids("allergies"), [
+    "PEANUTS", "TREE_NUTS", "MILK_DAIRY", "EGGS", "SOY", "WHEAT", "FISH", "SHELLFISH", "SESAME",
+  ]);
+  assert.deepEqual(ids("restrictions"), ["GLUTEN_FREE", "LACTOSE_FREE", "CASEIN_FREE"]);
+  assert.deepEqual(ids("vegetarian"), [
+    "DAIRY", "EGGS", "SEAFOOD", "POULTRY", "RED_MEAT", "LEGUMES_SOY", "NUTS_SEEDS",
+  ]);
+  assert.equal(optionsFor("allergies", "ko").find((o) => o.id === "EGGS").label, "달걀");
 });
 
 test("ongoing meal entry shows real draft metadata and only an explicit continue action", () => {
@@ -656,20 +654,23 @@ function findElement(node, predicate) {
   return null;
 }
 
-function assertSegmentProgress(root, filled) {
+function assertSegmentProgress(root, filled, total = 5) {
+  const { ProgressBar } = require('../../src/components/ProgressBar.tsx');
+  const shared = findElement(root, node => node.type === ProgressBar);
+  if (shared) root = ProgressBar(shared.props);
   const bar = findElement(root, (node) => node.props?.accessibilityRole === "progressbar");
   if (filled === null) {
     assert.equal(bar, null);
     return;
   }
   assert.ok(bar);
-  assert.deepEqual(bar.props.accessibilityValue, { min: 1, max: 5, now: filled });
+  assert.deepEqual(bar.props.accessibilityValue, { min: 1, max: total, now: filled });
   const container = document.createElement("div");
   container.innerHTML = renderToStaticMarkup(bar);
   const segments = Array.from(container.firstElementChild.children);
   const active = document.createElement("div");
   active.style.backgroundColor = require("../../src/util/colors.ts").colors.homePrimary;
-  assert.equal(segments.length, 5);
+  assert.equal(segments.length, total);
   assert.equal(segments.filter((segment) => segment.style.backgroundColor === active.style.backgroundColor).length, filled);
 }
 
@@ -686,23 +687,24 @@ test("before-meal segments follow current screens forward, backward, and without
   }
 });
 
-test("after-meal segments advance to outcomes and stay correct on optional and skipped screens", async (t) => {
+test("after-meal progress groups photos, outcomes and difficulties into three steps", async (t) => {
   const { AfterMealReviewView } = require("../../src/features/after-meal-review/screens/AfterMealReviewView.tsx");
   const { ReviewProgressHeader } = require("../../src/features/after-meal-review/components/ReviewProgressHeader.tsx");
+  const { OutcomesHeader } = require("../../src/features/after-meal-review/components/OutcomesHeader.tsx");
   const base = {
     language: "en", draft: { step: "photo" }, saveStatus: "saved",
     meal: { photo: null, foods: [], mealDate: "2026-10-27", mealType: "lunch", setting: "home" },
   };
   const harness = await renderHook(t, (props) => AfterMealReviewView(props), { props: base });
   for (const [step, filled] of [
-    ["photo", 1], ["preview", 2], ["compare", 3], ["outcomes", 4],
-    ["difficulties", null], ["complete", 5], ["outcomes", 4], ["preview", 2],
-    ["outcomes", 4], ["photo", 1], ["outcomes", 4],
+    ["photo", 1], ["preview", 1], ["compare", 1], ["outcomes", 2],
+    ["difficulties", 3], ["complete", 3], ["outcomes", 2], ["preview", 1],
+    ["outcomes", 2], ["photo", 1], ["outcomes", 2],
   ]) {
     await harness.rerender({ ...base, draft: { step } });
-    const header = findElement(harness.current, (node) => node.type === ReviewProgressHeader);
+    const header = findElement(harness.current, (node) => node.type === (step === "outcomes" ? OutcomesHeader : ReviewProgressHeader));
     assert.ok(header);
-    assertSegmentProgress(ReviewProgressHeader(header.props), filled);
+    assertSegmentProgress(header.type(header.props), filled, 3);
   }
 });
 

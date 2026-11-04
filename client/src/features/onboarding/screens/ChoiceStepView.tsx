@@ -1,14 +1,19 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Dietary Pattern 선택 및 저장
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 채식 단계로 의미 변경, 카탈로그 검색·직접 입력 제거
+// AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+// Changed: 채식 단계를 식생활 유형 단계(family)로 되돌려 반영
 
-import { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { Text, View } from 'react-native';
 import { FormField } from '../../../components/FormField';
 import { DropdownChoice } from '../../../components/DropdownChoice';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
+import { ChoiceRow } from '../../../components/ChoiceRow';
 import { MultiChoice } from '../../../components/MultiChoice';
 import { colors } from '../../../util/colors';
 import { copyFor, labelFor, optionsFor } from '../../../util/strings';
@@ -20,9 +25,9 @@ export type ChoiceStep =
   | 'child' | 'allergies' | 'restrictions' | 'family';
 
 type ChoiceValues = Pick<OnboardingDraft,
-  'childName' | 'ageRange' | 'allergies' | 'restrictions' | 'familyFoods'>;
-type ListField = 'allergies' | 'restrictions' | 'familyFoods';
-type TextField = 'childName' | 'ageRange';
+  'childName' | 'ageRange' | 'allergies' | 'restrictions' | 'dietaryPattern'>;
+type ListField = 'allergies' | 'restrictions';
+type TextField = 'childName' | 'ageRange' | 'dietaryPattern';
 
 function Guidance({ title, body, icon = 'info' }: { title?: string; body: string; icon?: 'info' | 'utensils' }) {
   return <View style={styles.infoBanner}>
@@ -34,38 +39,14 @@ function Guidance({ title, body, icon = 'info' }: { title?: string; body: string
   </View>;
 }
 
-export function ChoiceStepView({ step, values, language, onSetField, onToggleList, onAddListItem, onRemoveListItem }: {
+export function ChoiceStepView({ step, values, language, onSetField, onToggleList }: {
   step: ChoiceStep;
   values: ChoiceValues;
   language: Language;
   onSetField: (field: TextField, value: string) => void;
   onToggleList: (field: ListField, value: string) => void;
-  onAddListItem: (field: ListField, value: string) => void;
-  onRemoveListItem: (field: ListField, value: string) => void;
 }) {
-  const [search, setSearch] = useState('');
-  const [showOther, setShowOther] = useState(() => {
-    const groups = {
-      allergies: [values.allergies, 'allergies'],
-      restrictions: [values.restrictions, 'restrictions'],
-      family: [values.familyFoods, 'family'],
-    } as const;
-    const config = groups[step as keyof typeof groups];
-    if (!config) return false;
-    const [selectedValues, group] = config;
-    const baseIds = optionsFor(group, language).map((option) => option.id);
-    return selectedValues.some((value) => value !== 'none' && !baseIds.includes(value));
-  });
   const s = copyFor(language);
-  const labels = {
-    all: s.common.all,
-    add: s.common.add,
-    remove: s.common.remove,
-    other: s.onboarding.addOther,
-    search: s.onboarding.searchCatalog,
-    noMatches: s.onboarding.noMatches,
-    otherHint: s.onboarding.otherHint,
-  };
   const guidance = s.onboarding.choiceGuidance;
   const subtitles = s.onboarding.choiceSubtitles as Record<string, Record<string, string>>;
   const name = values.childName.trim() || s.onboarding.childFallback;
@@ -89,22 +70,30 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
     </View>
   );
 
+  if (step === 'family') return (
+    <View>
+      <Text style={[styles.fieldHint, styles.dietaryPatternHelper]}>{s.onboarding.dietaryPattern.helper(name)}</Text>
+      <View accessibilityRole="radiogroup">
+        {s.onboarding.dietaryPattern.options.map((option) => <ChoiceRow
+          key={option.id}
+          label={option.label}
+          subtitle={option.description}
+          selected={values.dietaryPattern === option.id}
+          onPress={() => onSetField('dietaryPattern', option.id)}
+        />)}
+      </View>
+      <Guidance body={s.onboarding.dietaryPattern.caution} />
+    </View>
+  );
+
   const config = {
-    allergies: { field: 'allergies', group: 'allergies', catalog: 'allergyCatalog', none: s.onboarding.noKnownAllergies },
-    restrictions: { field: 'restrictions', group: 'restrictions', catalog: 'restrictionCatalog', none: s.onboarding.noOtherRestrictions },
-    family: { field: 'familyFoods', group: 'family', catalog: 'familyCatalog', none: undefined },
+    allergies: { field: 'allergies', group: 'allergies', none: s.onboarding.noKnownAllergies },
+    restrictions: { field: 'restrictions', group: 'restrictions', none: s.onboarding.noOtherRestrictions },
   } as const;
   const current = config[step];
-  const options = optionsFor(current.group, language);
-  const otherLabel = step === 'allergies'
-    ? s.onboarding.otherAllergy
-    : step === 'restrictions'
-      ? s.onboarding.otherRestrictions
-      : s.onboarding.otherFood;
   return (
     <View>
       {step === 'restrictions' && <Text style={styles.question}>{guidance.restrictionsQuestion(name)}</Text>}
-      {step === 'family' && <Guidance title={guidance.familyTitle} body={guidance.familyBody} icon="utensils" />}
       {step === 'allergies' && (
         <View style={styles.safetyBanner}>
           <View style={styles.safetyIcon}><UiAssetIcon name="onboarding-shield" /></View>
@@ -115,31 +104,16 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
         </View>
       )}
       <MultiChoice
-        options={options}
-        catalogOptions={optionsFor(current.catalog, language)}
-        labels={labels}
-        search={search}
-        onSearchChange={setSearch}
-        showOther={showOther}
-        onShowOtherChange={(open) => {
-          setShowOther(open);
-          if (open && values[current.field].includes('none')) onRemoveListItem(current.field, 'none');
-        }}
-        inlineSubtitleIds={step === 'allergies' ? ['tree-nut'] : undefined}
-        optionSubtitles={step === 'allergies' ? { 'tree-nut': s.onboarding.treeNutsHint } : subtitles[step]}
+        options={optionsFor(current.group, language)}
+        labels={{ all: s.common.all }}
+        inlineSubtitleIds={step === 'allergies' ? ['TREE_NUTS'] : undefined}
+        optionSubtitles={step === 'allergies' ? { TREE_NUTS: s.onboarding.treeNutsHint } : subtitles[step]}
         selected={values[current.field]}
         noneLabel={current.none}
-        otherLabel={otherLabel}
-        onToggle={(value) => {
-          if (value === 'none') { setShowOther(false); setSearch(''); }
-          onToggleList(current.field, value);
-        }}
-        onAdd={(value) => { onAddListItem(current.field, value); setSearch(''); }}
-        onRemove={(value) => onRemoveListItem(current.field, value)}
+        onToggle={(value) => onToggleList(current.field, value)}
       />
       <Text style={styles.selectionHint}>{guidance.multiple}</Text>
       {step === 'restrictions' && <Guidance title={guidance.restrictionsTitle} body={guidance.restrictionsBody} />}
-      {step === 'family' && <Guidance title={guidance.familyWarningTitle} body={guidance.familyWarningBody} />}
     </View>
   );
 }

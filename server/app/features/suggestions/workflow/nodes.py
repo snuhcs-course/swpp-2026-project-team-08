@@ -1,5 +1,9 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 # Changed: add suggestion LLM workflow
+# AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+# Changed: agent 노드와 도구를 없애고 첫 프롬프트에 쓸 수 있는 재료 목록을 담도록 변경
+# AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
+# Changed: prepare 가 아이가 잘 먹는 음식을 첫 프롬프트에 함께 담도록 변경
 
 """그래프의 노드.
 
@@ -15,7 +19,6 @@ from app.features.suggestions.validation import find_problems
 from app.features.suggestions.workflow import prompts
 from app.features.suggestions.workflow.schemas import SuggestionsDraft
 from app.features.suggestions.workflow.state import GraphState, InputState, SuggestionContext
-from app.features.suggestions.workflow.tools import TOOLS
 
 # compose(작성)를 최대 몇 번 실행하는가. 처음 한 번 + 재시도 2번.
 MAX_ATTEMPTS = 3
@@ -24,23 +27,18 @@ Update = dict[str, object]
 
 
 def prepare(state: InputState) -> Update:
-    """입력 음식으로 첫 대화를 만들고 내부 값을 초기화한다."""
+    """입력 음식과 쓸 수 있는 재료 목록으로 첫 대화를 만들고 내부 값을 초기화한다."""
     return {
         "messages": [
             SystemMessage(prompts.SYSTEM_PROMPT),
-            HumanMessage(prompts.build_user_prompt(state["foods"])),
+            HumanMessage(
+                prompts.build_user_prompt(state["foods"], state["catalog"], state["familiar"])
+            ),
         ],
         "results": [],
         "problems": [],
         "attempts": 0,
     }
-
-
-async def agent(state: GraphState, runtime: Runtime[SuggestionContext]) -> Update:
-    """도구를 바인딩한 LLM이 도구를 호출하거나 확인을 마치는 노드."""
-    llm_with_tools = runtime.context.llm.bind_tools(TOOLS)
-    reply = await llm_with_tools.ainvoke(state["messages"])
-    return {"messages": [reply]}
 
 
 async def compose(state: GraphState, runtime: Runtime[SuggestionContext]) -> Update:
@@ -54,8 +52,8 @@ async def compose(state: GraphState, runtime: Runtime[SuggestionContext]) -> Upd
 
 
 def validate(state: GraphState) -> Update:
-    """결과를 요청과 아이의 제한에 비춰 검증하는 노드 (순수 함수 호출)."""
-    return {"problems": find_problems(state["foods"], state["results"], state["restrictions"])}
+    """결과를 요청과 쓸 수 있는 재료에 비춰 검증하는 노드 (순수 함수 호출)."""
+    return {"problems": find_problems(state["foods"], state["results"], state["catalog"])}
 
 
 def route_after_validate(state: GraphState) -> str:

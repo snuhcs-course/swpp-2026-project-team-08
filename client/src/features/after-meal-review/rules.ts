@@ -1,8 +1,13 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: Separate difficulty targets and restore saved selections and notes
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 서버가 받지 않는 난이도 선택지 제거
 
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome, ReviewStep } from '../../types/afterMealReview';
 import type { FoodItem, Meal } from '../../types/meal';
+import type { Difficulty } from '../../types/reviewRecord';
 import type { MealDetail } from '../../types/mealRecord';
 import { ingredientId } from '../../rules/ingredientIds';
 import { foodFormKey } from '../../rules/recommendationSafety';
@@ -14,12 +19,9 @@ export function normalizeReviewStep(step: ReviewStep): ReviewStep {
 
 export const difficultyOptions: Record<DifficultyCategory, readonly string[]> = {
   texture: ['soft', 'firm', 'hard'],
-  tasteType: ['sweet', 'salty', 'sour', 'bitter', 'savory', 'other'],
-  tasteIntensity: ['mild', 'strong'],
+  tasteType: ['sweet', 'salty', 'sour', 'bitter', 'savory'],
   smell: ['fruit', 'herb', 'mushroom', 'toasted', 'vanilla', 'dairy', 'meaty', 'sulfur', 'sea', 'fermented', 'spice', 'mint', 'smoke'],
   color: ['red', 'yellow', 'green', 'brown', 'white', 'other'],
-  shape: ['consistent', 'varied', 'notSure', 'note'],
-  visibility: ['visible', 'hidden', 'mixed'],
   temperature: ['hot', 'warm', 'cool', 'room'],
   pieceSize: ['fine', 'small', 'large'],
   arrangement: ['even', 'uneven', 'clustered', 'other'],
@@ -45,6 +47,36 @@ export function reconcileOutcomes(previous: FoodOutcome[], foods: FoodItem[]): F
   });
 }
 
+/** Selected ingredients are targets within their own food, even when names repeat. */
+export function difficultyTargets(foods: FoodItem[], outcomes: FoodOutcome[]) {
+  return foods.flatMap(food => [
+    { id: food.id, name: food.name, parentName: null as string | null },
+    ...(outcomes.find(outcome => outcome.foodId === food.id)?.ingredients ?? [])
+      .filter(ingredient => ingredient.selected !== false)
+      .map(ingredient => ({ id: ingredient.id, name: ingredient.name, parentName: food.name })),
+  ]);
+}
+
+/** Preserve deselected ingredients in drafts; discard entries for removed foods/ingredients. */
+export function reconcileDifficultyEntries<T>(entries: Record<string, T>, outcomes: FoodOutcome[]): Record<string, T> {
+  const ids = new Set(outcomes.flatMap(food => [food.foodId, ...food.ingredients.map(ingredient => ingredient.id)]));
+  return Object.fromEntries(Object.entries(entries).filter(([id]) => ids.has(id)));
+}
+
+function restoredDifficulties(targetId: string, tags: Difficulty[]): DifficultyTag[] {
+  return tags.map((tag, index) => {
+    // The API stores selection and note together; keep any later separators in the note.
+    const separator = tag.value.indexOf(': ');
+    return {
+      id: `${targetId}:${index}`,
+      category: tag.category,
+      value: separator < 0 ? tag.value : tag.value.slice(0, separator),
+      ...(separator < 0 ? {} : { note: tag.value.slice(separator + 2) }),
+      ...(tag.subcategory ? { subcategory: tag.subcategory } : {}),
+    };
+  });
+}
+
 export function newReviewDraft(meal: Meal): AfterMealReviewDraft {
   return {
     mealId: meal.id,
@@ -63,6 +95,7 @@ export function reviewDraftFromServer(meal: Meal, detail: MealDetail): AfterMeal
   const base = newReviewDraft(meal);
   const review = detail.review;
   if (!review) return base;
+  const ingredientDifficulties: Record<string, DifficultyTag[]> = {};
   const outcomes = base.outcomes.map((food) => {
     const result = review.foodResults.find((item) => item.foodId === food.foodId);
     const recordFood = detail.foods.find((item) => item.id === food.foodId);
@@ -79,6 +112,7 @@ export function reviewDraftFromServer(meal: Meal, detail: MealDetail): AfterMeal
       ingredients: food.ingredients.map((ingredient) => {
         const saved = review.ingredientResults.find((item) =>
           item.foodId === food.foodId && item.ingredientId === names.get(ingredient.id));
+        if (saved) ingredientDifficulties[ingredient.id] = restoredDifficulties(ingredient.id, saved.difficulties);
         return {
           ...ingredient,
           selected: !!saved,
@@ -95,15 +129,10 @@ export function reviewDraftFromServer(meal: Meal, detail: MealDetail): AfterMeal
       : null,
     comparisonMethod: 'manual',
     outcomes,
-    difficulties: Object.fromEntries(review.foodResults.map((food) => [
-      food.foodId,
-      food.difficulties.map((tag, index) => ({
-        id: `${food.foodId}:${index}`,
-        category: tag.category,
-        value: tag.value,
-        ...(tag.subcategory ? { subcategory: tag.subcategory } : {}),
-      })),
-    ])),
+    difficulties: {
+      ...Object.fromEntries(review.foodResults.map(food => [food.foodId, restoredDifficulties(food.foodId, food.difficulties)])),
+      ...ingredientDifficulties,
+    },
   };
 }
 
@@ -170,13 +199,13 @@ export function addDifficulty(
     value: normalized,
     ...(normalizedNote ? { note: normalizedNote } : {}),
   };
-  const single = category === 'smell' || category === 'tasteIntensity' || category === 'visibility' || category === 'temperature' || category === 'notSure' || category === 'pieceSize' || category === 'arrangement';
+  const single = category === 'smell' || category === 'temperature' || category === 'notSure' || category === 'pieceSize' || category === 'arrangement';
   const retained = single ? tags.filter((item) => item.category !== category) : tags;
   return retained.some((item) => item.id === tag.id) ? retained : [...retained, tag];
 }
 
 export function difficultyNeedsNote(category: DifficultyCategory | null, value: string): boolean {
-  return value === 'other' || value === 'note' || (category === 'shape' && value === 'notSure');
+  return value === 'other';
 }
 
 export function canAddDifficulty(category: DifficultyCategory | null, value: string, note: string, subcategory?: string): boolean {
@@ -194,7 +223,7 @@ export function reviewFromDraft(draft: AfterMealReviewDraft, meal: Meal): AfterM
     afterPhoto: draft.afterPhoto,
     comparisonMethod: 'manual',
     outcomes: outcomes.map((food) => ({ ...food, ingredients: food.ingredients.filter((ingredient) => ingredient.selected !== false) })),
-    difficulties: Object.fromEntries(meal.foods.map((food) => [food.id, draft.difficulties[food.id] ?? []])),
+    difficulties: Object.fromEntries(difficultyTargets(meal.foods, outcomes).map(target => [target.id, draft.difficulties[target.id] ?? []])),
     suggestionFeedback: draft.suggestionFeedback,
     savedAt: new Date().toISOString(),
     foodFormKeys: Object.fromEntries(meal.foods.map((food) => [food.id, foodFormKey(food)])),

@@ -5,6 +5,8 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 삭제된 mealLogApi 를 검증하던 테스트 제거, 추천 연결을 음식 카드에만 붙이도록 수정
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -39,7 +41,6 @@ const {
   filterMealDetails, foodResponseCardsFromDetail, sortMealDetailsLatestFirst,
 } = require('../../src/features/meal-log/rules.ts');
 
-const { mealToUpsertBody, reviewToBody, suggestionToBody } = require('../../src/data/api/mealLogApi.ts');
 
 const { applySuggestionSaved } = require('../../src/data/storage/homeStorage.ts');
 
@@ -106,7 +107,7 @@ test('server meal details drive history search, review filter, and linked sugges
       acceptance: null, ingredients: [{ id: '3', name: 'Egg' }] }],
     review: { foodResults: [{ foodId: '4', outcome: 'tasted', difficulties: [] }],
       ingredientResults: [{ foodId: '4', ingredientId: '3', outcome: 'eaten', difficulties: [] }] },
-    suggestionLinks: [{ id: '10', suggestionId: '20', mealId: '8', foodId: '4', ingredientId: '3',
+    suggestionLinks: [{ id: '10', suggestionId: '20', mealId: '8', foodId: '4',
       suggestion: { whatToTry: 'Try egg', whyThisMayHelp: 'Familiar food', servingTip: 'Small piece' } }],
   };
   const pending = { ...reviewed, id: '9', review: null, suggestionLinks: [] };
@@ -114,8 +115,10 @@ test('server meal details drive history search, review filter, and linked sugges
   assert.deepEqual(filterMealDetails([reviewed, pending], 'egg', true).map((meal) => meal.id), ['9']);
   const cards = foodResponseCardsFromDetail(reviewed);
   assert.deepEqual(cards.map((card) => [card.kind, card.outcome]), [['food', 'tasted'], ['ingredient', 'eaten']]);
-  assert.equal(cards[1].suggestion.title, 'Try egg');
-  assert.equal(cards[1].suggestion.description, 'Familiar food');
+  // 추천 연결은 음식 단위라 음식 카드에만 붙고 재료 카드에는 붙지 않는다.
+  assert.equal(cards[0].suggestion.title, 'Try egg');
+  assert.equal(cards[0].suggestion.description, 'Familiar food');
+  assert.equal(cards[1].suggestion, null);
 });
 
 test('meal history requests use the authenticated v1 collection and delete route', async () => {
@@ -172,45 +175,6 @@ test('meal date parts stay stable for a fixed ISO date', () => {
   assert.match(parts.weekday, /Mon/);
 });
 
-test('upsert, review, and suggestion bodies use the server field names', () => {
-  const body = mealToUpsertBody({
-    id: 'meal-1', childId: 'child-1', mealDate: '2026-10-12', mealType: 'lunch', setting: 'home',
-    photo: { id: 'p1', uri: 'file:///before.png', mimeType: 'image/png' },
-    foods: [{
-      id: 'food-1', name: 'Rice', ingredients: ['rice'], preparation: 'steamed', servingNote: 'small bowl',
-      source: 'ai', confirmed: true,
-    }],
-    savedAt: '2026-10-12T12:00:00.000Z',
-  });
-  assert.equal(body.meal_date, '2026-10-12');
-  assert.equal(body.before_photo_uri, 'file:///before.png');
-  assert.equal(Object.hasOwn(body.foods[0], 'history'), false);
-  assert.equal(Object.hasOwn(body.foods[0], 'traits'), false);
-  assert.equal(body.foods[0].serving_note, 'small bowl');
-
-  assert.equal(body.foods[0].source, 'ai');
-  assert.equal(body.foods[0].confirmed, true);
-  assert.equal(Object.hasOwn(body.foods[0], 'origin'), false);
-  const review = reviewToBody({
-    mealId: 'meal-1', childId: 'child-1',
-    afterPhoto: { id: 'p2', uri: 'file:///after.png', mimeType: 'image/png' },
-    comparisonMethod: 'manual', outcomes: [], difficulties: {}, suggestionFeedback: { yes: { tried: true }, no: { tried: false } },
-    savedAt: '2026-10-12T13:00:00.000Z',
-  });
-  assert.equal(review.after_photo_uri, 'file:///after.png');
-  assert.deepEqual(review.suggestion_feedback, { yes: { tried: true }, no: { tried: false } });
-  const suggestion = suggestionToBody({
-    id: 's1', childId: 'child-1', title: 'Try rice', description: 'Small separate portion',
-    servingTip: 'Keep the form', ingredients: ['rice'], isSaved: true, safetyVerifiedForProfileAt: 'v1',
-    recommendation: {
-      mealId: 'meal-1', foodId: 'food-1', foodName: 'Rice', foodFormKey: 'rice',
-      reviewSavedAt: '2026-10-12T13:00:00.000Z', outcome: 'tasted', kind: 'small-separate-portion',
-    },
-  });
-  assert.equal(suggestion.food_id, 'food-1');
-  assert.equal(suggestion.serving_tip, 'Keep the form');
-});
-
 test('bookmarking a linked suggestion toggles the saved flag without dropping it on a later unsave', () => {
   const records = { meals: [], suggestions: [] };
   const draft = {
@@ -248,31 +212,3 @@ test('meal history food and ingredient cards preserve managed suggestion routing
   assert.equal(cards[1].outcome, 'eaten');
 });
 
-test('meal detail responses preserve boolean feedback and reject invalid values', async () => {
-  const api = require('../../src/data/network/apiClient.ts');
-  const { getMealDetail } = require('../../src/data/api/mealLogApi.ts');
-  const original = api.apiRequest;
-  const response = {
-    id: 'boolean-feedback-meal', child_id: 'boolean-feedback-child', meal_date: '2026-10-19',
-    meal_type: 'lunch', setting: 'home', before_photo_uri: null, saved_at: '2026-10-19T12:00:00Z',
-    foods: [], suggestions: [], review: {
-      after_photo_uri: '', outcomes: [], difficulties: {}, saved_at: '2026-10-19T13:00:00Z',
-      suggestion_feedback: { yes: { tried: true }, no: { tried: false } },
-    },
-  };
-  api.apiRequest = async () => response;
-  try {
-    const detail = await getMealDetail(response.child_id, response.id);
-    assert.deepEqual(detail.review.suggestionFeedback, response.review.suggestion_feedback);
-    for (const invalid of ['tried', 'notTried', true, {}, { tried: 'false' }, { tried: 0 }, { tried: null }]) {
-      response.review.suggestion_feedback = { invalid };
-      await assert.rejects(getMealDetail(response.child_id, response.id), /Invalid suggestion feedback/);
-    }
-    response.review.suggestion_feedback = null;
-    await assert.rejects(getMealDetail(response.child_id, response.id), /Invalid suggestion feedback/);
-    delete response.review.suggestion_feedback;
-    assert.deepEqual((await getMealDetail(response.child_id, response.id)).review.suggestionFeedback, {});
-  } finally {
-    api.apiRequest = original;
-  }
-});

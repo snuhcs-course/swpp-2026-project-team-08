@@ -1,8 +1,11 @@
-# AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
-# Changed: Verify meal ingredient migration head
 # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 # Changed: 화면 디자인 및 식사 흐름 개선
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+# AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim
+# Changed: 마이그레이션 head 단언을 0024 로 갱신
+# AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
+# Changed: 식생활 유형·선택 조리 방법 마이그레이션(0025) 이력과 SQL 검증
 """Unit: 마이그레이션의 이력·SQL 생성 계약. DB 적용이나 Postgres 동작은 검사하지 않는다."""
 
 from io import StringIO
@@ -18,7 +21,8 @@ MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0017_meal_ingredients"]
+    assert scripts.get_heads() == ["0025_dietary_pattern"]
+    assert scripts.get_revision("0025_dietary_pattern").down_revision == "0024_food_recommendations"
     assert (
         scripts.get_revision("0017_meal_ingredients").down_revision
         == "0016_remove_profile_questions"
@@ -223,3 +227,27 @@ def test_food_traits_removal_preserves_review_reasons_and_restores_empty_objects
     assert "ALTER TABLE meal_foods ADD COLUMN traits JSON DEFAULT '{}' NOT NULL" in sql
     assert "ALTER TABLE meal_foods ALTER COLUMN traits DROP DEFAULT" in sql
     assert "meal_reviews" not in sql
+
+
+def test_dietary_pattern_migration_adds_nullable_column_and_optional_preparation():
+    migration = run_path(str(MIGRATIONS / "versions" / "20261103_1000_dietary_pattern.py"))
+    output = StringIO()
+    context = MigrationContext.configure(
+        dialect_name="postgresql", opts={"as_sql": True, "output_buffer": output}
+    )
+    with Operations.context(context):
+        migration["upgrade"]()
+    sql = output.getvalue()
+    assert "ALTER TABLE user_profiles ADD COLUMN dietary_pattern VARCHAR(30);" in sql
+    assert "ALTER TABLE user_profile_safe_foods ALTER COLUMN preparation DROP NOT NULL;" in sql
+    assert "DELETE" not in sql
+    assert "UPDATE" not in sql
+
+    output.seek(0)
+    output.truncate()
+    with Operations.context(context):
+        migration["downgrade"]()
+    sql = output.getvalue()
+    # NOT NULL 로 되돌리기 전에 비어 있는 조리 방법을 채워야 한다.
+    assert sql.index("SET preparation = ''") < sql.index("SET NOT NULL")
+    assert "ALTER TABLE user_profiles DROP COLUMN dietary_pattern;" in sql

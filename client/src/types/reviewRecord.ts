@@ -1,3 +1,6 @@
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 서버가 받지 않는 난이도 카테고리 제거
+
 import type { Ingredient } from './ingredientRecord';
 import type { CookingMethod, Id, IngredientId } from './recordValues';
 
@@ -5,11 +8,8 @@ export type Outcome = 'eaten' | 'tasted' | 'untouched' | 'unclear';
 export type DifficultyCategory =
   | 'texture'
   | 'tasteType'
-  | 'tasteIntensity'
   | 'smell'
   | 'color'
-  | 'shape'
-  | 'visibility'
   | 'temperature'
   | 'notSure'
   | 'pieceSize'

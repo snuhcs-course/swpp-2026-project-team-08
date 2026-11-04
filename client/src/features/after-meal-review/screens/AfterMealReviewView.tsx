@@ -1,10 +1,12 @@
-// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
-// Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: 식후 결과 디자인·뒤로가기·재료별 어려움 및 3단계 진행 표시
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: 식후 검토 글자·하단·버튼 조정 및 현재 단계별 진행 표시
 
+import { OutcomesHeader } from '../components/OutcomesHeader';
+import { Ionicons } from '@expo/vector-icons';
 import { topBarStyles } from '../../../components/AppHeader';
 import { useState } from "react";
 import {
@@ -47,14 +49,14 @@ export function AfterMealReviewView(
   ].includes(p.draft.step);
   const phase = {
     photo: 0,
-    preview: 1,
-    compare: 2,
-    comparing: 2,
-    "comparison-error": 2,
-    outcomes: 3,
-    difficulties: 4,
-    suggestions: 4,
-    complete: 4,
+    preview: 0,
+    compare: 0,
+    comparing: 0,
+    "comparison-error": 0,
+    outcomes: 1,
+    difficulties: 2,
+    suggestions: 2,
+    complete: 2,
   }[p.draft.step];
   const goAfterDifficulties = () => {
     if (p.saving || !p.canContinueOutcomes) return;
@@ -68,23 +70,23 @@ export function AfterMealReviewView(
     onRetry={p.onSave} onSaveExit={p.onSaveExit} onReturn={() => setSavePanelHidden(true)} />;
 
   return (
-    <SafeAreaView style={[styles.root, p.draft.step === "compare" && { backgroundColor: colors.homeBackground }, p.draft.step === "difficulties" && { backgroundColor: colors.difficultyBackground }]} edges={["top", "bottom"]}>
+    <SafeAreaView style={[styles.root, p.draft.step === "outcomes" && styles.outcomesRoot, p.draft.step === "compare" && { backgroundColor: colors.homeBackground }, p.draft.step === "difficulties" && { backgroundColor: colors.difficultyBackground }]} edges={["top", "bottom"]}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <ReviewProgressHeader
+        {p.draft.step === 'outcomes' ? <OutcomesHeader language={p.language} saveStatus={p.saveStatus} onBack={p.onBack} disabled={p.saving}
+          caption={`${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${s.mealCheckin.settings[p.meal.setting]}`} /> : <ReviewProgressHeader
           title={p.draft.step === "complete" ? a.reviewSavedHeader : m.titles[p.draft.step]}
           stacked={["outcomes", "difficulties"].includes(p.draft.step)}
           caption={p.draft.step === "preview" && !p.meal.photo ? a.draftFor(p.childName) : !["outcomes", "preview"].includes(p.draft.step) ? undefined : `${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${s.mealCheckin.settings[p.meal.setting]}`}
           backLabel={s.common.back}
           progress={phase}
-          hideProgress={p.draft.step === "difficulties"}
           onBack={p.onBack}
           disabled={p.saving}
           optional={p.draft.step === "difficulties" ? m.optional : undefined}
-        />
-        {p.saveStatus !== "saved" && <Text
+        />}
+        {p.draft.step !== "outcomes" && p.saveStatus !== "saved" && <Text
           accessibilityLiveRegion="polite"
           style={[
             styles.status,
@@ -108,7 +110,7 @@ export function AfterMealReviewView(
         <ScrollView
           pointerEvents={p.saving ? "none" : "auto"}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={[styles.content, p.draft.step === "difficulties" && { paddingHorizontal: 24 }]}
+          contentContainerStyle={[styles.content, p.draft.step === "outcomes" && styles.outcomesContent, p.draft.step === "difficulties" && { paddingHorizontal: 24 }]}
         >
           {photoStep && (
             <AfterMealPhotoStepsView
@@ -133,10 +135,10 @@ export function AfterMealReviewView(
                 meal: p.meal,
                 draft: p.draft,
                 language: p.language,
+                childName: p.childName,
                 onSelectOutcome: p.onSelectOutcome,
                 onToggleIngredient: p.onToggleIngredient,
                 onEditFood: p.onEditFood,
-                onRemoveFood: p.onRemoveFood,
                 canContinueOutcomes: p.canContinueOutcomes,
                 showUnanswered,
               }}
@@ -148,6 +150,7 @@ export function AfterMealReviewView(
                 meal: p.meal,
                 draft: p.draft,
                 language: p.language,
+                difficultyTargets: p.difficultyTargets,
                 difficultyForms: p.difficultyForms,
                 onDifficultyInput: p.onDifficultyInput,
                 onAddDifficulty: p.onAddDifficulty,
@@ -170,7 +173,7 @@ export function AfterMealReviewView(
         {["preview", "compare", "outcomes", "difficulties"].includes(
           p.draft.step,
         ) && (
-          <MealFlowFooter style={p.draft.step === "difficulties" ? { backgroundColor: colors.difficultyBackground } : undefined}>
+          <MealFlowFooter style={p.draft.step === "outcomes" ? styles.outcomesFooter : p.draft.step === "difficulties" ? { backgroundColor: colors.difficultyBackground } : undefined}>
             {p.draft.step === "preview" && (
               <MealFlowButton
                 label={m.usePhoto}
@@ -184,7 +187,10 @@ export function AfterMealReviewView(
             {p.draft.step === "outcomes" && (
               <MealFlowButton
                 label={s.common.continue}
-                disabled={!p.canContinueOutcomes}
+                icon={<Ionicons name="chevron-forward" size={16} color={colors.surface} />}
+                style={styles.continueButton}
+                labelStyle={styles.continueLabel}
+                disabled={p.saving || !p.canContinueOutcomes}
                 onPress={() =>
                   p.canContinueOutcomes
                     ? p.onGo("difficulties")
@@ -195,7 +201,7 @@ export function AfterMealReviewView(
             {p.draft.step === "difficulties" && (
               <>
                 <MealFlowButton
-                  label={s.common.continue}
+                  label={p.language === 'ko' ? m.finish : s.common.continue}
                   disabled={p.saving || !p.canContinueOutcomes}
                   onPress={goAfterDifficulties}
                 />
@@ -207,7 +213,7 @@ export function AfterMealReviewView(
               </>
             )}
             {["compare", "outcomes"].includes(p.draft.step) || (p.draft.step === "preview" && !!p.meal.photo) ? (
-              <MealTextButton label={a.saveExit} disabled={p.saving} onPress={p.onSaveExit} />
+              <MealTextButton label={p.draft.step === "outcomes" ? s.common.saveExit : a.saveExit} labelStyle={p.draft.step === "outcomes" ? styles.exitLabel : undefined} disabled={p.saving} onPress={p.onSaveExit} />
             ) : null}
             {p.saveStatus !== "saved" && <Text accessibilityLiveRegion="polite" style={styles.status}>
               {p.saveStatus === "saving"
@@ -246,6 +252,12 @@ export function AfterMealReviewView(
 }
 
 const styles = StyleSheet.create({
+  outcomesRoot: { backgroundColor: colors.reviewBackground },
+  outcomesContent: { paddingHorizontal: 20, paddingBottom: 22 },
+  outcomesFooter: { borderTopWidth: 1, borderTopColor: colors.homeBorder, paddingHorizontal: 20, paddingTop: 16, gap: 16, backgroundColor: colors.reviewBackground },
+  continueButton: { flexDirection: 'row-reverse', minHeight: 44, borderRadius: 12 },
+  continueLabel: { fontFamily: fonts.interBold, fontSize: 14 },
+  exitLabel: { fontFamily: fonts.interBold, fontSize: 14 },
   root: { flex: 1, backgroundColor: colors.afterMealBackground },
   flex: { flex: 1 },
   content: {

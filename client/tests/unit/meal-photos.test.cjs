@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 삭제된 mealLogApi 대신 prepareMealWrite 로 사진 저장 요청 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -32,7 +34,7 @@ const { newFood } = require('../../src/rules/foodDraft.ts');
 
 const { newReviewDraft, setOutcome, reviewFromDraft } = require('../../src/features/after-meal-review/rules.ts');
 
-const { mealToUpsertBody, reviewToBody } = require('../../src/data/api/mealLogApi.ts');
+const { prepareMealWrite } = require('../../src/data/api/mealWriteApi.ts');
 
 const PNG =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
@@ -54,8 +56,8 @@ function mealWithBeforePhoto(childId = 'child-photo') {
 test('saving a meal keeps the before photo; manual after-meal review may omit its photo', () => {
   const meal = mealWithBeforePhoto();
   assert.equal(meal.photo.uri, PNG);
-  assert.equal(mealToUpsertBody(meal).before_photo_uri, PNG);
-  assert.equal(mealToUpsertBody({ ...meal, photo: null }).before_photo_uri, null);
+  assert.equal(prepareMealWrite(meal).body.before_photo_uri, PNG);
+  assert.equal(prepareMealWrite({ ...meal, photo: null }).body.before_photo_uri, null);
 
   const draft = newReviewDraft(meal);
   draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'eaten');
@@ -66,5 +68,5 @@ test('saving a meal keeps the before photo; manual after-meal review may omit it
   draft.afterPhoto = afterPhoto;
   const review = reviewFromDraft(draft, meal);
   assert.equal(review.afterPhoto.id, afterPhoto.id);
-  assert.equal(reviewToBody(review).after_photo_uri, afterPhoto.uri);
+  assert.equal(review.afterPhoto.uri, afterPhoto.uri);
 });

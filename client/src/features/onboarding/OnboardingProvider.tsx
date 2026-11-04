@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 온보딩 초안 복원, 계정 입력 초기화 및 초기화 후 자동 저장 수정
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: 온보딩 초안 복원, 계정 입력 초기화 및 초기화 후 자동 저장 수정; Dietary Pattern
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -7,14 +7,17 @@
 // AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 직접 입력·안심 음식 없음 동작 제거
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
 import { useAuth } from '../../providers/AuthProvider';
 import { useProfile } from '../../providers/ProfileProvider';
 import type { ChildProfile, SafeFood } from '../../types/profile';
+import { isDietaryPattern } from '../../util/dietaryPattern';
 import { createDraftSaveGate } from './draftSaveGate';
-import { addUnique, canAddSafeFood, canContinue, canFinish, restoreDraft, toggleExclusive, validEmail } from './rules';
+import { canAddSafeFood, canContinue, canFinish, restoreDraft, toggleExclusive, validEmail } from './rules';
 import { emptyDraft, type OnboardingDraft, type OnboardingStep } from './types';
 import { OnboardingContext, type ConsentField, type DraftField, type ListField, type SaveStatus } from './onboardingContext';
 
@@ -96,6 +99,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [draft, ready, loadError, status, profile, editing, persist]);
 
   const setField = useCallback((field: DraftField, value: string) => {
+    if (field === 'dietaryPattern' && !isDietaryPattern(value)) return;
     if (field === 'caregiverName' || field === 'caregiverEmail') accountFieldsInitialized.current = true;
     setDraft((current) => ({ ...current, [field]: value }));
   }, []);
@@ -104,15 +108,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, []);
   const toggleList = useCallback((field: ListField, value: string) => {
     setDraft((current) => ({ ...current, [field]: toggleExclusive(current[field], value) }));
-  }, []);
-  const setList = useCallback((field: ListField, values: string[]) => {
-    setDraft((current) => ({ ...current, [field]: values }));
-  }, []);
-  const addListItem = useCallback((field: ListField, value: string) => {
-    setDraft((current) => ({ ...current, [field]: addUnique(current[field], value) }));
-  }, []);
-  const removeListItem = useCallback((field: ListField, value: string) => {
-    setDraft((current) => ({ ...current, [field]: current[field].filter((item) => item !== value) }));
   }, []);
   const addSafeFood = useCallback((food: Omit<SafeFood, 'id'>) => {
     if (!canAddSafeFood(food)) return;
@@ -125,7 +120,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
         preparation: food.preparation.trim(),
         presentationNote: food.presentationNote.trim(),
       }],
-      noSafeFoods: false,
       safeFoodInput: { name: '', preparation: '', presentationNote: '' },
     }));
   }, []);
@@ -134,9 +128,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, []);
   const removeSafeFood = useCallback((id: string) => {
     setDraft((current) => ({ ...current, safeFoods: current.safeFoods.filter((food) => food.id !== id) }));
-  }, []);
-  const setNoSafeFoods = useCallback((value: boolean) => {
-    setDraft((current) => ({ ...current, noSafeFoods: value, safeFoods: value ? [] : current.safeFoods }));
   }, []);
   const setStep = useCallback((step: OnboardingStep) => {
     setDraft((current) => ({ ...current, step }));
@@ -234,8 +225,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   return <OnboardingContext.Provider value={{
     ready: ready && status !== 'loading', loadError: loadError || status === 'error',
     draft, password, saveStatus, editing, hasDraft,
-    setPassword, setField, setConsent, toggleList, setList, addListItem,
-    removeListItem, addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setStep,
+    setPassword, setField, setConsent, toggleList,
+    addSafeFood, setSafeFoodInput, removeSafeFood, setStep,
     startEdit, startProfileEdit, cancelEdit, applyEdit, resetLocal,
     retrySave, retryLoad, finish, canContinue: (step) => step === 'review' ? canFinish(draft)
       : step === 'account' && (editing || !!auth.session) ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)

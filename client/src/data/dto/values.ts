@@ -1,3 +1,6 @@
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 서버 대문자 enum 과 앱 소문자 값을 변환하는 함수 추가
+
 import type {
   CookingMethod,
   MealLocation,
@@ -52,7 +55,21 @@ export function choice<T extends string>(value: unknown, choices: readonly T[]):
   return value as T;
 }
 
-export const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const satisfies readonly MealType[];
+// 서버 enum 은 대문자이고 앱 안의 값은 소문자다. 변환은 이 경계에서만 한다.
+export function fromApiEnum<T extends string>(value: unknown, choices: readonly T[]): T {
+  const upper = text(value);
+  const lower = upper.toLowerCase();
+  if (upper !== upper.toUpperCase() || !choices.includes(lower as T)) {
+    throw new Error('Invalid API choice');
+  }
+  return lower as T;
+}
+
+export function toApiEnum<T extends string>(value: unknown, choices: readonly T[]): string {
+  return choice(value, choices).toUpperCase();
+}
+
+export const mealTypes =['breakfast', 'lunch', 'dinner', 'snack'] as const satisfies readonly MealType[];
 export const mealLocations = ['home', 'restaurant', 'school', 'others'] as const satisfies readonly MealLocation[];
 export const cookingMethods = [
   'raw', 'boiled', 'steamed', 'pan_fried', 'stir_fried', 'baked_roasted', 'mashed_blended', 'other',

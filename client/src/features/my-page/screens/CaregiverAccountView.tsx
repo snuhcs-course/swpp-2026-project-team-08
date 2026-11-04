@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: 이메일 요청 오류 문구 구분
 // AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
@@ -7,7 +9,7 @@ import { AppHeader } from '../../../components/AppHeader';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../../util/colors';
-import { copyFor } from '../../../util/strings';
+import { copyFor, strings } from '../../../util/strings';
 import type { Language } from '../../../types/profile';
 import { styles } from './myPageStyles';
 
@@ -100,7 +102,7 @@ export function CaregiverAccountView({
                 style={styles.input}
               />
             </View>
-            {sendError ? <Text style={styles.errorText}>{saveFailedLabel}</Text> : null}
+            {sendError ? <Text style={styles.errorText}>{language === 'ko' ? strings.ko.myPage.requestFailed : saveFailedLabel}</Text> : null}
             <Pressable
               accessibilityRole="button"
               disabled={!canSend || busy}
@@ -134,7 +136,7 @@ export function CaregiverAccountView({
               />
             </View>
             {mismatch ? <Text style={styles.errorText}>{m.codeMismatch}</Text> : null}
-            {sendError ? <Text style={styles.errorText}>{saveFailedLabel}</Text> : null}
+            {sendError ? <Text style={styles.errorText}>{language === 'ko' ? strings.ko.myPage.requestFailed : saveFailedLabel}</Text> : null}
             <Pressable accessibilityRole="button" onPress={onResend} disabled={busy}>
               <Text style={styles.resend}>{m.resend}</Text>
             </Pressable>

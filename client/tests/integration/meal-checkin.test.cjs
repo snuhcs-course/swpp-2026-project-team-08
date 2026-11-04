@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 대문자 enum·음식 id 없는 저장 요청·식사 상세 저장 응답 기준으로 수정
 const { test, beforeEach } = require('node:test');
 
 const assert = require('node:assert/strict');
@@ -39,16 +41,16 @@ async function mountSaving(t) {
     }
     assert.equal(init.method, 'PUT');
     assert.deepEqual(JSON.parse(init.body), {
-      meal_date: '2026-10-23', meal_type: 'lunch', setting: 'home', before_photo_uri: null,
-      foods: [{ id: '1', name: 'Rice', ingredients: [], cooking_method: null,
-        serving_note: null, acceptance: null }], suggestion_links: [],
+      meal_date: '2026-10-23', meal_type: 'LUNCH', setting: 'HOME', before_photo_uri: null,
+      foods: [{ name: 'Rice', ingredients: [], cooking_method: null,
+        serving_note: null, acceptance: null, food_recommendation_ids: [] }],
     });
     server.writes++;
     if (server.failWrite) return unavailable();
     const saved = mealResponse();
     server.items = [saved, ...server.items.filter(item => item.id !== saved.id)];
-    const { foods, review, suggestion_links, ...receipt } = saved;
-    return json(receipt);
+    // 저장 응답은 서버가 발급한 음식 id 를 담은 식사 상세다.
+    return json(saved);
   });
   const hook = await renderHook(t, () => ({ save: useSaveMeal(), list: useMealList('1', null) }));
   await waitFor(() => hook.current.list.isSuccess);

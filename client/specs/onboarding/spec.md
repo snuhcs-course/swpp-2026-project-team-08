@@ -1,6 +1,10 @@
-<!-- AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo -->
+<!-- AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo -->
+<!-- Changed: 식생활 유형 및 익숙한 음식 추가 폼·선택 조리 방법 -->
 <!-- AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo -->
 <!-- Changed: 화면 디자인 및 식사 흐름 개선 -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim -->
+<!-- Changed: 식생활 유형 저장을 새 서버 계약(dietary_pattern, 채식 제한 보존)으로 수정 -->
+
 # Onboarding
 
 ## Goal
@@ -74,30 +78,40 @@
 4. 해당하는 제한이 없으면 `None`을 선택할 수 있어야 하며, `None`과 다른 제한 항목은 동시에 선택될 수 없다.
 5. 식이 제한 입력을 완료했거나 식이 제한이 없음을 선택하면 Continue 버튼을 사용할 수 있어야 한다.
 
-### R7 — Foods included in family meals
+### R7 — Dietary Pattern
 
-1. 보호자는 가족 식단에 포함하는 식품군을 선택할 수 있어야 한다.
-2. 보호자는 하나 이상의 식품군을 선택할 수 있어야 한다.
-3. 선택된 식품군은 화면에서 구분되어 표시되어야 하며, 보호자는 선택을 변경할 수 있어야 한다.
-4. Other를 클릭하는 경우 검색 입력창이 활성화되며, food catalog를 검색하고 검색 결과를 눌러 항목을 추가할 수 있어야 한다.
-5. 추가된 식품은 보호자가 x를 눌러 제거 가능한 토큰 형태로 Other 검색 필드 아래에 표시되어야 한다. 기본 체크박스 목록에는 추가하지 않는다.
-6. 기본 식품군은 Dairy, Eggs, Seafood, Poultry, Red meat, Legumes/soy, Nuts/seeds로 구성한다. All 선택은 제공하지 않고 개별 항목을 선택한다.
-7. 기본 식품군 또는 직접 추가한 식품을 하나 이상 선택해야 Continue를 사용할 수 있다. Required step과 선호가 추천에 항상 반영되지는 않는다는 안내를 표시한다.
+1. 가족 식생활 유형은 Vegan, Lacto-vegetarian, Ovo-vegetarian, Lacto-ovo vegetarian,
+   Pescatarian, Flexitarian, No specific dietary pattern의 일곱 항목 중 하나를 선택한다.
+2. 초기값은 미응답이다. 선택은 이전 선택을 대체하며 미응답과 특정 유형 없음은 구분한다.
+   미응답 상태로 Continue를 사용할 수 있다. 별도 Other 입력은 제공하지 않는다.
+3. 항목의 라벨과 설명 전체를 눌러 선택한다. 닉네임을 넣은 안내와 추천 반영 한계 안내를 표시한다.
+4. 초안과 프로필 편집에서 선택을 복원하며 리뷰와 설정에는 선택한 라벨 또는 미응답을 표시한다.
+5. 온보딩 API의 `profile.dietary_pattern`은 생략할 수 없는 필드이며 값은 `VEGAN`, `LACTO_VEGETARIAN`,
+   `OVO_VEGETARIAN`, `LACTO_OVO_VEGETARIAN`, `PESCATARIAN`, `FLEXITARIAN`, `NO_SPECIFIC_PATTERN` 또는
+   null(미응답)이다. 앱 안의 값은 소문자 snake_case이고 데이터 계층에서 서버 값으로 변환한다.
+6. 서버의 nullable `user_profiles.dietary_pattern`에 선택을 저장한다. 채식 제한(`VEGETARIAN.*`)은
+   입력 화면이 없고, 서버에 이미 저장된 값은 프로필을 저장할 때 그대로 다시 보내 보존한다.
+7. 현재 추천 생성 인터페이스는 음식과 필수 제한만 받는다. 식생활 유형은 프로필에 전달·저장되지만
+   추천에 적용되지는 않는다. 식이 선호를 필수 알레르기나 제한으로 변환하지 않는다.
 
 ### R8 — Safe foods
 
 1. 보호자는 아동이 익숙한 형태로 꾸준히 받아들이는 음식을 Safe Foods로 여러 개 추가할 수 있어야 한다.
-2. 음식 입력창 옆의 `+` 버튼을 누르면 `Add safe food` 카드가 열려야 한다.
-3. 카드에서 Food name과 Preparation을 입력하고, 필요한 경우 Presentation note를 추가할 수 있어야 한다. Presentation note는 선택 입력 항목으로 표시되어야 한다.
+2. `Add safe food` 카드는 처음부터 표시하며 음식을 추가한 뒤에도 다음 입력을 위해 유지한다.
+3. Food name은 필수다. Cooking method는 기존 식사 입력과 같은 조리 방법 드롭다운이며 선택 입력이다.
+   Additional details도 선택 입력이며 두 항목 모두 Optional을 같은 줄에 표시한다.
+   기존 자유 입력 조리 방법은 복원 시 그대로 표시하고 보존한다. 조리 방법을 비워 두면 서버에는 null로 저장한다.
 4. 카드의 Add 버튼을 누르면 음식 이름과 입력한 조리·제공 정보가 하나의 Safe Food로 추가되어야 한다.
-5. 추가된 Safe Food는 x로 제거할 수 있는 토큰으로 표시되어야 하며, x를 누르기 전까지 목록에 남아 있어야 한다.
-6. 아직 Safe Food가 없으면 `No safe foods yet`을 선택할 수 있어야 한다. Safe Food를 추가하면 이 선택은 해제되어야 하며, 선택된 상태에서는 Safe Food가 동시에 저장되지 않아야 한다.
+5. 추가된 Safe Food는 카드 위에 줄바꿈되는 녹색 토큰으로 표시한다. 음식 이름과 조리·제공 정보를
+   두 줄로 표시하고 x 버튼으로만 제거한다. 긴 입력도 화면 너비 안에서 줄바꿈한다.
+6. 아직 Safe Food가 없으면 목록을 비워 둔 채 진행할 수 있다. 별도의 `No safe foods yet` 선택은 제공하지 않으며 빈 목록이 곧 없음이다.
 7. Safe Foods 화면에는 Save & exit가 표시되어야 하며, 이를 누르면 현재까지 입력한 답변을 저장하고 나중에 이어서 입력할 수 있어야 한다.
-8. 음식 입력창 옆의 `+` 버튼은 작은 화면에서도 잘리지 않고 전체가 보여야 한다.
+8. 카드 오른쪽 아래에 작은 `+ Add` 버튼을 표시하며, 음식 이름이 공백이면 비활성화한다.
+   카드 아래에는 여러 항목을 입력할 수 있다는 안내를 항상 표시한다.
 
 ### R9 — Review profile
 
-1. 보호자는 온보딩을 완료하기 전에 Child basics, Safety restrictions, Family practices, Safe foods의 네 카드에 입력한 내용을 요약 카드로 검토할 수 있어야 한다.
+1. 보호자는 온보딩을 완료하기 전에 Child basics, Safety restrictions, Dietary Pattern, Safe foods의 네 카드에 입력한 내용을 요약 카드로 검토할 수 있어야 한다.
 2. 현재 Figma 검토 화면에 없는 추가 카드는 온보딩 요약에 만들지 않는다. Safety restrictions 카드에는 알레르기와 실제 추가 제한을 함께 표시하며, 수정 시 알레르기와 제한을 차례로 편집한 뒤 검토로 돌아온다.
 3. 각 카드의 수정 버튼을 누르면 해당 입력 화면으로 이동해야 한다. 수정 후 검토 화면으로 돌아왔을 때 다른 항목의 답변은 유지되어야 한다.
 4. 검토 화면에는 입력하지 않은 항목도 미입력 상태로 구분되어야 하며, 보호자가 이를 수정할 수 있어야 한다.
@@ -208,7 +222,7 @@ Then 검토 화면과 입력값이 유지되고 다시 시도할 수 있다.
 
 - 완료 화면(455:1729)은 중앙에 40px Poppins Bold 제목, 실제 아동 이름이 포함된 안내, 너비 230px의 `Go to home` 버튼을 표시한다. 기존 Next step 버튼을 교체한다.
 - 기타 식이 제한의 기본 목록(455:5060)은 No additional dietary restrictions, Gluten-free, Lactose-free, Casein-free, Other restrictions다. Low fructose는 기본 제한에서 빼되 기존 선택은 Other 토큰으로 보존한다.
-- 검토 화면(455:1748)은 Child basics, Safety restrictions, Family practices, Safe foods 순서로 핵심 카드를 배치한다. 기타 제한 답변도 계속 확인·수정할 수 있다.
+- 검토 화면(455:1748)은 Child basics, Safety restrictions, Dietary Pattern, Safe foods 순서로 핵심 카드를 배치한다. 기타 제한 답변도 계속 확인·수정할 수 있다.
 - 동의 화면(455:3095·455:3160)의 사진 분석 문구는 Figma에 아직 남은 이전 문구다. 사용자의 분석 기능 제거 결정이 우선한다. 필수 동의는 계정 개인정보와 식사 기록·프로필을 활용한 개인화이며 사진 분석 동의를 요구하지 않는다. 호환을 위해 기존 저장 키 photoAnalysis는 개인화 동의 값으로만 읽고 쓴다. 별도 AI 학습 동의는 선택 사항이며 이 버전은 사진을 분석·학습에 전송하지 않는다.
 - 이미 작성된 프로필·초안·알레르기 및 추천 안전성 검사는 보존한다.
 
@@ -217,7 +231,9 @@ Then 검토 화면과 입력값이 유지되고 다시 시도할 수 있다.
 - 계정 `455:3229`·`455:1682`: 제목 20px Poppins Bold, 항목 이름 15px, 입력 40px, 안내·오류 12px. 정상 비밀번호 안내와 짧은 비밀번호 오류를 구분한다. 첫 계정 화면에는 Previous가 없다.
 - 동의 `455:3095`·`455:3160`: 패널·카드·안전 안내의 원본 간격과 13px 본문을 따른다. 분석 제거에 따른 동의 내용은 사용자의 결정이 우선한다.
 - 기타 입력 `455:1278`·`455:1382`: OTHER 14px, 입력 40px, 안내 12px. 검색 결과·선택 토큰을 별도 상태로 대조한다.
-- Safe foods `455:1916`: 빠른 입력 뒤 흰색 인라인 카드(너비 346px, 모서리 16px, 안쪽 16px)를 둔다. 제목과 설명은 한 묶음이며 필드 사이 8px이다. Presentation note와 Optional은 같은 줄에 둔다. 입력한 제공 메모도 추가된 음식에 표시한다.
+- Safe foods `455:1916`: 흰색 인라인 카드(화면 너비에 맞춤, 모서리 16px, 안쪽 16px)를 항상 표시한다.
+  제목과 설명은 한 묶음이며 필드 사이 12px이다. Cooking method·Additional details와 Optional은
+  각각 같은 줄에 둔다. 추가된 음식은 카드 위에 이름·조리 방법·추가 설명이 있는 녹색 토큰으로 표시한다.
 - 검토 `455:1748`: 네 카드에 27px 아이콘 영역·원본 수정 아이콘·13px 설명을 사용한다. 긴 내용은 잘라 숨기지 않는다.
 - 화면 대조는 390px 너비에서 수행한다. 웹에 없는 iOS 시계·배터리·홈 표시줄은 앱 콘텐츠와 분리해서 비교한다. 예시 아동 이름·답변은 실제 사용자 값으로 표시한다.
 

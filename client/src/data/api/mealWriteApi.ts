@@ -1,6 +1,9 @@
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 서버 발급 id 기준으로 저장 요청·응답 변환 재작성
+
 import type { Meal as CheckinMeal } from '../../types/meal';
 import type { CookingMethod } from '../../types/recordValues';
-import { toMealWrite, toMeal } from '../dto/mealDto';
+import { toMealDetail, toMealWrite } from '../dto/mealDto';
 import { apiRequest } from '../network/apiClient';
 
 const cookingMethods: Record<string, CookingMethod> = {
@@ -13,15 +16,17 @@ const cookingMethods: Record<string, CookingMethod> = {
 };
 
 export function prepareMealWrite(meal: CheckinMeal) {
-  const foodIds = new Map(meal.foods.map((food, index) => [food.id, String(index + 1)]));
-  if (foodIds.size !== meal.foods.length) throw new Error('Duplicate meal food ID');
-  const draft = {
+  if (new Set(meal.foods.map((food) => food.id)).size !== meal.foods.length) {
+    throw new Error('Duplicate meal food ID');
+  }
+  // 음식·재료 id 는 서버가 발급하므로 보내지 않는다. 앱 안의 임시 id 는 추천 연결을 묶는 데만 쓴다.
+  const body = toMealWrite({
     mealDate: meal.mealDate,
     mealType: meal.mealType,
     setting: meal.setting,
     beforePhotoUri: meal.photo?.uri ?? null,
     foods: meal.foods.map((food) => ({
-      id: foodIds.get(food.id)!,
+      id: food.id,
       name: food.name,
       ingredients: food.ingredients.map((name) => ({ id: null, name })),
       cookingMethod: cookingMethodFor(food.preparation),
@@ -30,11 +35,10 @@ export function prepareMealWrite(meal: CheckinMeal) {
     })),
     suggestionLinks: (meal.suggestionLinks ?? []).map((link) => ({
       suggestionId: link.suggestionId,
-      foodId: foodIds.get(link.foodId) ?? '',
-      ingredientId: link.ingredientId ?? null,
+      foodId: link.foodId,
     })),
-  };
-  return { foodIds, body: toMealWrite(draft) };
+  });
+  return { body };
 }
 
 export function cookingMethodFor(value: string): CookingMethod | null {
@@ -45,15 +49,18 @@ export function cookingMethodFor(value: string): CookingMethod | null {
 }
 
 export async function writeMeal(meal: CheckinMeal): Promise<CheckinMeal> {
-  const { foodIds, body } = prepareMealWrite(meal);
-  const saved = toMeal(await apiRequest<unknown>('/api/v1/meals', {
+  const { body } = prepareMealWrite(meal);
+  const saved = toMealDetail(await apiRequest<unknown>('/api/v1/meals', {
     method: 'PUT',
     body: JSON.stringify(body),
   }));
   if (saved.userId !== meal.childId || saved.mealDate !== meal.mealDate
-    || saved.mealType !== meal.mealType || saved.setting !== meal.setting) {
+    || saved.mealType !== meal.mealType || saved.setting !== meal.setting
+    || saved.foods.length !== meal.foods.length) {
     throw new Error('Mismatched meal response');
   }
+  // 응답의 음식은 요청 순서대로 서버 id 를 받는다.
+  const foodIds = new Map(meal.foods.map((food, index) => [food.id, saved.foods[index].id]));
   return {
     ...meal,
     id: saved.id,

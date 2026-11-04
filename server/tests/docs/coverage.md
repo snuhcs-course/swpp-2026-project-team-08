@@ -1,5 +1,6 @@
-<!-- AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung -->
-<!-- Changed: 테스트 문서 정리 및 docs 경로 반영 -->
+
+<!-- AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung -->
+<!-- Changed: 테스트 구조 유지 및 최신 main 기준 반영 -->
 
 # coverage.py 커버리지
 
@@ -61,16 +62,14 @@ uv run python scripts/coverage_report.py
 | 종류 | 범위·처리 |
 |---|---|
 | 측정 대상 밖의 파일 | `tests/`, `scripts/`, `migrations/`, 외부 패키지 등 `app/` 밖의 코드 |
-| 파일 제외 | 아래 네 파일을 제외한다. 그 밖의 DTO·모델·실행 코드는 포함한다. |
+| 파일 제외 | 아래 두 파일을 제외한다. 그 밖의 DTO·모델·실행 코드는 포함한다. |
 | 줄 제외 | 빈 줄·주석·docstring은 실행 가능한 문장 줄로 세지 않는다. 별도의 줄 제외 정규식은 적용하지 않는다. |
 | 분기 예외 | coverage.py가 인식하는 구조상 불필요한 분기와 기본 부분 분기 규칙은 적용한다. `exclude_lines`와 별개다. |
 
 | 제외 파일 (`server/` 기준) | 내용 |
 |---|---|
 | `app/features/onboarding/consent_version.py` | 동의 문서 버전 상수 |
-| `app/models/food_enums.py` | 음식 조리 방식 열거값 |
 | `app/features/meals/input_dto.py` | 별도 검증·변환 함수가 없는 입력 dataclass |
-| `app/features/suggestions/mock_profile.py` | 고정 제한 조건 데이터 |
 
 위 파일들을 커버리지 계산에 포함하지 않으나, 이는 테스트하지 않겠다는 뜻은 아니다. 필요한 경우 테스트하여야 한다.
 
@@ -97,10 +96,9 @@ uv run python scripts/coverage_report.py
 
 ### 측정 범위
 
-계층 분류는 `run.omit`으로 제외한 네 파일을 뺀 뒤 적용한다.
-`meals/input_dto.py`, `models/food_enums.py`, `onboarding/consent_version.py`는 계층 패턴에 맞더라도 집계하지 않는다.
-`suggestions/mock_profile.py`도 Others와 전체 합계에서 제외한다.
-`suggestions/ingredients.py`와 `meals/ingredient_queries.py`는 Others에 포함한다.
+계층 분류는 `run.omit`으로 제외한 두 파일을 뺀 뒤 적용한다.
+`meals/input_dto.py`, `onboarding/consent_version.py`는 계층 패턴에 맞더라도 집계하지 않는다.
+`suggestions/ingredients.py`는 Others에 포함한다.
 기존 계층에 속하지 않는 새 파일도 자동으로 Others에 포함하고 전체 커버리지에 합산한다.
 HTML 보고서의 `Files in Others`에 해당 파일의 전체 목록을 `server/` 기준 경로로 표시한다.
 워크플로 전용 스키마·상태·프롬프트는 Recommendation workflow에 포함한다.

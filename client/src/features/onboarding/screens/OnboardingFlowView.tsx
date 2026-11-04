@@ -1,9 +1,15 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: Dietary Pattern 선택 및 저장; 동작별 버튼 문구 구분; 공통 진행 바 사용
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Dietary Pattern 선택 및 저장; 동작별 버튼 문구 구분
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 채식 단계의 필수 표시 제거
 
+import { ProgressBar } from '../../../components/ProgressBar';
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
@@ -13,13 +19,13 @@ import { AppButton } from '../../../components/AppButton';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
-import { abcCopyFor, copyFor } from '../../../util/strings';
+import { copyFor } from '../../../util/strings';
 import type { OnboardingStep } from '../types';
 import { styles } from './onboardingFlowStyles';
 
 export function OnboardingFlowView({
   language, step, stepIndex, stepCount, childName, saveStatus, submitting, canContinue,
-  content, onPrevious, onContinue, onRetrySave,
+  content, continueLabel, previousLabel, onPrevious, onContinue, onRetrySave,
 }: {
   language: Language;
   step: OnboardingStep;
@@ -30,6 +36,8 @@ export function OnboardingFlowView({
   submitting: boolean;
   canContinue: boolean;
   content: ReactNode;
+  continueLabel?: string;
+  previousLabel?: string;
   onPrevious: () => void;
   onContinue: () => void;
   onSaveExit: () => void;
@@ -57,7 +65,8 @@ export function OnboardingFlowView({
               </Text>
             </View>
           </View>
-          <View style={styles.track}><View style={[styles.fill, { width: `${((stepIndex + 1) / stepCount) * 100}%` }]} /></View>
+          <ProgressBar variant="continuous" current={stepIndex + 1} total={stepCount}
+            style={styles.track} fillStyle={styles.fill} accessible={false} />
           <Text style={styles.subtitle}>{step === "safe-foods" ? s.onboarding.safeFoodsDescription(childName || s.onboarding.childFallback) : s.onboarding.subtitles[step]}</Text>
         </View>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
@@ -65,16 +74,14 @@ export function OnboardingFlowView({
           {saveStatus === 'error' && <AppButton label={s.common.retry} compact secondary onPress={onRetrySave} style={styles.retry} />}
         </ScrollView>
         <View style={styles.footer}>
-          {step !== 'account' && (step !== 'consent' || canContinue) && <AppButton label={s.common.previous} secondary onPress={onPrevious} style={styles.previous} />}
+          {step !== 'account' && (step !== 'consent' || canContinue) && <AppButton label={previousLabel ?? s.common.previous} secondary onPress={onPrevious} style={styles.previous} />}
           <AppButton
-            label={step === 'review' ? s.onboarding.looksGood : s.common.continue}
+            label={continueLabel ?? (step === 'review' ? s.onboarding.looksGood : s.common.continue)}
             disabled={submitting || !canContinue}
             onPress={onContinue}
             style={styles.next}
           />
         </View>
-        {step === 'family' && <Text style={{ textAlign: 'right', color: colors.onboardingMuted, paddingRight: 22, fontSize: 12 }}>{abcCopyFor(language).required}</Text>}
-
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

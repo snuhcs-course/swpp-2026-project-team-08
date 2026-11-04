@@ -1,10 +1,15 @@
-# AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung
-# Changed: 백엔드 레이어별 테스트 작성 예시
+# AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+# Changed: 최신 main 동작에 맞춘 테스트 작성 예시
 
 import pytest
 from pydantic import ValidationError
 
-from app.features.meals.dto import FoodWriteRequest, IngredientInput, MealWriteRequest
+from app.features.meals.dto import (
+    FoodWriteRequest,
+    IngredientInput,
+    MealFoodsWriteRequest,
+    MealFoodUpdateRequest,
+)
 
 
 @pytest.mark.parametrize(
@@ -23,7 +28,7 @@ from app.features.meals.dto import FoodWriteRequest, IngredientInput, MealWriteR
 )
 def test_음식_수용도는_정해진_정수_범위만_허용한다(acceptance, valid):
     # 준비: 짧고 이 테스트에만 필요한 입력은 본문에 둔다.
-    payload = {"id": "1", "name": "밥", "ingredients": [], "acceptance": acceptance}
+    payload = {"name": "밥", "ingredients": [], "acceptance": acceptance}
 
     # 실행·검증
     if valid:
@@ -48,17 +53,17 @@ def test_음식_수용도는_정해진_정수_범위만_허용한다(acceptance,
         pytest.param("1.5", False, id="소수"),
         pytest.param("１", False, id="전각_숫자"),
         pytest.param("", False, id="빈_ID"),
-        pytest.param(None, False, id="null"),
+        pytest.param(None, True, id="새_음식"),
         pytest.param(1, False, id="숫자_타입"),
     ],
 )
 def test_음식_ID는_양의_BIGINT_문자열만_허용한다(food_id, valid):
     payload = {"id": food_id, "name": "밥", "ingredients": []}
     if valid:
-        assert FoodWriteRequest(**payload).id == food_id
+        assert MealFoodUpdateRequest(**payload).id == food_id
     else:
         with pytest.raises(ValidationError) as raised:
-            FoodWriteRequest(**payload)
+            MealFoodUpdateRequest(**payload)
         assert raised.value.errors()[0]["loc"] == ("id",)
 
 
@@ -93,22 +98,19 @@ def test_재료명은_공백을_정리하되_빈_값은_거부한다(name, expec
 )
 def test_식사에는_중복_ID_없는_음식이_하나_이상_필요하다(ids, valid):
     payload = {
-        "meal_date": "2026-11-02",
-        "meal_type": "lunch",
-        "setting": "home",
         "foods": [{"id": value, "name": "밥", "ingredients": []} for value in ids],
     }
     if valid:
-        assert [food.id for food in MealWriteRequest(**payload).foods] == ids
+        assert [food.id for food in MealFoodsWriteRequest(**payload).foods] == ids
     else:
         with pytest.raises(ValidationError) as raised:
-            MealWriteRequest(**payload)
+            MealFoodsWriteRequest(**payload)
         assert raised.value.errors()[0]["loc"] == ("foods",)
 
 
-@pytest.mark.parametrize("field", ["id", "name", "ingredients"])
+@pytest.mark.parametrize("field", ["name", "ingredients"])
 def test_필수_음식_필드를_생략하면_해당_필드를_거부한다(field):
-    payload = {"id": "1", "name": "밥", "ingredients": []}
+    payload = {"name": "밥", "ingredients": []}
     del payload[field]
     with pytest.raises(ValidationError) as raised:
         FoodWriteRequest(**payload)

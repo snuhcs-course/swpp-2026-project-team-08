@@ -1,11 +1,11 @@
-# AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung
-# Changed: 백엔드 레이어별 테스트 작성 예시
+# AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+# Changed: 최신 main 동작에 맞춘 테스트 작성 예시
 
 from copy import deepcopy
 
 import pytest
 
-from app.features.suggestions.ingredients import ChildRestrictions, RestrictionId
+from app.features.suggestions.ingredients import build_catalog
 from app.features.suggestions.validation import find_problems
 from app.features.suggestions.workflow.state import FoodInput
 from tests.helpers.suggestions import batch
@@ -29,7 +29,7 @@ def test_추천_문구는_공백만으로_구성할_수_없다(field, tip, expec
     foods = [FoodInput(id="1", name="밥")]
 
     # 실행: 순수 검증 함수에는 mock이 필요하지 않다.
-    problems = find_problems(foods, results, ChildRestrictions())
+    problems = find_problems(foods, results, build_catalog(["쌀"]))
 
     # 검증
     assert [problem.kind for problem in problems] == expected
@@ -54,7 +54,7 @@ def test_요청한_음식마다_정확히_하나의_추천이_필요하다(resul
     results = batch(*result_ids).to_generated()
     before = deepcopy(results)
 
-    problems = find_problems(foods, results, ChildRestrictions())
+    problems = find_problems(foods, results, build_catalog(["쌀"]))
 
     assert [(item.kind, item.food_id) for item in problems] == expected
     assert results == before
@@ -63,28 +63,27 @@ def test_요청한_음식마다_정확히_하나의_추천이_필요하다(resul
 @pytest.mark.parametrize(
     ("ingredients", "expected"),
     [
-        pytest.param(["rice"], [], id="허용_재료"),
+        pytest.param(["쌀"], [], id="허용_재료"),
         pytest.param([], ["empty_ingredients"], id="재료_없음"),
         pytest.param([" "], ["empty_ingredients"], id="공백_재료만"),
-        pytest.param(["없는재료"], ["unknown_ingredient"], id="카탈로그에_없음"),
-        pytest.param(["땅콩버터"], ["restricted_ingredient"], id="제한_재료"),
+        pytest.param(["없는재료"], ["unavailable_ingredient"], id="카탈로그에_없음"),
+        pytest.param(["땅콩버터"], ["unavailable_ingredient"], id="제한_재료"),
         pytest.param(
             ["없는재료", "땅콩버터"],
-            ["unknown_ingredient", "restricted_ingredient"],
+            ["unavailable_ingredient", "unavailable_ingredient"],
             id="문제_모두_반환",
         ),
     ],
 )
 def test_추천_재료의_누락과_제한을_각각_검증한다(ingredients, expected):
     draft = batch("1")
-    draft.suggestions[0].used_ingredients = ingredients
-    restrictions = ChildRestrictions(ids=frozenset({RestrictionId.PEANUT}))
+    draft.suggestions[0].ingredients = ingredients
+    catalog = build_catalog(["쌀"])
 
-    problems = find_problems([FoodInput(id="1", name="밥")], draft.to_generated(), restrictions)
+    problems = find_problems([FoodInput(id="1", name="밥")], draft.to_generated(), catalog)
 
     assert [item.kind for item in problems] == expected
     for problem in problems:
         assert problem.food_id == "1"
-        if problem.kind == "restricted_ingredient":
-            assert problem.ingredient == "땅콩버터"
-            assert problem.restrictions == ("peanut",)
+        if problem.kind == "unavailable_ingredient":
+            assert problem.ingredient in ingredients

@@ -1,5 +1,9 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: Limit manual suggestion selection to three food items
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 추천 대상 키를 음식 id 로 변경
 
 import { useState } from 'react';
 import { Text, Pressable, View } from 'react-native';
@@ -11,7 +15,7 @@ import type { Language } from '../../../types/profile';
 import { suggestionCopyFor } from '../../../util/strings';
 import { suggestionStyles as s } from '../screens/suggestionStyles';
 
-const targetKey = (target: SuggestionTarget) => `${target.foodId}:${target.ingredientId ?? ''}`;
+const targetKey = (target: SuggestionTarget) => target.foodId;
 
 export function ChangeFoodsSheet({
   current, options, language, onClose, onUpdate,
@@ -24,7 +28,7 @@ export function ChangeFoodsSheet({
 }) {
   const [selected, setSelected] = useState(current);
   const c = suggestionCopyFor(language);
-  const changed = selected.length > 0 && (
+  const changed = selected.length > 0 && selected.length <= 3 && (
     selected.length !== current.length
     || selected.some((target) => !current.some((item) => targetKey(item) === targetKey(target)))
   );
@@ -51,10 +55,11 @@ export function ChangeFoodsSheet({
           <Pressable
             key={targetKey(target)}
             accessibilityRole="checkbox"
-            accessibilityState={{ checked }}
+            accessibilityState={{ checked, disabled: !checked && selected.length >= 3 }}
+            disabled={!checked && selected.length >= 3}
             onPress={() => setSelected((old) => checked
               ? old.filter((item) => targetKey(item) !== targetKey(target)) : [...old, target])}
-            style={s.checkRow}
+            style={[s.checkRow, !checked && selected.length >= 3 && s.disabled]}
           >
             <View style={[s.checkbox, checked && s.checkboxChecked]}>
               {checked && <UiAssetIcon name="suggestion-checked" />}

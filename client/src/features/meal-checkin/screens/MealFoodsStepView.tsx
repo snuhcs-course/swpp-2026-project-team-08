@@ -4,6 +4,8 @@
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Align the previous-suggestion action above the bottom save buttons
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 추천 카드의 재료 이름 표시 제거
 
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { useState } from "react";
@@ -272,7 +274,6 @@ export function MealFoodsStepView({ p }: { p: Props }) {
                   >
                     <View style={styles.linkCardHeading}><Text style={styles.suggestionName}>{item.title}</Text><View style={[styles.linkRadio, item.id === suggestion?.id && styles.linkRadioSelected]}>{item.id === suggestion?.id && <View style={styles.linkRadioDot} />}</View></View>
                     <Text style={styles.suggestionBody}>{item.description}</Text>
-                    {item.ingredientName && <Text style={styles.suggestionDate}>{item.ingredientName}</Text>}
                     {sourceMeal(item) && <Text style={styles.suggestionDate}>{sourceMeal(item)}</Text>}
                   </Pressable>
                 ))
@@ -287,7 +288,6 @@ export function MealFoodsStepView({ p }: { p: Props }) {
                   <Text style={styles.suggestionBody}>
                     {suggestion?.description}
                   </Text>
-                  {suggestion?.ingredientName && <Text style={styles.suggestionDate}>{suggestion.ingredientName}</Text>}
                   {suggestion && sourceMeal(suggestion) && <Text style={styles.suggestionDate}>{sourceMeal(suggestion)}</Text>}
                 </View>
                 <Text style={styles.linkSection}>{a.foodList}</Text>

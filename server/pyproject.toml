@@ -1,8 +1,9 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
 # Changed: server bootstraping
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
-# AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung
-# Changed: 커버리지 설정 및 기본 테스트에서 예시 제외
+# AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+# Changed: 테스트 구조 유지 및 최신 main 기준 반영
+
 [project]
 name = "server"
 version = "0.1.0"
@@ -53,9 +54,7 @@ branch = true
 source = ["app"]
 omit = [
     "app/features/onboarding/consent_version.py",
-    "app/models/food_enums.py",
     "app/features/meals/input_dto.py",
-    "app/features/suggestions/mock_profile.py",
 ]
 relative_files = true
 

@@ -1,5 +1,6 @@
-<!-- AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung -->
-<!-- Changed: 커버리지 문서 분리 및 백엔드 테스트 가이드·예시 -->
+
+<!-- AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung -->
+<!-- Changed: 테스트 구조 유지 및 최신 main 기준 반영 -->
 
 # Backend 테스트 기준
 
@@ -28,7 +29,7 @@
 | 종류 | 확인할 것 | 예시 |
 |---|---|---|
 | Unit | 한 함수·모듈의 입력과 결과 | DTO 검증, 순수 업무 판단, 토큰 검증, 의존성을 대체한 서비스 검사 |
-| Integration | 서로 다른 책임을 가진 실제 코드가 함께 만드는 결과 | HTTP → 인증 → 서비스 → DB, 그래프 → 도구 → 검증 → 재시도 |
+| Integration | 서로 다른 책임을 가진 실제 코드가 함께 만드는 결과 | HTTP → 인증 → 서비스 → DB, 그래프 → 생성 → 검증 → 재시도 |
 | E2E | 실행 중인 시스템의 전체 사용자 흐름 | 앱에서 가입 → 식사 기록 → 기록 확인 |
 
 비동기·HTTP 사용 여부가 아니라 실제로 연결하는 책임으로 구분한다. 서비스와 실제 DB를 연결하면 Integration이다.
@@ -107,7 +108,7 @@ DB 작업의 확인 절차는 [서버 작업 규칙](../../AGENTS.md#db에-영�
 | HTTP API | 상태 코드·본문·`error_code`·`details`, 인증 거부, 민감 필드 제외·OpenAPI 계약 | [인증 의존성](../examples/unit/test_http_api_example.py) |
 | Schemas and serialization | 허용·경계·잘못된 타입, 정규화, 필드 누락·중복·응답 변환 | [DTO 입력값](../examples/unit/test_schemas_example.py) |
 | Services and rules | 업무 오류·소유권·중복 처리, 실패 시 기존 데이터 보존 | [순수 검증](../examples/unit/test_rules_example.py) |
-| Recommendation workflow | 도구 실행, 검증 실패 후 피드백·재시도, 횟수 소진 시 오류·저장 방지 | [재시도 분기](../examples/unit/test_workflow_example.py) |
+| Recommendation workflow | 사용 가능한 재료 목록 전달, 검증 실패 후 피드백·재시도, 횟수 소진 시 오류·저장 방지 | [재시도 분기](../examples/unit/test_workflow_example.py) |
 | Database and persistence | 새 세션의 저장 결과, 부분 저장 방지, 연결·삭제 제약, 마이그레이션의 데이터 보존 | [트랜잭션 제어](../examples/unit/test_database_example.py) |
 | Core and security | 설정 오류·시간대, 토큰 종류·만료·위조, 비밀번호 확인 | [비밀번호·토큰 만료](../examples/unit/test_security_example.py) |
 | Others | 재료 정규화·제한 판단과 DB 조회·생성을 구분 | [재료 정규화](../unit/test_suggestion_ingredients.py) |
@@ -115,7 +116,7 @@ DB 작업의 확인 절차는 [서버 작업 규칙](../../AGENTS.md#db에-영�
 | Integration 예시 | 확인할 작성 방식 |
 |---|---|
 | [프로필 저장·권한·복구](../examples/integration/test_profile_example.py) | 실제 API·DB, 잘못된 입력·중복 저장·소유권, 실패 주입·재조회·복구 |
-| [추천 생성·재시도·소진](../examples/integration/test_generation_example.py) | 실제 그래프·도구, 가짜 LLM, 마지막 재시도 성공·소진·제한 재료 제외 |
+| [추천 생성·재시도·소진](../examples/integration/test_generation_example.py) | 실제 그래프, 가짜 LLM, 마지막 재시도 성공·소진·제한 재료 제외 |
 
 Integration은 성공·실패·재시도·소유권을 나눠 작성한다. 요청 실패 후에는 응답만 확인하지 않고 다시 조회해 기존 데이터와 관련 레코드가 보존되는지 검사해야 한다.
 
@@ -132,7 +133,7 @@ Unit·Integration별 도구 폴더는 따로 만들지 않는다. 아래 위치�
 | `tests/conftest.py` | `session_factory` | 호출할 때마다 테스트 DB에 연결된 새 세션을 만듦 |
 | `tests/conftest.py` | `forbid_live_llm` | 모든 테스트에 자동 적용하여 앱의 LLM 생성 함수를 호출하면 오류를 발생시킴 |
 | `tests/helpers/auth.py` | `auth_headers` | 가입·로그인 API를 호출하고 액세스 토큰이 담긴 인증 헤더를 반환 |
-| `tests/helpers/fake_chat_model.py` | `ScriptedChatModel` | 지정한 응답을 순서대로 반환하고, 추천 초안 생성에 전달된 메시지를 기록하는 가짜 모델 |
+| `tests/helpers/fake_chat_model.py` | `ScriptedChatModel` | 지정한 구조화 응답을 순서대로 반환하고, 추천 초안 생성에 전달된 메시지를 기록하는 가짜 모델 |
 | `tests/helpers/suggestions.py` | `install_model` | `batches`를 순서대로 반환하는 가짜 모델을 만들고 앱의 LLM 생성 함수를 교체한 뒤 모델을 반환 |
 
 식사·리뷰 생성은 공통 요청 데이터를 사용해 테스트 본문에서 직접 호출한다.
@@ -150,4 +151,4 @@ Unit·Integration별 도구 폴더는 따로 만들지 않는다. 아래 위치�
 | `tests/helpers/suggestions.py` | `suggestion_draft(food_id, serving_tip=...)` | 음식 ID와 제공 문구를 넣은 단일 `SuggestionDraft`를 반환한다. |
 | `tests/helpers/suggestions.py` | `batch(*food_ids)` | 음식 ID마다 `suggestion_draft`를 호출하고 결과 목록을 담은 `SuggestionsDraft`를 반환한다. |
 | `tests/fixtures/meals.py` | `meal_payload`, `food_payload` | 식사 요청 본문과 그 안에 넣을 음식 데이터를 반환한다. |
-| `tests/fixtures/reviews.py` | `review_payload` | 음식·재료별 식후 결과를 담은 리뷰 요청 본문을 반환한다. |
+| `tests/fixtures/reviews.py` | `review_payload` | 음식 ID·식후 결과·어려워한 이유를 담은 리뷰 요청 본문을 반환한다. |

@@ -1,72 +1,42 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 # Changed: ingredients 구조 bootstrap
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
-"""재료 카탈로그 조회와 제한 판정 (`ingredients.py`) 단위 테스트."""
+# AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+# Changed: DB 에서 읽은 사용 가능 재료 집합(Catalog) 기준으로 재작성
+"""재료 카탈로그 조회 (`ingredients.py`) 단위 테스트. DB 없이 값만으로 확인한다."""
 
-import json
-
-import pytest
-
-from app.features.suggestions import ingredients
 from app.features.suggestions.ingredients import (
-    ChildRestrictions,
-    RestrictionId,
-    conflicting_restrictions,
-    find_ingredient,
+    build_catalog,
+    is_usable,
     normalize_name,
     usable_ingredient_names,
 )
 
-
-def restrictions(*ids: str) -> ChildRestrictions:
-    return ChildRestrictions(ids=frozenset(RestrictionId(i) for i in ids))
-
-
-def test_restriction_ids_match_client_profile_ids():
-    assert len(RestrictionId) == 20
-    assert RestrictionId("tree-nut") is RestrictionId.TREE_NUT
-
-
-def test_unknown_restriction_id_in_catalog_fails_to_load(tmp_path, monkeypatch):
-    path = tmp_path / "catalog.json"
-    path.write_text(
-        json.dumps({"ingredients": [{"names": ["x"], "restrictions": ["pnut"]}]}),
-        encoding="utf-8",
-    )
-    monkeypatch.setattr(ingredients, "CATALOG_PATH", path)
-    ingredients.load_catalog.cache_clear()
-    try:
-        with pytest.raises(ValueError):
-            ingredients.load_catalog()
-    finally:
-        ingredients.load_catalog.cache_clear()
+CATALOG = build_catalog(["쌀", "당근", "Peanut Butter"])
 
 
 def test_normalize_name_ignores_case_and_spaces():
     assert normalize_name("  Peanut   Butter ") == "peanut butter"
 
 
-def test_find_ingredient_matches_every_name_exactly():
-    assert find_ingredient("Peanut Butter") is find_ingredient("땅콩버터")
-    assert find_ingredient("땅콩 소스") is None  # 부분 일치는 하지 않는다
-
-
-def test_conflicting_restrictions_returns_overlap_sorted():
-    milk = find_ingredient("milk")
-    assert conflicting_restrictions(milk, restrictions("casein-free", "milk", "egg")) == [
-        "casein-free",
-        "milk",
-    ]
-    assert conflicting_restrictions(milk, restrictions("egg")) == []
+def test_is_usable_matches_the_exact_name_only():
+    assert is_usable(CATALOG, "peanut  butter")
+    assert is_usable(CATALOG, " 쌀 ")
+    assert not is_usable(CATALOG, "땅콩 소스")  # 부분 일치는 하지 않는다
+    assert not is_usable(CATALOG, "쌀밥")
 
 
 def test_usable_ingredient_names_filters_candidates():
-    result = usable_ingredient_names(restrictions("peanut"), ["땅콩버터", "carrot", "unknown"])
-    assert result == ["carrot"]  # 제한 재료와 카탈로그에 없는 재료는 빠진다
+    assert usable_ingredient_names(CATALOG, ["쌀", "우유", "당근"]) == ["쌀", "당근"]
 
 
-def test_usable_ingredient_names_without_candidates_lists_catalog():
-    names = usable_ingredient_names(restrictions("milk"), [])
-    assert "rice" in names
-    assert "milk" not in names and "cheese" not in names
+def test_usable_ingredient_names_without_candidates_lists_the_whole_catalog():
+    names = usable_ingredient_names(CATALOG, [])
+    assert names == sorted(["쌀", "당근", "Peanut Butter"])
     assert len(names) == len(set(names))
+
+
+def test_empty_catalog_has_nothing_usable():
+    empty = build_catalog([])
+    assert usable_ingredient_names(empty, []) == []
+    assert not is_usable(empty, "쌀")

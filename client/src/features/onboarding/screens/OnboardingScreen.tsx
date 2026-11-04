@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
-// Changed: 제외된 온보딩 질문 제거
+// AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
+// Changed: 제외된 온보딩 질문 제거; 동작별 버튼 문구 구분
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
@@ -8,6 +8,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 채식 단계 이름 변경, 직접 입력·안심 음식 없음 제거
 
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -17,7 +19,7 @@ import { useAuth } from '../../../providers/AuthProvider';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { OnboardingReadyView } from './OnboardingReadyView';
 import { colors } from '../../../util/colors';
-import { copyFor } from '../../../util/strings';
+import { copyFor, strings } from '../../../util/strings';
 import { useOnboarding } from '../hooks/useOnboarding';
 import { onboardingRouteParams } from '../navigation';
 import { canAddSafeFood, matchingSafeFoods, validEmail, validPassword } from '../rules';
@@ -132,10 +134,8 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         childName={model.draft.childName}
         language={language}
         safeFoods={model.draft.safeFoods}
-        noSafeFoods={model.draft.noSafeFoods}
         input={model.draft.safeFoodInput}
         canAdd={canAddSafeFood(model.draft.safeFoodInput)}
-        onToggleNone={() => model.setNoSafeFoods(!model.draft.noSafeFoods)}
         onRemove={model.removeSafeFood}
         onInputChange={model.setSafeFoodInput}
         onAdd={() => model.addSafeFood(model.draft.safeFoodInput)}
@@ -158,8 +158,6 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         language={language}
         onSetField={model.setField}
         onToggleList={model.toggleList}
-        onAddListItem={model.addListItem}
-        onRemoveListItem={model.removeListItem}
       />
     );
     return null;
@@ -179,6 +177,16 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
       saveStatus={model.saveStatus}
       submitting={submitting}
       canContinue={model.canContinue(step)}
+      continueLabel={language === 'ko'
+        ? step === 'review' || (origin === 'child-profile' && step !== 'allergies')
+          ? strings.ko.onboarding.looksGood
+          : step === 'account' && !model.editing && !auth.session
+            ? strings.ko.onboarding.createAccount
+            : origin === 'review' && step !== 'allergies'
+              ? strings.ko.onboarding.returnToReview : s.common.continue
+        : undefined}
+      previousLabel={language === 'ko' && origin === 'child-profile'
+        ? strings.ko.onboarding.cancelEdit : undefined}
       content={renderStep()}
       onPrevious={handlePrevious}
       onContinue={() => { void handleContinue(); }}

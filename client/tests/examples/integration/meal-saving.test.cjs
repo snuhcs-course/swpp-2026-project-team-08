@@ -1,5 +1,6 @@
-// AI-generated with GPT-6, 2026-10-31, reviewed by Haechan Jung
-// Changed: 식사 저장의 성공·실패·복구 Integration 예시
+
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 최신 main 동작에 맞춘 테스트 작성 예시
 
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -126,15 +127,14 @@ async function prepareSaving(t) {
     assert.equal(method, 'PUT', '예상하지 않은 HTTP 요청');
     server.saveAttempts++;
     assert.deepEqual(JSON.parse(options.body), {
-      meal_date: '2026-10-23', meal_type: 'lunch', setting: 'home', before_photo_uri: null,
-      foods: [{ id: '1', name: 'Rice', ingredients: [], cooking_method: null,
-        serving_note: null, acceptance: null }], suggestion_links: [],
+      meal_date: '2026-10-23', meal_type: 'LUNCH', setting: 'HOME', before_photo_uri: null,
+      foods: [{ food_recommendation_ids: [], name: 'Rice', ingredients: [], cooking_method: null,
+        serving_note: null, acceptance: null }],
     });
     if (server.failSave) return unavailable();
     const saved = mealResponse();
     server.items = [saved, ...server.items.filter(item => item.id !== saved.id)];
-    const { foods, review, suggestion_links, ...receipt } = saved;
-    return json(receipt);
+    return json(saved);
   });
 
   const hook = await renderHook(t, () => ({

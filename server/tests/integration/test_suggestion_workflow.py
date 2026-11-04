@@ -3,16 +3,24 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 도구 없이 프롬프트의 재료 목록으로 검증하는 워크플로 기준으로 재작성
+# AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
+# Changed: 재료별 리뷰 결과와 아이가 잘 먹는 음식이 프롬프트에 담기는지 검증 추가
 """제안 생성 워크플로 테스트. 가짜 모델로 그래프 전체를 실행하고 LLM은 호출하지 않는다."""
 
 import pytest
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 
 from app.features.suggestions.generator import GenerationRejectedError, generate_suggestions
 from app.features.suggestions.ingredients import build_catalog
 from app.features.suggestions.workflow.nodes import MAX_ATTEMPTS
 from app.features.suggestions.workflow.schemas import SuggestionDraft, SuggestionsDraft
-from app.features.suggestions.workflow.state import FoodInput
+from app.features.suggestions.workflow.state import (
+    FamiliarEatenFood,
+    FamiliarFoods,
+    FamiliarSafeFood,
+    FoodInput,
+    IngredientResult,
+)
 from tests.helpers.fake_chat_model import ScriptedChatModel
 
 FOODS = [
@@ -106,6 +114,88 @@ async def test_rejected_after_attempts_are_exhausted():
     assert [(p.kind, p.food_id, p.ingredient) for p in raised.value.problems] == [
         ("unavailable_ingredient", "f1", "땅콩버터")
     ]
+
+
+FAMILIAR = FamiliarFoods(
+    safe_foods=(
+        FamiliarSafeFood("감자", preparation="푹 삶기", presentation_note="작게 잘라 제공"),
+        FamiliarSafeFood("쌀밥"),
+    ),
+    eaten_foods=(
+        FamiliarEatenFood("계란찜", cooking_method="STEAMED", ingredients=("달걀", "물")),
+        FamiliarEatenFood("바나나"),
+    ),
+)
+
+
+def prompt_of(llm: ScriptedChatModel) -> str:
+    return next(m.content for m in llm.compose_inputs[0] if isinstance(m, HumanMessage))
+
+
+async def test_prompt_carries_the_foods_the_child_eats_well():
+    llm = ScriptedChatModel(drafts=[drafts(["당근"], ["쌀"])])
+
+    await generate_suggestions(FOODS, CATALOG, familiar=FAMILIAR, llm=llm)
+
+    prompt = prompt_of(llm)
+    assert "아이가 평소 잘 먹는 음식 (보호자가 적은 safe food):" in prompt
+    assert "- 감자, cooking: 푹 삶기, note: 작게 잘라 제공" in prompt
+    # 조리·제공 형태를 적지 않은 safe food 는 이름만 나온다.
+    assert "\n- 쌀밥\n" in prompt
+    assert "과거 식사에서 아이가 먹은 음식 (outcome: EATEN):" in prompt
+    assert "- 계란찜, cooking_method: STEAMED, ingredients: 달걀, 물" in prompt
+    assert "\n- 바나나\n" in prompt
+    # 쓸 수 있는 재료 목록은 여전히 마지막 구역이다.
+    listed = prompt.split("쓸 수 있는 재료 (한 줄에 하나):\n")[1].splitlines()
+    assert listed == ["Tofu", "당근", "쌀"]
+
+
+async def test_prompt_has_no_familiar_sections_without_records():
+    llm = ScriptedChatModel(drafts=[drafts(["당근"], ["쌀"])])
+
+    await generate_suggestions(FOODS, CATALOG, llm=llm)
+
+    prompt = prompt_of(llm)
+    assert "아이가 평소 잘 먹는 음식" not in prompt
+    assert "과거 식사에서 아이가 먹은 음식" not in prompt
+
+
+async def test_prompt_separates_reasons_for_the_food_and_for_its_ingredients():
+    foods = [
+        FoodInput(
+            id="f1",
+            name="Stir fry",
+            outcome="UNTOUCHED",
+            difficulty_reasons=("TEXTURE.HARDNESS.HARD",),
+            ingredient_results=(
+                IngredientResult("당근", "UNTOUCHED", ("SMELL.SULFUR", "COLOR.GREEN")),
+                IngredientResult("감자", "EATEN"),
+            ),
+        )
+    ]
+    llm = ScriptedChatModel(drafts=[SuggestionsDraft(suggestions=[draft("f1", ["당근"])])])
+
+    await generate_suggestions(foods, CATALOG, llm=llm)
+
+    assert (
+        "difficulty_reasons: TEXTURE.HARDNESS.HARD, ingredient_results: "
+        "당근 (outcome: UNTOUCHED, difficulty_reasons: SMELL.SULFUR / COLOR.GREEN); "
+        "감자 (outcome: EATEN)"
+    ) in prompt_of(llm)
+
+
+async def test_system_prompt_tells_the_model_how_to_use_reasons_and_familiar_foods():
+    llm = ScriptedChatModel(drafts=[drafts(["당근"], ["쌀"])])
+
+    await generate_suggestions(FOODS, CATALOG, familiar=FAMILIAR, llm=llm)
+
+    system = next(m.content for m in llm.compose_inputs[0] if isinstance(m, SystemMessage))
+    # 어려워한 이유를 출발점으로 삼고, 기록에 없는 이유를 지어내지 않는다.
+    assert "어려워한 이유는 제안의 출발점" in system
+    assert "지어내지 않습니다" in system
+    # 익숙한 음식은 제안의 근거일 뿐이고 재료는 여전히 쓸 수 있는 재료 목록에서만 고른다.
+    assert "이름이 같다고 해서" in system
+    assert "재료를 고르는 기준이 아닙니다" in system
 
 
 async def test_missing_food_is_rejected():

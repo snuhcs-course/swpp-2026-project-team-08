@@ -5,6 +5,8 @@
 <!-- Changed: suggestion 관련 문서 업데이트 -->
 <!-- AI-generated with GPT-6, 2026-10-26, reviewed by Haechan Jung -->
 <!-- Changed: 아키텍처 현행화 및 문서 역할 정리 -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim -->
+<!-- Changed: 추천 워크플로 파일 구조에 아이가 잘 먹는 음식 로더 추가 -->
 
 <!-- AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo -->
 <!-- Changed: 식사 재료와 공용 카탈로그의 저장 경계 -->
@@ -166,6 +168,8 @@ features/suggestions/
 ├── generator.py          # 서비스가 부르는 단일 진입점 (그래프 실행, 검증 실패 시 예외)
 ├── validation.py         # 결과 검증 — 순수 함수, 문제 목록을 반환
 ├── ingredients.py        # 재료 카탈로그 · 제한 판정 — 순수 함수
+├── catalog.py            # DB에서 아이가 쓸 수 있는 재료 카탈로그를 읽는 로더
+├── familiar.py           # DB에서 아이가 잘 먹는 음식(safe food, 과거 EATEN 음식)을 읽는 로더
 └── workflow/
     ├── state.py          # InputState · OutputState · GraphState, 입출력 dataclass, 컨텍스트
     ├── nodes.py          # 노드 (얇게)

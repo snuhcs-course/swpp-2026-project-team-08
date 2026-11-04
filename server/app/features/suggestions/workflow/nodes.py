@@ -2,6 +2,8 @@
 # Changed: add suggestion LLM workflow
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: agent 노드와 도구를 없애고 첫 프롬프트에 쓸 수 있는 재료 목록을 담도록 변경
+# AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
+# Changed: prepare 가 아이가 잘 먹는 음식을 첫 프롬프트에 함께 담도록 변경
 
 """그래프의 노드.
 
@@ -29,7 +31,9 @@ def prepare(state: InputState) -> Update:
     return {
         "messages": [
             SystemMessage(prompts.SYSTEM_PROMPT),
-            HumanMessage(prompts.build_user_prompt(state["foods"], state["catalog"])),
+            HumanMessage(
+                prompts.build_user_prompt(state["foods"], state["catalog"], state["familiar"])
+            ),
         ],
         "results": [],
         "problems": [],

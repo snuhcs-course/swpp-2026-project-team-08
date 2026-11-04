@@ -2,8 +2,8 @@
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
-// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
-// Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: MyPage 언어 전환 연결 및 언어 변경 버튼 숨김
 
 import { AppHeader } from '../../../components/AppHeader';
 import Feather from '@expo/vector-icons/Feather';
@@ -15,7 +15,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { styles } from './myPageStyles';
 
 export function MyPageView({
-  language, languageError, changingLanguage, onLanguage, childName, ageLabel, caregiver, deleteError,
+  language, languageError, childName, ageLabel, caregiver, deleteError,
   confirm, busy, onViewProfile, onCaregiver, onLogOut, onDelete, onConfirm, onCancelConfirm,
 }: {
   language: Language;
@@ -38,13 +38,7 @@ export function MyPageView({
   const m = copyFor(language).myPage;
   return (
     <View style={styles.root}>
-      <AppHeader title={m.title} accessory={
-        <Pressable accessibilityRole="button" accessibilityLabel={copyFor(language).common.language}
-          accessibilityState={{ disabled: changingLanguage }} disabled={changingLanguage}
-          onPress={onLanguage} style={styles.languageButton}>
-          <Text style={styles.link}>{copyFor(language).common.language}</Text>
-        </Pressable>
-      } />
+      <AppHeader title={m.title} />
       {languageError && <Text accessibilityRole="alert" style={styles.errorText}>{copyFor(language).common.saveFailed}</Text>}
       <ScrollView contentContainerStyle={[styles.body, styles.content]} keyboardShouldPersistTaps="handled">
         <Text style={styles.sectionLabel}>{m.childProfileSection}</Text>

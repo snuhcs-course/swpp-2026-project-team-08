@@ -1,6 +1,8 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
 # Changed: server bootstraping
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung
+# Changed: HTTP 테스트 fixture 이름을 api_client로 명확화
 """에러 포장 테스트: 서비스/검증기가 던진 AppError 가 router 선언대로 응답으로 바뀌는지.
 
 실제 라우터와 분리하기 위해 이 파일 안에서 작은 앱을 만들어 `ErrorMappedRoute` 를 검증한다.
@@ -91,7 +93,7 @@ async def order_c(user: Annotated[str, Depends(_require_login)]) -> dict:
 
 
 @pytest_asyncio.fixture
-async def client() -> AsyncGenerator[AsyncClient, None]:
+async def api_client() -> AsyncGenerator[AsyncClient, None]:
     test_app = FastAPI()
     register_exception_handlers(test_app)
     test_app.include_router(_router)
@@ -101,40 +103,40 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
 
 
 @pytest.mark.asyncio
-async def test_service_error_uses_router_spec_with_details(client: AsyncClient) -> None:
-    res = await client.post("/orders/a", json={"name": "empty"})
+async def test_service_error_uses_router_spec_with_details(api_client: AsyncClient) -> None:
+    res = await api_client.post("/orders/a", json={"name": "empty"})
 
     assert res.status_code == 409
     assert res.json() == {"error_code": "NOT_ENOUGH_STOCK", "details": {"item": "apple"}}
 
 
 @pytest.mark.asyncio
-async def test_validator_error_uses_router_spec(client: AsyncClient) -> None:
-    res = await client.post("/orders/a", json={"name": "bad"})
+async def test_validator_error_uses_router_spec(api_client: AsyncClient) -> None:
+    res = await api_client.post("/orders/a", json={"name": "bad"})
 
     assert res.status_code == 400
     assert res.json() == {"error_code": "BAD_NAME", "details": {}}
 
 
 @pytest.mark.asyncio
-async def test_same_error_can_have_different_spec_per_endpoint(client: AsyncClient) -> None:
-    res = await client.post("/orders/b", json={"name": "bad"})
+async def test_same_error_can_have_different_spec_per_endpoint(api_client: AsyncClient) -> None:
+    res = await api_client.post("/orders/b", json={"name": "bad"})
 
     assert res.status_code == 422
     assert res.json()["error_code"] == "BAD_NAME_B"
 
 
 @pytest.mark.asyncio
-async def test_undeclared_error_is_500(client: AsyncClient) -> None:
-    res = await client.post("/orders/a", json={"name": "undeclared"})
+async def test_undeclared_error_is_500(api_client: AsyncClient) -> None:
+    res = await api_client.post("/orders/a", json={"name": "undeclared"})
 
     assert res.status_code == 500
     assert res.json() == {"error_code": "INTERNAL_ERROR", "details": {}}
 
 
 @pytest.mark.asyncio
-async def test_plain_validation_failure_is_normalized(client: AsyncClient) -> None:
-    res = await client.post("/orders/a", json={})
+async def test_plain_validation_failure_is_normalized(api_client: AsyncClient) -> None:
+    res = await api_client.post("/orders/a", json={})
 
     assert res.status_code == 422
     assert res.json() == {
@@ -144,8 +146,8 @@ async def test_plain_validation_failure_is_normalized(client: AsyncClient) -> No
 
 
 @pytest.mark.asyncio
-async def test_openapi_lists_declared_errors_by_status(client: AsyncClient) -> None:
-    schema = (await client.get("/openapi.json")).json()
+async def test_openapi_lists_declared_errors_by_status(api_client: AsyncClient) -> None:
+    schema = (await api_client.get("/openapi.json")).json()
     responses = schema["paths"]["/orders/a"]["post"]["responses"]
 
     assert responses["409"]["description"] == "NOT_ENOUGH_STOCK"
@@ -157,9 +159,9 @@ async def test_openapi_lists_declared_errors_by_status(client: AsyncClient) -> N
 
 
 @pytest.mark.asyncio
-async def test_dependency_carries_its_own_error_spec(client: AsyncClient) -> None:
-    res = await client.get("/orders/c")
-    schema = (await client.get("/openapi.json")).json()
+async def test_dependency_carries_its_own_error_spec(api_client: AsyncClient) -> None:
+    res = await api_client.get("/orders/c")
+    schema = (await api_client.get("/openapi.json")).json()
 
     assert res.status_code == 401
     assert res.json() == {"error_code": "NEED_LOGIN", "details": {}}
@@ -167,8 +169,8 @@ async def test_dependency_carries_its_own_error_spec(client: AsyncClient) -> Non
 
 
 @pytest.mark.asyncio
-async def test_unknown_route_has_same_error_shape(client: AsyncClient) -> None:
-    res = await client.get("/no-such-path")
+async def test_unknown_route_has_same_error_shape(api_client: AsyncClient) -> None:
+    res = await api_client.get("/no-such-path")
 
     assert res.status_code == 404
     assert res.json() == {"error_code": "NOT_FOUND", "details": {}}

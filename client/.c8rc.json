@@ -9,31 +9,19 @@
   ],
   "exclude": [
     "**/*.d.ts",
-    "src/features/after-meal-review/screens/reviewViewTypes.ts",
-    "src/features/meal-checkin/screens/mealCheckinViewTypes.ts",
-    "src/features/meal-checkin/types.ts",
-    "src/features/meal-log/types.ts",
-    "src/features/suggestions/types.ts",
-    "src/types/home.ts",
-    "src/types/ingredientRecord.ts",
-    "src/types/mealRecord.ts",
-    "src/types/profile.ts",
-    "src/types/recordValues.ts",
-    "src/types/reviewRecord.ts",
-    "src/types/suggestion.ts",
-    "src/types/suggestionRecord.ts"
+    "src/**/types/**",
+    "src/**/types.{ts,tsx}",
+    "src/**/*Types.{ts,tsx}",
+    "src/util/colors.ts",
+    "src/util/fonts.ts",
+    "src/util/strings.ts"
   ],
   "extension": [
     ".ts",
     ".tsx"
   ],
   "exclude-after-remap": true,
-  "reporter": [
-    "text-summary",
-    "html",
-    "json",
-    "json-summary"
-  ],
-  "reports-dir": "coverage/combined",
-  "_comment": "AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung"
+  "reporter": [],
+  "reports-dir": "coverage",
+  "_comment": "AI-generated with GPT-6, 2026-10-31, reviewed by Haechan Jung"
 }

@@ -6,6 +6,8 @@
 # Changed: add suggestion LLM workflow
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 음식 단위 FoodRecommendation, 프로필 제한과 DB 카탈로그, TRIED 상태 처리로 재작성
+# AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
+# Changed: 재료별 리뷰 결과와 아이가 잘 먹는 음식(safe food, EATEN)을 생성 입력에 추가
 
 """인증된 사용자의 음식 추천을 만들고 조회하고 결정한다."""
 
@@ -21,9 +23,10 @@ from app.core.errors import AppError
 from app.core.timezone import now_kst
 from app.features.meals.queries import meal_records, owned_meal
 from app.features.suggestions.catalog import load_catalog
+from app.features.suggestions.familiar import load_familiar_foods
 from app.features.suggestions.generator import generate_suggestions
 from app.features.suggestions.ingredients import ChildRestrictions
-from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
+from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion, IngredientResult
 from app.models import FoodRecommendation, MealFood, UserProfile
 from app.models.food_recommendation_enums import (
     FoodRecommendationDismissReason,
@@ -146,12 +149,23 @@ class FoodRecommendationService:
                 ),
                 outcome=by_id[food_id].food.outcome.value,
                 difficulty_reasons=tuple(by_id[food_id].food.difficulty_reasons),
+                # 보호자가 따로 리뷰한 재료만 담는다. outcome 이 NULL 이면 리뷰하지 않은 재료다.
+                ingredient_results=tuple(
+                    IngredientResult(
+                        name=item.name,
+                        outcome=item.outcome.value,
+                        difficulty_reasons=tuple(item.difficulty_reasons),
+                    )
+                    for item in by_id[food_id].ingredients
+                    if item.outcome is not None
+                ),
             )
             for index, food_id in enumerate(food_ids)
         ]
+        familiar = await load_familiar_foods(self._session, user_id, exclude_food_ids=food_ids)
         try:
             async with asyncio.timeout(60):
-                generated = await generate_suggestions(inputs, catalog)
+                generated = await generate_suggestions(inputs, catalog, familiar=familiar)
         except Exception as error:
             raise GenerationFailedError() from error
         if (

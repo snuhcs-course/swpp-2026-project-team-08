@@ -1,6 +1,9 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 저장·수정·리뷰가 상세 응답을 돌려주도록 변경, 카탈로그 오류 제거
 
+# AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+# Changed: 최신 식사 동작 유지 및 입력·응답 모듈 경로 정리
+
 """인증된 사용자의 식사 저장·조회·수정·리뷰 API."""
 
 from typing import Annotated
@@ -12,14 +15,6 @@ from app.api.errors import ErrorMappedRoute, ErrorSpec, error_specs
 from app.core.database import get_session
 from app.core.errors import AppError
 from app.features.auth.dependencies import CurrentUser
-from app.features.meals.data import (
-    FoodData,
-    FoodReviewData,
-    IngredientData,
-    IngredientReviewData,
-    MealData,
-    ReviewData,
-)
 from app.features.meals.dto import (
     FoodWriteRequest,
     MealDetailResponse,
@@ -29,7 +24,15 @@ from app.features.meals.dto import (
     MealReviewWriteRequest,
     MealWriteRequest,
 )
-from app.features.meals.present import meal_detail_response
+from app.features.meals.input_dto import (
+    FoodData,
+    FoodReviewData,
+    IngredientData,
+    IngredientReviewData,
+    MealData,
+    ReviewData,
+)
+from app.features.meals.serialization import meal_detail_response
 from app.features.meals.service import (
     DuplicateIngredientError,
     InvalidFoodError,

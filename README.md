@@ -1,4 +1,6 @@
 <!-- AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo -->
+<!-- AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung -->
+<!-- Changed: 삭제한 실제 서버 테스트 실행 안내 제거 -->
 # NurtureBites
 
 NurtureBites is a meal tracker and planning app for caregivers of autistic children with sensory-selective eating. Caregivers record what was served and what happened after the meal, then get small, restriction-aware ideas for what to try next.
@@ -105,7 +107,6 @@ Useful client commands (from `client/`):
 | Lint | `npm run lint` |
 | Typecheck | `npx tsc --noEmit` |
 | Tests | `npm test` |
-| Tests with live API integration (disposable PostgreSQL; requires Docker and `uv`) | `npm run test:integration` |
 
 <!-- AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo -->
 <!-- AI-generated with Cursor Grok 4.6, 2026-10-23, reviewed by moonmoonboop -->

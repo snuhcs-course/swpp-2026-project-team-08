@@ -5,6 +5,9 @@
 # Changed: 온보딩 통합 테스트를 restrictions 목록과 안전 음식 전체 교체 기준으로 재작성
 # AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 # Changed: 식생활 유형 저장·조회와 조리 방법 없는 익숙한 음식 검증
+# AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+# Changed: main 테스트 유지 및 api_client·공통 fixture 정리
+
 """Onboarding API persistence, ownership, and validation."""
 
 import pytest
@@ -16,13 +19,13 @@ from tests.helpers.auth import auth_headers
 
 
 @pytest.mark.asyncio
-async def test_onboarding_round_trip_and_idempotent_consents(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "parent@example.com")
-    empty = await client.get("/api/v1/onboarding", headers=headers)
+async def test_onboarding_round_trip_and_idempotent_consents(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "parent@example.com")
+    empty = await api_client.get("/api/v1/onboarding", headers=headers)
     assert empty.status_code == 200
     assert empty.json() == {"profile": None, "consents": []}
 
-    written = await client.put("/api/v1/onboarding", headers=headers, json=request_body())
+    written = await api_client.put("/api/v1/onboarding", headers=headers, json=request_body())
     assert written.status_code == 200, written.text
     body = written.json()
     profile = body["profile"]
@@ -48,10 +51,10 @@ async def test_onboarding_round_trip_and_idempotent_consents(client: AsyncClient
         "AI_TRAINING",
     }
     assert {row["document_version"] for row in body["consents"]} == {DOCUMENT_VERSION}
-    assert (await client.get("/api/v1/onboarding", headers=headers)).json() == body
+    assert (await api_client.get("/api/v1/onboarding", headers=headers)).json() == body
 
     # 같은 내용을 다시 저장해도 동의 기록은 늘지 않는다.
-    repeat = await client.put("/api/v1/onboarding", headers=headers, json=request_body())
+    repeat = await api_client.put("/api/v1/onboarding", headers=headers, json=request_body())
     assert repeat.status_code == 200, repeat.text
     assert [row["id"] for row in repeat.json()["consents"]] == [
         row["id"] for row in body["consents"]
@@ -61,7 +64,7 @@ async def test_onboarding_round_trip_and_idempotent_consents(client: AsyncClient
     updated["profile"]["child_name"] = "새 이름"
     updated["profile"]["restrictions"] = ["ALLERGY.NONE"]
     updated["consents"][2]["granted"] = True
-    changed = await client.put("/api/v1/onboarding", headers=headers, json=updated)
+    changed = await api_client.put("/api/v1/onboarding", headers=headers, json=updated)
     assert changed.status_code == 200, changed.text
     assert changed.json()["profile"]["child_name"] == "새 이름"
     assert changed.json()["profile"]["restrictions"] == ["ALLERGY.NONE"]
@@ -73,9 +76,9 @@ async def test_onboarding_round_trip_and_idempotent_consents(client: AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_safe_foods_are_replaced_in_request_order(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "parent@example.com")
-    first = await client.put("/api/v1/onboarding", headers=headers, json=request_body())
+async def test_safe_foods_are_replaced_in_request_order(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "parent@example.com")
+    first = await api_client.put("/api/v1/onboarding", headers=headers, json=request_body())
     first_foods = first.json()["profile"]["safe_foods"]
     assert [food["name"] for food in first_foods] == ["감자", "쌀밥"]
 
@@ -86,34 +89,34 @@ async def test_safe_foods_are_replaced_in_request_order(client: AsyncClient) -> 
         {"name": "감자", "preparation": "찌기", "presentation_note": "작게"},
         {"name": "바나나", "preparation": "으깨기", "presentation_note": None},
     ]
-    second = await client.put("/api/v1/onboarding", headers=headers, json=reordered)
+    second = await api_client.put("/api/v1/onboarding", headers=headers, json=reordered)
     assert second.status_code == 200, second.text
     foods = second.json()["profile"]["safe_foods"]
     assert [food["name"] for food in foods] == ["쌀밥", "감자", "바나나"]
     assert foods[1]["preparation"] == "찌기"
-    assert (await client.get("/api/v1/onboarding", headers=headers)).json() == second.json()
+    assert (await api_client.get("/api/v1/onboarding", headers=headers)).json() == second.json()
 
     # 빈 목록을 저장하면 안전 음식이 모두 없어진다.
     cleared = request_body()
     cleared["profile"]["safe_foods"] = []
-    removed = await client.put("/api/v1/onboarding", headers=headers, json=cleared)
+    removed = await api_client.put("/api/v1/onboarding", headers=headers, json=cleared)
     assert removed.status_code == 200, removed.text
     assert removed.json()["profile"]["safe_foods"] == []
-    assert (await client.get("/api/v1/onboarding", headers=headers)).json()["profile"][
+    assert (await api_client.get("/api/v1/onboarding", headers=headers)).json()["profile"][
         "safe_foods"
     ] == []
 
 
 @pytest.mark.asyncio
-async def test_onboarding_is_authenticated_and_isolated(client: AsyncClient) -> None:
-    assert (await client.get("/api/v1/onboarding")).status_code == 401
-    assert (await client.put("/api/v1/onboarding", json=request_body())).status_code == 401
-    first = await auth_headers(client, "first@example.com")
-    second = await auth_headers(client, "second@example.com")
+async def test_onboarding_is_authenticated_and_isolated(api_client: AsyncClient) -> None:
+    assert (await api_client.get("/api/v1/onboarding")).status_code == 401
+    assert (await api_client.put("/api/v1/onboarding", json=request_body())).status_code == 401
+    first = await auth_headers(api_client, "first@example.com")
+    second = await auth_headers(api_client, "second@example.com")
     assert (
-        await client.put("/api/v1/onboarding", headers=first, json=request_body())
+        await api_client.put("/api/v1/onboarding", headers=first, json=request_body())
     ).status_code == 200
-    assert (await client.get("/api/v1/onboarding", headers=second)).json() == {
+    assert (await api_client.get("/api/v1/onboarding", headers=second)).json() == {
         "profile": None,
         "consents": [],
     }
@@ -123,10 +126,12 @@ async def test_onboarding_is_authenticated_and_isolated(client: AsyncClient) -> 
     other["profile"]["safe_foods"] = [
         {"name": "고구마", "preparation": "굽기", "presentation_note": None}
     ]
-    assert (await client.put("/api/v1/onboarding", headers=second, json=other)).status_code == 200
+    assert (
+        await api_client.put("/api/v1/onboarding", headers=second, json=other)
+    ).status_code == 200
     assert [
         food["name"]
-        for food in (await client.get("/api/v1/onboarding", headers=first)).json()["profile"][
+        for food in (await api_client.get("/api/v1/onboarding", headers=first)).json()["profile"][
             "safe_foods"
         ]
     ] == ["감자", "쌀밥"]
@@ -144,22 +149,22 @@ async def test_onboarding_is_authenticated_and_isolated(client: AsyncClient) -> 
     ids=["safety", "food_preferences", "smell_sensitivity", "difficult_textures"],
 )
 async def test_onboarding_rejects_removed_fields(
-    client: AsyncClient, path: tuple[str, str], value: object
+    api_client: AsyncClient, path: tuple[str, str], value: object
 ) -> None:
-    headers = await auth_headers(client, "parent@example.com")
+    headers = await auth_headers(api_client, "parent@example.com")
     payload = request_body()
     payload[path[0]][path[1]] = value
-    response = await client.put("/api/v1/onboarding", headers=headers, json=payload)
+    response = await api_client.put("/api/v1/onboarding", headers=headers, json=payload)
     assert response.status_code == 422
     assert response.json()["error_code"] == "VALIDATION_ERROR"
-    assert (await client.get("/api/v1/onboarding", headers=headers)).json()["profile"] is None
+    assert (await api_client.get("/api/v1/onboarding", headers=headers)).json()["profile"] is None
 
 
 @pytest.mark.asyncio
-async def test_dietary_pattern_save_reload_and_clear(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "pattern@example.com")
+async def test_dietary_pattern_save_reload_and_clear(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "pattern@example.com")
     body = request_body()
-    first = await client.put("/api/v1/onboarding", headers=headers, json=body)
+    first = await api_client.put("/api/v1/onboarding", headers=headers, json=body)
     assert first.status_code == 200, first.text
     assert first.json()["profile"]["dietary_pattern"] is None
     for pattern in [
@@ -173,9 +178,9 @@ async def test_dietary_pattern_save_reload_and_clear(client: AsyncClient) -> Non
         None,
     ]:
         body["profile"]["dietary_pattern"] = pattern
-        written = await client.put("/api/v1/onboarding", headers=headers, json=body)
+        written = await api_client.put("/api/v1/onboarding", headers=headers, json=body)
         assert written.status_code == 200, written.text
-        loaded = (await client.get("/api/v1/onboarding", headers=headers)).json()["profile"]
+        loaded = (await api_client.get("/api/v1/onboarding", headers=headers)).json()["profile"]
         assert loaded["dietary_pattern"] == pattern
         # 식생활 유형은 제한 목록과 별개라 제한을 바꾸지 않는다.
         assert loaded["restrictions"] == body["profile"]["restrictions"]
@@ -186,48 +191,48 @@ async def test_dietary_pattern_save_reload_and_clear(client: AsyncClient) -> Non
     "value", ["vegan", "EGGS", "", 1], ids=["lowercase", "unknown", "empty", "int"]
 )
 async def test_invalid_dietary_pattern_is_rejected_without_saving(
-    client: AsyncClient, value: object
+    api_client: AsyncClient, value: object
 ) -> None:
-    headers = await auth_headers(client, "pattern@example.com")
+    headers = await auth_headers(api_client, "pattern@example.com")
     payload = request_body()
     payload["profile"]["dietary_pattern"] = value
-    response = await client.put("/api/v1/onboarding", headers=headers, json=payload)
+    response = await api_client.put("/api/v1/onboarding", headers=headers, json=payload)
     assert response.status_code == 422
     assert response.json()["error_code"] == "VALIDATION_ERROR"
-    assert (await client.get("/api/v1/onboarding", headers=headers)).json()["profile"] is None
+    assert (await api_client.get("/api/v1/onboarding", headers=headers)).json()["profile"] is None
 
 
 @pytest.mark.asyncio
-async def test_dietary_pattern_field_is_required(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "pattern@example.com")
+async def test_dietary_pattern_field_is_required(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "pattern@example.com")
     payload = request_body()
     del payload["profile"]["dietary_pattern"]
-    response = await client.put("/api/v1/onboarding", headers=headers, json=payload)
+    response = await api_client.put("/api/v1/onboarding", headers=headers, json=payload)
     assert response.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_safe_food_preparation_is_optional_and_blank_is_stored_as_null(
-    client: AsyncClient,
+    api_client: AsyncClient,
 ) -> None:
-    headers = await auth_headers(client, "optional-food@example.com")
+    headers = await auth_headers(api_client, "optional-food@example.com")
     body = request_body()
     body["profile"]["safe_foods"] = [
         {"name": "감자", "preparation": None, "presentation_note": None},
         {"name": "쌀밥", "preparation": "  ", "presentation_note": "작게"},
         {"name": "바나나", "preparation": "으깨기", "presentation_note": None},
     ]
-    saved = await client.put("/api/v1/onboarding", headers=headers, json=body)
+    saved = await api_client.put("/api/v1/onboarding", headers=headers, json=body)
     assert saved.status_code == 200, saved.text
     foods = saved.json()["profile"]["safe_foods"]
     assert [food["preparation"] for food in foods] == [None, None, "으깨기"]
-    assert (await client.get("/api/v1/onboarding", headers=headers)).json() == saved.json()
+    assert (await api_client.get("/api/v1/onboarding", headers=headers)).json() == saved.json()
 
     # 이름은 여전히 필수다.
     body["profile"]["safe_foods"][0]["name"] = " "
-    invalid = await client.put("/api/v1/onboarding", headers=headers, json=body)
+    invalid = await api_client.put("/api/v1/onboarding", headers=headers, json=body)
     assert invalid.status_code == 422
-    after = (await client.get("/api/v1/onboarding", headers=headers)).json()
+    after = (await api_client.get("/api/v1/onboarding", headers=headers)).json()
     assert [food["name"] for food in after["profile"]["safe_foods"]] == ["감자", "쌀밥", "바나나"]
 
 
@@ -252,27 +257,27 @@ async def test_safe_food_preparation_is_optional_and_blank_is_stored_as_null(
     ],
 )
 async def test_invalid_restrictions_are_rejected_without_saving(
-    client: AsyncClient, restrictions: list[str]
+    api_client: AsyncClient, restrictions: list[str]
 ) -> None:
-    headers = await auth_headers(client, "parent@example.com")
+    headers = await auth_headers(api_client, "parent@example.com")
     payload = request_body()
     payload["profile"]["restrictions"] = restrictions
-    response = await client.put("/api/v1/onboarding", headers=headers, json=payload)
+    response = await api_client.put("/api/v1/onboarding", headers=headers, json=payload)
     assert response.status_code == 422
     assert response.json()["error_code"] == "VALIDATION_ERROR"
-    assert (await client.get("/api/v1/onboarding", headers=headers)).json() == {
+    assert (await api_client.get("/api/v1/onboarding", headers=headers)).json() == {
         "profile": None,
         "consents": [],
     }
 
 
 @pytest.mark.asyncio
-async def test_old_lowercase_values_are_rejected(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "parent@example.com")
+async def test_old_lowercase_values_are_rejected(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "parent@example.com")
     payload = request_body()
     payload["profile"]["age_group"] = "4-5"
     payload["consents"][0]["kind"] = "account_privacy"
-    response = await client.put("/api/v1/onboarding", headers=headers, json=payload)
+    response = await api_client.put("/api/v1/onboarding", headers=headers, json=payload)
     assert response.status_code == 422
     assert response.json()["error_code"] == "VALIDATION_ERROR"
     fields = {tuple(item["loc"]) for item in response.json()["details"]["fields"]}

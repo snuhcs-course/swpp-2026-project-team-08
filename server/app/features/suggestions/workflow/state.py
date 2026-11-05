@@ -2,6 +2,8 @@
 # Changed: ingredients 구조 bootstrap
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 음식 입력에 식후 리뷰 정보를, 제안에 조리법·원인을 더하고 카탈로그를 그래프 입력으로 변경
+# AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
+# Changed: 재료별 리뷰 결과와 아이가 잘 먹는 음식(safe food, EATEN)을 그래프 입력에 추가
 
 """워크플로의 입출력 값과 그래프 상태. ORM 객체가 아니라 평범한 값만 담는다."""
 
@@ -17,10 +19,23 @@ from app.models.meal_enums import MealCookingMethod
 
 
 @dataclass(frozen=True)
+class IngredientResult:
+    """음식 안의 재료 하나에 대한 식후 리뷰. 보호자가 따로 기록한 재료만 담는다.
+
+    `outcome` 은 `EatingOutcome` 값이고 `difficulty_reasons` 는 `DifficultyReason` 값이다.
+    """
+
+    name: str
+    outcome: str
+    difficulty_reasons: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class FoodInput:
     """제안을 만들 음식 하나와, 아이가 어려워한 원인을 서술하는 데 쓸 식후 리뷰 정보.
 
     `outcome` 은 `EatingOutcome` 값이고 `difficulty_reasons` 는 `DifficultyReason` 값이다.
+    `ingredient_results` 는 재료를 따로 리뷰한 경우의 재료별 결과다.
     """
 
     id: str
@@ -29,6 +44,36 @@ class FoodInput:
     cooking_method: str | None = None
     outcome: str = ""
     difficulty_reasons: tuple[str, ...] = ()
+    ingredient_results: tuple[IngredientResult, ...] = ()
+
+
+@dataclass(frozen=True)
+class FamiliarSafeFood:
+    """보호자가 프로필에 적은, 아이가 안정적으로 먹는 음식(safe food).
+
+    `preparation` 과 `presentation_note` 는 그 음식이 기록된 조리·제공 형태다.
+    """
+
+    name: str
+    preparation: str | None = None
+    presentation_note: str | None = None
+
+
+@dataclass(frozen=True)
+class FamiliarEatenFood:
+    """과거 식사에서 아이가 먹은(`EATEN`) 것으로 리뷰된 음식."""
+
+    name: str
+    cooking_method: str | None = None
+    ingredients: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class FamiliarFoods:
+    """아이가 잘 먹는다고 기록된 음식들. 새 제안을 익숙한 것과 이어 주는 데 쓴다."""
+
+    safe_foods: tuple[FamiliarSafeFood, ...] = ()
+    eaten_foods: tuple[FamiliarEatenFood, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -70,6 +115,7 @@ class InputState(TypedDict):
 
     foods: list[FoodInput]
     catalog: Catalog
+    familiar: FamiliarFoods
 
 
 class OutputState(TypedDict):

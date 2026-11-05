@@ -5,6 +5,8 @@
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: Eaten 추천 제외 및 음식 단위 요청 검증
 
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 음식 단위 추천 요청 기대값 반영
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");

@@ -1,5 +1,8 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 카탈로그 쿼리와 재료·제한 판정 적재 스크립트 검증 추가
+# AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+# Changed: main 테스트 유지 및 api_client·공통 fixture 정리
+
 """쓸 수 있는 재료 쿼리(`catalog.py`)와 적재 스크립트(`scripts/load_ingredients.py`) 테스트."""
 
 import json
@@ -58,7 +61,7 @@ async def names_for(*types: RestrictionType) -> set[str]:
     return await with_session(action)
 
 
-async def test_catalog_requires_a_never_judgement_for_every_restriction(client) -> None:
+async def test_catalog_requires_a_never_judgement_for_every_restriction(api_client) -> None:
     await with_session(seed)
 
     assert await names_for(EGGS, DAIRY) == {"쌀"}
@@ -67,13 +70,13 @@ async def test_catalog_requires_a_never_judgement_for_every_restriction(client) 
     assert await names_for(DAIRY) == {"쌀", "빵"}
 
 
-async def test_catalog_without_restrictions_lists_every_named_ingredient(client) -> None:
+async def test_catalog_without_restrictions_lists_every_named_ingredient(api_client) -> None:
     await with_session(seed)
 
     assert await names_for() == {"쌀", "우유", "빵", "당근", "판정 없음"}
 
 
-async def test_catalog_is_empty_when_nothing_is_judged_for_the_restriction(client) -> None:
+async def test_catalog_is_empty_when_nothing_is_judged_for_the_restriction(api_client) -> None:
     await with_session(seed)
 
     assert await names_for(RestrictionType.ALLERGY_PEANUTS) == set()
@@ -91,7 +94,7 @@ def judged(ingredient_id: int, kind: str, degree: str = "NEVER") -> dict:
 
 
 async def test_import_is_repeatable_and_replaces_the_judgements_of_listed_ingredients(
-    client, tmp_path
+    api_client, tmp_path
 ) -> None:
     files = write_files(
         tmp_path,
@@ -164,7 +167,7 @@ async def test_import_is_repeatable_and_replaces_the_judgements_of_listed_ingred
     ],
 )
 async def test_import_rejects_invalid_files_without_writing(
-    client, tmp_path, ingredients, restrictions
+    api_client, tmp_path, ingredients, restrictions
 ) -> None:
     files = write_files(tmp_path, ingredients, restrictions)
 

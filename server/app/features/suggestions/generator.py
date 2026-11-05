@@ -2,6 +2,8 @@
 # Changed: add suggestion LLM workflow
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 아이의 제한 대신 쓸 수 있는 재료 카탈로그를 그래프에 넘기도록 변경
+# AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
+# Changed: 아이가 잘 먹는 음식(familiar)을 선택 입력으로 그래프에 넘기도록 변경
 
 """서비스가 부르는 제안 생성의 단일 진입점.
 
@@ -17,6 +19,7 @@ from app.features.suggestions.ingredients import Catalog
 from app.features.suggestions.workflow.graph import graph
 from app.features.suggestions.workflow.llm import build_chat_model
 from app.features.suggestions.workflow.state import (
+    FamiliarFoods,
     FoodInput,
     GeneratedSuggestion,
     SuggestionContext,
@@ -41,15 +44,17 @@ async def generate_suggestions(
     foods: list[FoodInput],
     catalog: Catalog,
     *,
+    familiar: FamiliarFoods | None = None,
     llm: BaseChatModel | None = None,
 ) -> list[GeneratedSuggestion]:
     """음식마다 제안을 만든다. 검증을 통과하지 못하면 `GenerationRejectedError`를 던진다.
 
-    `catalog`는 이 아이가 쓸 수 있는 재료다. `llm`을 넘기지 않으면 설정에서 모델을 만든다
-    (테스트는 가짜 모델을 넘긴다).
+    `catalog`는 이 아이가 쓸 수 있는 재료다. `familiar`는 아이가 잘 먹는다고 기록된 음식으로,
+    제안을 익숙한 것과 이어 주는 근거로만 쓰며 없으면 비워 둔다. `llm`을 넘기지 않으면 설정에서
+    모델을 만든다 (테스트는 가짜 모델을 넘긴다).
     """
     output = await graph.ainvoke(
-        {"foods": foods, "catalog": catalog},
+        {"foods": foods, "catalog": catalog, "familiar": familiar or FamiliarFoods()},
         context=SuggestionContext(llm=llm or build_chat_model()),
         config={"recursion_limit": RECURSION_LIMIT},
     )

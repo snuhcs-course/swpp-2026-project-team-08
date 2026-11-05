@@ -8,6 +8,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 추천 연결을 음식 카드에만 연결
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 달력 월 이동·요일·일수 계산을 UTC로 통일
 
 import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { FoodItem } from '../../types/meal';
@@ -23,22 +25,22 @@ export function isoDate(year: number, monthIndex: number, day: number): string {
 }
 
 export function shiftMonth(year: number, monthIndex: number, delta: number) {
-  const date = new Date(year, monthIndex + delta, 1);
-  return { year: date.getFullYear(), month: date.getMonth() };
+  const date = new Date(Date.UTC(year, monthIndex + delta, 1));
+  return { year: date.getUTCFullYear(), month: date.getUTCMonth() };
 }
 
 export type CalendarCell = { day: number; inMonth: boolean; date: string };
 
 export function calendarCells(year: number, month: number): CalendarCell[] {
-  const leading = new Date(year, month, 1).getDay();
-  const days = new Date(year, month + 1, 0).getDate();
+  const leading = new Date(Date.UTC(year, month, 1)).getUTCDay();
+  const days = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
   const count = Math.ceil((leading + days) / 7) * 7;
   return Array.from({ length: count }, (_, index) => {
-    const date = new Date(year, month, 1 - leading + index);
+    const date = new Date(Date.UTC(year, month, 1 - leading + index));
     return {
-      day: date.getDate(),
-      inMonth: date.getMonth() === month && date.getFullYear() === year,
-      date: isoDate(date.getFullYear(), date.getMonth(), date.getDate()),
+      day: date.getUTCDate(),
+      inMonth: date.getUTCMonth() === month && date.getUTCFullYear() === year,
+      date: isoDate(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
     };
   });
 }

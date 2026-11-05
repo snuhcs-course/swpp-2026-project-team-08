@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Three-height native sheet with instant transitions and safe navigation
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 시트 높이·배경색 및 스택 화면의 터치 좌표 정렬
 
 import { useState } from 'react';
 import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -37,12 +39,14 @@ export function MealLogSheetLayout({
     <View style={layout.root} onLayout={event => setStackHeight(event.nativeEvent.layout.height)}>
       <ScreenStack style={layout.root} onFinishTransitioning={dismissal.onFinishTransitioning}>
         <ScreenStackItem screenId="meal-history-calendar" activityState={2}
+          style={StyleSheet.absoluteFill}
           headerConfig={{ hidden: true }} contentStyle={layout.root}>
           {children}
         </ScreenStackItem>
         {dismissal.visible && (
           <ScreenStackItem screenId="meal-history-logs" activityState={2}
-            headerConfig={{ hidden: true }} contentStyle={layout.root}
+            style={StyleSheet.absoluteFill}
+            headerConfig={{ hidden: true }} contentStyle={layout.sheet}
             stackPresentation="formSheet"
             stackAnimation="none"
             sheetAllowedDetents={[minimumDetent, compactDetent, 0.9]}
@@ -61,7 +65,7 @@ export function MealLogSheetLayout({
               if (dismissal.onNativeDismissed()) onBack();
             }}>
             {Platform.OS === 'android' ? (
-              <View style={layout.root}>
+              <View style={layout.sheet}>
                 {sheet}
                 <View pointerEvents="none" style={layout.androidGrabber} />
               </View>
@@ -74,7 +78,8 @@ export function MealLogSheetLayout({
 }
 
 const layout = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.surface },
+  root: { flex: 1, backgroundColor: colors.homeBackground },
+  sheet: { flex: 1, backgroundColor: colors.surface },
   androidGrabber: {
     position: 'absolute', top: 10, alignSelf: 'center',
     width: 36, height: 5, borderRadius: 3, backgroundColor: colors.homeText,

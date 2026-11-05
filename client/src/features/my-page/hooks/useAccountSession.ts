@@ -1,5 +1,7 @@
 // AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 로그아웃 전에 온보딩 초안과 편집 상태 초기화
 
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -22,6 +24,7 @@ export function useAccountSession() {
     if (confirm === 'logout') {
       setBusy(true);
       try {
+        await onboarding.resetLocal();
         await auth.signOut();
         setConfirm(null);
         router.replace('/');

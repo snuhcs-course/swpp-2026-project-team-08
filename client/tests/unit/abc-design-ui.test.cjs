@@ -7,9 +7,13 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 선택지 id·채식 단계 기준으로 테스트 수정, 카탈로그 검색 테스트 교체
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 추천 모달 안전 여백 및 추천 연결·언어 버튼 및 공통 Outcome 헤더 검증
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: Eaten 단계 생략 및 언어 버튼 숨김 검증
 
 const { React, act, renderHook } = require("../helpers/react-harness.cjs");
 
@@ -76,6 +80,7 @@ mockModules((name) => {
   if (name === "react-native-safe-area-context")
     return {
       SafeAreaView: primitive("main"),
+      SafeAreaProvider: primitive("aside"),
       useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: bottomInset, left: 0 }),
     };
   if (name === "expo-image") return { Image: primitive("img") };
@@ -237,7 +242,7 @@ test("photo-free empty list has only entry guidance and the full-width add actio
   );
 });
 
-test("photo empty list has plain guidance and preserves the suggestion entry", () => {
+test("photo empty list has guidance but hides the suggestion entry", () => {
   const html = renderToStaticMarkup(
     React.createElement(MealFoodsStepView, {
       p: {
@@ -255,7 +260,7 @@ test("photo empty list has plain guidance and preserves the suggestion entry", (
     }),
   );
   assert.match(html, /No foods added yet/);
-  assert.match(html, /Are you trying a previous suggestion/);
+  assert.doesNotMatch(html, /Are you trying a previous suggestion/);
 });
 
 test("after-meal photo choice has no example photo, analysis action, or inferred results", () => {
@@ -351,6 +356,7 @@ test("draft suggestion linking opens explicitly and shows actual source meal met
       p: { ...p, suggestionLinking: { ...closedLinking, step: 1 } },
     }),
   );
+  assert.match(html, /<aside><main[^>]*><div[^>]*data-testid="app-header"/);
   assert.match(html, /Step 1 of 2/);
   assert.match(html, /Oct 11, 2026/);
   assert.match(html, /Lunch/);
@@ -797,4 +803,56 @@ test("after-meal photo footer preserves navigation, photo validation, and draft 
   }
   await act(async () => primary().props.onPress());
   assert.deepEqual(calls, ["compare", "manual", "exit", "retry", "manual"]);
+});
+
+ test('MyPage header hides the language toggle in both languages', () => {
+  const { MyPageView } = require('../../src/features/my-page/screens/MyPageView.tsx');
+  for (const [language, label] of [['en', '한국어'], ['ko', 'English']]) {
+    const html = renderToStaticMarkup(React.createElement(MyPageView, {
+      language, childName: 'Sam', ageLabel: '2–3', caregiver: 'Parent',
+      languageError: false, changingLanguage: false, confirm: null,
+      onLanguage: () => {},
+    }));
+    assert.equal(html.includes(`aria-label="${label}"`), false);
+  }
+});
+
+test('Outcome uses the shared header and preserves progress, caption and save errors', () => {
+  const { OutcomesHeader } = require('../../src/features/after-meal-review/components/OutcomesHeader.tsx');
+  const { copyFor } = require('../../src/util/strings.ts');
+  const html = renderToStaticMarkup(React.createElement(OutcomesHeader, {
+    language: 'en', caption: 'Sam · Lunch', saveStatus: 'error', disabled: true, onBack: () => {},
+  }));
+  assert.match(html, /data-testid="app-header"/);
+  assert.match(html, /data-testid="app-header-back"/);
+  assert.match(html, /aria-disabled="true"/);
+  assert.ok(html.includes(copyFor('en').afterMealReview.titles.outcomes));
+  assert.ok(html.includes(copyFor('en').afterMealReview.saveFailed));
+  assert.ok(html.includes('Sam · Lunch'));
+});
+
+test('outcome Continue saves directly with no difficulty targets; mixed meals still open difficulties', async t => {
+  const { AfterMealReviewView } = require('../../src/features/after-meal-review/screens/AfterMealReviewView.tsx');
+  const { MealFlowButton } = require('../../src/components/MealFlowButton.tsx');
+  const calls = [];
+  const base = { language: 'en', draft: { step: 'outcomes' },
+    meal: { photo: null, foods: [], mealDate: '2026-11-04', mealType: 'lunch', setting: 'home' },
+    saveStatus: 'saved', difficultyTargets: [], canContinueOutcomes: true,
+    onSave: () => calls.push('save'), onGo: step => calls.push(step) };
+  const h = await renderHook(t, props => AfterMealReviewView(props), { props: base });
+  await act(async () => findElement(h.current, n => n.type === MealFlowButton).props.onPress());
+  assert.deepEqual(calls, ['save']);
+  await h.rerender({ ...base, difficultyTargets: [{ id: 'remaining' }] });
+  await act(async () => findElement(h.current, n => n.type === MealFlowButton).props.onPress());
+  assert.deepEqual(calls, ['save', 'difficulties']);
+});
+
+test('all-eaten review completion offers Home without a suggestion action', () => {
+  const { AfterMealFollowUpView } = require('../../src/features/after-meal-review/screens/AfterMealFollowUpView.tsx');
+  const { MealFlowButton } = require('../../src/components/MealFlowButton.tsx');
+  const p = { language: 'en', meal: { photo: null, foods: [], mealDate: '2026-11-04', mealType: 'lunch' },
+    draft: { outcomes: [{ decision: { confirmed: 'eaten' } }] }, onRecommend() {}, onHome() {} };
+  assert.equal(!!findElement(AfterMealFollowUpView({ p }).props.actions, n => n.type === MealFlowButton), false);
+  p.draft.outcomes[0].decision.confirmed = 'tasted';
+  assert.ok(findElement(AfterMealFollowUpView({ p }).props.actions, n => n.type === MealFlowButton));
 });

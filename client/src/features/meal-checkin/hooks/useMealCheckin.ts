@@ -6,7 +6,10 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 재료 단위 추천 연결 제거
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 입력 없는 첫 단계 식사 초안 저장 및 복원 방지
 
+import { hasMealDraftInput } from '../../../rules/mealDraft';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -111,7 +114,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       await saveMealDraft(value);
       if (mounted.current && revision === version.current) {
         setSaveStatus('saved');
-        client.setQueryData(mealKeys.draft(value.childId), value);
+        client.setQueryData(mealKeys.draft(value.childId), hasMealDraftInput(value) ? value : null);
       }
       return true;
     } catch {

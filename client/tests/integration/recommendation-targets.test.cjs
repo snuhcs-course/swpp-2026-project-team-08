@@ -2,6 +2,8 @@
 // Changed: Food targets, automatic generation, reselection and retry boundaries
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 서버 식사 상세·음식 단위 추천 응답 모양으로 수정
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: Eaten 추천 제외 및 음식 단위 요청 검증
 
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 음식 단위 추천 요청 기대값 반영
@@ -326,4 +328,28 @@ test("adding a new target reuses an existing card and only generates the missing
   });
   assert.equal(h.current.current.id, "901");
   assert.equal(posts.length, 1);
+});
+
+test('all-eaten meals never generate recommendations or show old cards', async t => {
+  const meal = mealWithFoods(2);
+  for (const food of meal.foods) food.outcome = 'EATEN';
+  const api = server(t, meal, { existing: [card(meal, '1', '900')] });
+  const h = await renderHook(t, () => useRecommendationFlow('1', meal.id));
+  await waitFor(() => h.current.source.isSuccess && h.current.suggestions.isSuccess);
+  assert.deepEqual(h.current.targetOptions, []);
+  assert.deepEqual(h.current.items, []);
+  assert.equal(await h.current.selectTargets([{ foodId: '1' }]), false);
+  assert.deepEqual(api.posts, []);
+});
+
+test('mixed meals generate only non-eaten foods and hide existing eaten cards', async t => {
+  const meal = mealWithFoods(4);
+  meal.foods[0].outcome = 'EATEN';
+  meal.foods[1].outcome = 'EATEN';
+  const { posts } = server(t, meal, { existing: [card(meal, '1', '901')] });
+  const h = await renderHook(t, () => useRecommendationFlow('1', meal.id));
+  await waitFor(() => h.current.items.length === 2 && !h.current.generating);
+  assert.deepEqual(h.current.targetOptions.map(x => x.target.foodId), ['3', '4']);
+  assert.deepEqual(posts, [[{ food_id: '3' }, { food_id: '4' }]]);
+  assert.deepEqual(h.current.items.map(x => x.foodId), ['3', '4']);
 });

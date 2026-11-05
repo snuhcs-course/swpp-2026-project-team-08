@@ -4,6 +4,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Safe-area navigation above native sheets and instant page transitions
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 식사 기록 내비게이션을 네이티브 시트 위 레이어에 표시
 
 import { router, Stack, usePathname, useGlobalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';

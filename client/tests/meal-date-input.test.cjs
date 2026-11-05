@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 오늘 상한 및 네이티브 UTC 날짜 전달·복원 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -67,8 +69,8 @@ test('Android confirmation commits the selected local date immediately and close
   const h = harness('android'), picker = h.picker();
   assert.equal(picker.type, 'SystemDatePicker');
   assert.equal(picker.props.display, 'default');
-  // A local midnight can be on the previous UTC day; never serialize with toISOString().
-  picker.props.onValueChange({}, new Date(2024, 1, 29));
+  // The native picker emits UTC components; storage remains a local calendar date.
+  picker.props.onValueChange({}, new Date(Date.UTC(2024, 1, 29)));
   h.render();
   assert.equal(h.date, '2024-02-29');
   assert.equal(h.updates, 1);
@@ -91,14 +93,14 @@ test('iOS wheel edits wait for confirmation and closing discards pending changes
   assert.equal(dialog.type, 'Dialog');
   assert.equal(dialog.props.children.props.display, 'spinner');
   assert.equal(dialog.props.children.props.locale, 'ko-KR');
-  dialog.props.children.props.onValueChange({}, new Date(2024, 1, 29)); h.render();
+  dialog.props.children.props.onValueChange({}, new Date(Date.UTC(2024, 1, 29))); h.render();
   assert.equal(h.updates, 0);
   dialog = h.picker(); dialog.props.onClose(); h.render();
   assert.equal(h.input.open, false);
   assert.equal(h.date, '2026-10-27');
   h.input.onToggle(); h.render();
   assert.deepEqual(h.input.parts, [2026, 10, 27]);
-  h.picker().props.children.props.onValueChange({}, new Date(2024, 1, 29)); h.render();
+  h.picker().props.children.props.onValueChange({}, new Date(Date.UTC(2024, 1, 29))); h.render();
   h.picker().props.footer.props.onPress(); h.render();
   assert.equal(h.date, '2024-02-29');
   assert.equal(h.updates, 1);
@@ -131,5 +133,68 @@ test('Meal Details opens one native picker on mobile and keeps web date parts', 
     const native = os !== 'web';
     assert.equal(nodes.filter(node => node.type === 'NativePicker').length, native ? 1 : 0);
     assert.equal(nodes.filter(node => node.props.testID?.startsWith('date-part-')).length, native ? 0 : 3);
+  }
+});
+
+test('native pickers cap selection at now and future confirmations cannot be saved', t => {
+  const now = new Date(2026, 10, 3, 12);
+  t.mock.timers.enable({ apis: ['Date'], now: now.getTime() });
+  for (const os of ['android', 'ios']) {
+    const h = harness(os);
+    const view = h.picker();
+    const picker = os === 'android' ? view : view.props.children;
+    assert.equal(picker.props.timeZoneName, 'UTC');
+    assert.equal(picker.props.maximumDate.getTime(), Date.UTC(2026, 10, 3));
+    h.input.onConfirm(new Date(2026, 11, 1)); h.render();
+    assert.equal(h.date, '2026-11-03');
+  }
+});
+
+test('new date inputs start today and opening an old draft preserves its date', t => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date(2026, 10, 3, 12).getTime() });
+  slots = []; cursor = 0;
+  const input = useMealCheckinInputs({ draft: null, onUpdate() {} }).date;
+  assert.deepEqual(input.parts, [2026, 11, 3]);
+  assert.deepEqual(harness('web').input.parts, [2026, 10, 27]);
+});
+
+test('web date options end at today and switching from a past December clamps the month', t => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date(2026, 10, 3, 12).getTime() });
+  platform.OS = 'web';
+  const fullLabels = { ...labels, date: 'Date', year: 'Year', month: 'Month', day: 'Day', hint: '' };
+  for (const [part, last] of [[0, '2026'], [1, 'Nov'], [2, '03']]) {
+    slots = []; cursor = 0;
+    const nodes = elements(DateField({ label: '', labels: { ...fullLabels, locale: 'en-US' },
+      parts: [2026, 11, 3], open: true, field: part,
+      onToggle() {}, onFieldChange() {}, onNumberSelect() {}, onDateChange() {}, onConfirm() {} }));
+    const options = nodes.find(node => node.props.testID === `date-options-${part}`);
+    const text = elements(options).filter(node => node.type === 'Text').map(node => node.props.children);
+    assert.equal(text.at(-1), last);
+  }
+  slots = []; cursor = 0;
+  let selected;
+  const props = { variant: 'month-year', year: 2025, month: 12,
+    labels: { ...fullLabels, locale: 'en-US' }, onChange: (...value) => { selected = value; } };
+  let nodes = elements(DateField(props));
+  nodes.find(node => node.props.testID === 'date-part-0').props.onPress();
+  cursor = 0;
+  nodes = elements(DateField(props));
+  const options = nodes.find(node => node.props.testID === 'date-options-0');
+  elements(options).filter(node => node.type === 'Pressable').at(-1).props.onPress();
+  assert.deepEqual(selected, [2026, 11]);
+});
+
+test('native UTC selection preserves historical dates without changing stored date strings', () => {
+  for (const os of ['ios', 'android']) {
+    const h = harness(os);
+    const view = h.picker();
+    const picker = os === 'android' ? view : view.props.children;
+    assert.equal(picker.props.timeZoneName, 'UTC');
+    assert.equal(picker.props.value.toISOString(), '2026-10-27T00:00:00.000Z');
+    assert.equal(picker.props.minimumDate.toISOString(), '1900-01-01T00:00:00.000Z');
+    picker.props.onValueChange({}, new Date(Date.UTC(1900, 2, 1)));
+    h.render();
+    if (os === 'ios') { h.picker().props.footer.props.onPress(); h.render(); }
+    assert.equal(h.date, '1900-03-01');
   }
 });

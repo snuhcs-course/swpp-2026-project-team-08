@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: Separate ingredient difficulty targets, isolation and draft reconciliation
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: Eaten 제외·단계 건너뛰기 및 기존 카드 숨김 검증
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -77,4 +79,22 @@ test('editing keeps matching ingredient tags and inputs while removing deleted i
     'food-2': ['soup'], [otherCarrot.id]: ['other-carrot'] };
   const outcomes = reconcileOutcomes(draft.outcomes, [{ ...meal.foods[0], ingredients: ['Carrot', 'Potato'] }]);
   assert.deepEqual(reconcileDifficultyEntries(entries, outcomes), { 'food-1': ['food'], [carrot.id]: ['carrot'] });
+});
+
+test('eaten foods and ingredients are excluded while separately untouched ingredients remain', () => {
+  const { meal, draft } = setup();
+  const ingredient = draft.outcomes[0].ingredients[0].id;
+  draft.difficulties['food-1'] = addDifficulty([], 'smell', 'mint');
+  draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'eaten');
+  assert.deepEqual(difficultyTargets(meal.foods, draft.outcomes).map(x => x.id),
+    [ingredient, 'food-2', draft.outcomes[1].ingredients[0].id]);
+  assert.equal(reviewFromDraft(draft, meal).difficulties['food-1'], undefined);
+  for (const food of draft.outcomes) {
+    draft.outcomes = setOutcome(draft.outcomes, food.foodId, 'eaten');
+    for (const item of food.ingredients.filter(i => i.selected))
+      draft.outcomes = setOutcome(draft.outcomes, food.foodId, 'eaten', item.id);
+  }
+  assert.deepEqual(difficultyTargets(meal.foods, draft.outcomes), []);
+  draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'tasted');
+  assert.deepEqual(reviewFromDraft(draft, meal).difficulties['food-1'], draft.difficulties['food-1']);
 });

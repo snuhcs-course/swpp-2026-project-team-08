@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
 // Changed: Align slider labels and keep edge labels inside the component
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 중간 라벨은 선택 위치에 정렬하고 양 끝 라벨만 안쪽 배치
 
 import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type GestureResponderEvent } from 'react-native';
@@ -25,8 +27,8 @@ export function AcceptanceSlider<T extends string | number = number>({ value, la
   const [dragPosition, setDragPosition] = useState<number | null>(null);
   const lastIndex = options.length - 1;
   const inset = review ? REVIEW_TRACK_INSET : TRACK_INSET;
-  const trackWidth = Math.max(0, layoutWidth - inset * 2);
-  const optionWidth = trackWidth / Math.max(options.length, 1);
+  const stepWidth = Math.max(0, layoutWidth - inset * 2) / Math.max(lastIndex, 1);
+  const edgeWidth = Math.min(layoutWidth, inset + stepWidth / 2);
   const selectedIndex = value == null ? null : optionValues ? optionValues.indexOf(value) : Number(value);
   const position = dragPosition ?? (selectedIndex == null ? null : selectedIndex / lastIndex);
 
@@ -89,18 +91,15 @@ export function AcceptanceSlider<T extends string | number = number>({ value, la
         </>}
       </View>
     </View>
-    <View accessibilityRole="radiogroup" style={[styles.labels, { marginHorizontal: inset }]}>
+    <View accessibilityRole="radiogroup" style={styles.labels}>
       {options.map((option, index) => <Pressable
         key={index}
         accessibilityRole="radio"
         accessibilityLabel={option.replace('\n', ' ')}
         accessibilityState={{ checked: selectedIndex === index }}
         onPress={() => onChange(clearable && selectedIndex === index ? null : valueAt(index))}
-        style={[styles.option, {
-          width: optionWidth,
-          left: `${(index / Math.max(lastIndex, 1)) * 100}%`,
-          marginLeft: -optionWidth / 2,
-        }]}
+        style={[styles.option, { width: options.length === 1 ? layoutWidth
+          : index === 0 || index === lastIndex ? edgeWidth : stepWidth }]}
       >
         <Text style={[styles.text, review && styles.reviewText, selectedIndex === index && styles.selectedText]}>{option}</Text>
       </Pressable>)}
@@ -120,8 +119,8 @@ const styles = StyleSheet.create({
     shadowColor: colors.homePrimary, shadowOpacity: 0.25, shadowRadius: 4,
     shadowOffset: { width: 0, height: 0 }, elevation: 3,
   },
-  labels: { height: 44, position: 'relative' },
-  option: { position: 'absolute', top: 0, minHeight: 44, alignItems: 'center' },
+  labels: { minHeight: 44, flexDirection: 'row' },
+  option: { minWidth: 0, minHeight: 44, alignItems: 'center' },
   text: { textAlign: 'center', color: colors.editorMuted, fontFamily: fonts.interBold, fontSize: 11, lineHeight: 16 },
   selectedText: { color: colors.homePrimary },
 });

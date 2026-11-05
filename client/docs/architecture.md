@@ -1,6 +1,8 @@
 <!-- This Code is generated with AI -->
 <!-- AI-generated with GPT-6, 2026-10-26, reviewed by Haechan Jung -->
 <!-- Changed: 인증·데이터 구조 현행화 및 규칙 정리 -->
+<!-- AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung -->
+<!-- Changed: 시작 언어 영어 설정 및 언어 전환 동작 명시 -->
 
 # 클라이언트 아키텍처
 
@@ -93,7 +95,9 @@ API와 Storage 함수는 일반 비동기 함수로 작성한다. HTTP API는 �
 여러 기능이 같은 기준으로 읽어야 하는 상태와 명령만 둔다. `AuthProvider`는 세션 복원·로그인·로그아웃과
 사용자 정보를, `ProfileProvider`는 현재 계정의 자녀 프로필·언어·초기화 상태를 관리한다.
 `ProfileProvider`는 서버 온보딩 API에서 프로필을 읽고 저장하며, 로컬 프로필 사본의 저장 실패는 무시한다.
-언어는 로컬에 저장한다.
+앱 시작 언어는 영어이며 기기 언어와 기존 로컬 언어 설정은 적용하지 않는다.
+MyPage 상단 버튼에서 한국어·영어를 전환할 수 있다.
+선택한 언어는 저장하지만 다음 앱 시작 시 복원하지 않는다.
 
 인증 토큰은 `data/storage/authStorage.ts`가 SecureStore에 저장한다. 웹 등 SecureStore를 지원하지 않거나
 지원 여부 확인에 실패한 환경에서는 AsyncStorage를 사용한다. `data/network/apiClient.ts`는 인증이 필요한 요청의 401 응답에 토큰 재발급을 시도하고 요청을 다시 보낸다.

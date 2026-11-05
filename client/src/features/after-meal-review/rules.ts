@@ -4,6 +4,8 @@
 // Changed: Separate difficulty targets and restore saved selections and notes
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 서버가 받지 않는 난이도 선택지 제거
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
 
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome, ReviewStep } from '../../types/afterMealReview';
 import type { FoodItem, Meal } from '../../types/meal';
@@ -50,9 +52,10 @@ export function reconcileOutcomes(previous: FoodOutcome[], foods: FoodItem[]): F
 /** Selected ingredients are targets within their own food, even when names repeat. */
 export function difficultyTargets(foods: FoodItem[], outcomes: FoodOutcome[]) {
   return foods.flatMap(food => [
-    { id: food.id, name: food.name, parentName: null as string | null },
+    ...(outcomes.find(outcome => outcome.foodId === food.id)?.decision.confirmed === 'eaten'
+      ? [] : [{ id: food.id, name: food.name, parentName: null as string | null }]),
     ...(outcomes.find(outcome => outcome.foodId === food.id)?.ingredients ?? [])
-      .filter(ingredient => ingredient.selected !== false)
+      .filter(ingredient => ingredient.selected !== false && ingredient.decision.confirmed !== 'eaten')
       .map(ingredient => ({ id: ingredient.id, name: ingredient.name, parentName: food.name })),
   ]);
 }

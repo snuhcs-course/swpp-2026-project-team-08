@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Measured sheet filters with minimum-height mode and no refresh gestures
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 내비게이션 오버레이 아래 목록 여백 확보
 
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';

@@ -2,6 +2,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 추천 연결에서 재료 id 제거
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 입력 없는 첫 단계 식사 초안 저장 및 복원 방지
 
 export const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 export const mealSettings = ['home', 'restaurant', 'school', 'others'] as const;
@@ -48,6 +50,7 @@ export const mealSteps = [
 ] as const;
 export type MealStep = (typeof mealSteps)[number];
 export type MealDraft = Omit<Meal, 'mealType' | 'setting' | 'savedAt'> & {
+  initialMealDate?: string;
   mealType: Meal['mealType'] | null;
   setting: Meal['setting'] | null;
   step: MealStep;

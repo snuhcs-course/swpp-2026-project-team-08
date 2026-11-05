@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Keep existing bottom navigation visible above iOS native sheets
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: iOS 하단 내비게이션의 윈도우 오버레이 복원
 
 import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

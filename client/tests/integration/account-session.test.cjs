@@ -1,6 +1,8 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 프로필 기대값을 채식 제한 필드로 변경
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 영어 시작 언어 및 사용자 언어 전환 검증
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -10,8 +12,8 @@ const { profileResponse } = require('../fixtures/account-profile.cjs');
 const { AuthProvider, useAuth } = require('../../src/providers/AuthProvider.tsx');
 const { ProfileProvider, useProfile } = require('../../src/providers/ProfileProvider.tsx');
 const { QueryScopeBoundary } = require('../../src/providers/QueryScopeBoundary.tsx');
-const { clearSession, readSession } = require('../../src/data/storage/authStorage.ts');
 const { readLanguage } = require('../../src/data/storage/languageStorage.ts');
+const { clearSession, readSession } = require('../../src/data/storage/authStorage.ts');
 
 beforeEach(async () => { await clearSession(); values.clear(); });
 function server(t, { onboarding = id => profileResponse(id), failUser = false } = {}) {
@@ -103,6 +105,18 @@ test('a delayed profile from the previous account cannot replace the current pro
   await act(async () => { old.resolve(profileResponse('1')); });
   assert.equal(harness.current.profile.profile.id, '2');
   assert.equal(harness.current.profile.profile.childName, 'Child 2');
+});
+
+test('English is the initial language despite a stored Korean preference', async (t) => {
+  server(t);
+  values.set('nurturebites.language.v1', 'ko');
+  const harness = await mount(t);
+  assert.equal(harness.current.profile.language, 'en');
+  await signIn(harness);
+  await waitFor(() => harness.current.profile.status === 'ready');
+  assert.equal(harness.current.profile.language, 'en');
+  await act(async () => { await harness.current.profile.retryLoad(); });
+  assert.equal(harness.current.profile.language, 'en');
 });
 
 test('language save failure preserves the displayed language and a retry persists it', async (t) => {

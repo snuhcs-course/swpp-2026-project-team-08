@@ -8,6 +8,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
 
 import { ProgressBar } from '../../../components/ProgressBar';
 import { AppHeader } from '../../../components/AppHeader';
@@ -189,7 +191,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                 }}
               />
             )}
-            {(p.error || imageError || p.languageError) && (
+            {(p.error || imageError) && (
               <Text accessibilityRole="alert" style={ui.error}>
                 {p.error === "save"
                   ? m.saveFailed

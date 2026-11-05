@@ -6,10 +6,13 @@
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Match meal calendar layout, density tiles, and date selection to the design
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 날짜 상한 및 달력 이동 범위·비활성 색상
 
 import { DateField } from '../../../components/DateField';
 import { Feather } from '@expo/vector-icons';
 import { Pressable, Text, View } from 'react-native';
+import { localDate } from '../../../util/date';
 import { colors } from '../../../util/colors';
 import { calendarCells, densityLevel, mealDateParts } from '../rules';
 import { styles } from '../screens/mealLogStyles';
@@ -66,6 +69,10 @@ export function MealLogCalendar({
   onClear: () => void;
   onMonthYear: (year: number, month: number) => void;
 }) {
+  const now = new Date();
+  const today = localDate(now);
+  const canGoPrevious = year * 12 + month > 1900 * 12;
+  const canGoNext = year * 12 + month < now.getFullYear() * 12 + now.getMonth();
   const selectedParts = selectedDate ? mealDateParts(selectedDate, locale) : null;
 
   return (
@@ -97,14 +104,14 @@ export function MealLogCalendar({
       </View>
       <View style={styles.card}>
         <View style={styles.monthRow}>
-          <Pressable accessibilityRole="button" accessibilityLabel={previousMonth} onPress={onPrev} style={styles.nav}>
-            <Feather name="chevron-left" size={16} color={colors.homeText} />
+          <Pressable accessibilityRole="button" accessibilityLabel={previousMonth} disabled={!canGoPrevious} accessibilityState={{ disabled: !canGoPrevious }} onPress={onPrev} style={styles.nav}>
+            <Feather name="chevron-left" size={16} color={canGoPrevious ? colors.homeText : colors.homeCalendarMuted} />
           </Pressable>
           <DateField key={`${year}-${month}`} variant="month-year" size={{ height: 32, fontSize: 14, borderRadius: 10 }} year={year} month={month + 1}
             labels={{ month: monthLabel, year: yearLabel, locale }}
             onChange={(nextYear, nextMonth) => onMonthYear(nextYear, nextMonth - 1)} />
-          <Pressable accessibilityRole="button" accessibilityLabel={nextMonth} onPress={onNext} style={styles.nav}>
-            <Feather name="chevron-right" size={16} color={colors.homeText} />
+          <Pressable accessibilityRole="button" accessibilityLabel={nextMonth} disabled={!canGoNext} accessibilityState={{ disabled: !canGoNext }} onPress={onNext} style={styles.nav}>
+            <Feather name="chevron-right" size={16} color={canGoNext ? colors.homeText : colors.homeCalendarMuted} />
           </Pressable>
         </View>
         <View style={styles.weekRow}>
@@ -123,7 +130,8 @@ export function MealLogCalendar({
               <Pressable
                 key={cell.date}
                 accessibilityRole="button"
-                accessibilityState={{ selected }}
+                disabled={cell.date > today}
+                accessibilityState={{ selected, disabled: cell.date > today }}
                 accessibilityLabel={selected ? selectedDayLabel(cell.day) : logsOnDay(cell.day, count)}
                 onPress={() => onToggleDate(cell.date)}
                 style={styles.dayCell}
@@ -135,7 +143,7 @@ export function MealLogCalendar({
                 ]}>
                   <Text style={[
                     styles.dayText,
-                    !cell.inMonth && styles.dayMuted,
+                    (!cell.inMonth || cell.date > today) && styles.dayMuted,
                     onDark && cell.inMonth && styles.dayOnDark,
                   ]}>{cell.day}</Text>
                 </View>

@@ -2,6 +2,8 @@
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 음식 단위 추천 대상과 새 거절 사유 키 적용
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
 
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: Keep target chooser available with existing selections and cards
@@ -51,6 +53,10 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
     return () => listener.remove();
   });
   if (model.sourceUnavailable) return <Redirect href="/home" />;
+  if (model.source.isSuccess && !model.source.isFetching && model.source.isFetchedAfterMount
+      && meal?.review && !model.targetOptions.length) {
+    return <Redirect href={{ pathname: '/meal/[mealId]', params: { mealId } }} />;
+  }
   const targetSheet = sheet && meal && <ChangeFoodsSheet
     current={model.visibleTargets}
     options={model.targetOptions}

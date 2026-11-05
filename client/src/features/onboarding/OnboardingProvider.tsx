@@ -10,6 +10,9 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 직접 입력·안심 음식 없음 동작 제거
 
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 프로필 저장·초안 초기화 성공 시 저장 상태 완료 처리
+
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
 import { useAuth } from '../../providers/AuthProvider';
@@ -173,6 +176,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       await clearDraft();
       setEditing(false);
       setHasDraft(false);
+      setSaveStatus('saved');
       return true;
     } catch {
       setSaveStatus('error');
@@ -190,7 +194,10 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setPassword('');
     setEditing(false);
     setHasDraft(false);
-    try { await saveGate.current.discard(clearDraft); } finally { finishing.current = false; }
+    try {
+      await saveGate.current.discard(clearDraft);
+      setSaveStatus('saved');
+    } finally { finishing.current = false; }
   }, []);
   const retrySave = useCallback(() => persist(draft), [draft, persist]);
   const retryLoad = useCallback(() => {
@@ -213,6 +220,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       await clearDraft();
       setEditing(false);
       setHasDraft(false);
+      setSaveStatus('saved');
       return true;
     } catch {
       setSaveStatus('error');

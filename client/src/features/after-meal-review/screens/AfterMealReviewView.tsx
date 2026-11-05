@@ -4,6 +4,8 @@
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: 식후 검토 글자·하단·버튼 조정 및 현재 단계별 진행 표시
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
 
 import { OutcomesHeader } from '../components/OutcomesHeader';
 import { Ionicons } from '@expo/vector-icons';
@@ -193,7 +195,7 @@ export function AfterMealReviewView(
                 disabled={p.saving || !p.canContinueOutcomes}
                 onPress={() =>
                   p.canContinueOutcomes
-                    ? p.onGo("difficulties")
+                    ? (p.difficultyTargets.length ? p.onGo("difficulties") : goAfterDifficulties())
                     : setShowUnanswered(true)
                 }
               />

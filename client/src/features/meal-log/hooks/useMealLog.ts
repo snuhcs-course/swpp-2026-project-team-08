@@ -4,19 +4,21 @@
 // Changed: 식사 기록 화면 디자인 개선
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 오늘 기본값 및 1900년 1월부터 현재 월까지 이동 제한
 
 import { useCallback, useMemo, useState } from 'react';
-import { validDate } from '../../../util/date';
+import { localDate, validDate } from '../../../util/date';
 import { useMealList } from '../../../data/queries/mealLogQueries';
 import { useMealDraft } from '../../../data/queries/mealQueries';
 import { filterMealDetails, monthKey, shiftMonth, sortMealDetailsLatestFirst } from '../rules';
 
 export function useMealLog(childId: string, initialDate?: string) {
-  const validInitial = initialDate && validDate(initialDate) ? initialDate : null;
+  const validInitial = initialDate && validDate(initialDate) && initialDate <= localDate() ? initialDate : null;
   const now = validInitial ? new Date(`${validInitial}T12:00:00`) : new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
-  const [selectedDate, setSelectedDate] = useState<string | null>(validInitial);
+  const [selectedDate, setSelectedDate] = useState<string | null>(validInitial ?? localDate());
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
   const [unreviewedOnly, setUnreviewedOnly] = useState(false);
@@ -47,16 +49,21 @@ export function useMealLog(childId: string, initialDate?: string) {
 
   const goMonth = useCallback((delta: number) => {
     const next = shiftMonth(year, month, delta);
+    const now = new Date();
+    if (next.year < 1900 || next.year * 12 + next.month > now.getFullYear() * 12 + now.getMonth()) return;
     setYear(next.year);
     setMonth(next.month);
   }, [year, month, setYear, setMonth]);
 
   const setMonthYear = useCallback((nextYear: number, nextMonth: number) => {
+    const now = new Date();
+    if (nextYear < 1900 || nextYear * 12 + nextMonth > now.getFullYear() * 12 + now.getMonth()) return;
     setYear(nextYear);
     setMonth(nextMonth);
   }, [setYear, setMonth]);
 
   const toggleDate = useCallback((value: string) => {
+    if (!validDate(value) || value > localDate()) return;
     setSelectedDate((current) => {
       if (current === value) return null;
       const [nextYear, nextMonth] = value.split('-').map(Number);

@@ -3,6 +3,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 날짜 상한과 네이티브 연도 메뉴 및 시간대 독립적인 월 표시
 
 import { useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
@@ -70,17 +72,22 @@ function DatePart({ index, value, year, month, label, locale, open, showLabel, o
   const pickerRef = useRef<ScrollViewInstance>(null);
   const inputSize = { height: size?.height ?? 44, borderRadius: size?.borderRadius ?? 10 };
   const textSize = { fontSize: size?.fontSize ?? 13 };
-  const count = index === 0 ? 301 : index === 1 ? 12 : new Date(year, month, 0).getDate();
+  const now = new Date();
+  const currentYear = year === now.getFullYear();
+  const count = index === 0 ? now.getFullYear() - 1900 + 1
+    : index === 1 ? (currentYear ? now.getMonth() + 1 : 12)
+      : currentYear && month === now.getMonth() + 1
+        ? now.getDate() : new Date(Date.UTC(year, month, 0)).getUTCDate();
   const first = index === 0 ? 1900 : 1;
   const offset = Math.max(0, Math.min(value - first - 2, count - 5)) * 36;
   const format = (number: number) => index === 1
-    ? new Date(year, number - 1, 1).toLocaleDateString(locale, { month: 'short' })
+    ? new Date(Date.UTC(2000, number - 1, 1)).toLocaleDateString(locale, { month: 'short', timeZone: 'UTC' })
     : index === 2 ? String(number).padStart(2, '0') : String(number);
   if (Platform.OS === 'android' || Platform.OS === 'ios') return (
     <View style={dateStyles.partWrap}>
       {showLabel && <Text style={dateStyles.fieldLabel}>{label}</Text>}
       <NativeDropdown label={label} value={String(value)} onChange={number => onSelect(Number(number))}
-        options={Array.from({ length: count }, (_, i) => first + i).map(number => ({ id: String(number), label: format(number) }))}
+        options={Array.from({ length: count }, (_, i) => index === 0 ? now.getFullYear() - i : first + i).map(number => ({ id: String(number), label: format(number) }))}
         fieldStyle={[dateStyles.partField, inputSize]}>
         <Text style={[dateStyles.partText, textSize]}>{format(value)}</Text>
         <AppIcon name="down" size={14} />
@@ -97,6 +104,7 @@ function DatePart({ index, value, year, month, label, locale, open, showLabel, o
     {open && <View testID={`date-options-${index}`} style={[dateStyles.picker, { borderRadius: inputSize.borderRadius }]}>
       <ScrollView key={`${index}-${year}-${month}`} ref={pickerRef}
         onContentSizeChange={() => pickerRef.current?.scrollTo({ x: 0, y: offset, animated: false })}
+        onLayout={() => pickerRef.current?.scrollTo({ x: 0, y: offset, animated: false })}
         nestedScrollEnabled keyboardShouldPersistTaps="handled" style={dateStyles.pickerScroll}
         contentOffset={{ x: 0, y: offset }} accessibilityLabel={label}>
         {Array.from({ length: count }, (_, i) => first + i).map(number =>
@@ -115,7 +123,11 @@ function MonthYearField({ year, month, labels, onChange, size }: MonthYearProps)
     <DateParts parts={[year, month, 1]} labels={labels} visibleParts={[1, 0]} size={size}
       field={field} onFieldChange={setField} onSelect={(part, number) => {
         setField(null);
-        onChange(part === 0 ? number : year, part === 1 ? number : month);
+        const nextYear = part === 0 ? number : year;
+        const nextMonth = part === 1 ? number : month;
+        const now = new Date();
+        onChange(nextYear, nextYear === now.getFullYear()
+          ? Math.min(nextMonth, now.getMonth() + 1) : nextMonth);
       }} />
   </View>;
 }
@@ -124,7 +136,7 @@ function FullDateField({ label, labels, parts, open, field, onToggle, onFieldCha
   const [year, month, day] = parts;
   const native = Platform.OS === 'ios' || Platform.OS === 'android';
   const value = new Date(year, month - 1, day);
-  const displayDate = new Date(year, month - 1, day).toLocaleDateString(labels.locale, { day: 'numeric', month: 'long', year: 'numeric' });
+  const displayDate = new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(labels.locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
   return <View style={dateStyles.wrap}>
     <Text style={styles.label}>{labels.date}</Text>
     {(!open || native) && <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={onToggle} style={[styles.choice, dateStyles.field,

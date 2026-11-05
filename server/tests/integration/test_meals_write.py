@@ -3,6 +3,9 @@
 # Changed: Verify isolated check-in ingredients and atomic meal writes
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 서버 발급 id·음식 안 리뷰 결과·추천 시도·난이도 사유 문자열 기준으로 재작성
+# AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+# Changed: main 테스트 유지 및 api_client·공통 fixture 정리
+
 """인증된 식사 저장·수정·리뷰·삭제와 추천 시도 연결."""
 
 from datetime import date
@@ -27,6 +30,7 @@ from app.models import (
 )
 from app.models.food_recommendation_enums import FoodRecommendationStatus
 from app.models.meal_enums import MealCookingMethod, MealSetting, MealType
+from tests.fixtures.meals import food_payload, meal_payload
 from tests.helpers.auth import auth_headers
 
 
@@ -56,32 +60,14 @@ def test_meal_migration_keeps_legacy_food_rows() -> None:
     engine.dispose()
 
 
-def food_payload(name: str = "감자볶음", *ingredients: str) -> dict:
-    return {
-        "name": name,
-        "ingredients": [{"name": item} for item in (ingredients or ("감자",))],
-        "cooking_method": "STIR_FRIED",
-        "serving_note": "작게 잘라 제공",
-        "acceptance": 1,
-    }
-
-
-def meal_payload(*foods: dict) -> dict:
-    return {
-        "meal_date": "2026-10-20",
-        "meal_type": "LUNCH",
-        "setting": "HOME",
-        "before_photo_uri": None,
-        "foods": list(foods or [food_payload()]),
-    }
-
-
 def without_saved_at(meal: dict) -> dict:
     return {key: value for key, value in meal.items() if key != "saved_at"}
 
 
-async def save_meal(client: AsyncClient, headers: dict, payload: dict | None = None) -> dict:
-    response = await client.put("/api/v1/meals", headers=headers, json=payload or meal_payload())
+async def save_meal(api_client: AsyncClient, headers: dict, payload: dict | None = None) -> dict:
+    response = await api_client.put(
+        "/api/v1/meals", headers=headers, json=payload or meal_payload()
+    )
     assert response.status_code == 200, response.text
     return response.json()
 
@@ -129,11 +115,13 @@ async def count_rows(model: type) -> int:
 
 @pytest.mark.asyncio
 async def test_write_meal_returns_server_issued_ids_for_foods_and_ingredients(
-    client: AsyncClient,
+    api_client: AsyncClient,
 ) -> None:
-    assert (await client.put("/api/v1/meals", json=meal_payload())).status_code == 401
-    headers = await auth_headers(client, "meal@example.com")
-    body = await save_meal(client, headers, meal_payload(food_payload("감자볶음", "감자", "당근")))
+    assert (await api_client.put("/api/v1/meals", json=meal_payload())).status_code == 401
+    headers = await auth_headers(api_client, "meal@example.com")
+    body = await save_meal(
+        api_client, headers, meal_payload(food_payload("감자볶음", "감자", "당근"))
+    )
     assert body["user_id"] == "1" and body["id"].isdecimal()
     assert body["meal_type"] == "LUNCH" and body["setting"] == "HOME"
     assert body["after_photo_uri"] is None and body["saved_at"]
@@ -146,19 +134,19 @@ async def test_write_meal_returns_server_issued_ids_for_foods_and_ingredients(
     assert all(item["id"].isdecimal() for item in food["ingredients"])
     assert all(item["outcome"] is None for item in food["ingredients"])
     # SQLite 는 시간대를 저장하지 않으므로 saved_at 은 비교에서 뺀다.
-    detail = (await client.get(f"/api/v1/meals/{body['id']}", headers=headers)).json()
-    listed = (await client.get("/api/v1/meals", headers=headers)).json()
+    detail = (await api_client.get(f"/api/v1/meals/{body['id']}", headers=headers)).json()
+    listed = (await api_client.get("/api/v1/meals", headers=headers)).json()
     assert without_saved_at(detail) == without_saved_at(body)
     assert [without_saved_at(item) for item in listed] == [without_saved_at(body)]
 
 
 @pytest.mark.asyncio
-async def test_ingredients_are_stored_as_typed_per_food(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "meal@example.com")
+async def test_ingredients_are_stored_as_typed_per_food(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "meal@example.com")
     payload = meal_payload(
         food_payload("국", "  우리집   양념  "), food_payload("볶음", "우리집 양념")
     )
-    body = await save_meal(client, headers, payload)
+    body = await save_meal(api_client, headers, payload)
     first, second = (food["ingredients"][0] for food in body["foods"])
     assert first["name"] == "우리집 양념" and second["name"] == "우리집 양념"
     # 같은 이름도 음식마다 별도 행이며 id 가 다르다.
@@ -182,39 +170,43 @@ async def test_ingredients_are_stored_as_typed_per_food(client: AsyncClient) -> 
         "lowercase-type",
         "lowercase-setting",
         "lowercase-cooking-method",
-        "client-food-id",
-        "client-ingredient-id",
+        "api_client-food-id",
+        "api_client-ingredient-id",
         "old-suggestion-links",
         "no-foods",
     ],
 )
-async def test_invalid_meal_payload_is_rejected_without_saving(client: AsyncClient, change) -> None:
-    headers = await auth_headers(client, "meal@example.com")
+async def test_invalid_meal_payload_is_rejected_without_saving(
+    api_client: AsyncClient, change
+) -> None:
+    headers = await auth_headers(api_client, "meal@example.com")
     payload = meal_payload()
     change(payload)
-    response = await client.put("/api/v1/meals", headers=headers, json=payload)
+    response = await api_client.put("/api/v1/meals", headers=headers, json=payload)
     assert response.status_code == 422
     assert response.json()["error_code"] == "VALIDATION_ERROR"
     assert await count_rows(Meal) == 0
 
 
 @pytest.mark.asyncio
-async def test_duplicate_ingredient_in_one_food_rolls_back_the_meal(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "rollback@example.com")
+async def test_duplicate_ingredient_in_one_food_rolls_back_the_meal(
+    api_client: AsyncClient,
+) -> None:
+    headers = await auth_headers(api_client, "rollback@example.com")
     payload = meal_payload(food_payload("볶음", "Custom spice", " custom   SPICE "))
-    response = await client.put("/api/v1/meals", headers=headers, json=payload)
+    response = await api_client.put("/api/v1/meals", headers=headers, json=payload)
     assert response.status_code == 422, response.text
     assert response.json()["error_code"] == "DUPLICATE_INGREDIENT"
     assert await count_rows(Meal) == 0 and await count_rows(MealFood) == 0
 
 
 @pytest.mark.asyncio
-async def test_write_meal_links_saved_recommendations_to_the_food(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "meal@example.com")
+async def test_write_meal_links_saved_recommendations_to_the_food(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "meal@example.com")
     recommendation_id = await seed_recommendation(1)
     payload = meal_payload(food_payload(), food_payload("국", "무"))
     payload["foods"][0]["food_recommendation_ids"] = [str(recommendation_id)]
-    body = await save_meal(client, headers, payload)
+    body = await save_meal(api_client, headers, payload)
     tried, other = body["foods"]
     assert other["recommendation_tries"] == []
     assert len(tried["recommendation_tries"]) == 1
@@ -234,10 +226,10 @@ async def test_write_meal_links_saved_recommendations_to_the_food(client: AsyncC
     "case", ["missing", "pending", "other-user", "two-foods"], ids=lambda value: value
 )
 async def test_invalid_recommendation_link_is_rejected_without_saving(
-    client: AsyncClient, case: str
+    api_client: AsyncClient, case: str
 ) -> None:
-    headers = await auth_headers(client, "meal@example.com")
-    await auth_headers(client, "other@example.com")
+    headers = await auth_headers(api_client, "meal@example.com")
+    await auth_headers(api_client, "other@example.com")
     if case == "missing":
         ids = ["9999"]
     elif case == "pending":
@@ -251,7 +243,7 @@ async def test_invalid_recommendation_link_is_rejected_without_saving(
     if case == "two-foods":
         payload["foods"][1]["food_recommendation_ids"] = ids
     meals_before = await count_rows(Meal)
-    response = await client.put("/api/v1/meals", headers=headers, json=payload)
+    response = await api_client.put("/api/v1/meals", headers=headers, json=payload)
     assert response.status_code == 422, response.text
     expected = "VALIDATION_ERROR" if case == "two-foods" else "INVALID_MEAL_LINK"
     assert response.json()["error_code"] == expected
@@ -260,10 +252,12 @@ async def test_invalid_recommendation_link_is_rejected_without_saving(
 
 
 @pytest.mark.asyncio
-async def test_update_foods_matches_existing_foods_by_id(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "edit@example.com")
+async def test_update_foods_matches_existing_foods_by_id(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "edit@example.com")
     saved = await save_meal(
-        client, headers, meal_payload(food_payload("감자볶음", "감자"), food_payload("국", "무"))
+        api_client,
+        headers,
+        meal_payload(food_payload("감자볶음", "감자"), food_payload("국", "무")),
     )
     keep, drop = saved["foods"]
     edited = {
@@ -272,7 +266,9 @@ async def test_update_foods_matches_existing_foods_by_id(client: AsyncClient) ->
             food_payload("새 음식", "두부"),
         ]
     }
-    response = await client.put(f"/api/v1/meals/{saved['id']}/foods", headers=headers, json=edited)
+    response = await api_client.put(
+        f"/api/v1/meals/{saved['id']}/foods", headers=headers, json=edited
+    )
     assert response.status_code == 200, response.text
     foods = response.json()["foods"]
     assert [food["name"] for food in foods] == ["감자와 당근", "새 음식"]
@@ -286,15 +282,15 @@ async def test_update_foods_matches_existing_foods_by_id(client: AsyncClient) ->
 
 @pytest.mark.asyncio
 async def test_update_foods_deletes_the_recommendation_tries_of_omitted_foods(
-    client: AsyncClient,
+    api_client: AsyncClient,
 ) -> None:
-    headers = await auth_headers(client, "edit@example.com")
+    headers = await auth_headers(api_client, "edit@example.com")
     recommendation_id = await seed_recommendation(1)
     payload = meal_payload(food_payload(), food_payload("국", "무"))
     payload["foods"][1]["food_recommendation_ids"] = [str(recommendation_id)]
-    saved = await save_meal(client, headers, payload)
+    saved = await save_meal(api_client, headers, payload)
     keep = saved["foods"][0]
-    response = await client.put(
+    response = await api_client.put(
         f"/api/v1/meals/{saved['id']}/foods",
         headers=headers,
         json={"foods": [{**food_payload(), "id": keep["id"]}]},
@@ -307,15 +303,15 @@ async def test_update_foods_deletes_the_recommendation_tries_of_omitted_foods(
 
 @pytest.mark.asyncio
 async def test_update_foods_keeps_the_recommendation_tries_of_kept_foods(
-    client: AsyncClient,
+    api_client: AsyncClient,
 ) -> None:
-    headers = await auth_headers(client, "edit@example.com")
+    headers = await auth_headers(api_client, "edit@example.com")
     recommendation_id = await seed_recommendation(1)
     payload = meal_payload()
     payload["foods"][0]["food_recommendation_ids"] = [str(recommendation_id)]
-    saved = await save_meal(client, headers, payload)
+    saved = await save_meal(api_client, headers, payload)
     food = saved["foods"][0]
-    response = await client.put(
+    response = await api_client.put(
         f"/api/v1/meals/{saved['id']}/foods",
         headers=headers,
         json={"foods": [{**food_payload("이름 변경", "당근"), "id": food["id"]}]},
@@ -329,49 +325,49 @@ async def test_update_foods_keeps_the_recommendation_tries_of_kept_foods(
 
 
 @pytest.mark.asyncio
-async def test_update_foods_rejects_unknown_or_foreign_food_ids(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "edit@example.com")
-    first = await save_meal(client, headers)
-    second = await save_meal(client, headers)
-    before = (await client.get(f"/api/v1/meals/{first['id']}", headers=headers)).json()
+async def test_update_foods_rejects_unknown_or_foreign_food_ids(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "edit@example.com")
+    first = await save_meal(api_client, headers)
+    second = await save_meal(api_client, headers)
+    before = (await api_client.get(f"/api/v1/meals/{first['id']}", headers=headers)).json()
     for food_id in ("9999", second["foods"][0]["id"]):
-        response = await client.put(
+        response = await api_client.put(
             f"/api/v1/meals/{first['id']}/foods",
             headers=headers,
             json={"foods": [{**food_payload(), "id": food_id}]},
         )
         assert response.status_code == 422, response.text
         assert response.json()["error_code"] == "INVALID_MEAL_FOOD"
-    assert (await client.get(f"/api/v1/meals/{first['id']}", headers=headers)).json() == before
+    assert (await api_client.get(f"/api/v1/meals/{first['id']}", headers=headers)).json() == before
 
 
 @pytest.mark.asyncio
 async def test_update_foods_rejects_duplicate_ingredients_and_preserves_the_meal(
-    client: AsyncClient,
+    api_client: AsyncClient,
 ) -> None:
-    headers = await auth_headers(client, "edit-rollback@example.com")
-    saved = await save_meal(client, headers)
+    headers = await auth_headers(api_client, "edit-rollback@example.com")
+    saved = await save_meal(api_client, headers)
     url = f"/api/v1/meals/{saved['id']}"
-    before = (await client.get(url, headers=headers)).json()
+    before = (await api_client.get(url, headers=headers)).json()
     edited = {"foods": [{**food_payload("Must not persist", "Spice", "spice"), "id": None}]}
-    rejected = await client.put(f"{url}/foods", headers=headers, json=edited)
+    rejected = await api_client.put(f"{url}/foods", headers=headers, json=edited)
     assert rejected.status_code == 422, rejected.text
     assert rejected.json()["error_code"] == "DUPLICATE_INGREDIENT"
-    assert (await client.get(url, headers=headers)).json() == before
+    assert (await api_client.get(url, headers=headers)).json() == before
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("ingredient_name", ["", " \t\n"])
-async def test_blank_ingredient_update_preserves_existing_meal(client, ingredient_name):
-    headers = await auth_headers(client, "recover@example.com")
-    saved = await save_meal(client, headers)
+async def test_blank_ingredient_update_preserves_existing_meal(api_client, ingredient_name):
+    headers = await auth_headers(api_client, "recover@example.com")
+    saved = await save_meal(api_client, headers)
     url = f"/api/v1/meals/{saved['id']}"
-    before = (await client.get(url, headers=headers)).json()
+    before = (await api_client.get(url, headers=headers)).json()
     invalid = food_payload("Must not persist", ingredient_name)
-    rejected = await client.put(f"{url}/foods", headers=headers, json={"foods": [invalid]})
+    rejected = await api_client.put(f"{url}/foods", headers=headers, json={"foods": [invalid]})
     assert rejected.status_code == 422
     assert rejected.json()["error_code"] == "VALIDATION_ERROR"
-    assert (await client.get(url, headers=headers)).json() == before
+    assert (await api_client.get(url, headers=headers)).json() == before
 
 
 def review_payload(meal: dict, **overrides) -> dict:
@@ -391,9 +387,9 @@ def review_payload(meal: dict, **overrides) -> dict:
 
 
 @pytest.mark.asyncio
-async def test_review_stores_results_inside_foods_and_ingredients(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "review@example.com")
-    saved = await save_meal(client, headers, meal_payload(food_payload("볶음", "감자", "당근")))
+async def test_review_stores_results_inside_foods_and_ingredients(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "review@example.com")
+    saved = await save_meal(api_client, headers, meal_payload(food_payload("볶음", "감자", "당근")))
     food = saved["foods"][0]
     potato, carrot = food["ingredients"]
     payload = {
@@ -413,7 +409,7 @@ async def test_review_stores_results_inside_foods_and_ingredients(client: AsyncC
             }
         ],
     }
-    response = await client.put(
+    response = await api_client.put(
         f"/api/v1/meals/{saved['id']}/review", headers=headers, json=payload
     )
     assert response.status_code == 200, response.text
@@ -428,23 +424,25 @@ async def test_review_stores_results_inside_foods_and_ingredients(client: AsyncC
     # 요청에 없는 재료는 아직 리뷰하지 않은 상태로 남는다.
     assert by_name["당근"]["id"] == carrot["id"] and by_name["당근"]["outcome"] is None
     assert "review" not in body and "food_results" not in body
-    detail = (await client.get(f"/api/v1/meals/{saved['id']}", headers=headers)).json()
+    detail = (await api_client.get(f"/api/v1/meals/{saved['id']}", headers=headers)).json()
     assert without_saved_at(detail) == without_saved_at(body)
 
 
 @pytest.mark.asyncio
-async def test_review_can_be_replaced_and_resets_omitted_ingredients(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "review@example.com")
-    saved = await save_meal(client, headers)
+async def test_review_can_be_replaced_and_resets_omitted_ingredients(
+    api_client: AsyncClient,
+) -> None:
+    headers = await auth_headers(api_client, "review@example.com")
+    saved = await save_meal(api_client, headers)
     food = saved["foods"][0]
     url = f"/api/v1/meals/{saved['id']}/review"
     first = review_payload(saved)
     first["food_results"][0]["ingredient_outcomes"] = [
         {"ingredient_id": food["ingredients"][0]["id"], "outcome": "EATEN"}
     ]
-    assert (await client.put(url, headers=headers, json=first)).status_code == 200
+    assert (await api_client.put(url, headers=headers, json=first)).status_code == 200
     second = review_payload(saved, outcome="UNCLEAR", difficulty_reasons=["NOT_SURE"])
-    response = await client.put(url, headers=headers, json=second)
+    response = await api_client.put(url, headers=headers, json=second)
     assert response.status_code == 200, response.text
     reviewed = response.json()["foods"][0]
     assert reviewed["outcome"] == "UNCLEAR" and reviewed["difficulty_reasons"] == ["NOT_SURE"]
@@ -462,25 +460,25 @@ async def test_review_can_be_replaced_and_resets_omitted_ingredients(client: Asy
     ],
     ids=["old-object", "lowercase", "unknown-value", "duplicate"],
 )
-async def test_review_rejects_invalid_difficulty_reasons(client: AsyncClient, reasons) -> None:
-    headers = await auth_headers(client, "review@example.com")
-    saved = await save_meal(client, headers)
-    response = await client.put(
+async def test_review_rejects_invalid_difficulty_reasons(api_client: AsyncClient, reasons) -> None:
+    headers = await auth_headers(api_client, "review@example.com")
+    saved = await save_meal(api_client, headers)
+    response = await api_client.put(
         f"/api/v1/meals/{saved['id']}/review",
         headers=headers,
         json=review_payload(saved, difficulty_reasons=reasons),
     )
     assert response.status_code == 422
     assert response.json()["error_code"] == "VALIDATION_ERROR"
-    detail = (await client.get(f"/api/v1/meals/{saved['id']}", headers=headers)).json()
+    detail = (await api_client.get(f"/api/v1/meals/{saved['id']}", headers=headers)).json()
     assert detail["foods"][0]["outcome"] is None
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("case", ["null-outcome", "lowercase-outcome", "old-fields"])
-async def test_review_rejects_malformed_results(client: AsyncClient, case: str) -> None:
-    headers = await auth_headers(client, "review@example.com")
-    saved = await save_meal(client, headers)
+async def test_review_rejects_malformed_results(api_client: AsyncClient, case: str) -> None:
+    headers = await auth_headers(api_client, "review@example.com")
+    saved = await save_meal(api_client, headers)
     payload = review_payload(saved)
     result = payload["food_results"][0]
     if case == "null-outcome":
@@ -489,7 +487,7 @@ async def test_review_rejects_malformed_results(client: AsyncClient, case: str) 
         result["outcome"] = "eaten"
     else:
         result["difficulties"] = []
-    response = await client.put(
+    response = await api_client.put(
         f"/api/v1/meals/{saved['id']}/review", headers=headers, json=payload
     )
     assert response.status_code == 422
@@ -497,14 +495,14 @@ async def test_review_rejects_malformed_results(client: AsyncClient, case: str) 
 
 
 @pytest.mark.asyncio
-async def test_invalid_review_preserves_previous_review(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "review-recover@example.com")
-    saved = await save_meal(client, headers)
-    other = await save_meal(client, headers)
+async def test_invalid_review_preserves_previous_review(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "review-recover@example.com")
+    saved = await save_meal(api_client, headers)
+    other = await save_meal(api_client, headers)
     url = f"/api/v1/meals/{saved['id']}"
-    written = await client.put(f"{url}/review", headers=headers, json=review_payload(saved))
+    written = await api_client.put(f"{url}/review", headers=headers, json=review_payload(saved))
     assert written.status_code == 200
-    before = (await client.get(url, headers=headers)).json()
+    before = (await api_client.get(url, headers=headers)).json()
     unknown_food = review_payload(saved)
     unknown_food["food_results"][0]["food_id"] = "9999"
     foreign_food = review_payload(other)
@@ -513,21 +511,21 @@ async def test_invalid_review_preserves_previous_review(client: AsyncClient) -> 
         {"ingredient_id": other["foods"][0]["ingredients"][0]["id"], "outcome": "EATEN"}
     ]
     for payload in (unknown_food, foreign_food, foreign_ingredient):
-        rejected = await client.put(f"{url}/review", headers=headers, json=payload)
+        rejected = await api_client.put(f"{url}/review", headers=headers, json=payload)
         assert rejected.status_code == 422
         assert rejected.json()["error_code"] == "INVALID_MEAL_REVIEW"
-    assert (await client.get(url, headers=headers)).json() == before
+    assert (await api_client.get(url, headers=headers)).json() == before
 
 
 @pytest.mark.asyncio
-async def test_reviewed_meal_cannot_be_edited(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "edit@example.com")
-    saved = await save_meal(client, headers)
+async def test_reviewed_meal_cannot_be_edited(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "edit@example.com")
+    saved = await save_meal(api_client, headers)
     url = f"/api/v1/meals/{saved['id']}"
     assert (
-        await client.put(f"{url}/review", headers=headers, json=review_payload(saved))
+        await api_client.put(f"{url}/review", headers=headers, json=review_payload(saved))
     ).status_code == 200
-    rejected = await client.put(
+    rejected = await api_client.put(
         f"{url}/foods",
         headers=headers,
         json={"foods": [{**food_payload(), "id": saved["foods"][0]["id"]}]},
@@ -537,30 +535,30 @@ async def test_reviewed_meal_cannot_be_edited(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_delete_meal_removes_foods_ingredients_and_tries(client: AsyncClient) -> None:
-    headers = await auth_headers(client, "delete@example.com")
+async def test_delete_meal_removes_foods_ingredients_and_tries(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "delete@example.com")
     recommendation_id = await seed_recommendation(1)
     payload = meal_payload()
     payload["foods"][0]["food_recommendation_ids"] = [str(recommendation_id)]
-    saved = await save_meal(client, headers, payload)
+    saved = await save_meal(api_client, headers, payload)
     foods_before = await count_rows(MealFood)
-    response = await client.delete(f"/api/v1/meals/{saved['id']}", headers=headers)
+    response = await api_client.delete(f"/api/v1/meals/{saved['id']}", headers=headers)
     assert response.status_code == 204
     assert await count_rows(MealFood) == foods_before - 1
     assert await count_rows(MealFoodIngredient) == 0
     assert await count_rows(FoodRecommendationTry) == 0
-    missing = await client.get(f"/api/v1/meals/{saved['id']}", headers=headers)
+    missing = await api_client.get(f"/api/v1/meals/{saved['id']}", headers=headers)
     assert missing.status_code == 404 and missing.json()["error_code"] == "MEAL_NOT_FOUND"
 
 
 @pytest.mark.asyncio
-async def test_meals_are_isolated_between_users(client: AsyncClient) -> None:
-    owner = await auth_headers(client, "owner@example.com")
-    other = await auth_headers(client, "other@example.com")
-    saved = await save_meal(client, owner)
+async def test_meals_are_isolated_between_users(api_client: AsyncClient) -> None:
+    owner = await auth_headers(api_client, "owner@example.com")
+    other = await auth_headers(api_client, "other@example.com")
+    saved = await save_meal(api_client, owner)
     url = f"/api/v1/meals/{saved['id']}"
-    assert (await client.get(url, headers=other)).status_code == 404
-    assert (await client.delete(url, headers=other)).status_code == 404
-    assert (await client.get("/api/v1/meals", headers=other)).json() == []
-    reviewed = await client.put(f"{url}/review", headers=other, json=review_payload(saved))
+    assert (await api_client.get(url, headers=other)).status_code == 404
+    assert (await api_client.delete(url, headers=other)).status_code == 404
+    assert (await api_client.get("/api/v1/meals", headers=other)).json() == []
+    reviewed = await api_client.put(f"{url}/review", headers=other, json=review_payload(saved))
     assert reviewed.status_code == 404

@@ -5,6 +5,8 @@
 // Changed: 음식·재료 안 리뷰 결과, 난이도 사유 문자열, 기존 음식 id 갱신 계약으로 수정
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 재료 난이도 저장·복원 테스트를 서버 난이도 사유 문자열 기준으로 수정
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 사유 코드 저장·메모 제외·폐기 분류 거부 검증
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -233,15 +235,14 @@ test("ingredient difficulties survive API saving and restore to their own review
   );
 });
 
-for (const [category, value, note, subcategory] of [
-  ["tasteType", "other", "낯선 맛"],
-  ["color", "other", "보라색"],
-  ["arrangement", "other", "소스: 한쪽에 몰림\n음식 위에 있음"],
-  ["shape", "note", "길쭉한 모양"],
-  ["shape", "notSure", "모양 확인 필요"],
-  ["texture", "firm", "씹기 어려움", "hardness"],
+for (const [category, value, note, subcategory, reason] of [
+  ["tasteType", "sweet", "단맛 메모", undefined, "TASTE.SWEET"],
+  ["color", "other", "보라색", undefined, "COLOR.OTHER"],
+  ["arrangement", "other", "소스: 한쪽에 몰림\n음식 위에 있음", undefined, "ARRANGEMENT.OTHER"],
+  ["texture", "firm", "씹기 어려움", "hardness", "TEXTURE.HARDNESS.FIRM"],
+  ["notSure", "notSure", "확인 필요", undefined, "NOT_SURE"],
 ]) {
-  test(`${category}/${value}: food and ingredient selections and notes survive repeated API saves`, async () => {
+  test(`${category}/${value}: food and ingredient reason codes survive repeated API saves without notes`, async () => {
     const {
       newReviewDraft,
       setOutcome,
@@ -269,16 +270,16 @@ for (const [category, value, note, subcategory] of [
     request = async (path, init) => {
       assert.equal(path, "/api/v1/meals/8/review");
       const body = JSON.parse(init.body);
-      const expected = {
-        category,
-        subcategory: subcategory ?? null,
-        value: `${value}: ${note}`,
-      };
-      assert.deepEqual(body.food_results[0].difficulties, [expected]);
-      assert.deepEqual(
-        body.food_results[0].ingredient_outcomes[0].difficulties,
-        [expected],
-      );
+      assert.deepEqual(body.food_results[0], {
+        food_id: "2",
+        outcome: "TASTED",
+        difficulty_reasons: [reason],
+        ingredient_outcomes: [{
+          ingredient_id: "212",
+          outcome: "UNTOUCHED",
+          difficulty_reasons: [reason],
+        }],
+      });
       return reviewResponse(response, body);
     };
     for (let save = 0; save < 2; save++) {
@@ -288,7 +289,7 @@ for (const [category, value, note, subcategory] of [
         const [tag] = draft.difficulties[targetId];
         assert.equal(tag.category, category);
         assert.equal(tag.value, value);
-        assert.equal(tag.note, note);
+        assert.equal(tag.note, undefined);
         assert.equal(tag.subcategory, subcategory);
       }
       assert.deepEqual(
@@ -296,5 +297,26 @@ for (const [category, value, note, subcategory] of [
         original,
       );
     }
+  });
+}
+
+for (const value of ["note", "notSure"]) {
+  test(`retired shape/${value} is rejected before sending a review`, async () => {
+    const { newReviewDraft, setOutcome, addDifficulty, reviewFromDraft } =
+      require("../../src/features/after-meal-review/rules.ts");
+    const { toMealDetail } = require("../../src/data/dto/mealDto.ts");
+    const detail = toMealDetail(response);
+    const meal = toLegacyMeal(detail);
+    const draft = newReviewDraft(meal);
+    draft.outcomes = setOutcome(draft.outcomes, "2", "tasted");
+    draft.difficulties["2"] = addDifficulty([], "shape", value, "모양 메모");
+    let calls = 0;
+    request = async () => { calls++; throw new Error("Unexpected HTTP request"); };
+
+    await assert.rejects(
+      writeMealReview(reviewFromDraft(draft, meal), detail),
+      /Unsupported difficulty category/,
+    );
+    assert.equal(calls, 0);
   });
 }

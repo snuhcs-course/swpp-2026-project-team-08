@@ -3,6 +3,9 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 음식별 재료·음식 안 리뷰 결과·추천 시도 기준으로 저장, 수정, 리뷰 재작성
 
+# AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+# Changed: 최신 식사 동작 유지 및 입력·응답 모듈 경로 정리
+
 """인증된 사용자의 식사와 음식, 재료, 식후 리뷰를 저장한다."""
 
 from sqlalchemy import delete, exists, select, update
@@ -10,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
 from app.core.timezone import now_kst
-from app.features.meals.data import FoodData, MealData, ReviewData
+from app.features.meals.input_dto import FoodData, MealData, ReviewData
 from app.features.meals.queries import (
     FoodRecords,
     MealRecords,

@@ -5,6 +5,9 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 계정 삭제·이메일 변경 테스트를 새 ORM 구조에 맞춤
+# AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+# Changed: main 테스트 유지 및 api_client·공통 fixture 정리
+
 """회원가입 / 로그인 happy-path + 주요 에러 케이스."""
 
 from datetime import date, timedelta
@@ -42,8 +45,8 @@ SIGNUP_PAYLOAD = {
 
 
 @pytest.mark.asyncio
-async def test_signup_creates_user(client: AsyncClient) -> None:
-    res = await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
+async def test_signup_creates_user(api_client: AsyncClient) -> None:
+    res = await api_client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
 
     assert res.status_code == 201
     body = res.json()
@@ -56,9 +59,9 @@ async def test_signup_creates_user(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_signup_duplicate_email_conflict(client: AsyncClient) -> None:
-    await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
-    res = await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
+async def test_signup_duplicate_email_conflict(api_client: AsyncClient) -> None:
+    await api_client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
+    res = await api_client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
 
     assert res.status_code == 409
     assert res.json() == {
@@ -68,14 +71,14 @@ async def test_signup_duplicate_email_conflict(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_email_identity_is_case_insensitive(client: AsyncClient) -> None:
-    await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
-    duplicate = await client.post(
+async def test_email_identity_is_case_insensitive(api_client: AsyncClient) -> None:
+    await api_client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
+    duplicate = await api_client.post(
         "/api/v1/auth/signup",
         json={**SIGNUP_PAYLOAD, "email": "USER@example.com"},
     )
     assert duplicate.status_code == 409
-    login = await client.post(
+    login = await api_client.post(
         "/api/v1/auth/login",
         json={"email": "USER@example.com", "password": SIGNUP_PAYLOAD["password"]},
     )
@@ -83,8 +86,8 @@ async def test_email_identity_is_case_insensitive(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_signup_short_password_rejected(client: AsyncClient) -> None:
-    res = await client.post("/api/v1/auth/signup", json={**SIGNUP_PAYLOAD, "password": "short"})
+async def test_signup_short_password_rejected(api_client: AsyncClient) -> None:
+    res = await api_client.post("/api/v1/auth/signup", json={**SIGNUP_PAYLOAD, "password": "short"})
 
     assert res.status_code == 422
     # 비밀번호는 응답에 되돌려 주지 않는다.
@@ -92,31 +95,35 @@ async def test_signup_short_password_rejected(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_signup_invalid_email_rejected(client: AsyncClient) -> None:
-    res = await client.post("/api/v1/auth/signup", json={**SIGNUP_PAYLOAD, "email": "not-an-email"})
+async def test_signup_invalid_email_rejected(api_client: AsyncClient) -> None:
+    res = await api_client.post(
+        "/api/v1/auth/signup", json={**SIGNUP_PAYLOAD, "email": "not-an-email"}
+    )
 
     assert res.status_code == 422
     assert res.json() == {"error_code": "INVALID_EMAIL", "details": {"input": "not-an-email"}}
 
 
 @pytest.mark.asyncio
-async def test_signup_empty_full_name_rejected(client: AsyncClient) -> None:
-    res = await client.post("/api/v1/auth/signup", json={**SIGNUP_PAYLOAD, "full_name": ""})
+async def test_signup_empty_full_name_rejected(api_client: AsyncClient) -> None:
+    res = await api_client.post("/api/v1/auth/signup", json={**SIGNUP_PAYLOAD, "full_name": ""})
 
     assert res.status_code == 422
     assert res.json() == {"error_code": "INVALID_FULL_NAME_LENGTH", "details": {"input": ""}}
 
 
 @pytest.mark.asyncio
-async def test_signup_whitespace_full_name_rejected(client: AsyncClient) -> None:
-    response = await client.post("/api/v1/auth/signup", json={**SIGNUP_PAYLOAD, "full_name": "   "})
+async def test_signup_whitespace_full_name_rejected(api_client: AsyncClient) -> None:
+    response = await api_client.post(
+        "/api/v1/auth/signup", json={**SIGNUP_PAYLOAD, "full_name": "   "}
+    )
     assert response.status_code == 422
     assert response.json()["error_code"] == "INVALID_FULL_NAME_LENGTH"
 
 
 @pytest.mark.asyncio
-async def test_signup_missing_field_is_validation_error(client: AsyncClient) -> None:
-    res = await client.post("/api/v1/auth/signup", json={"email": SIGNUP_PAYLOAD["email"]})
+async def test_signup_missing_field_is_validation_error(api_client: AsyncClient) -> None:
+    res = await api_client.post("/api/v1/auth/signup", json={"email": SIGNUP_PAYLOAD["email"]})
 
     assert res.status_code == 422
     body = res.json()
@@ -125,10 +132,10 @@ async def test_signup_missing_field_is_validation_error(client: AsyncClient) -> 
 
 
 @pytest.mark.asyncio
-async def test_login_returns_tokens(client: AsyncClient) -> None:
-    signup = await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
+async def test_login_returns_tokens(api_client: AsyncClient) -> None:
+    signup = await api_client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
 
-    res = await client.post(
+    res = await api_client.post(
         "/api/v1/auth/login",
         json={"email": SIGNUP_PAYLOAD["email"], "password": SIGNUP_PAYLOAD["password"]},
     )
@@ -143,10 +150,10 @@ async def test_login_returns_tokens(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_login_wrong_password_unauthorized(client: AsyncClient) -> None:
-    await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
+async def test_login_wrong_password_unauthorized(api_client: AsyncClient) -> None:
+    await api_client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
 
-    res = await client.post(
+    res = await api_client.post(
         "/api/v1/auth/login",
         json={"email": SIGNUP_PAYLOAD["email"], "password": "wrong-password"},
     )
@@ -155,9 +162,9 @@ async def test_login_wrong_password_unauthorized(client: AsyncClient) -> None:
     assert res.json() == {"error_code": "INVALID_CREDENTIALS", "details": {}}
 
 
-async def _sign_up_and_login(client: AsyncClient) -> dict:
-    await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
-    res = await client.post(
+async def _sign_up_and_login(api_client: AsyncClient) -> dict:
+    await api_client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
+    res = await api_client.post(
         "/api/v1/auth/login",
         json={"email": SIGNUP_PAYLOAD["email"], "password": SIGNUP_PAYLOAD["password"]},
     )
@@ -165,10 +172,10 @@ async def _sign_up_and_login(client: AsyncClient) -> dict:
 
 
 @pytest.mark.asyncio
-async def test_me_returns_current_user(client: AsyncClient) -> None:
-    tokens = await _sign_up_and_login(client)
+async def test_me_returns_current_user(api_client: AsyncClient) -> None:
+    tokens = await _sign_up_and_login(api_client)
 
-    res = await client.get(
+    res = await api_client.get(
         "/api/v1/auth/me", headers={"Authorization": f"Bearer {tokens['access_token']}"}
     )
 
@@ -177,25 +184,25 @@ async def test_me_returns_current_user(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_me_without_token_unauthorized(client: AsyncClient) -> None:
-    res = await client.get("/api/v1/auth/me")
+async def test_me_without_token_unauthorized(api_client: AsyncClient) -> None:
+    res = await api_client.get("/api/v1/auth/me")
 
     assert res.status_code == 401
     assert res.json() == {"error_code": "UNAUTHENTICATED", "details": {}}
 
 
 @pytest.mark.asyncio
-async def test_me_documents_unauthenticated_response(client: AsyncClient) -> None:
+async def test_me_documents_unauthenticated_response(api_client: AsyncClient) -> None:
     # get_current_user 가 들고 있는 에러 선언이 /docs 에 자동으로 나타난다.
-    schema = (await client.get("/openapi.json")).json()
+    schema = (await api_client.get("/openapi.json")).json()
     responses = schema["paths"]["/api/v1/auth/me"]["get"]["responses"]
 
     assert responses["401"]["description"] == "UNAUTHENTICATED"
 
 
 @pytest.mark.asyncio
-async def test_me_with_invalid_token_unauthorized(client: AsyncClient) -> None:
-    res = await client.get("/api/v1/auth/me", headers={"Authorization": "Bearer not-a-token"})
+async def test_me_with_invalid_token_unauthorized(api_client: AsyncClient) -> None:
+    res = await api_client.get("/api/v1/auth/me", headers={"Authorization": "Bearer not-a-token"})
 
     assert res.status_code == 401
     assert res.json()["error_code"] == "UNAUTHENTICATED"
@@ -205,18 +212,18 @@ async def test_me_with_invalid_token_unauthorized(client: AsyncClient) -> None:
 @pytest.mark.parametrize(
     "subject", ["3fa85f64-5717-4562-b3fc-2c963f66afa6", "0", "01", "9223372036854775808"]
 )
-async def test_me_rejects_non_bigint_token_subject(client: AsyncClient, subject: str) -> None:
+async def test_me_rejects_non_bigint_token_subject(api_client: AsyncClient, subject: str) -> None:
     token = create_access_token(subject)
-    res = await client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
+    res = await api_client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 401
     assert res.json()["error_code"] == "UNAUTHENTICATED"
 
 
 @pytest.mark.asyncio
-async def test_me_rejects_refresh_token(client: AsyncClient) -> None:
-    tokens = await _sign_up_and_login(client)
+async def test_me_rejects_refresh_token(api_client: AsyncClient) -> None:
+    tokens = await _sign_up_and_login(api_client)
 
-    res = await client.get(
+    res = await api_client.get(
         "/api/v1/auth/me", headers={"Authorization": f"Bearer {tokens['refresh_token']}"}
     )
 
@@ -225,8 +232,8 @@ async def test_me_rejects_refresh_token(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_login_unknown_email_unauthorized(client: AsyncClient) -> None:
-    res = await client.post(
+async def test_login_unknown_email_unauthorized(api_client: AsyncClient) -> None:
+    res = await api_client.post(
         "/api/v1/auth/login",
         json={"email": "nobody@example.com", "password": "supersecret"},
     )
@@ -241,10 +248,10 @@ def _auth_header(tokens: dict) -> dict:
 
 
 @pytest.mark.asyncio
-async def test_patch_me_updates_full_name(client: AsyncClient) -> None:
-    tokens = await _sign_up_and_login(client)
+async def test_patch_me_updates_full_name(api_client: AsyncClient) -> None:
+    tokens = await _sign_up_and_login(api_client)
 
-    res = await client.patch(
+    res = await api_client.patch(
         "/api/v1/auth/me",
         headers=_auth_header(tokens),
         json={"full_name": "김도연"},
@@ -252,19 +259,19 @@ async def test_patch_me_updates_full_name(client: AsyncClient) -> None:
 
     assert res.status_code == 200
     assert res.json()["full_name"] == "김도연"
-    me = await client.get("/api/v1/auth/me", headers=_auth_header(tokens))
+    me = await api_client.get("/api/v1/auth/me", headers=_auth_header(tokens))
     assert me.json()["full_name"] == "김도연"
 
 
 @pytest.mark.asyncio
 async def test_email_change_requires_server_code(
-    client: AsyncClient,
+    api_client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr("app.features.auth.service.issue_email_code", lambda: "482190")
-    tokens = await _sign_up_and_login(client)
+    tokens = await _sign_up_and_login(api_client)
 
-    sent = await client.post(
+    sent = await api_client.post(
         "/api/v1/auth/email-change",
         headers=_auth_header(tokens),
         json={"email": "new@example.com"},
@@ -272,7 +279,7 @@ async def test_email_change_requires_server_code(
     assert sent.status_code == 200
     assert sent.json() == {"sent": True, "dev_code": "482190"}
 
-    wrong = await client.post(
+    wrong = await api_client.post(
         "/api/v1/auth/email-change/confirm",
         headers=_auth_header(tokens),
         json={"email": "new@example.com", "code": "123456"},
@@ -280,7 +287,7 @@ async def test_email_change_requires_server_code(
     assert wrong.status_code == 400
     assert wrong.json()["error_code"] == "INVALID_EMAIL_CODE"
 
-    confirmed = await client.post(
+    confirmed = await api_client.post(
         "/api/v1/auth/email-change/confirm",
         headers=_auth_header(tokens),
         json={"email": "new@example.com", "code": "482190"},
@@ -288,12 +295,12 @@ async def test_email_change_requires_server_code(
     assert confirmed.status_code == 200
     assert confirmed.json()["email"] == "new@example.com"
 
-    old_login = await client.post(
+    old_login = await api_client.post(
         "/api/v1/auth/login",
         json={"email": SIGNUP_PAYLOAD["email"], "password": SIGNUP_PAYLOAD["password"]},
     )
     assert old_login.status_code == 401
-    new_login = await client.post(
+    new_login = await api_client.post(
         "/api/v1/auth/login",
         json={"email": "new@example.com", "password": SIGNUP_PAYLOAD["password"]},
     )
@@ -302,15 +309,15 @@ async def test_email_change_requires_server_code(
 
 @pytest.mark.asyncio
 async def test_email_change_keeps_one_attempt_and_clears_it_on_confirm(
-    client: AsyncClient,
+    api_client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     codes = iter(["111111", "222222"])
     monkeypatch.setattr("app.features.auth.service.issue_email_code", lambda: next(codes))
-    tokens = await _sign_up_and_login(client)
+    tokens = await _sign_up_and_login(api_client)
 
     for email in ("first@example.com", "second@example.com"):
-        sent = await client.post(
+        sent = await api_client.post(
             "/api/v1/auth/email-change", headers=_auth_header(tokens), json={"email": email}
         )
         assert sent.status_code == 200
@@ -320,7 +327,7 @@ async def test_email_change_keeps_one_attempt_and_clears_it_on_confirm(
         attempts = (await session.scalars(select(UserEmailChangeAttempt))).all()
         assert [a.new_email for a in attempts] == ["second@example.com"]
 
-    stale = await client.post(
+    stale = await api_client.post(
         "/api/v1/auth/email-change/confirm",
         headers=_auth_header(tokens),
         json={"email": "first@example.com", "code": "111111"},
@@ -328,7 +335,7 @@ async def test_email_change_keeps_one_attempt_and_clears_it_on_confirm(
     assert stale.status_code == 400
     assert stale.json()["error_code"] == "INVALID_EMAIL_CODE"
 
-    confirmed = await client.post(
+    confirmed = await api_client.post(
         "/api/v1/auth/email-change/confirm",
         headers=_auth_header(tokens),
         json={"email": "second@example.com", "code": "222222"},
@@ -342,12 +349,12 @@ async def test_email_change_keeps_one_attempt_and_clears_it_on_confirm(
 
 @pytest.mark.asyncio
 async def test_email_change_rejects_expired_code(
-    client: AsyncClient,
+    api_client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr("app.features.auth.service.issue_email_code", lambda: "482190")
-    tokens = await _sign_up_and_login(client)
-    await client.post(
+    tokens = await _sign_up_and_login(api_client)
+    await api_client.post(
         "/api/v1/auth/email-change",
         headers=_auth_header(tokens),
         json={"email": "new@example.com"},
@@ -357,7 +364,7 @@ async def test_email_change_rejects_expired_code(
         attempt = (await session.scalars(select(UserEmailChangeAttempt))).one()
         attempt.expires_at = now_kst() - timedelta(minutes=1)
 
-    expired = await client.post(
+    expired = await api_client.post(
         "/api/v1/auth/email-change/confirm",
         headers=_auth_header(tokens),
         json={"email": "new@example.com", "code": "482190"},
@@ -368,7 +375,7 @@ async def test_email_change_rejects_expired_code(
 
 @pytest.mark.asyncio
 async def test_email_change_omits_code_outside_local(
-    client: AsyncClient,
+    api_client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr("app.features.auth.service.issue_email_code", lambda: "482190")
@@ -376,9 +383,9 @@ async def test_email_change_omits_code_outside_local(
         "app.features.auth.router.get_settings",
         lambda: type("Settings", (), {"ENVIRONMENT": "production"})(),
     )
-    tokens = await _sign_up_and_login(client)
+    tokens = await _sign_up_and_login(api_client)
 
-    sent = await client.post(
+    sent = await api_client.post(
         "/api/v1/auth/email-change",
         headers=_auth_header(tokens),
         json={"email": "new@example.com"},
@@ -387,7 +394,7 @@ async def test_email_change_omits_code_outside_local(
     assert sent.json() == {"sent": True}
     assert "482190" not in sent.text
 
-    confirmed = await client.post(
+    confirmed = await api_client.post(
         "/api/v1/auth/email-change/confirm",
         headers=_auth_header(tokens),
         json={"email": "new@example.com", "code": "482190"},
@@ -397,14 +404,14 @@ async def test_email_change_omits_code_outside_local(
 
 
 @pytest.mark.asyncio
-async def test_email_change_rejects_same_and_taken_email(client: AsyncClient) -> None:
-    tokens = await _sign_up_and_login(client)
-    await client.post(
+async def test_email_change_rejects_same_and_taken_email(api_client: AsyncClient) -> None:
+    tokens = await _sign_up_and_login(api_client)
+    await api_client.post(
         "/api/v1/auth/signup",
         json={"email": "taken@example.com", "password": "supersecret", "full_name": "다른사람"},
     )
 
-    same = await client.post(
+    same = await api_client.post(
         "/api/v1/auth/email-change",
         headers=_auth_header(tokens),
         json={"email": SIGNUP_PAYLOAD["email"]},
@@ -412,7 +419,7 @@ async def test_email_change_rejects_same_and_taken_email(client: AsyncClient) ->
     assert same.status_code == 422
     assert same.json()["error_code"] == "SAME_EMAIL"
 
-    taken = await client.post(
+    taken = await api_client.post(
         "/api/v1/auth/email-change",
         headers=_auth_header(tokens),
         json={"email": "taken@example.com"},
@@ -422,11 +429,11 @@ async def test_email_change_rejects_same_and_taken_email(client: AsyncClient) ->
 
 
 @pytest.mark.asyncio
-async def test_delete_me_removes_user_and_all_owned_rows(client: AsyncClient) -> None:
-    signup = await client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
+async def test_delete_me_removes_user_and_all_owned_rows(api_client: AsyncClient) -> None:
+    signup = await api_client.post("/api/v1/auth/signup", json=SIGNUP_PAYLOAD)
     user_id = int(signup.json()["id"])
     tokens = (
-        await client.post(
+        await api_client.post(
             "/api/v1/auth/login",
             json={"email": SIGNUP_PAYLOAD["email"], "password": SIGNUP_PAYLOAD["password"]},
         )
@@ -498,10 +505,10 @@ async def test_delete_me_removes_user_and_all_owned_rows(client: AsyncClient) ->
             )
         )
 
-    deleted = await client.delete("/api/v1/auth/me", headers=_auth_header(tokens))
+    deleted = await api_client.delete("/api/v1/auth/me", headers=_auth_header(tokens))
     assert deleted.status_code == 204
 
-    me = await client.get("/api/v1/auth/me", headers=_auth_header(tokens))
+    me = await api_client.get("/api/v1/auth/me", headers=_auth_header(tokens))
     assert me.status_code == 401
 
     async for session in app.dependency_overrides[get_session]():
@@ -519,7 +526,7 @@ async def test_delete_me_removes_user_and_all_owned_rows(client: AsyncClient) ->
         ):
             assert (await session.scalars(select(model))).all() == [], model.__name__
 
-    login = await client.post(
+    login = await api_client.post(
         "/api/v1/auth/login",
         json={"email": SIGNUP_PAYLOAD["email"], "password": SIGNUP_PAYLOAD["password"]},
     )
@@ -527,9 +534,9 @@ async def test_delete_me_removes_user_and_all_owned_rows(client: AsyncClient) ->
 
 
 @pytest.mark.asyncio
-async def test_refresh_issues_new_access_token(client: AsyncClient) -> None:
-    tokens = await _sign_up_and_login(client)
-    response = await client.post(
+async def test_refresh_issues_new_access_token(api_client: AsyncClient) -> None:
+    tokens = await _sign_up_and_login(api_client)
+    response = await api_client.post(
         "/api/v1/auth/refresh", json={"refresh_token": tokens["refresh_token"]}
     )
     assert response.status_code == 200
@@ -537,16 +544,16 @@ async def test_refresh_issues_new_access_token(client: AsyncClient) -> None:
     assert renewed["token_type"] == "bearer"
     assert decode_token(renewed["access_token"])["type"] == "access"
     assert decode_token(renewed["refresh_token"])["type"] == "refresh"
-    me = await client.get(
+    me = await api_client.get(
         "/api/v1/auth/me", headers={"Authorization": f"Bearer {renewed['access_token']}"}
     )
     assert me.status_code == 200
 
 
 @pytest.mark.asyncio
-async def test_refresh_rejects_access_token(client: AsyncClient) -> None:
-    tokens = await _sign_up_and_login(client)
-    response = await client.post(
+async def test_refresh_rejects_access_token(api_client: AsyncClient) -> None:
+    tokens = await _sign_up_and_login(api_client)
+    response = await api_client.post(
         "/api/v1/auth/refresh", json={"refresh_token": tokens["access_token"]}
     )
     assert response.status_code == 401

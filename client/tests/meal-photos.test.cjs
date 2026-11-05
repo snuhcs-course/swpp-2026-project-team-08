@@ -4,6 +4,8 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 삭제된 mealLogApi 대신 prepareMealWrite 로 사진 저장 요청 검증
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 실제 서버 사진 저장 테스트 제거
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -74,65 +76,4 @@ test('saving a meal keeps the before photo; manual after-meal review may omit it
   const review = reviewFromDraft(draft, meal);
   assert.equal(review.afterPhoto.id, afterPhoto.id);
   assert.equal(review.afterPhoto.uri, afterPhoto.uri);
-});
-
-test('live API stores a before-meal photo then an after-meal photo', async (t) => {
-  const api = process.env.API_URL || 'http://127.0.0.1:8000';
-  let health;
-  try {
-    health = await fetch(`${api}/health`);
-  } catch (error) {
-    if (process.env.API_URL) throw error;
-    t.skip('API is not running; run uv run python -m tests.run_client_integration from server/');
-    return;
-  }
-  assert.equal(health.status, 200, 'API health check failed');
-  process.env.EXPO_PUBLIC_API_URL = api;
-
-  const { signUpAccount, loginAccount, deleteAccount } = require('../src/data/api/authApi.ts');
-  const { saveSession, clearSession } = require('../src/data/storage/authStorage.ts');
-  const { apiRequest, ApiError } = require('../src/data/network/apiClient.ts');
-  const { writeMeal } = require('../src/data/api/mealWriteApi.ts');
-  const { getMealDetail } = require('../src/data/api/mealReadApi.ts');
-  const { writeMealReview } = require('../src/data/api/mealReviewApi.ts');
-  const email = `photo-test-${require('node:crypto').randomUUID()}@example.com`;
-  const password = 'integration-test-password';
-  const user = await signUpAccount({ email, password, fullName: 'Photo test caregiver' });
-  const tokens = await loginAccount({ email, password });
-  await saveSession({ ...tokens, user });
-  t.after(async () => {
-    try { await deleteAccount(); } finally { await clearSession(); }
-  });
-
-  const saved = await writeMeal(mealWithBeforePhoto(user.id));
-  const detail = await getMealDetail(saved.id);
-  assert.equal(detail.beforePhotoUri, PNG);
-  assert.equal(detail.afterPhotoUri, null);
-  assert.equal(detail.review, null);
-  assert.equal(detail.foods[0].ingredients[0].name, 'Egg');
-
-  await assert.rejects(apiRequest(`/api/v1/meals/${saved.id}/review`, {
-    method: 'PUT',
-    body: JSON.stringify({ after_photo_uri: null, food_results: [] }),
-  }), (error) => error instanceof ApiError && error.status === 422);
-  assert.equal((await getMealDetail(saved.id)).review, null);
-
-  const draft = newReviewDraft(saved);
-  const foodId = saved.foods[0].id;
-  draft.outcomes = setOutcome(draft.outcomes, foodId, 'eaten');
-  const ingredientId = draft.outcomes[0].ingredients[0].id;
-  draft.outcomes = setOutcome(draft.outcomes, foodId, 'tasted', ingredientId);
-  draft.afterPhoto = afterPhoto;
-  const reviewed = await writeMealReview(reviewFromDraft(draft, saved), detail);
-  assert.equal(reviewed.beforePhotoUri, PNG);
-  assert.equal(reviewed.afterPhotoUri, afterPhoto.uri);
-  assert.equal(reviewed.review.foodResults[0].outcome, 'eaten');
-  assert.equal(reviewed.review.ingredientResults[0].outcome, 'tasted');
-  const restored = await getMealDetail(saved.id);
-  assert.equal(restored.beforePhotoUri, PNG);
-  assert.equal(restored.afterPhotoUri, afterPhoto.uri);
-  assert.deepEqual(restored.review, reviewed.review);
-
-  await apiRequest(`/api/v1/meals/${saved.id}`, { method: 'DELETE' });
-  await assert.rejects(getMealDetail(saved.id), (error) => error instanceof ApiError && error.status === 404);
 });

@@ -3,6 +3,9 @@
 // Changed: Verify target choices exclude tracked ingredients
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 음식 단위 추천, 대문자 상태·사유·조회 필터 계약으로 수정
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 최초 생성 재요청 시 기존 카드 상태 재사용 검증
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -52,7 +55,8 @@ test('generation rejects a response that does not match the requested foods', as
   request = async () => [suggestionResponse({ origin_food_id: '9' })];
   await assert.rejects(api.generateMealSuggestions('1', '8', [{ foodId: '2' }]), /Mismatched/);
   request = async () => [suggestionResponse({ status: 'SAVED' })];
-  await assert.rejects(api.generateMealSuggestions('1', '8', [{ foodId: '2' }]), /Mismatched/);
+  // Replayed generation returns the existing card with its current decision.
+  assert.equal((await api.generateMealSuggestions('1', '8', [{ foodId: '2' }]))[0].status, 'saved');
 });
 
 test('saved, dismissed, and undo decisions use the v1 decision route', async () => {
@@ -116,4 +120,22 @@ test('target choices contain reviewed foods only and exclude tracked ingredients
   assert.deepEqual(reviewedSuggestionTargets({ ...meal, review: null }), []);
   assert.deepEqual(unGeneratedTargets(reviewedSuggestionTargets(meal), [{ foodId: '2' }])
     .map((item) => item.target), [{ foodId: '3' }]);
+});
+
+test('optional generation validates the owner, food and original recommendation', async () => {
+  const original = { id: '31', foodId: '2' };
+  const extra = suggestionResponse({ id: '32', replacement_for_id: '31', can_regenerate: false });
+  request = async (path, init) => {
+    assert.equal(path, '/api/v1/meals/8/suggestions');
+    assert.deepEqual(JSON.parse(init.body), { targets: [{ food_id: '2', rejected_suggestion_id: '31' }] });
+    assert.equal(init.method, 'POST');
+    return [extra];
+  };
+  const targets = [{ foodId: original.foodId, rejectedSuggestionId: original.id }];
+  assert.equal((await api.generateMealSuggestions('1', '8', targets))[0].replacementForId, '31');
+  for (const fields of [{ origin_food_id: '9' }, { user_id: '2' }, { meal_id: '9' },
+    { replacement_for_id: '99' }, { id: '31' }, { can_regenerate: 'true' }]) {
+    request = async () => [{ ...extra, ...fields }];
+    await assert.rejects(api.generateMealSuggestions('1', '8', targets));
+  }
 });

@@ -1,3 +1,6 @@
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 추가 추천 결과 캐시 반영과 중복 제거
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { DismissReason, Suggestion, SuggestionTarget } from '../../types/suggestionRecord';
 import {
@@ -27,7 +30,19 @@ export function useMealSuggestionActions(userId: string, mealId: string) {
     mutationFn: (targets: SuggestionTarget[]) => generateMealSuggestions(userId, mealId, targets),
     retry: false,
     onSuccess: (created) => {
-      client.setQueryData<Suggestion[]>(key, (old) => [...created, ...(old ?? [])]);
+      client.setQueryData<Suggestion[]>(key, (old) => [...created, ...(old ?? []).filter(item => !created.some(next => next.id === item.id))]);
+    },
+  });
+  const regenerate = useMutation({
+    mutationFn: (item: Suggestion) => generateMealSuggestions(userId, mealId, [{
+      foodId: item.foodId, rejectedSuggestionId: item.id,
+    }]),
+    retry: false,
+    onSuccess: async ([created]) => {
+      await client.cancelQueries({ queryKey: key });
+      client.setQueryData<Suggestion[]>(key, (old) => [created, ...(old ?? [])
+        .filter(item => item.id !== created.id)
+        .map(item => item.id === created.replacementForId ? { ...item, canRegenerate: false } : item)]);
     },
   });
   const decide = useMutation({
@@ -62,5 +77,5 @@ export function useMealSuggestionActions(userId: string, mealId: string) {
     },
     onSettled: refreshSaved,
   });
-  return { generate, decide, undo };
+  return { generate, regenerate, decide, undo };
 }

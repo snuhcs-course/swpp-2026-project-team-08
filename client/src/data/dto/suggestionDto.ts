@@ -1,6 +1,9 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 음식 단위 추천 응답·요청과 대문자 상태·사유 변환으로 재작성
 
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 추가 추천 응답 검증과 이전 서버 호환
+
 import type {
   DismissReason,
   Suggestion,
@@ -11,7 +14,7 @@ import {
 } from './values';
 
 export type SuggestionGenerateDto = {
-  targets: { food_id: string }[];
+  targets: { food_id: string; rejected_suggestion_id?: string }[];
 };
 export type SuggestionDecisionDto = {
   status: 'SAVED' | 'DISMISSED';
@@ -26,7 +29,12 @@ const dismissReasons = [
 
 export function toSuggestion(value: unknown): Suggestion {
   const dto = object(value);
+  if (dto.can_regenerate !== undefined && typeof dto.can_regenerate !== 'boolean') {
+    throw new Error('Invalid regeneration availability');
+  }
   return {
+    canRegenerate: dto.can_regenerate ?? false,
+    replacementForId: dto.replacement_for_id === undefined ? null : nullable(dto.replacement_for_id, id),
     id: id(dto.id),
     userId: id(dto.user_id),
     mealId: id(dto.meal_id),
@@ -46,7 +54,12 @@ export function toSuggestion(value: unknown): Suggestion {
 
 export function toSuggestionGenerate(targets: SuggestionTarget[]): SuggestionGenerateDto {
   if (!targets.length) throw new Error('No suggestion targets');
-  const values = targets.map((target) => ({ food_id: id(target.foodId) }));
+  const values = targets.map((target) => ({
+    food_id: id(target.foodId),
+    ...(target.rejectedSuggestionId === undefined ? {} : {
+      rejected_suggestion_id: id(target.rejectedSuggestionId),
+    }),
+  }));
   if (new Set(values.map((target) => target.food_id)).size !== values.length) {
     throw new Error('Duplicate suggestion target');
   }

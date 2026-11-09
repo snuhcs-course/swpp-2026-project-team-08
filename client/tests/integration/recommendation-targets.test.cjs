@@ -7,6 +7,9 @@
 
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 음식 단위 추천 요청 기대값 반영
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 선택적 추가 추천·중복 클릭·응답 유실·재진입 검증
+
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -352,4 +355,171 @@ test('mixed meals generate only non-eaten foods and hide existing eaten cards', 
   assert.deepEqual(h.current.targetOptions.map(x => x.target.foodId), ['3', '4']);
   assert.deepEqual(posts, [[{ food_id: '3' }, { food_id: '4' }]]);
   assert.deepEqual(h.current.items.map(x => x.foodId), ['3', '4']);
+});
+
+function retryServer(t, meal, { pause, loseResponse = false, fail = false } = {}) {
+  let items = meal.foods.map((food, i) => ({ ...card(meal, food.id, String(901 + i)), can_regenerate: false, replacement_for_id: null }));
+  const requests = [];
+  let failure = fail;
+  t.mock.method(global, 'fetch', async (url, init = {}) => {
+    const path = new URL(url).pathname;
+    if (path === `/api/v1/meals/${meal.id}`) return Response.json(meal);
+    if (path === `/api/v1/meals/${meal.id}/suggestions` && init.method !== 'POST') {
+      return Response.json(items);
+    }
+    const decision = path.match(/\/suggestions\/(\d+)\/decision$/);
+    if (decision) {
+      const item = items.find(entry => entry.id === decision[1]);
+      assert.ok(item);
+      const body = init.method === 'DELETE' ? { status: 'PENDING', dismiss_reasons: [] } : JSON.parse(init.body);
+      Object.assign(item, body, { can_regenerate: body.status === 'DISMISSED' && !item.replacement_for_id
+        && !items.some(entry => entry.replacement_for_id === item.id) });
+      return Response.json(item);
+    }
+    assert.equal(path, `/api/v1/meals/${meal.id}/suggestions`);
+    assert.equal(init.method, 'POST');
+    const { targets } = JSON.parse(init.body);
+    assert.equal(targets.length, 1);
+    const id = targets[0].rejected_suggestion_id;
+    assert.ok(id, 'Existing foods must not automatically regenerate');
+    const item = items.find(entry => entry.id === id);
+    assert.equal(targets[0].food_id, item.origin_food_id);
+    requests.push(id);
+    if (pause) await pause.promise;
+    if (failure) { failure = false; return new Response('{"error_code":"GENERATION_FAILED"}', { status: 502 }); }
+    const created = { ...card(meal, item.origin_food_id, String(1000 + requests.length)),
+      can_regenerate: false, replacement_for_id: id };
+    item.can_regenerate = false;
+    items = [created, ...items];
+    if (loseResponse) throw new Error('Response lost after server committed');
+    return Response.json([created]);
+  });
+  return { requests };
+}
+
+// The confirmed dismissal is now a choice step before the next card/completion.
+test('each dismissal pauses for regeneration or continue, including the last card', async t => {
+  const meal = mealWithFoods(2);
+  const pause = deferred();
+  const api = retryServer(t, meal, { pause });
+  const h = await renderHook(t, () => useRecommendationFlow('1', meal.id));
+  await waitFor(() => h.current.items.length === 2);
+  await act(async () => { await h.current.decide('dismissed', ['dislike']); });
+  assert.equal(h.current.regenerationPrompt.id, '901');
+  assert.equal(h.current.current, null);
+  assert.equal(await h.current.decide('saved'), false);
+  assert.equal(api.requests.length, 0);
+  await act(async () => { assert.equal(h.current.continueAfterDismissal(), true); });
+  assert.equal(h.current.current.id, '902');
+  await act(async () => { await h.current.decide('dismissed', ['already_tried']); });
+  assert.equal(h.current.current, null);
+  assert.equal(h.current.regenerationPrompt.id, '902');
+  assert.equal(api.requests.length, 0);
+  let pending;
+  await act(async () => {
+    pending = h.current.regenerate('902');
+    assert.equal(await h.current.regenerate('902'), false);
+  });
+  await waitFor(() => h.current.regeneratingId === '902' && h.current.busy);
+  assert.equal(h.current.continueAfterDismissal(), false);
+  assert.equal(await h.current.selectTargets([{ foodId: '1' }]), false);
+  assert.equal(await h.current.undo(), false);
+  await act(async () => { pause.resolve(); assert.equal(await pending, true); });
+  assert.deepEqual(api.requests, ['902']);
+  assert.equal(h.current.current.replacementForId, '902');
+  assert.equal(h.current.current.foodId, '2');
+  assert.equal(h.current.regenerationPrompt, null);
+  await act(async () => { await h.current.decide('dismissed', ['dislike']); });
+  assert.equal(h.current.regenerationPrompt, null);
+  assert.equal(h.current.current, null);
+  await act(async () => { await h.current.undo(); await h.current.refresh(); });
+  assert.equal(h.current.items.find(item => item.id === '902').canRegenerate, false);
+  assert.equal(api.requests.length, 1);
+});
+
+test('continue after the last dismissal completes without generation and reentry restores the choice', async t => {
+  const meal = mealWithFoods(1);
+  const api = retryServer(t, meal);
+  const h = await renderHook(t, () => useRecommendationFlow('1', meal.id));
+  await waitFor(() => h.current.current);
+  await act(async () => { await h.current.decide('dismissed', ['dislike']); });
+  assert.equal(h.current.regenerationPrompt.id, '901');
+  await act(async () => { h.current.continueAfterDismissal(); });
+  assert.equal(h.current.current, null);
+  assert.equal(h.current.regenerationPrompt, null);
+  assert.equal(api.requests.length, 0);
+  const reopened = await renderHook(t, () => useRecommendationFlow('1', meal.id));
+  await waitFor(() => reopened.current.regenerationPrompt?.id === '901');
+  assert.equal(api.requests.length, 0);
+});
+
+test('failed optional generation preserves choices and explicitly retries the same food', async t => {
+  const meal = mealWithFoods(1);
+  const api = retryServer(t, meal, { fail: true });
+  const h = await renderHook(t, () => useRecommendationFlow('1', meal.id));
+  await waitFor(() => h.current.current);
+  await act(async () => { await h.current.decide('dismissed', ['dislike']); });
+  await act(async () => { assert.equal(await h.current.regenerate('901'), false); });
+  assert.equal(h.current.regenerationErrorId, '901');
+  assert.equal(h.current.items.length, 1);
+  assert.deepEqual(h.current.items[0].dismissReasons, ['dislike']);
+  assert.equal(h.current.regenerationPrompt.id, '901');
+  assert.equal(h.current.current, null);
+  await act(async () => { assert.equal(await h.current.regenerate('901'), true); });
+  assert.equal(h.current.regenerationErrorId, null);
+  assert.equal(h.current.items.length, 2);
+  assert.deepEqual(api.requests, ['901', '901']);
+});
+
+test('a lost optional generation response is recovered from the server and survives reentry', async t => {
+  const meal = mealWithFoods(1);
+  const api = retryServer(t, meal, { loseResponse: true });
+  const h = await renderHook(t, () => useRecommendationFlow('1', meal.id));
+  await waitFor(() => h.current.current);
+  await act(async () => { await h.current.decide('dismissed', ['dislike']); });
+  await act(async () => { assert.equal(await h.current.regenerate('901'), true); });
+  assert.equal(h.current.regenerationErrorId, null);
+  assert.equal(h.current.regenerationPrompt, null);
+  const reopened = await renderHook(t, () => useRecommendationFlow('1', meal.id));
+  await waitFor(() => reopened.current.items.length === 2);
+  assert.equal(reopened.current.current.replacementForId, '901');
+  assert.equal(reopened.current.regenerationPrompt, null);
+  assert.equal(api.requests.length, 1);
+});
+
+test('Undo restores the first card without spending the optional generation opportunity', async t => {
+  const meal = mealWithFoods(1);
+  const api = retryServer(t, meal);
+  const h = await renderHook(t, () => useRecommendationFlow('1', meal.id));
+  await waitFor(() => h.current.current);
+  await act(async () => { await h.current.decide('dismissed', ['dislike']); });
+  await act(async () => { await h.current.undo(); });
+  assert.equal(h.current.current.id, '901');
+  assert.deepEqual(h.current.current.dismissReasons, []);
+  assert.equal(h.current.regenerationPrompt, null);
+  await act(async () => { await h.current.decide('dismissed', ['already_tried']); });
+  assert.equal(h.current.regenerationPrompt.id, '901');
+  assert.equal(api.requests.length, 0);
+});
+
+test('a late optional generation updates only its original meal cache', async t => {
+  const meal = mealWithFoods(1);
+  const pause = deferred();
+  retryServer(t, meal, { pause });
+  let visible = true;
+  const h = await renderHook(t, () => useRecommendationFlow('1', meal.id), {
+    wrapper: child => visible ? child : null,
+  });
+  await waitFor(() => h.current.current);
+  await act(async () => { await h.current.decide('dismissed', ['dislike']); });
+  const otherKey = mealSuggestionKeys.all('2', '99');
+  const otherItems = [{ id: 'other', foodId: '5', status: 'pending' }];
+  h.client.setQueryData(otherKey, otherItems);
+  let pending;
+  await act(async () => { pending = h.current.regenerate('901'); });
+  visible = false;
+  await h.rerender();
+  await act(async () => { pause.resolve(); await pending; });
+  assert.deepEqual(h.client.getQueryData(otherKey), otherItems);
+  assert.equal(h.client.getQueryData(mealSuggestionKeys.all('1', meal.id))[0].replacementForId, '901');
 });

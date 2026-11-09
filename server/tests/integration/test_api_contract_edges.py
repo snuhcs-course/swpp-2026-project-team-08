@@ -6,6 +6,9 @@
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
 
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 추가 추천 이력 테이블 등록 확인
+
 """Contract edge cases for authenticated meals, reviews, and suggestions."""
 
 from datetime import timedelta
@@ -38,6 +41,7 @@ def test_only_current_tables_and_routes_are_registered() -> None:
         "meal_food_ingredients",
         "food_recommendations",
         "food_recommendation_tries",
+        "food_recommendation_retries",
         "users",
         "user_email_change_attempts",
         "user_profiles",

@@ -5,12 +5,17 @@ import ast
 import copy
 import json
 import tempfile
+import threading
 import unittest
+from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, wait
 from pathlib import Path
+from unittest.mock import patch
 
 from data.ingredient_db.restrictions import (
     AGENTS,
     RESTRICTION_TYPES,
+    _collect_restriction_votes,
     build_prompt,
     majority,
     reconcile,
@@ -21,6 +26,7 @@ from data.ingredient_db.restrictions import (
     validate_response,
     validate_wire_response,
 )
+from data.ingredient_db.runner import AgentRunner
 
 
 def ingredient_fixture():
@@ -96,7 +102,124 @@ def wire_fixture(degree="NEVER"):
     return answer_fixture(degree)
 
 
+def batch_fixture():
+    ingredients = [
+        {"id": index, "english_name": f"Ingredient {index}", "source_ids": [index]}
+        for index in range(1, 4)
+    ]
+    sources = {
+        item["id"]: {"source_id": item["id"], "description": item["english_name"]}
+        for item in ingredients
+    }
+    return ingredients, sources
+
+
+def batch_answer(schema, agent):
+    ids = schema["properties"]["rows"]["items"]["properties"]["ingredient_id"]["enum"]
+    return {
+        "rows": [
+            {
+                "ingredient_id": ingredient_id,
+                "restriction_type": kind,
+                "degree": "ALWAYS" if agent == "c" else "NEVER",
+                "reason": f"Independent reason from {agent} for ingredient {ingredient_id}.",
+            }
+            for ingredient_id in reversed(ids)
+            for kind in reversed(RESTRICTION_TYPES)
+        ]
+    }
+
+
 class RestrictionTests(unittest.TestCase):
+    def test_out_of_order_batches_keep_three_requests_busy_and_same_judgments(self):
+        ingredients, sources = batch_fixture()
+        second_batch_finished = threading.Event()
+        lock = threading.Lock()
+        running, peak, completions = 0, 0, []
+
+        def delayed(agent, task, prompt, schema, validate):
+            nonlocal running, peak
+            slot = (task, agent)
+            with lock:
+                running += 1
+                peak = max(peak, running)
+            try:
+                if slot == ("restrictions/batch-0001", "a"):
+                    self.assertTrue(second_batch_finished.wait(5), "later batches were blocked")
+                answer = batch_answer(schema, agent)
+                validate(answer)
+                with lock:
+                    completions.append(slot)
+                if task == "restrictions/batch-0002":
+                    second_batch_finished.set()
+                return answer
+            finally:
+                with lock:
+                    running -= 1
+
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            responses = _collect_restriction_votes(
+                ingredients, sources, pool=pool, call_agent=delayed, batch_size=1
+            )
+        expected = {agent: batch_answer(response_schema(ingredients), agent) for agent in AGENTS}
+        judgments = reconcile(ingredients, responses)
+        self.assertEqual(judgments, reconcile(ingredients, expected))
+        self.assertEqual(Counter(row["ingredient_id"] for row in judgments), {1: 19, 2: 19, 3: 19})
+        self.assertLessEqual(peak, 3)
+        self.assertEqual(len(completions), 9)
+        self.assertEqual(len(set(completions)), 9)
+        self.assertLess(
+            min(i for i, slot in enumerate(completions) if slot[0] == "restrictions/batch-0002"),
+            completions.index(("restrictions/batch-0001", "a")),
+        )
+
+    def test_failed_batch_stops_submissions_and_reuses_finished_slots(self):
+        ingredients, sources = batch_fixture()
+        calls = Counter()
+        lock = threading.Lock()
+        fail = True
+        failed_slot = ("b", "restrictions/batch-0001")
+
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+
+            def call_agent(agent, task, prompt, schema, validate):
+                def request(*args, **kwargs):
+                    with lock:
+                        calls[(agent, task)] += 1
+                    if fail and (agent, task) == failed_slot:
+                        raise RuntimeError("Injected failure")
+                    return batch_answer(schema, agent)
+
+                runner = AgentRunner(
+                    work, policy_text="policy", source_hash="hash", request=request
+                )
+                return runner.call(agent, task, prompt, schema, validate)
+
+            # Observe the first three replies together, including two successfully cached slots.
+            with (
+                patch(
+                    "data.ingredient_db.restrictions.wait",
+                    side_effect=lambda futures, **kwargs: wait(futures),
+                ),
+                ThreadPoolExecutor(max_workers=3) as pool,
+                self.assertRaisesRegex(RuntimeError, "Injected failure"),
+            ):
+                _collect_restriction_votes(
+                    ingredients, sources, pool=pool, call_agent=call_agent, batch_size=1
+                )
+            self.assertEqual(set(calls), {(agent, "restrictions/batch-0001") for agent in AGENTS})
+            before = calls.copy()
+            fail = False
+            with ThreadPoolExecutor(max_workers=3) as pool:
+                responses = _collect_restriction_votes(
+                    ingredients, sources, pool=pool, call_agent=call_agent, batch_size=1
+                )
+            for slot, count in before.items():
+                self.assertEqual(calls[slot], count + (slot == failed_slot))
+            self.assertEqual(sum(calls.values()), 10)
+            self.assertEqual(len(reconcile(ingredients, responses)), 57)
+
     def test_vocabulary_matches_server_without_importing_server_dependencies(self):
         root = Path(__file__).resolve().parents[3]
         tree = ast.parse((root / "server/app/models/restriction_enums.py").read_text())

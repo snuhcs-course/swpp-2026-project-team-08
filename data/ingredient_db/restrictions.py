@@ -6,7 +6,7 @@
 import json
 import unicodedata
 from collections import Counter
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
 
 from .selection import is_english_name, validate_selected
@@ -240,6 +240,60 @@ def build_prompt(ingredients, sources):
     )
 
 
+def _collect_restriction_votes(ingredients, sources, *, pool, call_agent, batch_size):
+    batches = [
+        ingredients[start : start + batch_size] for start in range(0, len(ingredients), batch_size)
+    ]
+    votes = {number: {} for number in range(1, len(batches) + 1)}
+
+    def requests():
+        for number, batch in enumerate(batches, 1):
+            prompt, schema = build_prompt(batch, sources), response_schema(batch)
+            for agent in AGENTS:
+                yield number, agent, batch, prompt, schema
+
+    remaining = iter(requests())
+    pending = {}
+
+    def submit_next():
+        request = next(remaining, None)
+        if request is None:
+            return
+        number, agent, batch, prompt, schema = request
+        future = pool.submit(
+            call_agent,
+            agent,
+            f"restrictions/batch-{number:04d}",
+            prompt,
+            schema,
+            lambda payload, expected=batch: validate_wire_response(expected, payload),
+        )
+        pending[future] = number, agent, batch
+
+    completed_ingredients = 0
+    try:
+        for _ in AGENTS:
+            submit_next()
+        while pending:
+            completed, _ = wait(pending, return_when=FIRST_COMPLETED)
+            for future in completed:
+                number, agent, batch = pending.pop(future)
+                votes[number][agent] = rows_from_wire(batch, future.result())["rows"]
+                if len(votes[number]) == len(AGENTS):
+                    completed_ingredients += len(batch)
+                    print(f"restrictions {completed_ingredients}/{len(ingredients)}", flush=True)
+            for _ in completed:
+                submit_next()
+    except BaseException:
+        for future in pending:
+            future.cancel()
+        raise
+    return {
+        agent: {"rows": [row for number in sorted(votes) for row in votes[number][agent]]}
+        for agent in AGENTS
+    }
+
+
 def run(selected_path, work_dir, *, call_agent, batch_size=10):
     """Run resumable agent slots through AgentRunner.call and return the review record."""
     if type(batch_size) is not int or batch_size <= 0:
@@ -254,29 +308,10 @@ def run(selected_path, work_dir, *, call_agent, batch_size=10):
         raise ValueError("duplicate source rows")
     if any(source_id not in sources for item in ingredients for source_id in item["source_ids"]):
         raise ValueError("missing ingredient source")
-    responses = {agent: {"rows": []} for agent in AGENTS}
     with ThreadPoolExecutor(max_workers=3) as pool:
-        for start in range(0, len(ingredients), batch_size):
-            batch = ingredients[start : start + batch_size]
-            task_id = f"restrictions/batch-{start // batch_size + 1:04d}"
-            prompt = build_prompt(batch, sources)
-
-            def validate(payload, batch=batch):
-                validate_wire_response(batch, payload)
-
-            futures = {
-                agent: pool.submit(
-                    call_agent, agent, task_id, prompt, response_schema(batch), validate
-                )
-                for agent in AGENTS
-            }
-            for agent in AGENTS:
-                payload = rows_from_wire(batch, futures[agent].result())
-                responses[agent]["rows"].extend(payload["rows"])
-            print(
-                f"restrictions {min(start + batch_size, len(ingredients))}/{len(ingredients)}",
-                flush=True,
-            )
+        responses = _collect_restriction_votes(
+            ingredients, sources, pool=pool, call_agent=call_agent, batch_size=batch_size
+        )
     return {
         "schema_version": 1,
         "metadata": selected["metadata"],

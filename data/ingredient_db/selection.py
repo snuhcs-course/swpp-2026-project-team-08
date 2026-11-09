@@ -6,7 +6,7 @@
 import json
 import unicodedata
 from collections import Counter, defaultdict
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from copy import deepcopy
 from pathlib import Path
 
@@ -513,6 +513,61 @@ def validate_selected(selected: dict) -> None:
         raise ValueError("each source must be included, excluded or unresolved exactly once")
 
 
+def _collect_selection_votes(rows, *, pool, call_agent, batch_size, max_batches):
+    batches = [rows[start : start + batch_size] for start in range(0, len(rows), batch_size)]
+    limit = len(batches) if max_batches is None else max(0, min(max_batches, len(batches)))
+    votes = {number: {} for number in range(1, limit + 1)}
+
+    def requests():
+        for number, batch in enumerate(batches[:limit], 1):
+            ids = {row["source_id"] for row in batch}
+            prompt, schema = build_prompt(batch), selection_schema(ids)
+            for agent in AGENTS:
+                yield number, agent, ids, prompt, schema
+
+    remaining = iter(requests())
+    pending = {}
+
+    def submit_next():
+        request = next(remaining, None)
+        if request is None:
+            return
+        number, agent, ids, prompt, schema = request
+        future = pool.submit(
+            call_agent,
+            agent,
+            f"selection/batch-{number:04d}",
+            prompt,
+            schema,
+            lambda payload, expected=ids: decode_selection(payload, expected),
+        )
+        pending[future] = number, agent, ids
+
+    completed_rows = 0
+    try:
+        for _ in AGENTS:
+            submit_next()
+        while pending:
+            completed, _ = wait(pending, return_when=FIRST_COMPLETED)
+            for future in completed:
+                number, agent, ids = pending.pop(future)
+                votes[number][agent] = decode_selection(future.result(), ids)
+                if len(votes[number]) == len(AGENTS):
+                    completed_rows += len(batches[number - 1])
+                    print(f"selection {completed_rows}/{len(rows)}", flush=True)
+            for _ in completed:
+                submit_next()
+    except BaseException:
+        for future in pending:
+            future.cancel()
+        raise
+    if limit < len(batches):
+        return None
+    return {
+        agent: [row for number in sorted(votes) for row in votes[number][agent]] for agent in AGENTS
+    }
+
+
 def run(
     source: dict,
     work_dir: Path,
@@ -523,29 +578,17 @@ def run(
 ) -> dict | None:
     if batch_size < 1 or batch_size > 50:
         raise ValueError("selection batch size must be between 1 and 50")
-    all_votes = {agent: [] for agent in AGENTS}
     rows = source["rows"]
     with ThreadPoolExecutor(max_workers=3) as pool:
-        for batch_no, start in enumerate(range(0, len(rows), batch_size), 1):
-            if max_batches is not None and batch_no > max_batches:
-                return None
-            batch = rows[start : start + batch_size]
-            ids = {row["source_id"] for row in batch}
-            prompt = build_prompt(batch)
-            tasks = {
-                agent: pool.submit(
-                    call_agent,
-                    agent,
-                    f"selection/batch-{batch_no:04d}",
-                    prompt,
-                    selection_schema(ids),
-                    lambda payload, expected=ids: decode_selection(payload, expected),
-                )
-                for agent in AGENTS
-            }
-            for agent, future in tasks.items():
-                all_votes[agent].extend(decode_selection(future.result(), ids))
-            print(f"selection {min(start + batch_size, len(rows))}/{len(rows)}", flush=True)
+        all_votes = _collect_selection_votes(
+            rows,
+            pool=pool,
+            call_agent=call_agent,
+            batch_size=batch_size,
+            max_batches=max_batches,
+        )
+        if all_votes is None:
+            return None
         included, excluded, unresolved, review, indexed = reconcile_rows(rows, all_votes)
         sources_by_id = {row["source_id"]: row for row in rows}
         groups, grouping_review, pending_groups = [], [], []

@@ -4,9 +4,12 @@
 import copy
 import json
 import tempfile
+import threading
 import unittest
+from collections import Counter
 from pathlib import Path
 
+from data.ingredient_db.runner import AgentRunner
 from data.ingredient_db.selection import (
     AGENTS,
     build_grouping_prompt,
@@ -33,6 +36,123 @@ def vote(source_id=1, decision="INCLUDE", name="Rice"):
 
 
 class SelectionTests(unittest.TestCase):
+    def test_out_of_order_batches_keep_three_requests_busy_and_same_result(self):
+        source = {"metadata": {}, "rows": [{"source_id": index} for index in range(1, 4)]}
+        second_batch_finished = threading.Event()
+        lock = threading.Lock()
+        running, peak, completions = 0, 0, []
+
+        def response(schema):
+            return {
+                "rows": {
+                    source_id: {
+                        "decision": "INCLUDE",
+                        "english_name": f"Ingredient {source_id}",
+                        "reason": "Distinct ingredient",
+                    }
+                    for source_id in schema["properties"]["rows"]["required"]
+                }
+            }
+
+        def delayed(agent, task_id, prompt, schema, validate):
+            nonlocal running, peak
+            slot = (task_id, agent)
+            with lock:
+                running += 1
+                peak = max(peak, running)
+            try:
+                if slot == ("selection/batch-0001", "a"):
+                    self.assertTrue(second_batch_finished.wait(5), "later batches were blocked")
+                payload = response(schema)
+                validate(payload)
+                with lock:
+                    completions.append(slot)
+                if task_id == "selection/batch-0002":
+                    second_batch_finished.set()
+                return payload
+            finally:
+                with lock:
+                    running -= 1
+
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            actual = run(source, work / "delayed", call_agent=delayed, batch_size=1)
+            expected = run(
+                source,
+                work / "immediate",
+                call_agent=lambda agent, task, prompt, schema, validate: response(schema),
+                batch_size=1,
+            )
+        self.assertEqual(actual, expected)
+        self.assertLessEqual(peak, 3)
+        self.assertLess(
+            min(i for i, slot in enumerate(completions) if slot[0] == "selection/batch-0002"),
+            completions.index(("selection/batch-0001", "a")),
+        )
+
+    def test_failed_parallel_run_reuses_completed_slots_on_resume(self):
+        source = {"metadata": {}, "rows": [{"source_id": index} for index in range(1, 7)]}
+        calls = Counter()
+        lock = threading.Lock()
+        fail = True
+
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+
+            def call_agent(agent, task_id, prompt, schema, validate):
+                def request(*args, **kwargs):
+                    with lock:
+                        calls[(agent, task_id)] += 1
+                    if fail and (agent, task_id) == ("b", "selection/batch-0001"):
+                        raise RuntimeError("Injected failure")
+                    return {
+                        "rows": {
+                            source_id: {
+                                "decision": "INCLUDE",
+                                "english_name": f"Ingredient {source_id}",
+                                "reason": "Distinct ingredient",
+                            }
+                            for source_id in schema["properties"]["rows"]["required"]
+                        }
+                    }
+
+                runner = AgentRunner(
+                    work, policy_text="policy", source_hash="hash", request=request
+                )
+                return runner.call(agent, task_id, prompt, schema, validate)
+
+            with self.assertRaisesRegex(RuntimeError, "Injected failure"):
+                run(source, work, call_agent=call_agent, batch_size=1)
+            self.assertFalse((work / "selected.json").exists())
+            before = calls.copy()
+            self.assertLess(len(before), len(source["rows"]) * len(AGENTS))
+            fail = False
+            selected = run(source, work, call_agent=call_agent, batch_size=1)
+            self.assertEqual(len(selected["ingredients"]), 6)
+            for slot, count in before.items():
+                expected = count + 1 if slot == ("b", "selection/batch-0001") else count
+                self.assertEqual(calls[slot], expected)
+            self.assertEqual(sum(calls.values()), len(source["rows"]) * len(AGENTS) + 1)
+
+    def test_partial_batches_do_not_submit_the_remaining_sources(self):
+        calls = []
+
+        def fake(agent, task, prompt, schema, validate):
+            calls.append((agent, task))
+            return {
+                "rows": {
+                    source_id: {"decision": "EXCLUDE", "english_name": "", "reason": "Meal"}
+                    for source_id in schema["properties"]["rows"]["required"]
+                }
+            }
+
+        source = {"metadata": {}, "rows": [{"source_id": 1}, {"source_id": 2}]}
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            self.assertIsNone(run(source, work, call_agent=fake, batch_size=1, max_batches=1))
+            self.assertFalse((work / "selected.json").exists())
+        self.assertEqual(set(calls), {(agent, "selection/batch-0001") for agent in AGENTS})
+
     def test_names_require_latin_letters_and_reject_controls(self):
         for name in ("쌀", "Рис", "Rice\n", "Rice\u200b", "123", "-"):
             with self.subTest(name=repr(name)):

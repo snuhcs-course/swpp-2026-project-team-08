@@ -2,6 +2,8 @@
 # Changed: 원본과 API 응답 및 개인 키 제외
 /.env
 /work/
+/work-*/
+/.ingredient-export-*/
 /build/
 /code/
 /ingredients.jsonl

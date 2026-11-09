@@ -4,8 +4,11 @@
 """Gemini generateContent API에 JSON 응답을 요청한다."""
 
 import json
+import math
 import os
 import re
+from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -14,7 +17,67 @@ DEFAULT_MODEL = "gemini-3.5-flash-lite"
 
 
 class RetryableError(RuntimeError):
-    pass
+    def __init__(self, message: str, *, retry_after: float | None = None):
+        super().__init__(message)
+        self.retry_after = retry_after
+
+
+def _seconds(value) -> float | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        seconds = float(value.removesuffix("s"))
+    except ValueError:
+        return None
+    return seconds if math.isfinite(seconds) and 0 <= seconds <= 3600 else None
+
+
+def _rate_limit(error: HTTPError) -> tuple[float, bool]:
+    """재시도 시간과 일일 한도 표시만 읽고 오류 본문은 외부로 전달하지 않는다."""
+    delay = None
+    retry_after = error.headers.get("Retry-After") if error.headers else None
+    if retry_after:
+        delay = _seconds(retry_after)
+        if delay is None:
+            try:
+                when = parsedate_to_datetime(retry_after)
+                if when.tzinfo is not None:
+                    delay = _seconds(str(max(0, (when - datetime.now(UTC)).total_seconds())))
+            except (ValueError, TypeError, OverflowError):
+                pass
+    try:
+        body = json.loads(error.read(65536))
+    except (ValueError, UnicodeError, OSError):
+        body = {}
+    error_body = body.get("error") if isinstance(body, dict) else None
+    details = error_body.get("details", []) if isinstance(error_body, dict) else []
+    daily = False
+    if not isinstance(details, list):
+        details = []
+    for item in details:
+        if not isinstance(item, dict):
+            continue
+        if item.get("@type") == "type.googleapis.com/google.rpc.RetryInfo" and delay is None:
+            delay = _seconds(item.get("retryDelay"))
+        if item.get("@type") == "type.googleapis.com/google.rpc.QuotaFailure":
+            violations = item.get("violations", [])
+            if isinstance(violations, list):
+                daily = daily or any(
+                    isinstance(violation, dict)
+                    and isinstance(violation.get("quotaId"), str)
+                    and "perday" in violation["quotaId"].casefold()
+                    for violation in violations
+                )
+    return delay if delay is not None else 60, daily
+
+
+def _unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"Gemini returned duplicate JSON key: {key}")
+        result[key] = value
+    return result
 
 
 def load_api_key(env_path: Path) -> str:
@@ -40,35 +103,49 @@ def generate(
     api_key: str,
     timeout: float = 120,
 ) -> dict:
+    if not isinstance(api_key, str) or not api_key or any(c in api_key for c in "\r\n\x00"):
+        raise RuntimeError("GEMINI_API_KEY has invalid format")
     if not re.fullmatch(r"[a-z0-9.-]+", model):
         raise ValueError("invalid Gemini model name")
-    request = Request(
-        f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-        data=json.dumps(
-            {
-                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "responseMimeType": "application/json",
-                    "responseJsonSchema": schema,
-                    "temperature": 0.2,
-                },
-            },
-            ensure_ascii=False,
-        ).encode("utf-8"),
-        headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
-        method="POST",
-    )
     try:
+        request = Request(
+            f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+            data=json.dumps(
+                {
+                    "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                    "generationConfig": {
+                        "responseMimeType": "application/json",
+                        "responseJsonSchema": schema,
+                        "temperature": 0.2,
+                    },
+                },
+                ensure_ascii=False,
+            ).encode("utf-8"),
+            headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
+            method="POST",
+        )
         with urlopen(request, timeout=timeout) as response:
             envelope = json.load(response)
     except HTTPError as error:
         status = error.code
-        error.close()
-        if status in {429, 500, 502, 503, 504}:
+        try:
+            delay, daily = _rate_limit(error) if status == 429 else (None, False)
+        finally:
+            error.close()
+        if daily:
+            raise RuntimeError("Gemini daily quota exhausted; resume after quota resets") from None
+        if status == 429:
+            raise RetryableError("Gemini HTTP 429", retry_after=delay) from None
+        if status in {500, 502, 503, 504}:
             raise RetryableError(f"Gemini HTTP {status}") from None
         raise RuntimeError(f"Gemini HTTP {status}; check model and API access") from None
     except (URLError, TimeoutError):
         raise RetryableError("Gemini connection failed") from None
+    except json.JSONDecodeError:
+        raise RetryableError("Gemini returned invalid response JSON") from None
+    except (ValueError, UnicodeError, TypeError):
+        # HTTP 헤더 인코딩 오류에는 원래 헤더 값이 포함될 수 있다.
+        raise RuntimeError("Gemini request could not be encoded") from None
     candidates = envelope.get("candidates", [])
     if not candidates:
         raise ValueError("Gemini returned no candidate")
@@ -80,7 +157,7 @@ def generate(
         for part in candidate.get("content", {}).get("parts", [])
         if not part.get("thought")
     )
-    payload = json.loads(answer)
+    payload = json.loads(answer, object_pairs_hook=_unique_object)
     if not isinstance(payload, dict):
         raise ValueError("Gemini response must be a JSON object")
     return payload

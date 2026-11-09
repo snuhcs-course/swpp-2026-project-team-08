@@ -9,7 +9,7 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 
-from .gemini import DEFAULT_MODEL, RetryableError, generate, load_api_key
+from .gemini import DEFAULT_MODEL, RetryableError, _unique_object, generate, load_api_key
 
 AGENTS = ("a", "b", "c")
 ROOT = Path(__file__).resolve().parent
@@ -99,8 +99,10 @@ class AgentRunner:
         path = self.work_dir / "submissions" / parts[0] / agent_id / f"{parts[1]}.json"
         if path.exists():
             try:
-                cached = json.loads(path.read_text(encoding="utf-8"))
-            except (json.JSONDecodeError, UnicodeDecodeError):
+                cached = json.loads(
+                    path.read_text(encoding="utf-8"), object_pairs_hook=_unique_object
+                )
+            except (ValueError, UnicodeDecodeError):
                 cached = None
             if isinstance(cached, dict) and cached.get("fingerprint"):
                 if cached["fingerprint"] != fingerprint:
@@ -115,19 +117,53 @@ class AgentRunner:
                     return cached["response"]
             path.replace(path.with_suffix(".invalid.json"))
         key = load_api_key(ROOT / ".env") if self.request is generate else ""
+        request_prompt = full_prompt
         for attempt in range(self.attempts):
+            payload = None
             try:
                 payload = self.request(
-                    full_prompt, schema, model=self.model, api_key=key, timeout=self.timeout
+                    request_prompt, schema, model=self.model, api_key=key, timeout=self.timeout
                 )
                 validate(payload)
-                write_json(path, {"fingerprint": fingerprint, "response": payload})
+                write_json(
+                    path,
+                    {
+                        "fingerprint": fingerprint,
+                        "request_sha256": digest(request_prompt),
+                        "attempts": attempt + 1,
+                        "response": payload,
+                    },
+                )
                 return payload
             except (RetryableError, ValueError, KeyError, TypeError) as error:
+                detail = f"{type(error).__name__}: {error}"
+                write_json(
+                    self.work_dir
+                    / "invalid"
+                    / parts[0]
+                    / agent_id
+                    / f"{parts[1]}-attempt-{attempt + 1}.json",
+                    {"fingerprint": fingerprint, "error": detail, "response": payload},
+                )
+                print(f"{task_id}/{agent_id} attempt {attempt + 1}: {detail}", flush=True)
                 if attempt + 1 == self.attempts:
                     raise RuntimeError(
-                        f"{task_id}/{agent_id} failed after {self.attempts} attempts: "
-                        f"{type(error).__name__}"
+                        f"{task_id}/{agent_id} failed after {self.attempts} attempts: {detail}"
                     ) from None
-                self.pause(min(30, 2 ** (attempt + 1)))
+                if not isinstance(error, RetryableError):
+                    request_prompt = (
+                        full_prompt
+                        + "\n\nThe previous response failed validation: "
+                        + detail
+                        + ". Regenerate the COMPLETE response. Copy all input IDs exactly; "
+                        "do not invent, omit, or duplicate any identifier."
+                    )
+                delay = min(30, 2 ** (attempt + 1))
+                if isinstance(error, RetryableError) and error.retry_after is not None:
+                    delay = error.retry_after
+                    print(f"{task_id}/{agent_id} waits {delay:g}s before retry", flush=True)
+                while delay > 0:
+                    interval = min(60, delay)
+                    self.pause(interval)
+                    delay -= interval
         raise AssertionError("unreachable")

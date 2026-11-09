@@ -8,9 +8,11 @@ from pathlib import Path
 
 from data.ingredient_db.selection import (
     AGENTS,
+    decode_selection,
     reconcile_groups,
     reconcile_rows,
     run,
+    selection_schema,
     validate_groups,
     validate_selected,
     validate_selection,
@@ -27,6 +29,18 @@ def vote(source_id=1, decision="INCLUDE", name="Rice"):
 
 
 class SelectionTests(unittest.TestCase):
+    def test_api_schema_requires_exact_source_keys_without_generated_numeric_ids(self):
+        schema = selection_schema({172223, 172222})["properties"]["rows"]
+        self.assertEqual(schema["required"], ["172222", "172223"])
+        self.assertFalse(schema["additionalProperties"])
+        self.assertNotIn("source_id", schema["properties"]["172223"]["properties"])
+        value = {"decision": "INCLUDE", "english_name": "Cheese", "reason": "Dairy ingredient"}
+        decoded = decode_selection({"rows": {"172223": value}}, {172223})
+        self.assertEqual(decoded, [{"source_id": 172223, **value}])
+        for wrong in ({"172233": value}, {}, {"172223": value, "172233": value}):
+            with self.assertRaises(ValueError):
+                decode_selection({"rows": wrong}, {172223})
+
     def test_two_votes_accept_name_despite_third_exclusion(self):
         responses = {
             "a": [vote()],
@@ -99,7 +113,15 @@ class SelectionTests(unittest.TestCase):
             calls.append((agent, task_id))
             if task_id.startswith("selection/"):
                 source_id = int(task_id.rsplit("-", 1)[1])
-                response = {"rows": [vote(source_id)]}
+                response = {
+                    "rows": {
+                        str(source_id): {
+                            key: value
+                            for key, value in vote(source_id).items()
+                            if key != "source_id"
+                        }
+                    }
+                }
             else:
                 response = {
                     "components": [

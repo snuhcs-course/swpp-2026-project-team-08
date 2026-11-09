@@ -7,6 +7,7 @@ import json
 import unicodedata
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
 from pathlib import Path
 
 from .runner import AGENTS, write_json
@@ -21,12 +22,6 @@ ROW_SCHEMA = {
         "reason": {"type": "string"},
     },
     "required": ["source_id", "decision", "english_name", "reason"],
-    "additionalProperties": False,
-}
-SELECTION_SCHEMA = {
-    "type": "object",
-    "properties": {"rows": {"type": "array", "items": ROW_SCHEMA}},
-    "required": ["rows"],
     "additionalProperties": False,
 }
 GROUP_SCHEMA = {
@@ -81,6 +76,48 @@ def _nonblank(value) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
+def selection_schema(source_ids: set[int]) -> dict:
+    """원본 ID를 생성할 값이 아니라 반드시 반환할 고정 키로 지정한다."""
+    fields = [key for key in ROW_SCHEMA["required"] if key != "source_id"]
+    value_schema = {
+        "type": "object",
+        "properties": {key: ROW_SCHEMA["properties"][key] for key in fields},
+        "required": fields,
+        "additionalProperties": False,
+    }
+    keys = [str(source_id) for source_id in sorted(source_ids)]
+    return {
+        "type": "object",
+        "properties": {
+            "rows": {
+                "type": "object",
+                "properties": {key: value_schema for key in keys},
+                "required": keys,
+                "additionalProperties": False,
+            }
+        },
+        "required": ["rows"],
+        "additionalProperties": False,
+    }
+
+
+def decode_selection(payload: dict, source_ids: set[int]) -> list[dict]:
+    if not isinstance(payload, dict) or set(payload) != {"rows"}:
+        raise ValueError("selection must contain rows keyed by source ID")
+    rows = payload["rows"]
+    expected_keys = {str(source_id) for source_id in source_ids}
+    if not isinstance(rows, dict) or set(rows) != expected_keys:
+        raise ValueError(f"selection requires exactly these source keys: {sorted(expected_keys)}")
+    decoded = []
+    for source_id in sorted(source_ids):
+        value = rows[str(source_id)]
+        if not isinstance(value, dict) or set(value) != {"decision", "english_name", "reason"}:
+            raise ValueError("source-keyed decision has invalid fields")
+        decoded.append({"source_id": source_id, **value})
+    validate_selection({"rows": decoded}, source_ids)
+    return decoded
+
+
 def validate_selection(payload: dict, source_ids: set[int]) -> None:
     if not isinstance(payload, dict) or set(payload) != {"rows"}:
         raise ValueError("selection must contain rows")
@@ -92,7 +129,10 @@ def validate_selection(payload: dict, source_ids: set[int]) -> None:
             raise ValueError("invalid selection fields")
         source_id = row["source_id"]
         if type(source_id) is not int or source_id not in source_ids or source_id in seen:
-            raise ValueError("invalid, unknown or duplicate source ID")
+            raise ValueError(
+                f"invalid, unknown or duplicate source ID {source_id!r}; "
+                f"required IDs are {sorted(source_ids)}"
+            )
         seen.add(source_id)
         if row["decision"] not in DECISIONS or not _nonblank(row["reason"]):
             raise ValueError("invalid decision or missing reason")
@@ -102,7 +142,7 @@ def validate_selection(payload: dict, source_ids: set[int]) -> None:
         if (row["decision"] == "INCLUDE") != bool(name.strip()):
             raise ValueError("only included foods must have an English name")
     if seen != source_ids:
-        raise ValueError("selection omitted source rows")
+        raise ValueError(f"selection omitted source IDs {sorted(source_ids - seen)}")
 
 
 def validate_groups(payload: dict, source_ids: set[int]) -> None:
@@ -345,7 +385,10 @@ def run(
                 "For EVERY source row decide INCLUDE, EXCLUDE, or UNKNOWN under the policy. "
                 "For INCLUDE provide a short American English ingredient name. For other decisions "
                 "use an empty english_name. Include a short reason tied to the source description. "
-                "Do not infer an unspecified product recipe. Preserve each source_id exactly once.\n"
+                "Do not infer an unspecified product recipe. "
+                "Return rows as an object keyed by the exact decimal source_id strings in the "
+                "schema. Each value contains only decision, english_name, and reason; do not "
+                "repeat source_id inside the value. Return every required key.\n"
                 + json.dumps(batch, ensure_ascii=False)
             )
             tasks = {
@@ -354,13 +397,13 @@ def run(
                     agent,
                     f"selection/batch-{batch_no:04d}",
                     prompt,
-                    SELECTION_SCHEMA,
-                    lambda payload, expected=ids: validate_selection(payload, expected),
+                    selection_schema(ids),
+                    lambda payload, expected=ids: decode_selection(payload, expected),
                 )
                 for agent in AGENTS
             }
             for agent, future in tasks.items():
-                all_votes[agent].extend(future.result()["rows"])
+                all_votes[agent].extend(decode_selection(future.result(), ids))
             print(f"selection {min(start + batch_size, len(rows))}/{len(rows)}", flush=True)
         included, excluded, unresolved, review, indexed = reconcile_rows(rows, all_votes)
         sources_by_id = {row["source_id"]: row for row in rows}
@@ -376,20 +419,28 @@ def run(
                 grouping_review.append(
                     {"source_ids": ids, "votes": responses, "method": "source_name"}
                 )
-        component_schema = {
-            **GROUP_SCHEMA,
-            "properties": {"component_id": {"type": "integer"}, **GROUP_SCHEMA["properties"]},
-            "required": ["component_id", *GROUP_SCHEMA["required"]],
-        }
-        batch_schema = {
-            "type": "object",
-            "properties": {"components": {"type": "array", "items": component_schema}},
-            "required": ["components"],
-            "additionalProperties": False,
-        }
         for batch_no, start in enumerate(range(0, len(pending_groups), 20), 1):
             batch = pending_groups[start : start + 20]
             expected = {item["component_id"]: set(item["source_ids"]) for item in batch}
+            allowed_ids = sorted(set().union(*expected.values()))
+            component_schema = deepcopy(GROUP_SCHEMA)
+            component_schema["properties"]["component_id"] = {
+                "type": "integer",
+                "enum": sorted(expected),
+            }
+            component_schema["required"].append("component_id")
+            component_schema["properties"]["groups"]["items"]["properties"]["source_ids"]["items"][
+                "enum"
+            ] = allowed_ids
+            component_schema["properties"]["unresolved"]["items"]["properties"]["source_id"][
+                "enum"
+            ] = allowed_ids
+            batch_schema = {
+                "type": "object",
+                "properties": {"components": {"type": "array", "items": component_schema}},
+                "required": ["components"],
+                "additionalProperties": False,
+            }
 
             def validate_batch(payload, expected=expected):
                 if not isinstance(payload, dict) or set(payload) != {"components"}:

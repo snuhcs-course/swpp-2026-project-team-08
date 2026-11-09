@@ -5,6 +5,8 @@
 // Changed: 리뷰 요청의 대문자 outcome 과 식사 상세 응답 기준으로 수정
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 재료 난이도 테스트를 서버 난이도 값과 식사 상세 응답 기준으로 수정
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: Add 없이 입력한 음식·재료 사유의 저장 실패·재시도·복원 검증
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -34,6 +36,49 @@ const { useMealCheckin } = require('../../src/features/meal-checkin/hooks/useMea
 beforeEach(t => {
   values.clear();
   t.mock.method(global, 'fetch', async () => { throw new Error('Unexpected HTTP request'); });
+});
+
+test('complete difficulty inputs save without Add and survive a failed request and retry', async t => {
+  let serverMeal = mealResponse();
+  serverMeal.foods[0].ingredients = [{ id: '101', name: 'Carrot' }];
+  const requests = [];
+  t.mock.method(global, 'fetch', async (url, init = {}) => {
+    const path = new URL(url).pathname;
+    if (path === '/api/v1/meals/10' && !init.method) return Response.json(serverMeal);
+    assert.equal(path, '/api/v1/meals/10/review');
+    assert.equal(init.method, 'PUT');
+    const body = JSON.parse(init.body);
+    requests.push(body);
+    if (requests.length === 1) return Response.json({ error_code: 'UNAVAILABLE' }, { status: 503 });
+    serverMeal = reviewResponse(serverMeal, body);
+    return Response.json(serverMeal);
+  });
+  const profile = { id: '1' };
+  const h = await renderHook(t, () => useAfterMealReview(profile, '10'));
+  await waitFor(() => h.current.draft !== null);
+  const ingredient = h.current.draft.outcomes[0].ingredients[0].id;
+  await act(async () => {
+    h.current.chooseOutcome('1', 'tasted');
+    h.current.chooseOutcome('1', 'untouched', ingredient);
+    h.current.setDifficultyInput('1', { category: 'texture', subcategory: 'hardness', value: 'firm', note: '' });
+    h.current.setDifficultyInput(ingredient, { category: 'smell', value: 'mint', note: '' });
+    h.current.go('difficulties');
+  });
+  const inputs = structuredClone(h.current.draft.difficultyInputs);
+  await act(async () => assert.equal(await h.current.finish(), false));
+  assert.deepEqual(h.current.draft.difficultyInputs, inputs);
+  assert.deepEqual((await readAfterMealDraft('1', '10')).difficultyInputs, inputs);
+  await act(async () => assert.equal(await h.current.finish(), true));
+  assert.deepEqual(requests[1], requests[0]);
+  assert.deepEqual(requests[1].food_results[0].difficulty_reasons, ['TEXTURE.HARDNESS.FIRM']);
+  assert.deepEqual(requests[1].food_results[0].ingredient_outcomes[0].difficulty_reasons, ['SMELL.MINT']);
+  assert.deepEqual(h.current.draft.difficultyInputs, {});
+  assert.equal(h.current.draft.difficulties['1'][0].value, 'firm');
+  assert.equal(h.current.draft.difficulties[ingredient][0].value, 'mint');
+  const restored = await renderHook(t, () => useAfterMealReview(profile, '10'));
+  await waitFor(() => restored.current.draft !== null);
+  assert.equal(restored.current.draft.difficulties['1'][0].subcategory, 'hardness');
+  assert.equal(restored.current.draft.difficulties[ingredient][0].value, 'mint');
 });
 
 test('failed review preserves the draft; retry updates storage, detail cache, and the Home observer', async (t) => {

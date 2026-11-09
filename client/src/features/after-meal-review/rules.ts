@@ -6,6 +6,8 @@
 // Changed: 서버가 받지 않는 난이도 선택지 제거
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 최종 저장에 추가 버튼을 누르지 않은 어려움 입력 반영
 
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome, ReviewStep } from '../../types/afterMealReview';
 import type { FoodItem, Meal } from '../../types/meal';
@@ -226,7 +228,15 @@ export function reviewFromDraft(draft: AfterMealReviewDraft, meal: Meal): AfterM
     afterPhoto: draft.afterPhoto,
     comparisonMethod: 'manual',
     outcomes: outcomes.map((food) => ({ ...food, ingredients: food.ingredients.filter((ingredient) => ingredient.selected !== false) })),
-    difficulties: Object.fromEntries(difficultyTargets(meal.foods, outcomes).map(target => [target.id, draft.difficulties[target.id] ?? []])),
+    difficulties: Object.fromEntries(difficultyTargets(meal.foods, outcomes).map(target => {
+      const tags = draft.difficulties[target.id] ?? [];
+      const input = draft.difficultyInputs[target.id];
+      const subcategory = input?.category === 'texture' ? input.subcategory ?? '' : undefined;
+      const complete = input && canAddDifficulty(input.category, input.value, input.note, subcategory);
+      return [target.id, complete
+        ? addDifficulty(tags, input.category!, input.value, input.note, subcategory)
+        : tags];
+    })),
     suggestionFeedback: draft.suggestionFeedback,
     savedAt: new Date().toISOString(),
     foodFormKeys: Object.fromEntries(meal.foods.map((food) => [food.id, foodFormKey(food)])),

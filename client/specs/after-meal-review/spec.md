@@ -4,6 +4,8 @@
 <!-- Changed: 식후 검토 디자인 및 별도 기록 재료의 어려움 대상·저장 및 3단계 진행 표시 -->
 <!-- AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung -->
 <!-- Changed: Eaten의 어려움·추천 제외 규칙 -->
+<!-- AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung -->
+<!-- Changed: 추가 버튼 없이 완성된 어려움 입력 저장 -->
 
 # After-meal Review
 
@@ -88,7 +90,7 @@
 - Food Arrangement는 Evenly distributed/Unevenly distributed/Clustered/Other, Ingredient Piece Size는 Fine/Small/Large, Serving Temperature는 Hot/Warm/Cool-chilled/Room temperature를 제공한다. 배치·크기·온도는 대상별 한 값이며 새 입력은 같은 카테고리의 이전 값만 교체한다.
 - Add 후 입력값·식감 질문을 비우고 태그는 유지한다. 태그 ×는 해당 태그만 제거한다. 입력 중 값은 저장된 태그가 아니다.
 - 긴 냄새 목록·식감 질문은 스크롤 가능한 오버레이에 표시한다. 내용·태그·키보드가 하단 Continue/Skip을 가리지 않는다.
-- Continue와 Skip 모두 이미 추가한 태그를 보존하고 바로 최종 저장한다. Did you try a saved suggestion? 후속 화면은 표시하지 않는다.
+- Continue와 Skip 모두 이미 추가한 태그와 입력이 완성된 현재 사유를 함께 최종 저장한다. Add를 누르지 않아도 반영하며, 중복 방지·단일 선택 항목 교체 규칙은 Add와 같다. 식감 질문·값이나 기타 설명이 빠진 미완성 입력은 추가하지 않는다. 저장 실패 시 입력과 기존 태그를 유지한다. Did you try a saved suggestion? 후속 화면은 표시하지 않는다.
 
 ### R4 — 최종 저장과 기존 초안 호환
 

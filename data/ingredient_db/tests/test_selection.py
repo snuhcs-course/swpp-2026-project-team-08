@@ -2,13 +2,17 @@
 # Changed: 재료 선정과 구성원 묶음의 다수결 검증
 
 import copy
+import json
 import tempfile
 import unittest
 from pathlib import Path
 
 from data.ingredient_db.selection import (
     AGENTS,
+    build_grouping_prompt,
+    build_prompt,
     decode_selection,
+    is_english_name,
     reconcile_groups,
     reconcile_rows,
     run,
@@ -29,6 +33,78 @@ def vote(source_id=1, decision="INCLUDE", name="Rice"):
 
 
 class SelectionTests(unittest.TestCase):
+    def test_names_require_latin_letters_and_reject_controls(self):
+        for name in ("쌀", "Рис", "Rice\n", "Rice\u200b", "123", "-"):
+            with self.subTest(name=repr(name)):
+                self.assertFalse(is_english_name(name))
+                with self.assertRaises(ValueError):
+                    validate_selection({"rows": [vote(name=name)]}, {1})
+                with self.assertRaises(ValueError):
+                    validate_groups(
+                        {
+                            "groups": [
+                                {"source_ids": [1], "english_name": name, "reason": "Ingredient"}
+                            ],
+                            "unresolved": [],
+                        },
+                        {1},
+                    )
+        self.assertTrue(is_english_name("Jalapeño peppers (dried)"))
+        self.assertTrue(is_english_name("Milk, 2% fat"))
+        validate_selection({"rows": [vote(name="Jalapeño peppers")]}, {1})
+
+    def test_source_descriptions_survive_selection_and_grouping_requests(self):
+        rows = [
+            {
+                "source_id": 1,
+                "description": "Cheese, cottage, lactose-reduced",
+                "category": "Dairy and Egg Products",
+            },
+            {
+                "source_id": 2,
+                "description": "Salad dressing, creamy, reduced fat",
+                "category": "Fats and Oils",
+            },
+            {
+                "source_id": 3,
+                "description": "Cereals, QUAKER, oat bran, dry",
+                "category": "Breakfast Cereals",
+            },
+        ]
+        self.assertEqual(json.loads(build_prompt(rows).split("SOURCE_ROWS_JSON:\n")[1]), rows)
+        components = [{"component_id": 1, "sources": rows[:1]}]
+        self.assertEqual(
+            json.loads(build_grouping_prompt(components).split("COMPONENTS_JSON:\n")[1]), components
+        )
+
+    def test_composition_split_majority_is_not_overwritten_by_base_name_merge(self):
+        split = {
+            "groups": [
+                {"source_ids": [1], "english_name": "Cottage cheese", "reason": "Ordinary dairy"},
+                {
+                    "source_ids": [2],
+                    "english_name": "Lactose-reduced cottage cheese",
+                    "reason": "Source explicitly reduces lactose",
+                },
+            ],
+            "unresolved": [],
+        }
+        merged = {
+            "groups": [
+                {"source_ids": [1, 2], "english_name": "Cottage cheese", "reason": "Same base name"}
+            ],
+            "unresolved": [],
+        }
+        groups, unresolved = reconcile_groups({"a": split, "b": split, "c": merged}, {1, 2})
+        self.assertEqual(
+            groups,
+            [
+                {"source_ids": [1], "english_name": "Cottage cheese"},
+                {"source_ids": [2], "english_name": "Lactose-reduced cottage cheese"},
+            ],
+        )
+        self.assertEqual(unresolved, [])
+
     def test_api_schema_requires_exact_source_keys_without_generated_numeric_ids(self):
         schema = selection_schema({172223, 172222})["properties"]["rows"]
         self.assertEqual(schema["required"], ["172222", "172223"])

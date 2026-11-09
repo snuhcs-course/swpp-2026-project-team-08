@@ -93,14 +93,7 @@ def answer_fixture(degree="NEVER"):
 
 
 def wire_fixture(degree="NEVER"):
-    return {
-        "rows": {
-            "1": {
-                row["restriction_type"]: {"degree": row["degree"], "reason": row["reason"]}
-                for row in answer_fixture(degree)["rows"]
-            }
-        }
-    }
+    return answer_fixture(degree)
 
 
 class RestrictionTests(unittest.TestCase):
@@ -186,6 +179,14 @@ class RestrictionTests(unittest.TestCase):
             with self.subTest(second=second), self.assertRaises(ValueError):
                 validate_ingredients(ingredient_fixture() + [second])
 
+    def test_ingredient_names_allow_latin_accents_but_reject_other_scripts_and_controls(self):
+        for name in ("Jalapeño", "Crème fraîche", "Milk, 2% fat"):
+            with self.subTest(name=name):
+                validate_ingredients([{"id": 1, "english_name": name, "source_ids": [123]}])
+        for name in ("쌀", "Rіce", "Rice\u200b", "Rice\n", "123"):
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                validate_ingredients([{"id": 1, "english_name": name, "source_ids": [123]}])
+
     def test_id_assignment_follows_names(self):
         with self.assertRaisesRegex(ValueError, "alphabetical"):
             validate_ingredients(
@@ -208,23 +209,23 @@ class RestrictionTests(unittest.TestCase):
         self.assertIn("Rice, white, cooked, no added salt", prompt)
         self.assertIn("DIETARY_APPROACH.LACTOSE_FREE", prompt)
 
-    def test_wire_schema_requires_all_exact_ids_and_restriction_keys(self):
+    def test_wire_schema_limits_ids_and_restriction_types_in_one_array(self):
         ingredients = [
             {"id": 190323, "english_name": "Rice", "source_ids": [123]},
             {"id": 190324, "english_name": "Wheat", "source_ids": [456]},
         ]
         schema = response_schema(ingredients)
         rows = schema["properties"]["rows"]
-        self.assertEqual(rows["required"], ["190323", "190324"])
-        self.assertEqual(set(rows["properties"]), {"190323", "190324"})
-        self.assertFalse(rows["additionalProperties"])
-        for ingredient in rows["properties"].values():
-            self.assertEqual(set(ingredient["required"]), set(RESTRICTION_TYPES))
-            self.assertEqual(set(ingredient["properties"]), set(RESTRICTION_TYPES))
-            self.assertFalse(ingredient["additionalProperties"])
-            for judgment in ingredient["properties"].values():
-                self.assertEqual(set(judgment["required"]), {"degree", "reason"})
-                self.assertFalse(judgment["additionalProperties"])
+        self.assertEqual(rows["type"], "array")
+        judgment = rows["items"]
+        self.assertEqual(judgment["properties"]["ingredient_id"]["enum"], [190323, 190324])
+        self.assertEqual(
+            set(judgment["properties"]["restriction_type"]["enum"]), set(RESTRICTION_TYPES)
+        )
+        self.assertEqual(
+            set(judgment["required"]), {"ingredient_id", "restriction_type", "degree", "reason"}
+        )
+        self.assertFalse(judgment["additionalProperties"])
 
     def test_wire_conversion_preserves_decisions_and_has_deterministic_order(self):
         wire = wire_fixture("DEPENDS_ON_PRODUCT")
@@ -235,35 +236,47 @@ class RestrictionTests(unittest.TestCase):
             [row["restriction_type"] for row in response["rows"]], sorted(RESTRICTION_TYPES)
         )
         self.assertTrue(all(row["degree"] == "DEPENDS_ON_PRODUCT" for row in response["rows"]))
-        reversed_wire = {"rows": {"1": dict(reversed(list(wire["rows"]["1"].items())))}}
+        reversed_wire = {"rows": list(reversed(wire["rows"]))}
         self.assertEqual(rows_from_wire(ingredient_fixture(), reversed_wire), response)
 
-    def test_wire_rejects_missing_extra_or_mistyped_ingredient_keys(self):
-        for key in ("2", "01", 1):
+    def test_wire_rejects_missing_extra_or_mistyped_ingredient_ids(self):
+        for ingredient_id in ("1", True, 2):
             wire = wire_fixture()
-            wire["rows"][key] = wire["rows"].pop("1")
-            with self.subTest(key=key), self.assertRaises(ValueError):
+            wire["rows"][0]["ingredient_id"] = ingredient_id
+            with self.subTest(ingredient_id=ingredient_id), self.assertRaises(ValueError):
                 validate_wire_response(ingredient_fixture(), wire)
-        for wire in ({"rows": {}}, {"rows": []}, answer_fixture()):
-            with self.subTest(wire=wire), self.assertRaises(ValueError):
+        for wire in ({"rows": {}}, {"rows": []}):
+            with self.subTest(wire=wire), self.assertRaises((ValueError, TypeError)):
                 validate_wire_response(ingredient_fixture(), wire)
         extra = wire_fixture()
-        extra["rows"]["2"] = copy.deepcopy(extra["rows"]["1"])
+        extra["rows"].append({**extra["rows"][0], "ingredient_id": 2})
         with self.assertRaises(ValueError):
             validate_wire_response(ingredient_fixture(), extra)
 
     def test_wire_rejects_missing_unknown_restriction_and_invalid_values(self):
-        for mutation in ("missing", "unknown", "degree", "reason", "extra_value"):
+        for mutation in (
+            "missing",
+            "extra",
+            "duplicate",
+            "unknown",
+            "degree",
+            "reason",
+            "extra_value",
+        ):
             wire = wire_fixture()
-            judgments = wire["rows"]["1"]
+            judgments = wire["rows"]
             if mutation == "missing":
-                judgments.pop("ALLERGY.EGGS")
+                judgments.pop()
+            elif mutation == "extra":
+                judgments.append(copy.deepcopy(judgments[0]))
+            elif mutation == "duplicate":
+                judgments[-1] = copy.deepcopy(judgments[0])
             elif mutation == "unknown":
-                judgments["ALLERGY.NONE"] = judgments.pop("ALLERGY.EGGS")
+                judgments[0]["restriction_type"] = "ALLERGY.NONE"
             elif mutation == "extra_value":
-                judgments["ALLERGY.EGGS"]["ingredient_id"] = 1
+                judgments[0]["extra"] = 1
             else:
-                judgments["ALLERGY.EGGS"][mutation] = "SAFE" if mutation == "degree" else " "
+                judgments[0][mutation] = "SAFE" if mutation == "degree" else " "
             with self.subTest(mutation=mutation), self.assertRaises(ValueError):
                 validate_wire_response(ingredient_fixture(), wire)
 
@@ -276,7 +289,7 @@ class RestrictionTests(unittest.TestCase):
             # The runner retries a failed attempt in this slot; only its valid reply is returned.
             if agent == "a":
                 invalid = wire_fixture()
-                invalid["rows"]["1"].pop("ALLERGY.EGGS")
+                invalid["rows"].pop()
                 with self.assertRaises(ValueError):
                     validate(invalid)
             answer = wire_fixture()
@@ -298,7 +311,7 @@ class RestrictionTests(unittest.TestCase):
         selected = selected_fixture()
 
         def fake_call(agent, task, prompt, schema, validate):
-            return {"rows": {}} if agent == "c" else wire_fixture()
+            return {"rows": []} if agent == "c" else wire_fixture()
 
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "selected.json"

@@ -21,7 +21,9 @@ def main() -> None:
     parser.add_argument("--policy", type=Path, default=ROOT / "docs/policy.md")
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--archive", type=Path, help="이미 내려받은 SR Legacy CSV ZIP")
-    parser.add_argument("--batch-size", type=int, help="select: 최대 50행, judge: 재료 수")
+    parser.add_argument(
+        "--batch-size", type=int, help="select: 기본 16행, 최대 50행; judge: 기본 10재료"
+    )
     parser.add_argument(
         "--max-batches", type=int, help="select의 일부 요청만 실행; 최종 결과는 만들지 않음"
     )
@@ -52,7 +54,7 @@ def main() -> None:
             data,
             args.work_dir,
             call_agent=runner.call,
-            batch_size=args.batch_size or 40,
+            batch_size=args.batch_size or 16,
             max_batches=args.max_batches,
         )
         if result is None:

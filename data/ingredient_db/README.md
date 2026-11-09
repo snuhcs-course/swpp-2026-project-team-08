@@ -22,6 +22,11 @@ Gemini A·B·C의 다수결로 재료와 19개 제한을 판정한다.
 원본 대응·세 판정·보류·파일 해시는 `review/`에 보존한다.
 `work/`는 다운로드와 재개용 원시 응답이며 Git에 넣지 않는다.
 
+리뷰는 [집계와 불일치 예시](review/summary.json)를 먼저 읽고, 필요한 항목만
+[원본과 판정 근거](review/catalog.json)에서 확인한다. 집계에는 원본의 포함·제외·보류 수,
+제한별 판정 수, 2:1·삼자 불일치 수와 예시가 있다.
+`catalog.json`은 모든 원본과 세 판정, 이름·구성원 합의를 담아 API 없이 결과를 재생성한다.
+
 원본은 [USDA 공식 배포](https://fdc.nal.usda.gov/download-datasets/)의 SR Legacy 2018 CSV다.
 [CC0](https://fdc.nal.usda.gov/api-guide/#bkmk-9)로 공개되며 출처는
 U.S. Department of Agriculture, Agricultural Research Service, FoodData Central이다.
@@ -44,6 +49,7 @@ python3 -m data.ingredient_db check
 `prepare`는 원본·정책·모델을 고정한다. `select`는 원본별 포함 여부와 이름·묶음을 정한다.
 `judge`는 확정 재료마다 19개 제한을 판단한다. `export`는 검토 기록과 JSONL을 만든다.
 `check`는 네트워크와 DB 없이 기록의 완전성과 결과를 검사한다.
+요청당 기본 크기는 `select` 원본 16행, `judge` 재료 10개이며 `--batch-size`로 지정한다.
 중단된 단계는 같은 명령으로 재개하며 검증된 응답은 재사용한다.
 원본·정책·모델이 달라지면 다른 작업 폴더를 사용한다.
 

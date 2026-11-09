@@ -103,9 +103,7 @@ class GeminiTests(unittest.TestCase):
 
         with patch("data.ingredient_db.gemini.urlopen", opener):
             self.assertEqual(
-                generate(
-                    "prompt", {"type": "object"}, model="gemini-3.5-flash-lite", api_key=key
-                ),
+                generate("prompt", {"type": "object"}, model="gemini-3.5-flash-lite", api_key=key),
                 {"answer": 1},
             )
 

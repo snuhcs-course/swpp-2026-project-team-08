@@ -14,6 +14,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 DEFAULT_MODEL = "gemini-3.5-flash-lite"
+DEFAULT_THINKING_LEVEL = "high"
 
 
 class RetryableError(RuntimeError):
@@ -32,19 +33,24 @@ def _seconds(value) -> float | None:
     return seconds if math.isfinite(seconds) and 0 <= seconds <= 3600 else None
 
 
+def _retry_after(error: HTTPError) -> float | None:
+    value = error.headers.get("Retry-After") if error.headers else None
+    if not value:
+        return None
+    if (seconds := _seconds(value)) is not None:
+        return seconds
+    try:
+        when = parsedate_to_datetime(value)
+        if when.tzinfo is not None:
+            return _seconds(str(max(0, (when - datetime.now(UTC)).total_seconds())))
+    except (ValueError, TypeError, OverflowError):
+        pass
+    return None
+
+
 def _rate_limit(error: HTTPError) -> tuple[float, bool]:
     """재시도 시간과 일일 한도 표시만 읽고 오류 본문은 외부로 전달하지 않는다."""
-    delay = None
-    retry_after = error.headers.get("Retry-After") if error.headers else None
-    if retry_after:
-        delay = _seconds(retry_after)
-        if delay is None:
-            try:
-                when = parsedate_to_datetime(retry_after)
-                if when.tzinfo is not None:
-                    delay = _seconds(str(max(0, (when - datetime.now(UTC)).total_seconds())))
-            except (ValueError, TypeError, OverflowError):
-                pass
+    delay = _retry_after(error)
     try:
         body = json.loads(error.read(65536))
     except (ValueError, UnicodeError, OSError):
@@ -117,6 +123,7 @@ def generate(
                         "responseMimeType": "application/json",
                         "responseJsonSchema": schema,
                         "temperature": 0.2,
+                        "thinkingConfig": {"thinkingLevel": DEFAULT_THINKING_LEVEL},
                     },
                 },
                 ensure_ascii=False,
@@ -129,7 +136,7 @@ def generate(
     except HTTPError as error:
         status = error.code
         try:
-            delay, daily = _rate_limit(error) if status == 429 else (None, False)
+            delay, daily = _rate_limit(error) if status == 429 else (_retry_after(error), False)
         finally:
             error.close()
         if daily:
@@ -137,7 +144,9 @@ def generate(
         if status == 429:
             raise RetryableError("Gemini HTTP 429", retry_after=delay) from None
         if status in {500, 502, 503, 504}:
-            raise RetryableError(f"Gemini HTTP {status}") from None
+            if status == 503 and delay is None:
+                delay = 30
+            raise RetryableError(f"Gemini HTTP {status}", retry_after=delay) from None
         raise RuntimeError(f"Gemini HTTP {status}; check model and API access") from None
     except (URLError, TimeoutError):
         raise RetryableError("Gemini connection failed") from None

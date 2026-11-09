@@ -20,6 +20,32 @@ def validate(payload):
 
 
 class RunnerTests(unittest.TestCase):
+    def test_service_unavailable_waits_then_reuses_one_successful_slot(self):
+        calls, pauses = [], []
+
+        def request(*args, **kwargs):
+            calls.append(1)
+            if len(calls) < 3:
+                raise RetryableError("Gemini HTTP 503", retry_after=30)
+            return {"answer": 1}
+
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            runner = AgentRunner(
+                work,
+                policy_text="policy",
+                source_hash="hash",
+                request=request,
+                pause=pauses.append,
+            )
+            self.assertEqual(runner.call("b", "selection/one", "task", {}, validate), {"answer": 1})
+            self.assertEqual(runner.call("b", "selection/one", "task", {}, validate), {"answer": 1})
+            cache = json.loads((work / "submissions/selection/b/one.json").read_text())
+            self.assertEqual(cache["attempts"], 3)
+            self.assertEqual(len(list((work / "submissions").rglob("*.json"))), 1)
+        self.assertEqual(calls, [1, 1, 1])
+        self.assertEqual(pauses, [30, 30])
+
     def test_rate_limit_delay_is_honored_in_at_most_sixty_second_waits(self):
         calls, pauses = [], []
 
@@ -196,9 +222,28 @@ class RunnerTests(unittest.TestCase):
             source = {"metadata": {}, "rows": []}
             work = Path(directory)
             first = pin_run(work, source, "policy", "model")
+            self.assertEqual(first["thinking_level"], "high")
             self.assertEqual(pin_run(work, source, "policy", "model"), first)
             with self.assertRaises(ValueError):
                 pin_run(work, source, "changed", "model")
+
+    def test_changed_thinking_level_refuses_manifest_and_cached_votes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            source = {"metadata": {}, "rows": []}
+            runner = AgentRunner(
+                work,
+                policy_text="policy",
+                source_hash="hash",
+                request=lambda *args, **kwargs: {"answer": 1},
+            )
+            with patch("data.ingredient_db.runner.DEFAULT_THINKING_LEVEL", "minimal"):
+                pin_run(work, source, "policy", "model")
+                runner.call("a", "selection/one", "task", {}, validate)
+            with self.assertRaisesRegex(ValueError, "model settings changed"):
+                pin_run(work, source, "policy", "model")
+            with self.assertRaisesRegex(ValueError, "cached inputs changed"):
+                runner.call("a", "selection/one", "task", {}, validate)
 
 
 if __name__ == "__main__":

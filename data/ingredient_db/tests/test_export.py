@@ -43,6 +43,8 @@ def review_fixture():
         "schema_version": 1,
         "metadata": {
             "model": "fixture-model",
+            "thinking_level": "high",
+            "temperature": 0.2,
             "agents": list(AGENTS),
             "policy_sha256": hashlib.sha256(b"fixture policy").hexdigest(),
             "source": selected["metadata"],
@@ -87,7 +89,13 @@ class ExportTests(unittest.TestCase):
         )
         self.assertEqual(
             summary["provenance"],
-            {"model": "fixture-model", "source_release": "2018-04", "license": "CC0-1.0"},
+            {
+                "model": "fixture-model",
+                "thinking_level": "high",
+                "temperature": 0.2,
+                "source_release": "2018-04",
+                "license": "CC0-1.0",
+            },
         )
         example = summary["restriction_disagreement_examples"][0]
         self.assertEqual(example["ingredient_name"], "Rice")
@@ -210,6 +218,23 @@ class ExportTests(unittest.TestCase):
         review["sources"][0]["description"] = "Wheat, whole"
         with self.assertRaisesRegex(ValueError, "source data differs"):
             render(review)
+
+    def test_missing_or_different_model_settings_cannot_be_exported(self):
+        for key, value in [
+            ("thinking_level", None),
+            ("thinking_level", "low"),
+            ("thinking_level", "HIGH"),
+            ("temperature", None),
+            ("temperature", 1),
+            ("temperature", "0.2"),
+        ]:
+            review = review_fixture()
+            if value is None:
+                del review["metadata"][key]
+            else:
+                review["metadata"][key] = value
+            with self.subTest(key=key, value=value), self.assertRaisesRegex(ValueError, key):
+                render(review)
 
     def test_incomplete_review_leaves_previous_results_untouched(self):
         with tempfile.TemporaryDirectory() as folder:

@@ -11,6 +11,22 @@ from data.ingredient_db.gemini import RetryableError, generate
 
 
 class GeminiTests(unittest.TestCase):
+    def test_service_unavailable_waits_thirty_seconds_or_retry_after(self):
+        for headers, expected in (({}, 30), ({"Retry-After": "9"}, 9)):
+            with self.subTest(headers=headers):
+                error = HTTPError(
+                    "https://example.test",
+                    503,
+                    "service unavailable",
+                    headers,
+                    io.BytesIO(b"FAKE_PRIVATE_DETAIL"),
+                )
+                with patch("data.ingredient_db.gemini.urlopen", side_effect=error):
+                    with self.assertRaises(RetryableError) as caught:
+                        generate("prompt", {}, model="gemini-3.5-flash-lite", api_key="secret")
+                self.assertEqual(caught.exception.retry_after, expected)
+                self.assertEqual(str(caught.exception), "Gemini HTTP 503")
+
     def test_rate_limit_uses_retry_info_or_header_without_exposing_body(self):
         for headers, expected in (({}, 37.5), ({"Retry-After": "12"}, 12)):
             body = {
@@ -88,6 +104,7 @@ class GeminiTests(unittest.TestCase):
             config = json.loads(request.data)["generationConfig"]
             self.assertEqual(config["responseMimeType"], "application/json")
             self.assertEqual(config["responseJsonSchema"], {"type": "object"})
+            self.assertEqual(config["thinkingConfig"], {"thinkingLevel": "high"})
             return io.BytesIO(
                 json.dumps(
                     {

@@ -37,6 +37,8 @@ U.S. Department of Agriculture, Agricultural Research Service, FoodData Central�
 Python 3.12 이상을 사용한다. 명령은 저장소 루트에서 실행한다.
 `GEMINI_API_KEY` 환경변수 또는 이 폴더의 `.env`로 키를 제공한다. 환경변수가 우선한다.
 키와 원시 응답을 커밋하지 않는다. 모델 기본값은 `gemini-3.5-flash-lite`다.
+복합 분류 규칙을 검토하도록 [thinking level](https://ai.google.dev/gemini-api/docs/thinking)을
+`high`로 고정하며 실행 기록과 응답 캐시에도 이 설정을 포함한다.
 
 ```bash
 python3 -m data.ingredient_db prepare
@@ -49,7 +51,7 @@ python3 -m data.ingredient_db check
 `prepare`는 원본·정책·모델을 고정한다. `select`는 원본별 포함 여부와 이름·묶음을 정한다.
 `judge`는 확정 재료마다 19개 제한을 판단한다. `export`는 검토 기록과 JSONL을 만든다.
 `check`는 네트워크와 DB 없이 기록의 완전성과 결과를 검사한다.
-요청당 기본 크기는 `select` 원본 16행, `judge` 재료 10개이며 `--batch-size`로 지정한다.
+요청당 기본 크기는 `select` 원본 40행, `judge` 재료 10개이며 `--batch-size`로 지정한다.
 중단된 단계는 같은 명령으로 재개하며 검증된 응답은 재사용한다.
 원본·정책·모델이 달라지면 다른 작업 폴더를 사용한다.
 

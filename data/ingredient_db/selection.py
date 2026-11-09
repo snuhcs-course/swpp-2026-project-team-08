@@ -518,7 +518,7 @@ def run(
     work_dir: Path,
     *,
     call_agent,
-    batch_size: int = 16,
+    batch_size: int = 40,
     max_batches: int | None = None,
 ) -> dict | None:
     if batch_size < 1 or batch_size > 50:

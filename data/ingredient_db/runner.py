@@ -9,7 +9,14 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 
-from .gemini import DEFAULT_MODEL, RetryableError, _unique_object, generate, load_api_key
+from .gemini import (
+    DEFAULT_MODEL,
+    DEFAULT_THINKING_LEVEL,
+    RetryableError,
+    _unique_object,
+    generate,
+    load_api_key,
+)
 
 AGENTS = ("a", "b", "c")
 ROOT = Path(__file__).resolve().parent
@@ -40,10 +47,11 @@ def pin_run(work_dir: Path, source: dict, policy_text: str, model: str) -> dict:
         "policy_sha256": hashlib.sha256(policy_text.encode("utf-8")).hexdigest(),
         "source_sha256": digest(source),
         "temperature": 0.2,
+        "thinking_level": DEFAULT_THINKING_LEVEL,
     }
     path = work_dir / "manifest.json"
     if path.exists() and json.loads(path.read_text(encoding="utf-8")) != manifest:
-        raise ValueError("source, policy or model changed; use a new work directory")
+        raise ValueError("source, policy or model settings changed; use a new work directory")
     write_json(path, manifest)
     return manifest
 
@@ -94,6 +102,7 @@ class AgentRunner:
                 "schema": schema,
                 "source_sha256": self.source_hash,
                 "temperature": 0.2,
+                "thinking_level": DEFAULT_THINKING_LEVEL,
             }
         )
         path = self.work_dir / "submissions" / parts[0] / agent_id / f"{parts[1]}.json"

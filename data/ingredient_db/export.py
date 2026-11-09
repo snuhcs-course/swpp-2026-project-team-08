@@ -8,6 +8,7 @@ import json
 import tempfile
 from pathlib import Path
 
+from .gemini import DEFAULT_THINKING_LEVEL
 from .restrictions import AGENTS, DEGREES, RESTRICTION_TYPES, reconcile, validate_ingredients
 from .runner import digest
 from .selection import name_key, validate_selected
@@ -25,6 +26,10 @@ def validate_provenance(review):
         or not metadata["model"].strip()
     ):
         raise ValueError("review requires model provenance")
+    if metadata.get("thinking_level") != DEFAULT_THINKING_LEVEL:
+        raise ValueError(f"review must record thinking_level={DEFAULT_THINKING_LEVEL}")
+    if metadata.get("temperature") != 0.2:
+        raise ValueError("review must record temperature=0.2")
     for key in ("policy_sha256", "source_sha256"):
         value = metadata.get(key)
         if (
@@ -150,6 +155,8 @@ def review_summary(review):
     return {
         "provenance": {
             "model": review["metadata"]["model"],
+            "thinking_level": review["metadata"]["thinking_level"],
+            "temperature": review["metadata"]["temperature"],
             "source_release": source.get("release"),
             "license": source.get("license"),
         },

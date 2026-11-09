@@ -7,7 +7,10 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: 활성 여부와 무관하게 네이티브 선택 필드 너비 유지
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 어려움 태그에 항목명과 식감 세부 항목 표시
 
+import { DifficultyReasonTag } from '../../../components/DifficultyReasonTag';
 import { UiAssetIcon, type UiAssetIconName } from "../../../components/UiAssetIcon";
 import { MealFlowButton } from "../../../components/MealFlowButton";
 import { useState } from "react";
@@ -201,34 +204,8 @@ export function DifficultyEditor({
       {!!tags.length && (
         <View style={styles.tags}>
           {tags.map((tag) => (
-            <Pressable
-              key={tag.id}
-              accessibilityRole="button"
-              accessibilityLabel={`${labels.remove}: ${labels.values[tag.value] ?? tag.value}`}
-              onPress={() => onRemove(tag.id)}
-              style={styles.tag}
-            >
-              {tag.category === "color" && tag.value in difficultyColorDots && (
-                <View
-                  style={[
-                    styles.colorDot,
-                    {
-                      backgroundColor:
-                        difficultyColorDots[
-                          tag.value as keyof typeof difficultyColorDots
-                        ],
-                    },
-                  ]}
-                />
-              )}
-              <Text style={styles.tagText}>
-                {tag.subcategory
-                  ? `${labels.questions[tag.subcategory] ?? tag.subcategory}: `
-                  : ""}
-                {labels.values[tag.value] ?? tag.value}
-                {tag.note ? ` · ${tag.note}` : ""} ×
-              </Text>
-            </Pressable>
+            <DifficultyReasonTag key={tag.id} reason={tag} labels={labels}
+              onRemove={() => onRemove(tag.id)} />
           ))}
         </View>
       )}
@@ -381,20 +358,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   tags: { flexDirection: "row", flexWrap: "wrap", gap: 5 },
-  tag: {
-    maxWidth: "100%",
-    borderRadius: 999,
-    backgroundColor: colors.successSurface,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  tagText: {
-    flexShrink: 1,
-    color: colors.success,
-    fontSize: 16,
-    fontFamily: fonts.interMedium,
-  },
 });

@@ -5,6 +5,9 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
 # Changed: 어려워한 이유 활용 지시, 재료별 결과와 아이가 잘 먹는 음식 구역 추가
 
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 추가 추천 생성 시 기존 거절 제안과 사유 반영
+
 """워크플로가 LLM에 보내는 프롬프트 모음.
 
 검증 문제(`ValidationProblem`)는 문구 없이 데이터만 갖고 있으므로, 재시도 지시문은 여기서 만든다.
@@ -50,6 +53,9 @@ SYSTEM_PROMPT = """당신은 편식하는 아이를 둔 부모를 돕는 식사 
   제공 형태도 잘 먹는다고 단정하지 않습니다.
 - 익숙한 음식에 "쓸 수 있는 재료" 목록에 없는 재료가 들어 있어도 그 재료는 ingredients에 쓰지
   않습니다. 익숙한 음식은 제안의 근거일 뿐 재료를 고르는 기준이 아닙니다.
+- rejected_suggestion이 있으면 보호자가 거절한 기존 제안과 제외 이유입니다. 같은 제안을 반복하지
+  말고 다른 작은 변화를 제안합니다. 제외 이유를 아이가 실제 보인 식후 반응으로 해석하지 않으며
+  이유가 없으면 추측하지 않습니다. 다른 제안에도 쓸 수 있는 재료 목록과 모든 규칙을 적용합니다.
 - causes에는 제안의 근거로 삼은 어려워한 이유(없으면 기록된 outcome)를 한 문장으로 서술합니다.
 - 아이에게 먹기를 강요하지 않는 부드러운 표현을 씁니다.
 - what_to_try, why_this_may_help, serving_tip, causes는 영어로 한두 문장씩 씁니다."""
@@ -75,6 +81,19 @@ def _describe_food(food: FoodInput) -> str:
         parts.append(
             "ingredient_results: "
             + "; ".join(_describe_ingredient_result(item) for item in food.ingredient_results)
+        )
+    if food.rejected_suggestion:
+        previous = food.rejected_suggestion
+        parts.append(
+            "rejected_suggestion: "
+            + repr(
+                {
+                    "what_to_try": previous.what_to_try,
+                    "why_this_may_help": previous.why_this_may_help,
+                    "serving_tip": previous.serving_tip,
+                    "dismiss_reasons": previous.dismiss_reasons,
+                }
+            )
         )
     return "- " + ", ".join(parts)
 

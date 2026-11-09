@@ -7,7 +7,7 @@
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
-# Changed: 추가 추천 이력 테이블 등록 확인
+# Changed: 추가 추천 테이블과 Eaten 제외에 맞춘 생성 대상
 
 """Contract edge cases for authenticated meals, reviews, and suggestions."""
 
@@ -89,7 +89,7 @@ async def review_meal(
     meal_id: str,
     *,
     food_id: str | None = None,
-    outcome: str = "EATEN",
+    outcome: str = "TASTED",
 ) -> object:
     if food_id is None:
         # 음식 id 는 서버가 발급하므로 저장된 식사에서 찾는다. 남의 식사면 404 가 그대로 돌아온다.

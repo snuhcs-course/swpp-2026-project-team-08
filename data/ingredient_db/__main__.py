@@ -28,7 +28,9 @@ def main() -> None:
         "--max-batches", type=int, help="select의 일부 요청만 실행; 최종 결과는 만들지 않음"
     )
     parser.add_argument("--reuse-selection", type=Path, help="기존 작업 폴더의 선정 표만 보존")
-    parser.add_argument("--selection-audit", type=Path, help="Grouping 전에 보류할 검토 기록")
+    parser.add_argument(
+        "--selection-audit", type=Path, help="Grouping 전에 적용할 보류·확정 검토 기록"
+    )
     args = parser.parse_args()
     if args.stage in {"export", "check"}:
         from .export import check, export_from_review

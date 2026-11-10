@@ -162,8 +162,9 @@ Give a brief reason citing the actual source description and the relevant policy
         + "\nBefore returning, check EACH included row: no brand anywhere, no completed beverage, "
         "no dessert/flavored yogurt or other explicit exclusion, all explicit composition "
         "qualifiers retained in english_name, and fresh/raw/simple cooking removed. "
-        "Return rows as an object keyed by the exact decimal source_id strings in the schema. "
-        "Each value contains only decision, english_name, and reason. Do not repeat source_id "
+        "Return rows keyed by exact decimal source IDs. Each value uses d (decision), "
+        "n (english_name), r (reason). Keep each reason within 12 words; cite the decisive fact. "
+        "Each value contains only d, n, r. Do not repeat source_id "
         "inside the value. Return every required key exactly once.\nSOURCE_ROWS_JSON:\n"
         + json.dumps(batch, ensure_ascii=False)
     )
@@ -240,8 +241,11 @@ def selection_schema(source_ids: set[int]) -> dict:
     fields = [key for key in ROW_SCHEMA["required"] if key != "source_id"]
     value_schema = {
         "type": "object",
-        "properties": {key: ROW_SCHEMA["properties"][key] for key in fields},
-        "required": fields,
+        "properties": {
+            short: ROW_SCHEMA["properties"][key]
+            for short, key in zip(("d", "n", "r"), fields, strict=True)
+        },
+        "required": ["d", "n", "r"],
         "additionalProperties": False,
     }
     keys = [str(source_id) for source_id in sorted(source_ids)]
@@ -270,6 +274,14 @@ def decode_selection(payload: dict, source_ids: set[int]) -> list[dict]:
     decoded = []
     for source_id in sorted(source_ids):
         value = rows[str(source_id)]
+        if isinstance(value, dict) and set(value) == {"d", "n", "r"}:
+            value = dict(
+                zip(
+                    ("decision", "english_name", "reason"),
+                    (value["d"], value["n"], value["r"]),
+                    strict=True,
+                )
+            )
         if not isinstance(value, dict) or set(value) != {"decision", "english_name", "reason"}:
             raise ValueError("source-keyed decision has invalid fields")
         decoded.append({"source_id": source_id, **value})
@@ -473,6 +485,12 @@ def _finish(groups: list, unresolved: list) -> tuple[list, list]:
 
 def validate_selected(selected: dict) -> None:
     """저장된 세 표로 선정 결과를 다시 계산하고 전체 원본의 처리를 확인한다."""
+    if "selection_reuse" in selected:
+        from .reuse import validate_reuse
+
+        validate_reuse(
+            selected["selection_reuse"], selected["sources"], selected["selection_review"]
+        )
     sources = selected["sources"]
     source_ids = {row["source_id"] for row in sources}
     if len(source_ids) != len(sources):
@@ -584,20 +602,30 @@ def run(
     work_dir: Path,
     *,
     call_agent,
-    batch_size: int = 40,
+    batch_size: int = 100,
     max_batches: int | None = None,
+    reused: dict | None = None,
 ) -> dict | None:
-    if batch_size < 1 or batch_size > 50:
-        raise ValueError("selection batch size must be between 1 and 50")
+    if batch_size < 1 or batch_size > 100:
+        raise ValueError("selection batch size must be between 1 and 100")
     rows = source["rows"]
     with ThreadPoolExecutor(max_workers=3) as pool:
-        all_votes = _collect_selection_votes(
-            rows,
-            pool=pool,
-            call_agent=call_agent,
-            batch_size=batch_size,
-            max_batches=max_batches,
-        )
+        if reused is not None:
+            from .reuse import collect_missing
+
+            if max_batches is not None:
+                raise ValueError("max_batches is not supported with imported votes")
+            all_votes = collect_missing(
+                rows, reused, pool=pool, call_agent=call_agent, batch_size=batch_size
+            )
+        else:
+            all_votes = _collect_selection_votes(
+                rows,
+                pool=pool,
+                call_agent=call_agent,
+                batch_size=batch_size,
+                max_batches=max_batches,
+            )
         if all_votes is None:
             return None
         included, excluded, unresolved, review, indexed = reconcile_rows(rows, all_votes)
@@ -708,6 +736,8 @@ def run(
         "selection_review": review,
         "grouping_review": grouping_review,
     }
+    if reused is not None:
+        result["selection_reuse"] = reused
     validate_selected(result)
     write_json(work_dir / "selected.json", result)
     return result

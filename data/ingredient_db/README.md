@@ -40,9 +40,10 @@ Python 3.12 이상을 사용한다. 명령은 저장소 루트에서 실행한�
 추론 수준은 API 기본값을 사용하며 `thinkingConfig`를 보내지 않는다.
 실행 기록과 응답 캐시는 이 선택을 `thinking_level: "default"`로 기록한다.
 서버가 실제로 선택한 추론 수준을 의미하지는 않는다.
-정책이나 요청 설정이 다른 응답은 재사용하지 않는다. 기존 `high` 실행은 보존하고,
-새 정책은 별도 작업 폴더에서 `prepare`부터 실행한다(`--work-dir data/ingredient_db/work-v2`).
-이 옵션은 `prepare`, `select`, `judge`에 동일하게 지정한다.
+기존 실행의 응답은 자동으로 다른 정책의 응답으로 간주하지 않는다.
+`select --reuse-selection <기존 작업 폴더>`는 기존 선정 표를 명시적으로 가져온다.
+같은 원본인지 검사하며, 이전 모델·정책·추론 설정·응답 해시와 표를 `selection_reuse`에 보존한다.
+에이전트별로 표가 없는 원본만 새로 요청한다. 기존 표는 새 정책 준수 검토 대상이다.
 
 ```bash
 python3 -m data.ingredient_db prepare
@@ -55,9 +56,20 @@ python3 -m data.ingredient_db check
 `prepare`는 원본·정책·모델을 고정한다. `select`는 원본별 포함 여부와 이름·묶음을 정한다.
 `judge`는 확정 재료마다 19개 제한을 판단한다. `export`는 검토 기록과 JSONL을 만든다.
 `check`는 네트워크와 DB 없이 기록의 완전성과 결과를 검사한다.
-요청당 기본 크기는 `select` 원본 40행, `judge` 재료 10개이며 `--batch-size`로 지정한다.
+요청당 기본 크기는 `select` 원본 100행, `judge` 재료 20개이며 `--batch-size`로 지정한다.
 중단된 단계는 같은 명령으로 재개하며 검증된 응답은 재사용한다.
 원본·정책·모델이 달라지면 다른 작업 폴더를 사용한다.
+
+기존 응답을 보존하며 이어갈 때는 새 작업 폴더를 사용한다. 원본 ZIP은 기존 다운로드를 사용한다.
+
+```bash
+python3 -m data.ingredient_db prepare --work-dir data/ingredient_db/work-continued --archive <원본-ZIP>
+python3 -m data.ingredient_db select --work-dir data/ingredient_db/work-continued --reuse-selection data/ingredient_db/work
+python3 -m data.ingredient_db judge --work-dir data/ingredient_db/work-continued
+```
+
+가져온 표의 스냅샷은 이후 재개에도 유지된다. `select` 재개에는 `--reuse-selection`을 생략할 수 있다.
+전송 응답은 선정의 `d/n/r`, 제한의 `i/t/d/r` 키와 짧은 근거를 사용하며 검토 기록은 원래 필드명으로 저장한다.
 
 ## 검증
 

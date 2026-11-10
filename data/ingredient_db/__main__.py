@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
 # Changed: 재료 생성 단계와 오프라인 검증 명령 제공
 
 """영어 재료 카탈로그 생성 명령."""
@@ -22,11 +22,12 @@ def main() -> None:
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--archive", type=Path, help="이미 내려받은 SR Legacy CSV ZIP")
     parser.add_argument(
-        "--batch-size", type=int, help="select: 기본 40행, 최대 50행; judge: 기본 10재료"
+        "--batch-size", type=int, help="select: 기본·최대 100행; judge: 기본 20재료"
     )
     parser.add_argument(
         "--max-batches", type=int, help="select의 일부 요청만 실행; 최종 결과는 만들지 않음"
     )
+    parser.add_argument("--reuse-selection", type=Path, help="기존 작업 폴더의 선정 표만 보존")
     args = parser.parse_args()
     if args.stage in {"export", "check"}:
         from .export import check, export_from_review
@@ -43,6 +44,14 @@ def main() -> None:
     if args.stage == "prepare":
         print(json.dumps(manifest, ensure_ascii=False, indent=2))
         return
+    reused_path = args.work_dir / "reused_selection.json"
+    if args.reuse_selection is not None:
+        from .reuse import import_votes
+
+        if args.stage != "select":
+            raise ValueError("reuse-selection requires select")
+        import_votes(args.reuse_selection, args.work_dir, data)
+    reused = json.loads(reused_path.read_text()) if reused_path.exists() else None
     runner = AgentRunner(
         args.work_dir,
         policy_text=policy_text,
@@ -54,7 +63,8 @@ def main() -> None:
             data,
             args.work_dir,
             call_agent=runner.call,
-            batch_size=args.batch_size or 40,
+            batch_size=args.batch_size or 100,
+            reused=reused,
             max_batches=args.max_batches,
         )
         if result is None:
@@ -78,7 +88,7 @@ def main() -> None:
             args.work_dir / "selected.json",
             args.work_dir,
             call_agent=runner.call,
-            batch_size=args.batch_size or 10,
+            batch_size=args.batch_size or 20,
         )
         result["metadata"] = manifest
         write_json(args.review, result)

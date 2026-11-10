@@ -159,6 +159,13 @@ def review_summary(review):
             "source_release": source.get("release"),
             "license": source.get("license"),
         },
+        "reused_selection": {
+            "metadata": review.get("selection_reuse", {}).get("metadata"),
+            "votes_per_agent": {
+                agent: len(rows)
+                for agent, rows in review.get("selection_reuse", {}).get("votes", {}).items()
+            },
+        },
         "included_sources": len(final_names),
         "restriction_counts": counts,
         "two_to_one_restrictions": two_to_one,

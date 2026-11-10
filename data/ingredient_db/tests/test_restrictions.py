@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
 # Changed: 제한 다수결과 응답 누락·중복 검증
 
 import ast
@@ -115,7 +115,7 @@ def batch_fixture():
 
 
 def batch_answer(schema, agent):
-    ids = schema["properties"]["rows"]["items"]["properties"]["ingredient_id"]["enum"]
+    ids = schema["properties"]["rows"]["items"]["properties"]["i"]["enum"]
     return {
         "rows": [
             {
@@ -341,13 +341,9 @@ class RestrictionTests(unittest.TestCase):
         rows = schema["properties"]["rows"]
         self.assertEqual(rows["type"], "array")
         judgment = rows["items"]
-        self.assertEqual(judgment["properties"]["ingredient_id"]["enum"], [190323, 190324])
-        self.assertEqual(
-            set(judgment["properties"]["restriction_type"]["enum"]), set(RESTRICTION_TYPES)
-        )
-        self.assertEqual(
-            set(judgment["required"]), {"ingredient_id", "restriction_type", "degree", "reason"}
-        )
+        self.assertEqual(judgment["properties"]["i"]["enum"], [190323, 190324])
+        self.assertEqual(set(judgment["properties"]["t"]["enum"]), set(RESTRICTION_TYPES))
+        self.assertEqual(set(judgment["required"]), {"i", "t", "d", "r"})
         self.assertFalse(judgment["additionalProperties"])
 
     def test_wire_conversion_preserves_decisions_and_has_deterministic_order(self):

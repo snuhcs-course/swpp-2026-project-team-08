@@ -71,8 +71,9 @@ python3 -m data.ingredient_db judge --work-dir data/ingredient_db/work-continued
 가져온 표의 스냅샷은 이후 재개에도 유지된다. `select` 재개에는 `--reuse-selection`을 생략할 수 있다.
 Grouping 전에 검토할 때는 `select --selection-audit <검토-JSON>`을 사용한다.
 검토 파일은 선정 표 해시·정책 해시·검토자·범위·원본별 지적을 담는다.
-지적된 원본은 Grouping 입력에서 빼고 보류하며, Gemini의 세 표는 그대로 보존한다.
-검토로 새 재료를 포함시키거나 기존 표를 네 번째 표로 뒤집지 않는다.
+일반 검토 지적은 보류한다. 사용자가 확정을 위임한 검토는 `mode: "adjudication"`과
+`authorization`에 위임 내용을 기록하고 포함·제외를 적용한다. 포함에는 영어 이름도 기록한다.
+Gemini의 세 표와 이전 검토는 그대로 보존하며, 검토 결정을 다수결 표로 세지 않는다.
 검토 스냅샷은 이후 재개에도 적용하고, 검토 전 Grouping 캐시와 구분한다.
 
 전송 응답은 선정의 `i/d/n/r`, 제한의 `i/t/d/r` 키와 짧은 근거를 사용하며 검토 기록은 원래 필드명으로 저장한다.

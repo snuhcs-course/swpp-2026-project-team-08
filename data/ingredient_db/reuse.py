@@ -20,13 +20,21 @@ def import_votes(previous: Path, work: Path, source: dict) -> dict:
         raise ValueError("reuse requires the same complete source dataset")
     ids = {row["source_id"] for row in source["rows"]}
     votes = {agent: {} for agent in AGENTS}
+    parent_path = previous / "reused_selection.json"
+    parent = json.loads(parent_path.read_text()) if parent_path.exists() else None
+    if parent:
+        validate_reuse(parent, source["rows"])
+        votes = {a: {r["source_id"]: deepcopy(r) for r in parent["votes"][a]} for a in AGENTS}
     files = []
     for agent in AGENTS:
-        for path in sorted((previous / "submissions/selection" / agent).glob("batch-*.json")):
+        for path in sorted((previous / "submissions/selection" / agent).glob("*.json")):
             if path.name.endswith(".invalid.json"):
                 continue
             cached = json.loads(path.read_text())
-            batch_ids = {int(key) for key in cached["response"]["rows"]}
+            wire = cached["response"]["rows"]
+            batch_ids = (
+                {int(r["i"]) for r in wire} if isinstance(wire, list) else {int(k) for k in wire}
+            )
             if not batch_ids or not batch_ids <= ids or not cached.get("fingerprint"):
                 raise ValueError("invalid imported selection cache")
             rows = decode_selection(cached["response"], batch_ids)
@@ -46,6 +54,8 @@ def import_votes(previous: Path, work: Path, source: dict) -> dict:
         "files": files,
         "votes": {agent: [rows[i] for i in sorted(rows)] for agent, rows in votes.items()},
     }
+    if parent:
+        record["parent"] = parent
     path = work / "reused_selection.json"
     if path.exists() and json.loads(path.read_text()) != record:
         raise ValueError("imported selection snapshot changed")
@@ -56,6 +66,13 @@ def import_votes(previous: Path, work: Path, source: dict) -> dict:
 def validate_reuse(record, source_rows, selection_review=None):
     from .selection import validate_selection
 
+    if "parent" in record:
+        parent = record["parent"]
+        validate_reuse(parent, source_rows, selection_review)
+        for agent in AGENTS:
+            current = {r["source_id"]: r for r in record["votes"][agent]}
+            if any(current.get(r["source_id"]) != r for r in parent["votes"][agent]):
+                raise ValueError("reused parent vote was changed")
     metadata = record["metadata"]
     if digest({"metadata": metadata["source"], "rows": source_rows}) != metadata["source_sha256"]:
         raise ValueError("reused votes belong to different sources")

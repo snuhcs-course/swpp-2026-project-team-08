@@ -116,9 +116,10 @@ overrides an explicit exclusion. Do not infer eligibility from its first word or
    policy's exceptions; ordinary drinking alcohol remains excluded.
 3. Check all other exclusions before applying the inclusion list: finished meals or seasoned
    side dishes, battered foods, snacks/desserts, ready-to-eat breakfast cereal, prepared infant
-   foods/formula, supplements, and isolated proteins are excluded. Food additives and isolated
-   refined sugars are excluded unless the policy expressly lists them as cooking ingredients;
-   table sugar, food gelatin, agar, yeast, and baking powder are expressly allowed.
+   foods/formula, supplements, and isolated proteins are excluded. Food-grade cooking additives
+   such as baking soda, cream of tartar,
+   pectin, lecithin and stevia sweetener are included. Generic fish oils are ingredients;
+   finished supplement capsules are excluded.
    The yogurt allowance is ONLY for plain, unflavored yogurt. Vanilla-, fruit-, or otherwise
    flavored/sweetened dessert yogurt is EXCLUDE, even if unbranded, lowfat, or made with a
    low-calorie sweetener. Being in the dairy category does not override this boundary.
@@ -134,15 +135,14 @@ overrides an explicit exclusion. Do not infer eligibility from its first word or
 5. INCLUDE generic cooking condiment products such as ketchup, mayonnaise, soy sauce, and
    bottled salad dressings only when the complete description identifies a cooking ingredient.
    EXCLUDE composite foods described as 'prepared from recipe', 'homemade',
-   'home-prepared', or 'home prepared',
+   'home-prepared', 'home prepared', 'home recipe', or 'prepared-from-recipe',
    including 'Cheese sauce, prepared from recipe', home-prepared stock, recipe bread, and
    homemade pasta. This exclusion overrides ALL ingredient allowances.
    Never delete a recipe qualifier to turn a prepared food into an ingredient.
    The word 'prepared' alone is not an exclusion: distinguish simple cooking or preparation of
    a single ingredient from a composite recipe. A sauce/dressing name alone is not enough;
    use UNKNOWN if ingredient-product versus recipe-food identity cannot be established.
-   Commercial dips/spreads are not automatically sauces: use UNKNOWN unless the complete
-   description establishes an explicitly allowed ingredient type.
+   Generic dips, hummus and spreads are condiment ingredients, not finished sandwiches.
    Brand exclusion still takes precedence. Do not invent an unspecified product formulation;
    restriction judging must retain that uncertainty. Cooking stock/broth is included when it
    identifies a cooking ingredient; finished soups and homemade composite recipes are excluded.
@@ -396,6 +396,13 @@ def _components(included: list[dict], indexed: dict) -> list[list[int]]:
         return source_id
 
     names = {}
+    for row in included:
+        key = name_key(row["english_name"])
+        sid = row["source_id"]
+        if key in names:
+            links[find(sid)] = find(names[key])
+        else:
+            names[key] = sid
     for source_id in links:
         for agent in AGENTS:
             vote = indexed[agent][source_id]
@@ -486,6 +493,14 @@ def _finish(groups: list, unresolved: list) -> tuple[list, list]:
     )
 
 
+def _reviewed_inclusion(ids, audit):
+    return bool(
+        audit
+        and audit.get("mode") == "adjudication"
+        and any(f["source_id"] in ids and f["action"] == "INCLUDE" for f in audit["findings"])
+    )
+
+
 def validate_selected(selected: dict) -> None:
     """저장된 세 표로 선정 결과를 다시 계산하고 전체 원본의 처리를 확인한다."""
     if "selection_reuse" in selected:
@@ -528,7 +543,7 @@ def validate_selected(selected: dict) -> None:
         if len(ids) != len(set(ids)) or key not in expected or key in seen:
             raise ValueError("unexpected or duplicate grouping component")
         seen.add(key)
-        if len(ids) == 1:
+        if len(ids) == 1 and not _reviewed_inclusion(ids, audit):
             if record.get("method") != "source_name" or record["votes"] != _initial_groups(
                 ids, indexed
             ):
@@ -643,7 +658,7 @@ def run(
         for group_no, ids in enumerate(_components(included, indexed), 1):
             responses = _initial_groups(ids, indexed)
             decided, pending = reconcile_groups(responses, set(ids))
-            if len(ids) > 1:
+            if len(ids) > 1 or _reviewed_inclusion(ids, audit):
                 pending_groups.append({"component_id": group_no, "source_ids": ids})
             else:
                 groups.extend(decided)

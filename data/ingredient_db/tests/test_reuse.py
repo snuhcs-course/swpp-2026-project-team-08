@@ -129,3 +129,33 @@ class ReuseTests(unittest.TestCase):
         payload["rows"].pop()
         with self.assertRaisesRegex(ValueError, "missing"):
             rows_from_wire(ingredients, payload)
+
+    def test_continuation_import_preserves_parent_and_compact_votes(self):
+        source = fixture()
+        with tempfile.TemporaryDirectory() as directory:
+            old, middle, new = [Path(directory) / n for n in ("old", "middle", "new")]
+            self.seed(old, source)
+            parent = import_votes(old, middle, source)
+            write_json(middle / "source.json", source)
+            write_json(middle / "manifest.json", {**parent["metadata"], "policy_sha256": "new"})
+            for agent in AGENTS:
+                missing = {1, 2, 3, 4} - {r["source_id"] for r in parent["votes"][agent]}
+                write_json(
+                    middle / "submissions/selection" / agent / "remaining-test.json",
+                    {
+                        "fingerprint": "continued request",
+                        "response": {
+                            "rows": [
+                                {"i": str(i), "d": "INCLUDE", "n": f"Ingredient {i}", "r": "Source"}
+                                for i in sorted(missing)
+                            ]
+                        },
+                    },
+                )
+            record = import_votes(middle, new, source)
+            self.assertEqual(record["parent"], parent)
+            self.assertTrue(all(len(v) == 4 for v in record["votes"].values()))
+            validate_reuse(record, source["rows"])
+            record["votes"]["a"][0]["reason"] = "Altered"
+            with self.assertRaisesRegex(ValueError, "parent vote"):
+                validate_reuse(record, source["rows"])

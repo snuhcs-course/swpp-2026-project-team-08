@@ -74,3 +74,85 @@ class AuditTests(unittest.TestCase):
         audit["findings"] *= 2
         with self.assertRaisesRegex(ValueError, "duplicate"):
             apply_audit([], [], [], review, audit)
+
+    def test_authorized_decisions_replace_holds_but_preserve_votes(self):
+        review = [{"source_id": 1}, {"source_id": 2}]
+        original = copy.deepcopy(review)
+        audit = {
+            "mode": "adjudication",
+            "authorization": "User delegates decisions",
+            "reviewer": "Reviewer",
+            "scope": "Test",
+            "policy_sha256": "a" * 64,
+            "majority_sha256": digest(review),
+            "findings": [
+                {
+                    "source_id": 1,
+                    "action": "INCLUDE",
+                    "english_name": "Baking soda",
+                    "reason": "Cooking ingredient",
+                },
+                {"source_id": 2, "action": "EXCLUDE", "reason": "Recipe food"},
+            ],
+        }
+        inc, exc, held = apply_audit([], [{"source_id": 1}], [{"source_id": 2}], review, audit)
+        self.assertEqual(inc, [{"source_id": 1, "english_name": "Baking soda"}])
+        self.assertEqual([r["source_id"] for r in exc], [2])
+        self.assertEqual(held, [])
+        self.assertEqual(review, original)
+        audit.pop("authorization")
+        with self.assertRaisesRegex(ValueError, "authorization"):
+            apply_audit([], [], [], review, audit)
+
+    def test_reinstated_singleton_requires_three_new_name_votes(self):
+        source = {"metadata": {}, "rows": [{"source_id": 1, "description": "Baking soda"}]}
+        vote = {"source_id": 1, "decision": "EXCLUDE", "english_name": "", "reason": "Old policy"}
+        _, _, _, review, _ = reconcile_rows(source["rows"], {a: [vote] for a in AGENTS})
+        audit = {
+            "mode": "adjudication",
+            "authorization": "User delegates decisions",
+            "reviewer": "Reviewer",
+            "scope": "Cooking ingredients",
+            "policy_sha256": "a" * 64,
+            "majority_sha256": digest(review),
+            "findings": [
+                {
+                    "source_id": 1,
+                    "action": "INCLUDE",
+                    "english_name": "Baking soda",
+                    "reason": "Cooking ingredient",
+                }
+            ],
+        }
+        called = []
+
+        def fake(agent, task, prompt, schema, validate):
+            if task.startswith("selection/"):
+                response = {"rows": [{"i": "1", "d": "EXCLUDE", "n": "", "r": "Old policy"}]}
+            else:
+                called.append(agent)
+                response = {
+                    "components": [
+                        {
+                            "component_id": 1,
+                            "groups": [
+                                {
+                                    "source_ids": [1],
+                                    "english_name": "Baking soda",
+                                    "reason": "Source",
+                                }
+                            ],
+                            "unresolved": [],
+                        }
+                    ]
+                }
+            validate(response)
+            return response
+
+        with tempfile.TemporaryDirectory() as folder:
+            result = run(source, Path(folder), call_agent=fake, audit=audit)
+        self.assertEqual(set(called), set(AGENTS))
+        self.assertEqual(result["ingredients"][0]["english_name"], "Baking soda")
+        self.assertEqual(result["selection_review"], review)
+        self.assertEqual(result["grouping_review"][0]["method"], "group_review")
+        validate_selected(result)

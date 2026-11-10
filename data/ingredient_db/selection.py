@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
 # Changed: 원본별 재료 선정과 이름·구성원 다수결
 
 """원본 전체의 세 판단을 비교하고 같은 재료를 묶는다."""
@@ -130,13 +130,21 @@ overrides an explicit exclusion. Do not infer eligibility from its first word or
    ham, bacon and sausage. These are specific ingredient allowances, not permission to include
    all foods made from their bases. Candy with chocolate, filled bread/sandwiches, flavored
    yogurt, and ready-to-eat cereals are not allowed merely because their base is listed.
-5. INCLUDE generic sauces and salad dressings, including creamy dressings and honey mustard.
-   A bottled dressing is an explicitly allowed cooking ingredient, not a finished salad or meal.
-   A multi-ingredient recipe does not by itself make an allowed sauce/dressing ineligible.
-   It remains an ingredient when its exact recipe varies; later restriction judging records
-   that uncertainty. Do not invent the unspecified recipe while naming it. Cooking stock/broth
-   is included even if its USDA category is Soup or it is canned/condensed; a soup with noodles
-   or other meal components is excluded. Preserve the stock's specified ingredient form.
+5. INCLUDE generic cooking condiment products such as ketchup, mayonnaise, soy sauce, and
+   bottled salad dressings only when the complete description identifies a cooking ingredient.
+   EXCLUDE composite foods described as 'prepared from recipe', 'homemade',
+   'home-prepared', or 'home prepared',
+   including 'Cheese sauce, prepared from recipe', home-prepared stock, recipe bread, and
+   homemade pasta. This exclusion overrides ALL ingredient allowances.
+   Never delete a recipe qualifier to turn a prepared food into an ingredient.
+   The word 'prepared' alone is not an exclusion: distinguish simple cooking or preparation of
+   a single ingredient from a composite recipe. A sauce/dressing name alone is not enough;
+   use UNKNOWN if ingredient-product versus recipe-food identity cannot be established.
+   Commercial dips/spreads are not automatically sauces: use UNKNOWN unless the complete
+   description establishes an explicitly allowed ingredient type.
+   Brand exclusion still takes precedence. Do not invent an unspecified product formulation;
+   restriction judging must retain that uncertainty. Cooking stock/broth is included when it
+   identifies a cooking ingredient; finished soups and homemade composite recipes are excluded.
 6. Plain cooking of a single food ingredient does not make it a finished dish. INCLUDE plainly
    poached or boiled eggs and plainly cooked single foods, and REMOVE simple cooking from names.
    Exclude finished meals, side dishes with combined seasonings, soups (except plain stock),
@@ -173,6 +181,9 @@ Plain cooking alone, such as raw versus poached egg, is not a reason to split th
 Recheck complete descriptions for exclusion before grouping. A brand or restaurant anywhere in
 the description takes precedence over an allowed base ingredient. Completed brewed tea/coffee
 remain excluded even when plain; dry tea/coffee ingredients have a different product identity.
+Composite foods marked prepared from recipe, homemade, home-prepared, or home prepared are excluded:
+sauces, dressings, stock, bread, and pasta. This overrides all ingredient allowances.
+Never strip recipe qualifiers to make these eligible ingredients.
 Plain yogurt is allowed, but flavored/sweetened dessert yogurt is excluded. All other policy
 exclusions, including isolated proteins and prepared meals/snacks, still apply at this stage.
 Do not turn an excluded source into a generic ingredient by deleting its disqualifying feature.

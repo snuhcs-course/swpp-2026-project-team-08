@@ -1,5 +1,5 @@
-# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
-# Changed: Gemini JSON 호출과 비밀값을 노출하지 않는 오류 처리
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
+# Changed: 기본 추론 수준의 Gemini 호출과 비밀값을 숨기는 오류 처리
 
 """Gemini generateContent API에 JSON 응답을 요청한다."""
 
@@ -14,7 +14,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 DEFAULT_MODEL = "gemini-3.5-flash-lite"
-DEFAULT_THINKING_LEVEL = "high"
+DEFAULT_THINKING_LEVEL = "default"
 
 
 class RetryableError(RuntimeError):
@@ -123,7 +123,6 @@ def generate(
                         "responseMimeType": "application/json",
                         "responseJsonSchema": schema,
                         "temperature": 0.2,
-                        "thinkingConfig": {"thinkingLevel": DEFAULT_THINKING_LEVEL},
                     },
                 },
                 ensure_ascii=False,

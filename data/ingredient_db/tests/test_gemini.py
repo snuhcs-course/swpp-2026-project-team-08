@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
 # Changed: Gemini 요청 형식과 실패 응답 검증
 
 import io
@@ -104,7 +104,7 @@ class GeminiTests(unittest.TestCase):
             config = json.loads(request.data)["generationConfig"]
             self.assertEqual(config["responseMimeType"], "application/json")
             self.assertEqual(config["responseJsonSchema"], {"type": "object"})
-            self.assertEqual(config["thinkingConfig"], {"thinkingLevel": "high"})
+            self.assertNotIn("thinkingConfig", config)
             return io.BytesIO(
                 json.dumps(
                     {

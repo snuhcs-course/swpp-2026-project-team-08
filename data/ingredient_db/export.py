@@ -1,5 +1,5 @@
-# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
-# Changed: 재료 JSONL 재현·검증과 검토용 집계
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
+# Changed: 기본·기존 high 실행의 JSONL 재현과 검토용 집계
 
 """Export a complete review record without the original API responses."""
 
@@ -8,7 +8,6 @@ import json
 import tempfile
 from pathlib import Path
 
-from .gemini import DEFAULT_THINKING_LEVEL
 from .restrictions import AGENTS, DEGREES, RESTRICTION_TYPES, reconcile, validate_ingredients
 from .runner import digest
 from .selection import name_key, validate_selected
@@ -26,8 +25,8 @@ def validate_provenance(review):
         or not metadata["model"].strip()
     ):
         raise ValueError("review requires model provenance")
-    if metadata.get("thinking_level") != DEFAULT_THINKING_LEVEL:
-        raise ValueError(f"review must record thinking_level={DEFAULT_THINKING_LEVEL}")
+    if metadata.get("thinking_level") not in {"default", "high"}:
+        raise ValueError("review must record thinking_level=default or legacy high")
     if metadata.get("temperature") != 0.2:
         raise ValueError("review must record temperature=0.2")
     for key in ("policy_sha256", "source_sha256"):

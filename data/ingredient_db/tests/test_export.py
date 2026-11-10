@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
 # Changed: JSONL 재현·검토 집계와 불완전한 기록의 출력 차단
 
 import copy
@@ -43,7 +43,7 @@ def review_fixture():
         "schema_version": 1,
         "metadata": {
             "model": "fixture-model",
-            "thinking_level": "high",
+            "thinking_level": "default",
             "temperature": 0.2,
             "agents": list(AGENTS),
             "policy_sha256": hashlib.sha256(b"fixture policy").hexdigest(),
@@ -91,7 +91,7 @@ class ExportTests(unittest.TestCase):
             summary["provenance"],
             {
                 "model": "fixture-model",
-                "thinking_level": "high",
+                "thinking_level": "default",
                 "temperature": 0.2,
                 "source_release": "2018-04",
                 "license": "CC0-1.0",
@@ -218,6 +218,11 @@ class ExportTests(unittest.TestCase):
         review["sources"][0]["description"] = "Wheat, whole"
         with self.assertRaisesRegex(ValueError, "source data differs"):
             render(review)
+
+    def test_legacy_high_review_remains_reproducible(self):
+        review = review_fixture()
+        review["metadata"]["thinking_level"] = "high"
+        render(review)
 
     def test_missing_or_different_model_settings_cannot_be_exported(self):
         for key, value in [

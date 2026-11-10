@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
 # Changed: 유효 응답 캐시와 실패 슬롯 재개 검증
 
 import contextlib
@@ -222,7 +222,7 @@ class RunnerTests(unittest.TestCase):
             source = {"metadata": {}, "rows": []}
             work = Path(directory)
             first = pin_run(work, source, "policy", "model")
-            self.assertEqual(first["thinking_level"], "high")
+            self.assertEqual(first["thinking_level"], "default")
             self.assertEqual(pin_run(work, source, "policy", "model"), first)
             with self.assertRaises(ValueError):
                 pin_run(work, source, "changed", "model")
@@ -237,7 +237,7 @@ class RunnerTests(unittest.TestCase):
                 source_hash="hash",
                 request=lambda *args, **kwargs: {"answer": 1},
             )
-            with patch("data.ingredient_db.runner.DEFAULT_THINKING_LEVEL", "minimal"):
+            with patch("data.ingredient_db.runner.DEFAULT_THINKING_LEVEL", "high"):
                 pin_run(work, source, "policy", "model")
                 runner.call("a", "selection/one", "task", {}, validate)
             with self.assertRaisesRegex(ValueError, "model settings changed"):

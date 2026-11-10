@@ -1,4 +1,4 @@
-<!-- AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung -->
+<!-- AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung -->
 <!-- Changed: 영어 재료 데이터 생성과 적용 계약 정의 -->
 
 # 영어 재료 데이터
@@ -37,8 +37,12 @@ U.S. Department of Agriculture, Agricultural Research Service, FoodData Central�
 Python 3.12 이상을 사용한다. 명령은 저장소 루트에서 실행한다.
 `GEMINI_API_KEY` 환경변수 또는 이 폴더의 `.env`로 키를 제공한다. 환경변수가 우선한다.
 키와 원시 응답을 커밋하지 않는다. 모델 기본값은 `gemini-3.5-flash-lite`다.
-복합 분류 규칙을 검토하도록 [thinking level](https://ai.google.dev/gemini-api/docs/thinking)을
-`high`로 고정하며 실행 기록과 응답 캐시에도 이 설정을 포함한다.
+추론 수준은 API 기본값을 사용하며 `thinkingConfig`를 보내지 않는다.
+실행 기록과 응답 캐시는 이 선택을 `thinking_level: "default"`로 기록한다.
+서버가 실제로 선택한 추론 수준을 의미하지는 않는다.
+정책이나 요청 설정이 다른 응답은 재사용하지 않는다. 기존 `high` 실행은 보존하고,
+새 정책은 별도 작업 폴더에서 `prepare`부터 실행한다(`--work-dir data/ingredient_db/work-v2`).
+이 옵션은 `prepare`, `select`, `judge`에 동일하게 지정한다.
 
 ```bash
 python3 -m data.ingredient_db prepare
@@ -67,13 +71,19 @@ uv run python scripts/load_ingredients.py --check
 ```
 
 자동 테스트는 가짜 모델로 다수결·재개·출력·적재를 검사한다.
-실제 판정의 근거와 불일치는 `review/`에서 확인한다. AI 판정을 사람 승인으로 표시하지 않는다.
+실제 판정의 근거와 불일치는 `review/`에서 확인한다.
+최종 출력 전 [Astra 검토 기준](docs/policy.md#astra-검토)에 따라 경계 사례를 검토한다.
+[선정 검토 사례](docs/selection-review.md)는 새 실행의 정책 준수 확인에 사용한다.
+CLI 검사는 파일의 완전성과 재현성을 확인하며, Astra 검토 완료를 자동으로 확인하지 않는다. AI 판정을 사람 승인으로 표시하지 않는다.
 코드·문서의 AI 이력 리뷰어는 데이터 각 행의 사실 확인자를 뜻하지 않는다.
 
 ## 서버 적용
 
-서버는 JSONL을 DB에 적재한 뒤 DB의 영어 재료명과 제한 판정으로 추천 목록을 만든다.
-적재기 기본 경로는 이 폴더의 `result/`다. 파일 검사는 DB에 쓰지 않는다.
+재료 데이터는 `JSONL 두 파일 → 적재기 → DB → 추천 조회` 순서로 사용한다.
+적재기는 `result/`의 두 파일을 읽어 공용 재료와 제한 판정을 DB에 저장한다.
+추천 요청은 DB에서 아이의 제한에 맞는 영어 재료명을 조회한다. 서버 시작이나 추천 요청마다
+JSONL을 다시 읽지 않으므로 파일 수정만으로 서비스의 재료 목록이 바뀌지 않는다.
+파일 검사는 DB에 쓰지 않는다.
 
 ```bash
 cd server

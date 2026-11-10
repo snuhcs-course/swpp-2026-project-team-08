@@ -1,4 +1,4 @@
-# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
 # Changed: 재료 선정과 구성원 묶음의 다수결 검증
 
 import copy
@@ -50,7 +50,9 @@ class SelectionTests(unittest.TestCase):
                         "english_name": f"Ingredient {source_id}",
                         "reason": "Distinct ingredient",
                     }
-                    for source_id in schema["properties"]["rows"]["required"]
+                    for source_id in schema["properties"]["rows"]["items"]["properties"]["i"][
+                        "enum"
+                    ]
                 }
             }
 
@@ -112,7 +114,9 @@ class SelectionTests(unittest.TestCase):
                                 "english_name": f"Ingredient {source_id}",
                                 "reason": "Distinct ingredient",
                             }
-                            for source_id in schema["properties"]["rows"]["required"]
+                            for source_id in schema["properties"]["rows"]["items"]["properties"][
+                                "i"
+                            ]["enum"]
                         }
                     }
 
@@ -142,7 +146,9 @@ class SelectionTests(unittest.TestCase):
             return {
                 "rows": {
                     source_id: {"decision": "EXCLUDE", "english_name": "", "reason": "Meal"}
-                    for source_id in schema["properties"]["rows"]["required"]
+                    for source_id in schema["properties"]["rows"]["items"]["properties"]["i"][
+                        "enum"
+                    ]
                 }
             }
 
@@ -225,11 +231,15 @@ class SelectionTests(unittest.TestCase):
         )
         self.assertEqual(unresolved, [])
 
-    def test_api_schema_requires_exact_source_keys_without_generated_numeric_ids(self):
+    def test_api_schema_limits_compact_ids_and_decoder_checks_complete_coverage(self):
         schema = selection_schema({172223, 172222})["properties"]["rows"]
-        self.assertEqual(schema["required"], ["172222", "172223"])
-        self.assertFalse(schema["additionalProperties"])
-        self.assertNotIn("source_id", schema["properties"]["172223"]["properties"])
+        self.assertEqual(schema["items"]["properties"]["i"]["enum"], ["172222", "172223"])
+        self.assertEqual(schema["items"]["required"], ["i", "d", "n", "r"])
+        self.assertFalse(schema["items"]["additionalProperties"])
+        compact = {"i": "172223", "d": "INCLUDE", "n": "Cheese", "r": "Dairy"}
+        self.assertEqual(decode_selection({"rows": [compact]}, {172223})[0]["source_id"], 172223)
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            decode_selection({"rows": [compact, compact]}, {172223})
         value = {"decision": "INCLUDE", "english_name": "Cheese", "reason": "Dairy ingredient"}
         decoded = decode_selection({"rows": {"172223": value}}, {172223})
         self.assertEqual(decoded, [{"source_id": 172223, **value}])

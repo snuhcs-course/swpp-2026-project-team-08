@@ -69,7 +69,7 @@ python3 -m data.ingredient_db judge --work-dir data/ingredient_db/work-continued
 ```
 
 가져온 표의 스냅샷은 이후 재개에도 유지된다. `select` 재개에는 `--reuse-selection`을 생략할 수 있다.
-전송 응답은 선정의 `d/n/r`, 제한의 `i/t/d/r` 키와 짧은 근거를 사용하며 검토 기록은 원래 필드명으로 저장한다.
+전송 응답은 선정의 `i/d/n/r`, 제한의 `i/t/d/r` 키와 짧은 근거를 사용하며 검토 기록은 원래 필드명으로 저장한다.
 
 ## 검증
 

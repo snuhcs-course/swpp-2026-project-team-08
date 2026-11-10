@@ -162,10 +162,9 @@ Give a brief reason citing the actual source description and the relevant policy
         + "\nBefore returning, check EACH included row: no brand anywhere, no completed beverage, "
         "no dessert/flavored yogurt or other explicit exclusion, all explicit composition "
         "qualifiers retained in english_name, and fresh/raw/simple cooking removed. "
-        "Return rows keyed by exact decimal source IDs. Each value uses d (decision), "
-        "n (english_name), r (reason). Keep each reason within 12 words; cite the decisive fact. "
-        "Each value contains only d, n, r. Do not repeat source_id "
-        "inside the value. Return every required key exactly once.\nSOURCE_ROWS_JSON:\n"
+        "Return a rows array: i (source ID as a string), d (decision), n (english_name), "
+        "r (reason). Keep reasons within 12 words. Include each source ID exactly once. "
+        "Copy IDs exactly; do not invent, duplicate or omit IDs.\nSOURCE_ROWS_JSON:\n"
         + json.dumps(batch, ensure_ascii=False)
     )
 
@@ -237,28 +236,21 @@ def _nonblank(value) -> bool:
 
 
 def selection_schema(source_ids: set[int]) -> dict:
-    """원본 ID를 생성할 값이 아니라 반드시 반환할 고정 키로 지정한다."""
-    fields = [key for key in ROW_SCHEMA["required"] if key != "source_id"]
-    value_schema = {
+    """큰 묶음에서도 원본마다 같은 스키마를 반복하지 않는다."""
+    item = {
         "type": "object",
         "properties": {
-            short: ROW_SCHEMA["properties"][key]
-            for short, key in zip(("d", "n", "r"), fields, strict=True)
+            "i": {"type": "string", "enum": [str(i) for i in sorted(source_ids)]},
+            "d": ROW_SCHEMA["properties"]["decision"],
+            "n": {"type": "string"},
+            "r": {"type": "string"},
         },
-        "required": ["d", "n", "r"],
+        "required": ["i", "d", "n", "r"],
         "additionalProperties": False,
     }
-    keys = [str(source_id) for source_id in sorted(source_ids)]
     return {
         "type": "object",
-        "properties": {
-            "rows": {
-                "type": "object",
-                "properties": {key: value_schema for key in keys},
-                "required": keys,
-                "additionalProperties": False,
-            }
-        },
+        "properties": {"rows": {"type": "array", "items": item}},
         "required": ["rows"],
         "additionalProperties": False,
     }
@@ -268,6 +260,16 @@ def decode_selection(payload: dict, source_ids: set[int]) -> list[dict]:
     if not isinstance(payload, dict) or set(payload) != {"rows"}:
         raise ValueError("selection must contain rows keyed by source ID")
     rows = payload["rows"]
+    if isinstance(rows, list):
+        keyed = {}
+        for row in rows:
+            if not isinstance(row, dict) or set(row) != {"i", "d", "n", "r"}:
+                raise ValueError("compact selection requires i/d/n/r")
+            key = row["i"]
+            if not isinstance(key, str) or key in keyed:
+                raise ValueError("duplicate or invalid compact source ID")
+            keyed[key] = {field: row[field] for field in ("d", "n", "r")}
+        rows = keyed
     expected_keys = {str(source_id) for source_id in source_ids}
     if not isinstance(rows, dict) or set(rows) != expected_keys:
         raise ValueError(f"selection requires exactly these source keys: {sorted(expected_keys)}")

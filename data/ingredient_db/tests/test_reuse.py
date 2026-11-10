@@ -55,7 +55,7 @@ class ReuseTests(unittest.TestCase):
             fail = True
 
             def request(prompt, schema, **kwargs):
-                ids = schema["properties"]["rows"]["required"]
+                ids = schema["properties"]["rows"]["items"]["properties"]["i"]["enum"]
                 requests.append(set(map(int, ids)))
                 if fail and ids == ["4"]:
                     raise ValueError("injected")

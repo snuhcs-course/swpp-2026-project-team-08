@@ -131,6 +131,8 @@ class AuditTests(unittest.TestCase):
                 response = {"rows": [{"i": "1", "d": "EXCLUDE", "n": "", "r": "Old policy"}]}
             else:
                 called.append(agent)
+                self.assertIn("review_decision", prompt)
+                self.assertIn("Cooking ingredient", prompt)
                 response = {
                     "components": [
                         {

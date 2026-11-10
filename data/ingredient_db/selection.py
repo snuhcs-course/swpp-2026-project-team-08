@@ -493,6 +493,14 @@ def _finish(groups: list, unresolved: list) -> tuple[list, list]:
     )
 
 
+def _grouping_source(source, audit):
+    if audit and audit.get("mode") == "adjudication":
+        for finding in audit["findings"]:
+            if finding["source_id"] == source["source_id"]:
+                return {**source, "review_decision": finding}
+    return source
+
+
 def _reviewed_inclusion(ids, audit):
     return bool(
         audit
@@ -713,7 +721,9 @@ def run(
                 [
                     {
                         "component_id": item["component_id"],
-                        "sources": [sources_by_id[i] for i in item["source_ids"]],
+                        "sources": [
+                            _grouping_source(sources_by_id[i], audit) for i in item["source_ids"]
+                        ],
                     }
                     for item in batch
                 ]
@@ -722,7 +732,9 @@ def run(
                 agent: pool.submit(
                     call_agent,
                     agent,
-                    f"grouping/batch-{batch_no:04d}" + ("-" + digest(audit)[:12] if audit else ""),
+                    f"grouping/batch-{batch_no:04d}"
+                    + ("-" + digest(audit)[:12] if audit else "")
+                    + ("-decisions" if _reviewed_inclusion(allowed_ids, audit) else ""),
                     prompt,
                     batch_schema,
                     validate_batch,

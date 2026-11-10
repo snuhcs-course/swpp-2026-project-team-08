@@ -338,7 +338,7 @@ def validate_groups(payload: dict, source_ids: set[int]) -> None:
             raise ValueError("group needs a name and reason")
         key = name_key(group["english_name"])
         if key in names:
-            raise ValueError("different groups cannot have the same name")
+            raise ValueError(f"different groups cannot have the same name: {key}")
         names.add(key)
         members.extend(ids)
     for row in payload["unresolved"]:
@@ -348,7 +348,12 @@ def validate_groups(payload: dict, source_ids: set[int]) -> None:
             raise ValueError("unresolved source ID must be an integer")
         members.append(row["source_id"])
     if len(members) != len(set(members)) or set(members) != source_ids:
-        raise ValueError("groups must partition all source IDs exactly once")
+        raise ValueError(
+            "groups must partition all source IDs exactly once; "
+            f"missing={sorted(source_ids - set(members))}; "
+            f"unexpected={sorted(set(members) - source_ids)}; "
+            f"duplicate={sorted(i for i, n in Counter(members).items() if n > 1)}"
+        )
 
 
 def reconcile_rows(source_rows: list[dict], responses: dict[str, list[dict]]) -> tuple:

@@ -158,3 +158,15 @@ class AuditTests(unittest.TestCase):
         self.assertEqual(result["selection_review"], review)
         self.assertEqual(result["grouping_review"][0]["method"], "group_review")
         validate_selected(result)
+
+    def test_group_failure_identifies_missing_and_duplicate_sources(self):
+        from data.ingredient_db.selection import validate_groups
+
+        payload = {
+            "groups": [{"source_ids": [1, 1, 3], "english_name": "Flour", "reason": "Source"}],
+            "unresolved": [],
+        }
+        with self.assertRaisesRegex(
+            ValueError, r"missing=\[2\]; unexpected=\[3\]; duplicate=\[1\]"
+        ):
+            validate_groups(payload, {1, 2})

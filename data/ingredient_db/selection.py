@@ -10,7 +10,8 @@ from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from copy import deepcopy
 from pathlib import Path
 
-from .runner import AGENTS, write_json
+from .audit import apply_audit
+from .runner import AGENTS, digest, write_json
 
 DECISIONS = {"INCLUDE", "EXCLUDE", "UNKNOWN"}
 ROW_SCHEMA = {
@@ -512,6 +513,10 @@ def validate_selected(selected: dict) -> None:
     included, excluded, pending, computed, indexed = reconcile_rows(sources, responses)
     if sorted(records, key=lambda row: row["source_id"]) != computed:
         raise ValueError("recorded selection differs from its votes")
+    audit = selected.get("selection_audit")
+    if audit and audit["policy_sha256"] != selected["metadata"]["policy_sha256"]:
+        raise ValueError("selection audit belongs to a different policy")
+    included, excluded, pending = apply_audit(included, excluded, pending, computed, audit)
     expected = {tuple(ids) for ids in _components(included, indexed)}
     grouping_review = selected["grouping_review"]
     if len(grouping_review) != len(expected):
@@ -607,6 +612,7 @@ def run(
     batch_size: int = 100,
     max_batches: int | None = None,
     reused: dict | None = None,
+    audit: dict | None = None,
 ) -> dict | None:
     if batch_size < 1 or batch_size > 100:
         raise ValueError("selection batch size must be between 1 and 100")
@@ -631,6 +637,7 @@ def run(
         if all_votes is None:
             return None
         included, excluded, unresolved, review, indexed = reconcile_rows(rows, all_votes)
+        included, excluded, unresolved = apply_audit(included, excluded, unresolved, review, audit)
         sources_by_id = {row["source_id"]: row for row in rows}
         groups, grouping_review, pending_groups = [], [], []
         for group_no, ids in enumerate(_components(included, indexed), 1):
@@ -700,7 +707,7 @@ def run(
                 agent: pool.submit(
                     call_agent,
                     agent,
-                    f"grouping/batch-{batch_no:04d}",
+                    f"grouping/batch-{batch_no:04d}" + ("-" + digest(audit)[:12] if audit else ""),
                     prompt,
                     batch_schema,
                     validate_batch,
@@ -740,6 +747,9 @@ def run(
     }
     if reused is not None:
         result["selection_reuse"] = reused
+    if audit is not None:
+        result["selection_audit"] = audit
+        result["metadata"] = {**source["metadata"], "policy_sha256": audit["policy_sha256"]}
     validate_selected(result)
     write_json(work_dir / "selected.json", result)
     return result

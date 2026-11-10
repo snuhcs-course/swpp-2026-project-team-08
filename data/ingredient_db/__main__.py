@@ -28,6 +28,7 @@ def main() -> None:
         "--max-batches", type=int, help="select의 일부 요청만 실행; 최종 결과는 만들지 않음"
     )
     parser.add_argument("--reuse-selection", type=Path, help="기존 작업 폴더의 선정 표만 보존")
+    parser.add_argument("--selection-audit", type=Path, help="Grouping 전에 보류할 검토 기록")
     args = parser.parse_args()
     if args.stage in {"export", "check"}:
         from .export import check, export_from_review
@@ -52,6 +53,15 @@ def main() -> None:
             raise ValueError("reuse-selection requires select")
         import_votes(args.reuse_selection, args.work_dir, data)
     reused = json.loads(reused_path.read_text()) if reused_path.exists() else None
+    audit_path = args.work_dir / "selection-audit.json"
+    if args.selection_audit is not None:
+        incoming = json.loads(args.selection_audit.read_text())
+        if audit_path.exists() and json.loads(audit_path.read_text()) != incoming:
+            raise ValueError("selection audit snapshot changed")
+        write_json(audit_path, incoming)
+    audit = json.loads(audit_path.read_text()) if audit_path.exists() else None
+    if audit and audit["policy_sha256"] != manifest["policy_sha256"]:
+        raise ValueError("selection audit belongs to different policy")
     runner = AgentRunner(
         args.work_dir,
         policy_text=policy_text,
@@ -65,6 +75,7 @@ def main() -> None:
             call_agent=runner.call,
             batch_size=args.batch_size or 100,
             reused=reused,
+            audit=audit,
             max_batches=args.max_batches,
         )
         if result is None:

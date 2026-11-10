@@ -159,6 +159,7 @@ def review_summary(review):
             "source_release": source.get("release"),
             "license": source.get("license"),
         },
+        "selection_audit": review.get("selection_audit"),
         "reused_selection": {
             "metadata": review.get("selection_reuse", {}).get("metadata"),
             "votes_per_agent": {

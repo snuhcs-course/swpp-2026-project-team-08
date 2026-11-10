@@ -331,6 +331,11 @@ def run(selected_path, work_dir, *, call_agent, batch_size=20):
             if "selection_reuse" in selected
             else {}
         ),
+        **(
+            {"selection_audit": selected["selection_audit"]}
+            if "selection_audit" in selected
+            else {}
+        ),
         "schema_version": 1,
         "metadata": selected["metadata"],
         "sources": source_rows,

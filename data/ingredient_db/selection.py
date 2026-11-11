@@ -584,6 +584,15 @@ def validate_selected(selected: dict) -> None:
     ingredients = apply_decisions(
         ingredients, selected.get("grouping_decisions"), selected["metadata"].get("policy_sha256")
     )
+    from .catalog_decisions import apply_decisions as apply_catalog_decisions
+
+    ingredients, excluded, unresolved = apply_catalog_decisions(
+        ingredients,
+        excluded,
+        unresolved,
+        selected.get("catalog_decisions"),
+        selected["metadata"].get("policy_sha256"),
+    )
     if selected["ingredients"] != ingredients or selected["excluded"] != excluded:
         raise ValueError("selected ingredients or exclusions differ from votes")
     if selected["unresolved"] != unresolved:

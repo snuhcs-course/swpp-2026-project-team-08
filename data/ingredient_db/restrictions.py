@@ -321,11 +321,24 @@ def run(selected_path, work_dir, *, call_agent, batch_size=20):
         raise ValueError("duplicate source rows")
     if any(source_id not in sources for item in ingredients for source_id in item["source_ids"]):
         raise ValueError("missing ingredient source")
+    reuse_path = Path(work_dir) / "reused_restrictions.json"
+    reused = json.loads(reuse_path.read_text()) if reuse_path.exists() else None
+    imported = {agent: {"rows": []} for agent in AGENTS}
+    reused_ids = set()
+    if reused:
+        from .restriction_reuse import responses as reuse_responses
+
+        imported = reuse_responses(reused, ingredients, source_rows)
+        reused_ids = {entry["ingredient"]["id"] for entry in reused["entries"]}
+    pending = [item for item in ingredients if item["id"] not in reused_ids]
     with ThreadPoolExecutor(max_workers=3) as pool:
         responses = _collect_restriction_votes(
-            ingredients, sources, pool=pool, call_agent=call_agent, batch_size=batch_size
+            pending, sources, pool=pool, call_agent=call_agent, batch_size=batch_size
         )
+    for agent in AGENTS:
+        responses[agent]["rows"].extend(imported[agent]["rows"])
     return {
+        **({"restriction_reuse": reused} if reused else {}),
         **(
             {"selection_reuse": selected["selection_reuse"]}
             if "selection_reuse" in selected
@@ -341,7 +354,11 @@ def run(selected_path, work_dir, *, call_agent, batch_size=20):
             if "grouping_decisions" in selected
             else {}
         ),
-        **{key: selected[key] for key in ("grouping_mode", "selection_origin") if key in selected},
+        **{
+            key: selected[key]
+            for key in ("grouping_mode", "selection_origin", "catalog_decisions")
+            if key in selected
+        },
         "schema_version": 1,
         "metadata": selected["metadata"],
         "sources": source_rows,

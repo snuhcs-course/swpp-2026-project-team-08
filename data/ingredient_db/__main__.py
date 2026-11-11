@@ -32,6 +32,7 @@ def main() -> None:
         "--selection-audit", type=Path, help="Grouping 전에 적용할 보류·확정 검토 기록"
     )
     parser.add_argument("--from-selected", type=Path, help="group: 검증할 기존 선정 결과")
+    parser.add_argument("--reuse-restrictions", type=Path, help="judge: 이전 제한 검토 기록")
     args = parser.parse_args()
     if args.stage in {"export", "check"}:
         from .export import check, export_from_review
@@ -114,6 +115,18 @@ def main() -> None:
         selected_source = {"metadata": manifest["source"], "rows": selected["sources"]}
         if selected["metadata"] != manifest or digest(selected_source) != manifest["source_sha256"]:
             raise ValueError("selected ingredients belong to a different run")
+        if args.reuse_restrictions:
+            from .restriction_reuse import build
+
+            reuse = build(json.loads(args.reuse_restrictions.read_text()), selected)
+            reuse_path = args.work_dir / "reused_restrictions.json"
+            if reuse_path.exists() and json.loads(reuse_path.read_text()) != reuse:
+                raise ValueError("restriction reuse snapshot changed")
+            if not reuse_path.exists() and any(
+                (args.work_dir / "submissions/restrictions").glob("*/*.json")
+            ):
+                raise ValueError("import restrictions before starting new requests")
+            write_json(reuse_path, reuse)
         result = run(
             args.work_dir / "selected.json",
             args.work_dir,

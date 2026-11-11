@@ -86,6 +86,10 @@ def reviewed_rows(review):
                 }
             )
     decisions = reconcile(ingredients, responses)
+    if "restriction_reuse" in review:
+        from .restriction_reuse import responses as validate_reuse
+
+        validate_reuse(review["restriction_reuse"], ingredients, sources, records)
     recorded = {
         (record["ingredient_id"], record["restriction_type"]): record["degree"]
         for record in records

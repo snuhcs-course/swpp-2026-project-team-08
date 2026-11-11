@@ -1,0 +1,17 @@
+{
+  "status": "responses_complete_review_pending",
+  "ingredients": 2408,
+  "restriction_types": 19,
+  "judgments": 45752,
+  "agent_votes": 137256,
+  "successful_requests": 363,
+  "majority_counts": {
+    "NEVER": 39569,
+    "ALWAYS": 2461,
+    "DEPENDS_ON_PRODUCT": 3586,
+    "UNKNOWN": 136
+  },
+  "catalog_sha256": "a5a8565d8df93c9f57fbb6aeca54eca2a64a7389e17425b7cdb71aace5b9b965",
+  "pending_review": "restriction-review.json",
+  "final_jsonl_generated": false
+}

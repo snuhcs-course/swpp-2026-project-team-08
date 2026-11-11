@@ -336,6 +336,11 @@ def run(selected_path, work_dir, *, call_agent, batch_size=20):
             if "selection_audit" in selected
             else {}
         ),
+        **(
+            {"grouping_decisions": selected["grouping_decisions"]}
+            if "grouping_decisions" in selected
+            else {}
+        ),
         "schema_version": 1,
         "metadata": selected["metadata"],
         "sources": source_rows,

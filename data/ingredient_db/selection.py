@@ -567,6 +567,11 @@ def validate_selected(selected: dict) -> None:
         groups.extend(decided)
         pending.extend(unresolved)
     ingredients, unresolved = _finish(groups, pending)
+    from .grouping_decisions import apply_decisions
+
+    ingredients = apply_decisions(
+        ingredients, selected.get("grouping_decisions"), selected["metadata"].get("policy_sha256")
+    )
     if selected["ingredients"] != ingredients or selected["excluded"] != excluded:
         raise ValueError("selected ingredients or exclusions differ from votes")
     if selected["unresolved"] != unresolved:

@@ -106,13 +106,16 @@ ROSTER_JSON:
                 + "\nSOURCES_JSON:\n"
                 + json.dumps(chunk, ensure_ascii=False)
             )
-            assigned = call_agent(
-                agent,
-                f"grouping_large/{key}-rows-{start // CHUNK_SIZE + 1:03d}",
-                assignment_prompt,
-                schema,
-                validate,
-            )
+            task_name = f"{key}-rows-{start // CHUNK_SIZE + 1:03d}"
+            old_cache = work_dir / "submissions/grouping_large" / agent / f"{task_name}.json"
+            if old_cache.exists():
+                assigned = call_agent(
+                    agent, f"grouping_large/{task_name}", assignment_prompt, schema, validate
+                )
+            else:
+                assigned = assign_indices(
+                    agent, task_name, context, chunk, names, call_agent, validate
+                )
             validate(assigned)
             assignments.append(assigned)
             for sid, row in assigned.items():
@@ -157,3 +160,54 @@ def call(agent, task, prompt, schema, validate, *, components, call_agent, work_
         else:
             return call_agent(agent, task, prompt, schema, validate)
     return run(agent, task, components, call_agent, work_dir)
+
+
+def assign_indices(agent, task_name, context, chunk, names, call_agent, validate):
+    """긴 이름 enum 대신 번호를 전송하고 원래 이름으로 역변환한다."""
+    roster = {str(i): name for i, name in enumerate(["", *names])}
+    ids = {str(row["source_id"]) for row in chunk}
+    value = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string", "enum": list(roster)},
+            "reason": {"type": "string"},
+        },
+        "required": ["name", "reason"],
+        "additionalProperties": False,
+    }
+    schema = {
+        "type": "object",
+        "properties": {sid: value for sid in sorted(ids)},
+        "required": sorted(ids),
+        "additionalProperties": False,
+    }
+
+    def decode(payload):
+        if not isinstance(payload, dict) or set(payload) != ids:
+            raise ValueError("assignments must cover every requested ID")
+        converted = {}
+        for sid, row in payload.items():
+            if not isinstance(row, dict) or set(row) != {"name", "reason"}:
+                raise ValueError("assignment requires name and reason")
+            if not isinstance(row["name"], str) or row["name"] not in roster:
+                raise ValueError("unknown roster index")
+            converted[sid] = {"name": roster[row["name"]], "reason": row["reason"]}
+        validate(converted)
+        return converted
+
+    prompt = (
+        context
+        + """
+Assign each source to ONE canonical roster entry. Return an object keyed by source ID;
+each value has name (the roster index AS A STRING) and a short reason. Reuse the same roster
+entry for the same ingredient across batches. Index "0" means unresolved/ineligible, including
+when the roster has no suitable entry: explain the missing identity rather than using a wrong
+name. Do not invent entries. This is your own roster, not another agent's answer.
+ROSTER_JSON:
+"""
+        + json.dumps(roster)
+        + "\nSOURCES_JSON:\n"
+        + json.dumps(chunk, ensure_ascii=False)
+    )
+    raw = call_agent(agent, f"grouping_large/{task_name}-indexed", prompt, schema, decode)
+    return decode(raw)

@@ -22,9 +22,7 @@ class LargeGroupTests(unittest.TestCase):
                 return {"names": ["Pancake mix"]}
             if fail and "41" in schema["properties"]:
                 raise RuntimeError("Injected failure")
-            return {
-                sid: {"name": "Pancake mix", "reason": "Dry mix"} for sid in schema["properties"]
-            }
+            return {sid: {"name": "1", "reason": "Dry mix"} for sid in schema["properties"]}
 
         with tempfile.TemporaryDirectory() as directory:
             work = Path(directory)

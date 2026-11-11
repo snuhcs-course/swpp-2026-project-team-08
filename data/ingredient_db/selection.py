@@ -773,20 +773,28 @@ def run(
                     raise ValueError("missing component")
 
             prompt_builder = families.prompt if family_mode else build_grouping_prompt
-            prompt = prompt_builder(
-                [
-                    {
-                        "component_id": item["component_id"],
-                        "sources": [
-                            _grouping_source(sources_by_id[i], audit) for i in item["source_ids"]
-                        ],
-                    }
-                    for item in batch
-                ]
-            )
+            component_inputs = [
+                {
+                    "component_id": item["component_id"],
+                    "sources": [
+                        _grouping_source(sources_by_id[i], audit) for i in item["source_ids"]
+                    ],
+                }
+                for item in batch
+            ]
+            prompt = prompt_builder(component_inputs)
+            batch_call = call_agent
+            if family_mode and len(allowed_ids) > 120:
+                from functools import partial
+
+                from .large_groups import call
+
+                batch_call = partial(
+                    call, components=component_inputs, call_agent=call_agent, work_dir=work_dir
+                )
             tasks = {
                 agent: pool.submit(
-                    call_agent,
+                    batch_call,
                     agent,
                     f"grouping/batch-{batch_no:04d}"
                     + ("-" + digest(audit)[:12] if audit else "")

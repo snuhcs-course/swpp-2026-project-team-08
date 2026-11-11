@@ -10,6 +10,8 @@
 // Changed: 추천 연결을 음식 카드에만 연결
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: 달력 월 이동·요일·일수 계산을 UTC로 통일
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 음식·재료 기록의 어려움 세부 항목 유지
 
 import type { AfterMealReview, FoodOutcome } from '../../types/afterMealReview';
 import type { FoodItem } from '../../types/meal';
@@ -110,7 +112,7 @@ export function foodResponseCardsFromDetail(meal: MealDetail): FoodResponseCard[
       ingredients: food.ingredients.map((ingredient) => ingredient.name),
       preparation: food.cookingMethod ?? '', servingNote: food.servingNote ?? '',
       outcome: result?.outcome ?? null,
-      reasons: (result?.difficulties ?? []).map((item) => ({ category: item.category, value: item.value })),
+      reasons: (result?.difficulties ?? []).map((item) => ({ ...item })),
       suggestion: link ? { id: link.suggestionId, title: link.suggestion.whatToTry,
         description: link.suggestion.whyThisMayHelp, servingTip: link.suggestion.servingTip } : null,
     });
@@ -122,7 +124,7 @@ export function foodResponseCardsFromDetail(meal: MealDetail): FoodResponseCard[
         foodId: `${food.id}:${ingredient.id}`, kind: 'ingredient', parentName: food.name,
         name: ingredient.name, ingredients: [], preparation: '', servingNote: '',
         outcome: ingredientResult?.outcome ?? null,
-        reasons: (ingredientResult?.difficulties ?? []).map((item) => ({ category: item.category, value: item.value })),
+        reasons: (ingredientResult?.difficulties ?? []).map((item) => ({ ...item })),
         suggestion: null,
       });
     }
@@ -186,7 +188,9 @@ export function foodResponseCards(
       preparation: food.preparation,
       servingNote: food.servingNote,
       outcome: outcome?.decision.confirmed ?? null,
-      reasons: tags.map((tag) => ({ category: tag.category, value: tag.value, note: tag.note })),
+      reasons: tags.map((tag) => ({
+        category: tag.category, value: tag.value, subcategory: tag.subcategory, note: tag.note,
+      })),
       suggestion: asSuggestion(suggestion),
     });
     for (const ingredient of outcome?.ingredients ?? []) {
@@ -202,7 +206,7 @@ export function foodResponseCards(
         servingNote: '',
         outcome: ingredient.decision.confirmed,
         reasons: (review?.difficulties[ingredient.id] ?? []).map((tag) => ({
-          category: tag.category, value: tag.value, note: tag.note,
+          category: tag.category, value: tag.value, subcategory: tag.subcategory, note: tag.note,
         })),
         suggestion: asSuggestion(linked),
       });

@@ -8,6 +8,9 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: Keep target chooser available with existing selections and cards
 
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 거절 이유 저장 직후 추가 추천 선택 화면 연결
+
 import { AppHeader } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -19,6 +22,7 @@ import { useProfile } from '../../../providers/ProfileProvider';
 import { useAuth } from '../../../providers/AuthProvider';
 import type { DismissReason, SuggestionTarget } from '../../../types/suggestionRecord';
 import { suggestionCopyFor, copyFor } from '../../../util/strings';
+import { RegenerationPrompt } from '../components/RegenerationPrompt';
 import { RecommendationStateCard } from '../components/RecommendationStateCard';
 import { suggestionTargetName } from '../components/GeneratedSuggestionBody';
 import { RecommendationCard } from '../components/RecommendationCard';
@@ -39,7 +43,8 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
   const current = model.current;
   const backMeal = () => router.replace({ pathname: '/meal/[mealId]', params: { mealId } });
   const back = () => {
-    if (model.busy) return;
+    if (model.busy && !model.regeneratingId) return;
+    if (model.regeneratingId) { backMeal(); return; }
     if (sheet) { setSheet(false); return; }
     if (reject) { setReject(false); setReasons([]); return; }
     if (model.items.length && !current && model.canUndo) { void model.undo(); return; }
@@ -69,11 +74,13 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
       void model.selectTargets(targets);
     }}
   />;
-  const completed = model.items.length > 0 && !current && !model.generating
+  const loadFailed = (model.source.isError && !meal)
+    || (model.suggestions.isError && !model.suggestions.data);
+  const completed = model.items.length > 0 && !current && !model.regenerationPrompt && !model.generating
     && !model.generationFailed && !model.source.isPending && !model.suggestions.isPending
-    && !model.source.isError && !model.suggestions.isError;
+    && !loadFailed;
   if (completed) return <SafeAreaView style={s.root} edges={['top', 'bottom']}>
-    <View style={s.completed}>
+    <ScrollView contentContainerStyle={s.completed}>
       <View style={s.completionBadge}><UiAssetIcon name="suggestion-complete" /></View>
       <Text style={s.completionTitle}>{c.allDone}</Text>
       <Text style={s.completionBody}>{c.allDoneBody}</Text>
@@ -82,7 +89,7 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
         <AppButton variant="suggestion" secondary label={c.backMeal} onPress={backMeal} />
       </View>
       {model.failed && <Text accessibilityRole="alert" style={s.error}>{c.saveFailed}</Text>}
-    </View>
+    </ScrollView>
     {model.canUndo && <Pressable accessibilityRole="button" accessibilityLabel={c.undoLast}
       disabled={model.busy} style={s.completionUndo} onPress={() => { void model.undo(); }}>
       <Text style={s.undoLabel}>{c.undoLast}</Text>
@@ -91,7 +98,7 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
 
   return <SafeAreaView style={s.root} edges={['top', 'bottom']}>
     <AppHeader title={c.title} backLabel={c.back} onBack={back} />
-    <View style={s.recommendationContent}>
+    <ScrollView contentContainerStyle={s.recommendationContent}>
       {meal && <View style={s.row}>
         <Text style={s.mealContextDate}>
           {new Date(`${meal.mealDate}T12:00:00`).toLocaleDateString(language === 'ko' ? 'ko-KR' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -119,12 +126,19 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
       </View>}
       {model.source.isPending || model.suggestions.isPending || model.generating ? (
         <RecommendationStateCard language={language} onRetry={() => { void model.refresh(); }} />
-      ) : model.source.isError || model.suggestions.isError || model.generationFailed ? (
+      ) : loadFailed || model.generationFailed ? (
         <RecommendationStateCard language={language} failed onRetry={() => {
           if (model.generationFailed && model.visibleTargets.length) void model.selectTargets(model.visibleTargets);
           else void model.refresh();
         }} />
-      ) : current ? (
+      ) : model.regenerationPrompt ? <RegenerationPrompt
+        foodName={suggestionTargetName(model.regenerationPrompt, meal)}
+        reasons={model.regenerationPrompt.dismissReasons} language={language}
+        busy={model.busy} generating={model.regeneratingId !== null}
+        failed={model.regenerationErrorId === model.regenerationPrompt.id}
+        onGenerate={() => { void model.regenerate(model.regenerationPrompt!.id); }}
+        onContinue={model.continueAfterDismissal}
+      /> : current ? (
         reject ? <View style={s.cardStack}>
           <View style={[s.stackLayer, s.stackBack]} />
           <View style={[s.stackLayer, s.stackMiddle]} />
@@ -170,8 +184,8 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
         {model.targetOptions.length > 0 && <AppButton variant="suggestion" label={c.changeFoods}
           onPress={() => setSheet(true)} />}
       </View>}
-    </View>
-    {current && !reject && <View style={s.recommendationFooter}>
+    </ScrollView>
+    {((current && !reject) || model.regenerationPrompt) && <View style={s.recommendationFooter}>
       <View style={s.actionStatus}>
         <Text accessibilityRole={model.failed ? 'alert' : undefined}
           accessibilityLiveRegion="polite" style={[s.statusMessage, model.failed && s.error]}>
@@ -182,7 +196,7 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
           disabled={model.busy} style={[s.undoAction, model.busy && s.disabled]}
           onPress={() => { void model.undo(); }}><Text style={s.undoLabel}>{c.undo}</Text></Pressable>}
       </View>
-      <View style={s.recommendationActions}>
+      {current && <View style={s.recommendationActions}>
         <Pressable accessibilityRole="button" accessibilityLabel={c.dismiss} disabled={model.busy}
           style={[s.dismissAction, model.busy && s.disabled]}
           onPress={() => { setReject(true); setReasons([]); }}><UiAssetIcon name="suggestion-dismiss" /></Pressable>
@@ -193,7 +207,7 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
         <Pressable accessibilityRole="button" accessibilityLabel={c.save} disabled={model.busy}
           style={[s.saveAction, model.busy && s.disabled]}
           onPress={() => { void model.decide('saved'); }}><UiAssetIcon name="suggestion-save" /></Pressable>
-      </View>
+      </View>}
     </View>}
     {targetSheet}
   </SafeAreaView>;

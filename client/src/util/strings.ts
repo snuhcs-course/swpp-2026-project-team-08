@@ -15,6 +15,9 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 채식 단계 문구를 식생활 유형 문구로 되돌리고 식생활 유형 id 를 snake_case 로 변경
 
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 추가 추천 생성과 재시도 문구
+
 import type { Language } from '../types/profile';
 
 const en = {
@@ -592,6 +595,9 @@ const suggestionCopy = {
     selectTargetsPrompt: 'Choose a food or reviewed ingredient to generate suggestions.',
     reviewRequired: 'Save the after-meal review before generating suggestions.',
     generating: 'Finding a next step…',
+    regenerationQuestion: 'Would you like another suggestion for this food?',
+    continueWithoutRegeneration: 'Continue',
+    regenerate: 'Regenerate', regenerationFailed: 'Could not generate another suggestion. Please retry.',
     what: 'What to try', why: 'Why this may help', serving: 'Serving tip', foodDetails: 'FOOD DETAILS',
     ingredients: 'Ingredients', cooking: 'Cooking method',
     tapDetails: 'Tap for food details', tapFront: 'Tap to see suggestion',
@@ -616,6 +622,9 @@ const suggestionCopy = {
     selectTargetsPrompt: '추천받을 음식이나 식후 기록을 남긴 재료를 선택해 주세요.',
     reviewRequired: '추천을 받으려면 먼저 식후 기록을 저장해 주세요.',
     generating: '추천을 만들고 있어요…',
+    regenerationQuestion: '이 음식의 다른 추천을 받아볼까요?',
+    continueWithoutRegeneration: '계속하기',
+    regenerate: '새 추천 받기', regenerationFailed: '다른 추천을 만들지 못했어요. 다시 시도해 주세요.',
     what: '시도해 볼 방법', why: '도움이 될 수 있는 이유', serving: '준비 방법', foodDetails: '음식 정보',
     ingredients: '재료', cooking: '조리 방법',
     tapDetails: '눌러서 음식 정보 보기', tapFront: '눌러서 추천으로 돌아가기',

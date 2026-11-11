@@ -9,11 +9,13 @@
 // Changed: 선택지 id·채식 단계 기준으로 테스트 수정, 카탈로그 검색 테스트 교체
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: 추천 모달 안전 여백 및 추천 연결·언어 버튼 및 공통 Outcome 헤더 검증
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: Eaten 단계 생략 및 언어 버튼 숨김 검증
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 애니메이션 바텀시트의 네이티브 컴포넌트 대체 지원
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
-// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
-// Changed: Eaten 단계 생략 및 언어 버튼 숨김 검증
 
 const { React, act, renderHook } = require("../helpers/react-harness.cjs");
 
@@ -65,6 +67,7 @@ const { mockModules } = require("../helpers/mock-modules.cjs");
 mockModules((name) => {
   if (name === "react-native")
     return {
+      Animated: { createAnimatedComponent: component => component },
       RefreshControl: () => null,
       ActivityIndicator: primitive("progress"),
       View: primitive("div"),

@@ -10,6 +10,9 @@
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
 
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 거절 직후 추가 생성 선택 단계와 실패 복구
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { ApiError } from '../../../data/network/apiClient';
@@ -28,6 +31,14 @@ export function useRecommendationFlow(userId: string, mealId: string) {
   const [failed, setFailed] = useState(false);
   const [generationFailed, setGenerationFailed] = useState(false);
   const busy = useRef(false);
+  const [continuedIds, setContinuedIds] = useState<string[]>([]);
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+  const [regenerationErrorId, setRegenerationErrorId] = useState<string | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
   const automaticAttempt = useRef<string | null>(null);
   const refetchSource = source.refetch;
   const refetchSuggestions = suggestions.refetch;
@@ -42,7 +53,11 @@ export function useRecommendationFlow(userId: string, mealId: string) {
   const items = useMemo(() => selectedTargets.length
     ? allItems.filter(item => selectedTargets.some(target => target.foodId === item.foodId))
     : allItems, [allItems, selectedTargets]);
-  const current = items.find((item) => item.status === 'pending') ?? null;
+  const pending = items.find(item => item.status === 'pending' && item.replacementForId)
+    ?? items.find(item => item.status === 'pending') ?? null;
+  const regenerationPrompt = pending?.replacementForId ? null : items.find(item =>
+    item.canRegenerate && item.status === 'dismissed' && !continuedIds.includes(item.id)) ?? null;
+  const current = regenerationPrompt ? null : pending;
   const availableTargets = useMemo(() => unGeneratedTargets(targetOptions, allItems), [targetOptions, allItems]);
   const foodCount = targetOptions.length;
   const autoSelect = !!source.data?.review && foodCount > 0 && foodCount <= 3;
@@ -64,6 +79,7 @@ export function useRecommendationFlow(userId: string, mealId: string) {
     setGenerationFailed(false);
     setFailed(false);
     setSelectedTargets(targets);
+    setContinuedIds([]);
     const oldIds = new Set(allItems.map((item) => item.id));
     try {
       if (missingTargets.length) await generate(missingTargets);
@@ -113,6 +129,38 @@ export function useRecommendationFlow(userId: string, mealId: string) {
       busy.current = false;
     }
   };
+  const regenerate = async (id: string) => {
+    const item = regenerationPrompt?.id === id ? regenerationPrompt : null;
+    if (!item || busy.current) return false;
+    busy.current = true;
+    setRegeneratingId(id);
+    setRegenerationErrorId(null);
+    try {
+      await actions.regenerate.mutateAsync(item);
+      if (mounted.current) setNotice(null);
+      return true;
+    } catch {
+      // A timeout may follow a committed result; look it up before offering Retry.
+      const refreshed = await suggestions.refetch().catch(() => null);
+      if (refreshed?.data?.some(entry => entry.replacementForId === id)) {
+        if (mounted.current) setNotice(null);
+        return true;
+      }
+      if (mounted.current) setRegenerationErrorId(id);
+      void source.refetch();
+      return false;
+    } finally {
+      busy.current = false;
+      if (mounted.current) setRegeneratingId(null);
+    }
+  };
+  const continueAfterDismissal = () => {
+    if (!regenerationPrompt || busy.current) return false;
+    setContinuedIds(old => [...old, regenerationPrompt.id]);
+    setRegenerationErrorId(null);
+    setNotice(null);
+    return true;
+  };
   const undo = async () => {
     const id = history.at(-1);
     if (!id || busy.current) return false;
@@ -121,12 +169,14 @@ export function useRecommendationFlow(userId: string, mealId: string) {
     try {
       await actions.undo.mutateAsync(id);
       setHistory((old) => old.slice(0, -1));
+      setContinuedIds(old => old.filter(entry => entry !== id));
       setNotice(null);
       return true;
     } catch {
       const refreshed = await suggestions.refetch().catch(() => null);
       if (refreshed?.data?.find((item) => item.id === id)?.status === 'pending') {
         setHistory((old) => old.slice(0, -1));
+        setContinuedIds(old => old.filter(entry => entry !== id));
         setNotice(null);
         return true;
       }
@@ -139,10 +189,12 @@ export function useRecommendationFlow(userId: string, mealId: string) {
   return {
     source, suggestions, items, current, targetOptions, availableTargets, visibleTargets,
     notice, failed, generationFailed, selectTargets, decide, undo,
+    regenerate, regeneratingId, regenerationErrorId,
+    regenerationPrompt, continueAfterDismissal,
     refresh: () => Promise.all([source.refetch(), suggestions.refetch()]),
     sourceUnavailable: source.error instanceof ApiError && source.error.status === 404,
     canUndo: history.length > 0,
-    busy: awaitingAutomaticGeneration || actions.generate.isPending || actions.decide.isPending || actions.undo.isPending,
+    busy: awaitingAutomaticGeneration || actions.generate.isPending || actions.regenerate.isPending || regeneratingId !== null || actions.decide.isPending || actions.undo.isPending,
     generating: awaitingAutomaticGeneration || actions.generate.isPending,
   };
 }

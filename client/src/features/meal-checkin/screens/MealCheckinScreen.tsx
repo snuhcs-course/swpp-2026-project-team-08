@@ -8,9 +8,11 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 초안 뒤로가기 시 저장 후 진입 화면으로 복귀
 
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, BackHandler, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../../../components/AppButton';
@@ -41,6 +43,7 @@ export function MealCheckinScreen({
   const saved = useMealSuggestions(childId);
   const model = useMealCheckin(childId, startAfterMealId, !!tryingSuggestionId, saved.suggestions, tryingSuggestionId);
   const [trying, setTrying] = useState(true);
+  const exiting = useRef(false);
   const inputs = useMealCheckinInputs({
     draft: model.draft,
     onUpdate: model.update,
@@ -48,14 +51,20 @@ export function MealCheckinScreen({
     onChangeFood: model.changeFood,
   });
   const s = copyFor(language);
-  const exit = async () => {
-    if (model.saving) return;
-    if (model.draft?.step === 'complete' || (await model.flush()))
-      router.replace('/(main)/home');
+  const exit = async (destination: 'home' | 'previous' = 'home') => {
+    if (model.saving || exiting.current) return;
+    exiting.current = true;
+    try {
+      if (model.draft?.step !== 'complete' && !(await model.flush())) return;
+      if (destination === 'previous' && router.canGoBack()) router.back();
+      else router.replace('/(main)/home');
+    } finally {
+      exiting.current = false;
+    }
   };
   const back = () => {
-    if (model.saving) return;
-    if (model.resumeRequired || !model.back()) void exit();
+    if (model.saving || exiting.current) return;
+    if (model.resumeRequired || !model.back()) void exit('previous');
   };
   useEffect(() => {
     const subscription = BackHandler.addEventListener(
@@ -111,7 +120,7 @@ export function MealCheckinScreen({
         )}
       </SafeAreaView>
     );
-  if (model.resumeRequired) return <MealDraftResumeView draft={model.draft} childName={profile?.childName ?? ''} language={language} onContinue={model.continueDraft} onBack={() => { void exit(); }} />;
+  if (model.resumeRequired) return <MealDraftResumeView draft={model.draft} childName={profile?.childName ?? ''} language={language} onContinue={model.continueDraft} onBack={back} />;
   return (
     <MealCheckinView
       draft={model.draft}

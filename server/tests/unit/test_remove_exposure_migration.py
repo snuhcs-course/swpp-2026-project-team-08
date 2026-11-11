@@ -6,6 +6,9 @@
 # Changed: 마이그레이션 head 단언을 0024 로 갱신
 # AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 # Changed: 식생활 유형·선택 조리 방법 마이그레이션(0025) 이력과 SQL 검증
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 추가 추천 마이그레이션 연결 확인
+
 """Unit: 마이그레이션의 이력·SQL 생성 계약. DB 적용이나 Postgres 동작은 검사하지 않는다."""
 
 from io import StringIO
@@ -21,7 +24,8 @@ MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0025_dietary_pattern"]
+    assert scripts.get_heads() == ["0026_recommendation_retry"]
+    assert scripts.get_revision("0026_recommendation_retry").down_revision == "0025_dietary_pattern"
     assert scripts.get_revision("0025_dietary_pattern").down_revision == "0024_food_recommendations"
     assert (
         scripts.get_revision("0017_meal_ingredients").down_revision
@@ -251,3 +255,30 @@ def test_dietary_pattern_migration_adds_nullable_column_and_optional_preparation
     # NOT NULL 로 되돌리기 전에 비어 있는 조리 방법을 채워야 한다.
     assert sql.index("SET preparation = ''") < sql.index("SET NOT NULL")
     assert "ALTER TABLE user_profiles DROP COLUMN dietary_pattern;" in sql
+
+
+def test_recommendation_retry_migration_preserves_existing_data_and_limits_each_food():
+    migration = run_path(str(MIGRATIONS / "versions" / "20261109_1000_recommendation_retry.py"))
+    output = StringIO()
+    context = MigrationContext.configure(
+        dialect_name="postgresql", opts={"as_sql": True, "output_buffer": output}
+    )
+    with Operations.context(context):
+        migration["upgrade"]()
+    sql = output.getvalue()
+    assert "CREATE TABLE food_recommendation_retries" in sql
+    assert "PRIMARY KEY (food_id)" in sql
+    assert "UNIQUE (dismissed_id)" in sql
+    assert "UNIQUE (replacement_id)" in sql
+    assert "replacement_id BIGINT," in sql  # Additional generation is optional.
+    assert sql.count("ON DELETE CASCADE ON UPDATE CASCADE") == 3
+    statements = [statement.strip() for statement in sql.split(";") if statement.strip()]
+    # One CREATE statement only: no inferred history or changes to existing records.
+    assert len(statements) == 1
+    assert statements[0].startswith("CREATE TABLE food_recommendation_retries")
+
+    output.seek(0)
+    output.truncate()
+    with Operations.context(context):
+        migration["downgrade"]()
+    assert output.getvalue().strip() == "DROP TABLE food_recommendation_retries;"

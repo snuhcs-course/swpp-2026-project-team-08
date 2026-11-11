@@ -9,6 +9,9 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim
 # Changed: DB 스키마 개편에 맞춰 모델 등록 갱신
 
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 추가 추천 이력 모델 등록
+
 """모든 테이블 모델.
 
 여기서 import 해야 `Base.metadata` 에 테이블이 등록된다 (Alembic autogenerate 와 테스트의
@@ -16,6 +19,7 @@
 """
 
 from app.models.food_recommendation import FoodRecommendation
+from app.models.food_recommendation_retry import FoodRecommendationRetry
 from app.models.food_recommendation_try import FoodRecommendationTry
 from app.models.ingredient import Ingredient
 from app.models.ingredient_restriction import IngredientRestriction
@@ -31,6 +35,7 @@ from app.models.user_profile_safe_food import UserProfileSafeFood
 __all__ = [
     "FoodRecommendation",
     "FoodRecommendationTry",
+    "FoodRecommendationRetry",
     "Ingredient",
     "IngredientRestriction",
     "Meal",

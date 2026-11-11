@@ -10,6 +10,7 @@ on:
     branches: [main]
     paths:
       - "server/**"
+      - "data/ingredient_db/result/*.jsonl"
       - ".github/workflows/server-deploy.yml"
   workflow_dispatch:
 

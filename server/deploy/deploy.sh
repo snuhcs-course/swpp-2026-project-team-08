@@ -2,7 +2,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
 # Changed: CD 스크립트 작성
 # AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
-# Changed: 재료 변경 시 자동 적재와 배포 실패 처리
+# Changed: 서버 교체 후 서비스 중 재료 적재와 실패 시 서버 유지
 
 # EC2에서 SSM으로 실행한다. IMAGE, REGISTRY, REGION은 워크플로에서 전달한다.
 set -Eeuo pipefail
@@ -21,7 +21,8 @@ exec 9>/var/lock/nurturebites-deploy.lock
 flock -n 9 || { echo "다른 배포가 실행 중입니다" >&2; exit 1; }
 
 ENV_FILE="$(mktemp)"
-SERVER_STOPPED=0
+SWAPPING=0
+PREVIOUS=""
 trap 'rm -f "$ENV_FILE" "$ENV_FILE.json"' EXIT
 
 stop_operation() {
@@ -80,9 +81,18 @@ on_failure() {
   local status="$1"
   trap - ERR INT TERM
   stop_operation || true
-  if [ "$SERVER_STOPPED" -eq 1 ]; then
+  if [ "$SWAPPING" -eq 1 ]; then
     stop_container || true
-    echo "배포 실패: 서버를 중지합니다. 적재 완료된 데이터는 유지하며 수정 후 재배포하세요" >&2
+    if [ -n "$PREVIOUS" ]; then
+      if start_container "$PREVIOUS" && wait_healthy; then
+        docker update --restart=unless-stopped "$CONTAINER" >/dev/null || true
+        echo "서버 교체 실패: 이전 이미지를 다시 실행했습니다" >&2
+      else
+        echo "이전 서버 재시작 실패: 컨테이너 상태를 확인하세요" >&2
+      fi
+    fi
+  else
+    echo "배포 실패: 실행 중인 서버와 현재 데이터를 유지합니다" >&2
   fi
   exit "$status"
 }
@@ -119,15 +129,22 @@ stop_operation
 docker pull "$IMAGE"
 run_operation "$IMAGE" python scripts/load_ingredients.py --check "${CATALOG_ARGS[@]}"
 run_operation "$IMAGE" alembic upgrade head
-SERVER_STOPPED=1
+# 한국어 목록도 읽는 새 서버를 먼저 배포한다. 적재 중에도 추천을 제공한다.
+CURRENT="$(docker ps -a --filter "name=^/${CONTAINER}$" --format '{{.Names}}')"
+if [ "$CURRENT" = "$CONTAINER" ]; then
+  PREVIOUS="$(docker inspect --format '{{.Config.Image}}' "$CONTAINER")"
+fi
+SWAPPING=1
 stop_container
-run_operation "$IMAGE" python -m scripts.ingredient_catalog.deploy apply "${CATALOG_ARGS[@]}"
 start_container "$IMAGE"
 if ! wait_healthy; then
   echo "새 서버 헬스체크 실패: $IMAGE" >&2
   on_failure 1
 fi
-run_operation "$IMAGE" python -m scripts.ingredient_catalog.deploy verify "${CATALOG_ARGS[@]}"
 docker update --restart=unless-stopped "$CONTAINER" >/dev/null
+SWAPPING=0
+# 여기부터는 이전 코드로 되돌리지 않는다. 새 서버는 적재 전후 목록을 모두 읽는다.
+run_operation "$IMAGE" python -m scripts.ingredient_catalog.deploy apply "${CATALOG_ARGS[@]}"
+run_operation "$IMAGE" python -m scripts.ingredient_catalog.deploy verify "${CATALOG_ARGS[@]}"
 echo "배포 성공: $IMAGE"
 docker image prune -af --filter "until=168h" >/dev/null || true

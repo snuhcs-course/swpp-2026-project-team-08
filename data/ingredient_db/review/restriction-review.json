@@ -1,7 +1,7 @@
 {
   "reviewer": "GPT-6 Astra",
   "date": "2026-11-11",
-  "status": "changes_required",
+  "status": "resolved",
   "selected_sha256": "a44269107f969585893eaa99862ec360fdfd3bf5586123354c1be947976331a1",
   "scope": "초기 1,060개 재료의 삼중 판정을 구조적으로 읽고 유지·소스·유제품·글루텐프리 빵 등 위험 표본을 상세 검토했다. 전체 의미 검증은 아니다.",
   "findings": [
@@ -31,7 +31,7 @@
       },
       "majority": "NEVER",
       "issue": "채소 종류 미상인데 콩과 원료가 없다고 단정한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 288,
@@ -59,7 +59,7 @@
       },
       "majority": "NEVER",
       "issue": "gluten-free 표기를 밀 알레르겐 부재의 근거로 사용한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 289,
@@ -87,7 +87,7 @@
       },
       "majority": "NEVER",
       "issue": "gluten-free 표기를 밀 알레르겐 부재의 근거로 사용한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 290,
@@ -115,7 +115,7 @@
       },
       "majority": "NEVER",
       "issue": "gluten-free 표기를 밀 알레르겐 부재의 근거로 사용한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 291,
@@ -143,7 +143,7 @@
       },
       "majority": "NEVER",
       "issue": "gluten-free 표기를 밀 알레르겐 부재의 근거로 사용한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 22,
@@ -171,7 +171,7 @@
       },
       "majority": "ALWAYS",
       "issue": "아몬드 유래만으로 단백질 잔류를 확정한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 613,
@@ -199,7 +199,7 @@
       },
       "majority": "ALWAYS",
       "issue": "땅콩기름 포함만으로 정제·단백질 잔류를 확정한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 801,
@@ -227,7 +227,7 @@
       },
       "majority": "ALWAYS",
       "issue": "어유의 생선 유래만으로 단백질 잔류를 확정한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 802,
@@ -255,7 +255,7 @@
       },
       "majority": "ALWAYS",
       "issue": "어유의 생선 유래만으로 단백질 잔류를 확정한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 803,
@@ -283,7 +283,7 @@
       },
       "majority": "ALWAYS",
       "issue": "어유의 생선 유래만으로 단백질 잔류를 확정한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 804,
@@ -311,7 +311,7 @@
       },
       "majority": "ALWAYS",
       "issue": "어유의 생선 유래만으로 단백질 잔류를 확정한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 805,
@@ -339,7 +339,7 @@
       },
       "majority": "ALWAYS",
       "issue": "어유의 생선 유래만으로 단백질 잔류를 확정한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 806,
@@ -367,7 +367,7 @@
       },
       "majority": "ALWAYS",
       "issue": "어유의 생선 유래만으로 단백질 잔류를 확정한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 353,
@@ -395,7 +395,7 @@
       },
       "majority": "ALWAYS",
       "issue": "무수 버터오일의 잔류 카세인을 원문 없이 단정한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 123,
@@ -423,7 +423,7 @@
       },
       "majority": "NEVER",
       "issue": "일반 바비큐 소스의 원문에 없는 표준 배합을 가정한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 123,
@@ -451,7 +451,7 @@
       },
       "majority": "NEVER",
       "issue": "일반 바비큐 소스의 원문에 없는 표준 배합을 가정한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 123,
@@ -479,7 +479,7 @@
       },
       "majority": "NEVER",
       "issue": "일반 바비큐 소스의 원문에 없는 표준 배합을 가정한다.",
-      "status": "needs_review"
+      "status": "withheld"
     },
     {
       "ingredient_id": 353,
@@ -507,7 +507,7 @@
       },
       "majority": "UNKNOWN",
       "issue": "A의 NEVER 값과 trace lactose 이유가 모순된다. 세 판단은 다르다.",
-      "status": "needs_review"
+      "status": "already_unknown"
     },
     {
       "ingredient_id": 559,
@@ -535,8 +535,9 @@
       },
       "majority": "DEPENDS_ON_PRODUCT",
       "issue": "B의 달걀 판정 이유가 생선·멸치를 설명한다.",
-      "status": "needs_review"
+      "status": "withheld"
     }
   ],
-  "next_step": "전체 응답 수집 후 지적된 쌍과 같은 오류 유형을 검토한다. 해결 전 최종 출력·적재를 완료로 표시하지 않는다."
+  "next_step": "최종 JSONL은 원래 표와 검토 결정을 함께 재현한다.",
+  "resolution": "restriction-decisions.json의 검토 보류를 적용한다. 이미 UNKNOWN인 쌍은 그대로 유지한다."
 }

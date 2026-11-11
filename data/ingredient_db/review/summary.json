@@ -1,0 +1,1343 @@
+{
+  "ingredients": 2408,
+  "restrictions": 44582,
+  "unresolved_restrictions": 1170,
+  "restriction_types": 19,
+  "agent_votes": 137256,
+  "source_rows": 7793,
+  "excluded_sources": 2942,
+  "unresolved_sources": 1644,
+  "provenance": {
+    "model": "gemini-3.5-flash-lite",
+    "thinking_level": "default",
+    "temperature": 0.2,
+    "source_release": "2018-04",
+    "license": "CC0-1.0"
+  },
+  "selection_audit": {
+    "reviewer": "GPT-6 with GPT-6 Astra",
+    "policy_sha256": "faf69f7768e040dd9272cd0f48c0d309311e2011bada742d305f0641ac34cc24",
+    "majority_sha256": "b5ecdb94a740274a310be9f9a196cba776c06f16330b6a2382acc6d91b67ed7c",
+    "scope": "기존 검토 보류 72개만 확정한다. 나머지 원본의 이름 불일치 보류는 별도이며 전체 목록을 재검토했다는 의미가 아니다.",
+    "mode": "adjudication",
+    "authorization": "사용자 지시: 레시피 음식은 제외하고 실제 조리 재료는 포함하며 보류 72개를 검토자가 확정한다.",
+    "previous_audit": {
+      "reviewer": "GPT-6 Astra",
+      "policy_sha256": "b87d40dd3e67e8a9354093d7d3f5bb70b607d0e00890597c93a32b3ef24639b8",
+      "majority_sha256": "b5ecdb94a740274a310be9f9a196cba776c06f16330b6a2382acc6d91b67ed7c",
+      "scope": "7793개 원본과 다수결을 구조적으로 읽고 전체 포함 목록에 레시피·브랜드 의심 대문자·소스/딥·음료·첨가물·양념·간식 관련 필터를 적용했다. 위험 범주의 원문 목록(유제품, 양념, 기름/드레싱, 소스/육수, 시리얼, 빵, 단맛 재료, 곡물/면, 콩, 전통식품)과 관련 원물 가공 행을 상세 검토하고, 제외 목록에서는 일반 원물·보존식품·면·빵의 잘못된 제외 후보를 확인했다. 지적한 행의 전체 원문 및 필요한 A/B/C 이유를 대조했다. 전체 7793행 각각의 독립적인 의미 검토, 모든 브랜드 실체 확인, 이름·그룹·19개 제한 판정 검토를 완료했다는 뜻은 아니다. 외부/API 호출 없이 저장된 원본과 정책만 사용했다. 지적되지 않은 행은 승인 또는 검증 완료를 의미하지 않는다. EXCLUDE는 현 정책상 제외 제안, UNKNOWN은 정책 경계 또는 원문 근거 확인 요청이며 원래 세 표를 변경하지 않는다.",
+      "findings": [
+        {
+          "source_id": 167620,
+          "action": "UNKNOWN",
+          "reason": "원문: Tea, tundra, herb and laborador combination (Alaska Native). 현재 다수결: EXCLUDE. 원문에 brewed가 없는데 세 표가 완성 차 음료로 단정했다. 마른 허브 차 원료인지 우린 음료인지 확인해야 한다."
+        },
+        {
+          "source_id": 167682,
+          "action": "EXCLUDE",
+          "reason": "원문: Pectin, liquid. 현재 다수결: INCLUDE. 현재 정책은 명시적으로 열거한 조리용 첨가물만 허용하며 이 물질은 그 목록에 없다. 조리에 유용하다는 직관으로 허용 대상을 확대했다. 포함하려면 정책 자체에서 해당 예외를 먼저 명시해야 한다."
+        },
+        {
+          "source_id": 167766,
+          "action": "UNKNOWN",
+          "reason": "원문: Maraschino cherries, canned, drained. 현재 다수결: EXCLUDE. canned maraschino cherries를 디저트 장식이라는 용도로만 제외했다. 허용 보존 과일/제과 원료와 완성 과자의 경계 확인이 필요하다."
+        },
+        {
+          "source_id": 167781,
+          "action": "UNKNOWN",
+          "reason": "원문: Candied fruit. 현재 다수결: INCLUDE. candied fruit를 명시적으로 허용된 보존 과일이라고 단정했지만 간식·디저트 제외와의 경계가 정해지지 않았다. 제과 재료 허용 여부를 명시적으로 확인해야 한다."
+        },
+        {
+          "source_id": 168023,
+          "action": "UNKNOWN",
+          "reason": "원문: Fish, salmon, tipnuk, fermented (Alaska Native). 현재 다수결: EXCLUDE. fermented salmon 원문에 없는 composite dish라는 설명으로 두 표가 제외했다. 보존 생선인지 복합 음식인지 확인이 필요하며 발효만으로 완성 요리가 되지 않는다."
+        },
+        {
+          "source_id": 168217,
+          "action": "UNKNOWN",
+          "reason": "원문: Raspberry juice concentrate. 현재 다수결: INCLUDE. 일반 과즙 농축물의 조리 원료 허용 여부가 정책에 명시되지 않았다. 완성 음료인지 원료인지 확인하고 다른 과즙 농축물 제외와 일관성을 검토해야 한다."
+        },
+        {
+          "source_id": 168660,
+          "action": "UNKNOWN",
+          "reason": "원문: Beef, chuck eye roast, boneless, America's Beef Roast, separable lean and fat, trimmed to 0\" fat, all grades, raw. 현재 다수결: EXCLUDE. 원물 쇠고기 부위 설명의 America's Beef Roast를 두 표가 상표/프로그램명이라고 단정했다. 실제 회사·제품 브랜드인지 일반 부위명·홍보명인지 근거가 없으며 프로그램명만으로는 브랜드 제외를 적용할 수 없다. 외부 확인 전 보류한다."
+        },
+        {
+          "source_id": 168661,
+          "action": "UNKNOWN",
+          "reason": "원문: Beef, chuck eye roast, boneless, America's Beef Roast, separable lean and fat, trimmed to 0\" fat, choice, raw. 현재 다수결: EXCLUDE. 원물 쇠고기 부위 설명의 America's Beef Roast를 두 표가 상표/프로그램명이라고 단정했다. 실제 회사·제품 브랜드인지 일반 부위명·홍보명인지 근거가 없으며 프로그램명만으로는 브랜드 제외를 적용할 수 없다. 외부 확인 전 보류한다."
+        },
+        {
+          "source_id": 168662,
+          "action": "UNKNOWN",
+          "reason": "원문: Beef, chuck eye roast, boneless, America's Beef Roast, separable lean and fat, trimmed to 0\" fat, select, raw. 현재 다수결: EXCLUDE. 원물 쇠고기 부위 설명의 America's Beef Roast를 두 표가 상표/프로그램명이라고 단정했다. 실제 회사·제품 브랜드인지 일반 부위명·홍보명인지 근거가 없으며 프로그램명만으로는 브랜드 제외를 적용할 수 없다. 외부 확인 전 보류한다."
+        },
+        {
+          "source_id": 168742,
+          "action": "UNKNOWN",
+          "reason": "원문: Beef, chuck eye roast, boneless, America's Beef Roast, separable lean only, trimmed to 0\" fat, select, raw. 현재 다수결: EXCLUDE. 원물 쇠고기 부위 설명의 America's Beef Roast를 두 표가 상표/프로그램명이라고 단정했다. 실제 회사·제품 브랜드인지 일반 부위명·홍보명인지 근거가 없으며 프로그램명만으로는 브랜드 제외를 적용할 수 없다. 외부 확인 전 보류한다."
+        },
+        {
+          "source_id": 168758,
+          "action": "UNKNOWN",
+          "reason": "원문: Toppings, strawberry. 현재 다수결: INCLUDE. 정책에 없는 모든 sweet topping 허용을 세 표가 추론했다. 명시적으로 허용된 syrup/jam/ingredient preserve인지 디저트 토핑인지 원문만으로 확정할 근거가 부족하다."
+        },
+        {
+          "source_id": 168821,
+          "action": "EXCLUDE",
+          "reason": "원문: Pectin, unsweetened, dry mix. 현재 다수결: INCLUDE. 현재 정책은 명시적으로 열거한 조리용 첨가물만 허용하며 이 물질은 그 목록에 없다. 조리에 유용하다는 직관으로 허용 대상을 확대했다. 포함하려면 정책 자체에서 해당 예외를 먼저 명시해야 한다."
+        },
+        {
+          "source_id": 168841,
+          "action": "UNKNOWN",
+          "reason": "원문: Toppings, butterscotch or caramel. 현재 다수결: INCLUDE. 정책에 없는 모든 sweet topping 허용을 세 표가 추론했다. 명시적으로 허용된 syrup/jam/ingredient preserve인지 디저트 토핑인지 원문만으로 확정할 근거가 부족하다."
+        },
+        {
+          "source_id": 168905,
+          "action": "UNKNOWN",
+          "reason": "원문: Noodles, chinese, chow mein. 현재 다수결: EXCLUDE. 원문은 chow mein noodles이며 restaurant나 완성 복합 메뉴를 명시하지 않는다. 일반 면 제품인지 완성 요리인지 확인해야 한다."
+        },
+        {
+          "source_id": 169004,
+          "action": "UNKNOWN",
+          "reason": "원문: Piki bread, made from blue cornmeal (Hopi). 현재 다수결: EXCLUDE. 기본 빵 허용이 있는데 completed/prepared bread라는 이유만으로 제외했다. 원문에 homemade/prepared-from-recipe가 없고 속·토핑도 명시되지 않아 해당 빵 종류의 정체성을 확인해야 한다."
+        },
+        {
+          "source_id": 169144,
+          "action": "EXCLUDE",
+          "reason": "원문: Beans, snap, canned, all styles, seasoned, solids and liquids. 현재 다수결: INCLUDE. seasoned가 명시된 양념 결합 제품이다. 일반 원물·원료 통조림 허용을 양념한 메뉴 제외보다 우선했다."
+        },
+        {
+          "source_id": 169565,
+          "action": "UNKNOWN",
+          "reason": "원문: Beef, chuck eye roast, boneless, America's Beef Roast, separable lean only, trimmed to 0\" fat, all grades, raw. 현재 다수결: EXCLUDE. 원물 쇠고기 부위 설명의 America's Beef Roast를 두 표가 상표/프로그램명이라고 단정했다. 실제 회사·제품 브랜드인지 일반 부위명·홍보명인지 근거가 없으며 프로그램명만으로는 브랜드 제외를 적용할 수 없다. 외부 확인 전 보류한다."
+        },
+        {
+          "source_id": 169566,
+          "action": "UNKNOWN",
+          "reason": "원문: Beef, chuck eye roast, boneless, America's Beef Roast, separable lean only, trimmed to 0\" fat, choice, raw. 현재 다수결: EXCLUDE. 원물 쇠고기 부위 설명의 America's Beef Roast를 두 표가 상표/프로그램명이라고 단정했다. 실제 회사·제품 브랜드인지 일반 부위명·홍보명인지 근거가 없으며 프로그램명만으로는 브랜드 제외를 적용할 수 없다. 외부 확인 전 보류한다."
+        },
+        {
+          "source_id": 169664,
+          "action": "UNKNOWN",
+          "reason": "원문: Toppings, marshmallow cream. 현재 다수결: INCLUDE. 정책에 없는 모든 sweet topping 허용을 세 표가 추론했다. 명시적으로 허용된 syrup/jam/ingredient preserve인지 디저트 토핑인지 원문만으로 확정할 근거가 부족하다."
+        },
+        {
+          "source_id": 169665,
+          "action": "UNKNOWN",
+          "reason": "원문: Toppings, pineapple. 현재 다수결: INCLUDE. 정책에 없는 모든 sweet topping 허용을 세 표가 추론했다. 명시적으로 허용된 syrup/jam/ingredient preserve인지 디저트 토핑인지 원문만으로 확정할 근거가 부족하다."
+        },
+        {
+          "source_id": 169666,
+          "action": "UNKNOWN",
+          "reason": "원문: Toppings, nuts in syrup. 현재 다수결: INCLUDE. 정책에 없는 모든 sweet topping 허용을 세 표가 추론했다. 명시적으로 허용된 syrup/jam/ingredient preserve인지 디저트 토핑인지 원문만으로 확정할 근거가 부족하다."
+        },
+        {
+          "source_id": 169743,
+          "action": "UNKNOWN",
+          "reason": "원문: Wheat, KAMUT khorasan, uncooked. 현재 다수결: INCLUDE. KAMUT의 회사·상표 정체성을 확인하지 않고 일반 khorasan wheat로 처리했다. 브랜드 가능성을 확인하기 전에는 이름에서 지우지 않는다. 대문자만으로 브랜드라고 확정하지 않으며 이번 검토는 외부 확인을 하지 않았다."
+        },
+        {
+          "source_id": 169744,
+          "action": "UNKNOWN",
+          "reason": "원문: Wheat, KAMUT khorasan, cooked. 현재 다수결: INCLUDE. KAMUT의 회사·상표 정체성을 확인하지 않고 일반 khorasan wheat로 처리했다. 브랜드 가능성을 확인하기 전에는 이름에서 지우지 않는다. 대문자만으로 브랜드라고 확정하지 않으며 이번 검토는 외부 확인을 하지 않았다."
+        },
+        {
+          "source_id": 169763,
+          "action": "UNKNOWN",
+          "reason": "원문: Potatoes, yellow fleshed, roasted, salt added in processing, frozen, unprepared. 현재 다수결: EXCLUDE. 단순 구이·냉동·소금 첨가를 곧바로 완성 반찬으로 취급했다. 단일 원물 단순 가열 허용 및 소금 첨가 형태 유지 규칙과의 경계 확인이 필요하다."
+        },
+        {
+          "source_id": 169830,
+          "action": "UNKNOWN",
+          "reason": "원문: Bread, blue corn, somiviki (Hopi). 현재 다수결: EXCLUDE. 기본 빵 허용이 있는데 completed/prepared bread라는 이유만으로 제외했다. 원문에 homemade/prepared-from-recipe가 없고 속·토핑도 명시되지 않아 해당 빵 종류의 정체성을 확인해야 한다."
+        },
+        {
+          "source_id": 170014,
+          "action": "EXCLUDE",
+          "reason": "원문: Peas, green, canned, seasoned, solids and liquids. 현재 다수결: INCLUDE. seasoned가 명시된 양념 결합 제품이다. 일반 원물·원료 통조림 허용을 양념한 메뉴 제외보다 우선했다."
+        },
+        {
+          "source_id": 170031,
+          "action": "UNKNOWN",
+          "reason": "원문: Potatoes, roasted, salt added in processing, frozen, unprepared. 현재 다수결: EXCLUDE. 단순 구이·냉동·소금 첨가를 곧바로 완성 반찬으로 취급했다. 단일 원물 단순 가열 허용 및 소금 첨가 형태 유지 규칙과의 경계 확인이 필요하다."
+        },
+        {
+          "source_id": 170679,
+          "action": "EXCLUDE",
+          "reason": "원문: Sweetener, herbal extract powder from Stevia leaf. 현재 다수결: INCLUDE. 현재 정책은 명시적으로 열거한 조리용 첨가물만 허용하며 이 물질은 그 목록에 없다. 조리에 유용하다는 직관으로 허용 대상을 확대했다. 포함하려면 정책 자체에서 해당 예외를 먼저 명시해야 한다."
+        },
+        {
+          "source_id": 171174,
+          "action": "EXCLUDE",
+          "reason": "원문: Sauce, sofrito, prepared from recipe. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 171416,
+          "action": "EXCLUDE",
+          "reason": "원문: Salad dressing, french, home recipe. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 171417,
+          "action": "EXCLUDE",
+          "reason": "원문: Salad dressing, home recipe, vinegar and oil. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 171426,
+          "action": "EXCLUDE",
+          "reason": "원문: Oil, soybean lecithin. 현재 다수결: INCLUDE. soybean lecithin을 첫 단어 Oil만 보고 일반 조리용 기름으로 분류했다. 명시적 허용 목록에 없는 식품 첨가물 제외 규칙이 적용된다."
+        },
+        {
+          "source_id": 171503,
+          "action": "EXCLUDE",
+          "reason": "원문: Turkey roast, boneless, frozen, seasoned, light and dark meat, raw. 현재 다수결: INCLUDE. seasoned가 명시된 양념 결합 제품이다. 일반 원물·원료 통조림 허용을 양념한 메뉴 제외보다 우선했다."
+        },
+        {
+          "source_id": 171575,
+          "action": "UNKNOWN",
+          "reason": "원문: Sauce, peanut, made from coconut, water, sugar, peanuts. 현재 다수결: INCLUDE. 소스 이름과 재료 또는 cooked 표기만으로 시판 조리 재료인지 레시피 음식인지 확정할 수 없다. 세 표는 소스라는 이유만으로 허용했다."
+        },
+        {
+          "source_id": 171832,
+          "action": "UNKNOWN",
+          "reason": "원문: Dip, bean, original flavor. 현재 다수결: EXCLUDE. 정책 v2는 허용 종류가 불분명한 딥·스프레드를 UNKNOWN으로 둔다. 원문에 없는 snack/appetizer 정체성으로 확정 제외했다. 포함으로 자동 전환하지 않는다."
+        },
+        {
+          "source_id": 172200,
+          "action": "EXCLUDE",
+          "reason": "원문: Cheese sauce, prepared from recipe. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 172340,
+          "action": "UNKNOWN",
+          "reason": "원문: Fish oil, herring. 현재 다수결: EXCLUDE. 원문에 없는 dietary supplement 정체성을 두 표가 추가했다. 원료 어유와 완성 보충제를 구별할 근거 없이 전부 제외하면 안 된다. 용도가 확인되기 전 보류한다."
+        },
+        {
+          "source_id": 172341,
+          "action": "UNKNOWN",
+          "reason": "원문: Fish oil, menhaden. 현재 다수결: EXCLUDE. 원문에 없는 dietary supplement 정체성을 두 표가 추가했다. 원료 어유와 완성 보충제를 구별할 근거 없이 전부 제외하면 안 된다. 용도가 확인되기 전 보류한다."
+        },
+        {
+          "source_id": 172342,
+          "action": "UNKNOWN",
+          "reason": "원문: Fish oil, menhaden, fully hydrogenated. 현재 다수결: EXCLUDE. 원문에 없는 dietary supplement 정체성을 두 표가 추가했다. 원료 어유와 완성 보충제를 구별할 근거 없이 전부 제외하면 안 된다. 용도가 확인되기 전 보류한다."
+        },
+        {
+          "source_id": 172343,
+          "action": "UNKNOWN",
+          "reason": "원문: Fish oil, salmon. 현재 다수결: EXCLUDE. 원문에 없는 dietary supplement 정체성을 두 표가 추가했다. 원료 어유와 완성 보충제를 구별할 근거 없이 전부 제외하면 안 된다. 용도가 확인되기 전 보류한다."
+        },
+        {
+          "source_id": 172690,
+          "action": "EXCLUDE",
+          "reason": "원문: Bread, whole-wheat, prepared from recipe. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 172691,
+          "action": "EXCLUDE",
+          "reason": "원문: Bread, whole-wheat, prepared from recipe, toasted. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 172739,
+          "action": "UNKNOWN",
+          "reason": "원문: Crackers, crispbread, rye. 현재 다수결: INCLUDE. 크래커 제외와 기본 빵 허용의 경계에서 두 표가 flatbread/toasted bread로 해석해 포함했다. 원문 전체의 제품 정체성과 정책상 기본 빵 범위를 확인해야 하며 크래커라는 첫 단어만으로 반대로 제외하지도 않는다."
+        },
+        {
+          "source_id": 172740,
+          "action": "UNKNOWN",
+          "reason": "원문: Crackers, matzo, plain. 현재 다수결: INCLUDE. 크래커 제외와 기본 빵 허용의 경계에서 두 표가 flatbread/toasted bread로 해석해 포함했다. 원문 전체의 제품 정체성과 정책상 기본 빵 범위를 확인해야 하며 크래커라는 첫 단어만으로 반대로 제외하지도 않는다."
+        },
+        {
+          "source_id": 172741,
+          "action": "UNKNOWN",
+          "reason": "원문: Crackers, matzo, egg. 현재 다수결: INCLUDE. 크래커 제외와 기본 빵 허용의 경계에서 두 표가 flatbread/toasted bread로 해석해 포함했다. 원문 전체의 제품 정체성과 정책상 기본 빵 범위를 확인해야 하며 크래커라는 첫 단어만으로 반대로 제외하지도 않는다."
+        },
+        {
+          "source_id": 172742,
+          "action": "UNKNOWN",
+          "reason": "원문: Crackers, matzo, whole-wheat. 현재 다수결: INCLUDE. 크래커 제외와 기본 빵 허용의 경계에서 두 표가 flatbread/toasted bread로 해석해 포함했다. 원문 전체의 제품 정체성과 정책상 기본 빵 범위를 확인해야 하며 크래커라는 첫 단어만으로 반대로 제외하지도 않는다."
+        },
+        {
+          "source_id": 172810,
+          "action": "EXCLUDE",
+          "reason": "원문: Rolls, dinner, plain, prepared from recipe, made with low fat (2%) milk. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 172812,
+          "action": "UNKNOWN",
+          "reason": "원문: Crackers, matzo, egg and onion. 현재 다수결: INCLUDE. 크래커 제외와 기본 빵 허용의 경계에서 두 표가 flatbread/toasted bread로 해석해 포함했다. 원문 전체의 제품 정체성과 정책상 기본 빵 범위를 확인해야 하며 크래커라는 첫 단어만으로 반대로 제외하지도 않는다."
+        },
+        {
+          "source_id": 172822,
+          "action": "UNKNOWN",
+          "reason": "원문: Crackers, melba toast, plain, without salt. 현재 다수결: INCLUDE. 크래커 제외와 기본 빵 허용의 경계에서 두 표가 flatbread/toasted bread로 해석해 포함했다. 원문 전체의 제품 정체성과 정책상 기본 빵 범위를 확인해야 하며 크래커라는 첫 단어만으로 반대로 제외하지도 않는다."
+        },
+        {
+          "source_id": 172883,
+          "action": "EXCLUDE",
+          "reason": "원문: Soup, stock, beef, home-prepared. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 172884,
+          "action": "EXCLUDE",
+          "reason": "원문: Soup, stock, chicken, home-prepared. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 172885,
+          "action": "EXCLUDE",
+          "reason": "원문: Soup, stock, fish, home-prepared. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 173577,
+          "action": "UNKNOWN",
+          "reason": "원문: Fish oil, cod liver. 현재 다수결: EXCLUDE. 원문에 없는 dietary supplement 정체성을 두 표가 추가했다. 원료 어유와 완성 보충제를 구별할 근거 없이 전부 제외하면 안 된다. 용도가 확인되기 전 보류한다."
+        },
+        {
+          "source_id": 173578,
+          "action": "UNKNOWN",
+          "reason": "원문: Fish oil, sardine. 현재 다수결: EXCLUDE. 원문에 없는 dietary supplement 정체성을 두 표가 추가했다. 원료 어유와 완성 보충제를 구별할 근거 없이 전부 제외하면 안 된다. 용도가 확인되기 전 보류한다."
+        },
+        {
+          "source_id": 173858,
+          "action": "UNKNOWN",
+          "reason": "원문: Chicken spread. 현재 다수결: INCLUDE. 일반 meat spread를 정책에 명시된 ham/bacon/sausage와 동등한 허용 종류로 확대했다. 허용 보존육인지 복합 스프레드인지 확인이 필요하다."
+        },
+        {
+          "source_id": 174068,
+          "action": "UNKNOWN",
+          "reason": "원문: Dip, salsa con queso, cheese and salsa- medium. 현재 다수결: EXCLUDE. 정책 v2는 허용 종류가 불분명한 딥·스프레드를 UNKNOWN으로 둔다. 원문에 없는 snack/appetizer 정체성으로 확정 제외했다. 포함으로 자동 전환하지 않는다."
+        },
+        {
+          "source_id": 174070,
+          "action": "UNKNOWN",
+          "reason": "원문: Sauce, peanut, made from peanut butter, water, soy sauce. 현재 다수결: INCLUDE. 소스 이름과 재료 또는 cooked 표기만으로 시판 조리 재료인지 레시피 음식인지 확정할 수 없다. 세 표는 소스라는 이유만으로 허용했다."
+        },
+        {
+          "source_id": 174289,
+          "action": "UNKNOWN",
+          "reason": "원문: Hummus, commercial. 현재 다수결: EXCLUDE. 정책 v2는 허용 종류가 불분명한 딥·스프레드를 UNKNOWN으로 둔다. 원문에 없는 snack/appetizer 정체성으로 확정 제외했다. 포함으로 자동 전환하지 않는다."
+        },
+        {
+          "source_id": 174525,
+          "action": "EXCLUDE",
+          "reason": "원문: Sauce, homemade, white, medium. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 174526,
+          "action": "EXCLUDE",
+          "reason": "원문: Sauce, homemade, white, thick. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 174542,
+          "action": "EXCLUDE",
+          "reason": "원문: Sauce, white, thin, prepared-from-recipe, with butter. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 174543,
+          "action": "EXCLUDE",
+          "reason": "원문: Sauce, sweet and sour, prepared-from-recipe. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 174583,
+          "action": "UNKNOWN",
+          "reason": "원문: Sandwich spread, pork, beef. 현재 다수결: INCLUDE. 일반 meat spread를 정책에 명시된 ham/bacon/sausage와 동등한 허용 종류로 확대했다. 허용 보존육인지 복합 스프레드인지 확인이 필요하다."
+        },
+        {
+          "source_id": 174686,
+          "action": "UNKNOWN",
+          "reason": "원문: Guava sauce, cooked. 현재 다수결: INCLUDE. 소스 이름과 재료 또는 cooked 표기만으로 시판 조리 재료인지 레시피 음식인지 확정할 수 없다. 세 표는 소스라는 이유만으로 허용했다."
+        },
+        {
+          "source_id": 174926,
+          "action": "EXCLUDE",
+          "reason": "원문: Bread, white, prepared from recipe, made with nonfat dry milk. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 174927,
+          "action": "EXCLUDE",
+          "reason": "원문: Bread, white, prepared from recipe, made with low fat (2%) milk. 현재 다수결: INCLUDE. 정책 v2의 집에서 배합한 복합 레시피 음식 제외가 소스·육수·기본 빵 허용보다 우선한다. home recipe와 prepared-from-recipe도 같은 의미다."
+        },
+        {
+          "source_id": 174977,
+          "action": "UNKNOWN",
+          "reason": "원문: Crackers, melba toast, plain. 현재 다수결: INCLUDE. 크래커 제외와 기본 빵 허용의 경계에서 두 표가 flatbread/toasted bread로 해석해 포함했다. 원문 전체의 제품 정체성과 정책상 기본 빵 범위를 확인해야 하며 크래커라는 첫 단어만으로 반대로 제외하지도 않는다."
+        },
+        {
+          "source_id": 174978,
+          "action": "UNKNOWN",
+          "reason": "원문: Crackers, melba toast, rye (includes pumpernickel). 현재 다수결: INCLUDE. 크래커 제외와 기본 빵 허용의 경계에서 두 표가 flatbread/toasted bread로 해석해 포함했다. 원문 전체의 제품 정체성과 정책상 기본 빵 범위를 확인해야 하며 크래커라는 첫 단어만으로 반대로 제외하지도 않는다."
+        },
+        {
+          "source_id": 174979,
+          "action": "UNKNOWN",
+          "reason": "원문: Crackers, melba toast, wheat. 현재 다수결: INCLUDE. 크래커 제외와 기본 빵 허용의 경계에서 두 표가 flatbread/toasted bread로 해석해 포함했다. 원문 전체의 제품 정체성과 정책상 기본 빵 범위를 확인해야 하며 크래커라는 첫 단어만으로 반대로 제외하지도 않는다."
+        },
+        {
+          "source_id": 175040,
+          "action": "EXCLUDE",
+          "reason": "원문: Leavening agents, baking soda. 현재 다수결: INCLUDE. 현재 정책은 명시적으로 열거한 조리용 첨가물만 허용하며 이 물질은 그 목록에 없다. 조리에 유용하다는 직관으로 허용 대상을 확대했다. 포함하려면 정책 자체에서 해당 예외를 먼저 명시해야 한다."
+        },
+        {
+          "source_id": 175041,
+          "action": "EXCLUDE",
+          "reason": "원문: Leavening agents, cream of tartar. 현재 다수결: INCLUDE. 현재 정책은 명시적으로 열거한 조리용 첨가물만 허용하며 이 물질은 그 목록에 없다. 조리에 유용하다는 직관으로 허용 대상을 확대했다. 포함하려면 정책 자체에서 해당 예외를 먼저 명시해야 한다."
+        },
+        {
+          "source_id": 175140,
+          "action": "UNKNOWN",
+          "reason": "원문: Fish, sardine, Pacific, canned in tomato sauce, drained solids with bone. 현재 다수결: INCLUDE. canned in tomato sauce가 원료 보존 방식인지 양념 결합 메뉴인지 정책 적용 경계가 불명확하다. 일반 생선 통조림으로 자동 포함하지 말고 확인해야 한다."
+        }
+      ]
+    },
+    "findings": [
+      {
+        "source_id": 167620,
+        "source_description": "Tea, tundra, herb and laborador combination (Alaska Native)",
+        "action": "EXCLUDE",
+        "reason": "USDA 수분 99.7 g/100 g와 1 kcal를 근거로 건조 찻잎이 아닌 우려낸 완성 음료로 판단한다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 167682,
+        "source_description": "Pectin, liquid",
+        "action": "INCLUDE",
+        "reason": "식품용 제빵·응고·유화·감미 원료이므로 포함한다. 첨가물이라는 이유로 제외하지 않는다.",
+        "evidence_urls": [],
+        "english_name": "Pectin, liquid"
+      },
+      {
+        "source_id": 167766,
+        "source_description": "Maraschino cherries, canned, drained",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Cherry, maraschino, canned, drained"
+      },
+      {
+        "source_id": 167781,
+        "source_description": "Candied fruit",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Candied fruit"
+      },
+      {
+        "source_id": 168023,
+        "source_description": "Fish, salmon, tipnuk, fermented (Alaska Native)",
+        "action": "INCLUDE",
+        "reason": "발효 보존 생선 원료로 포함한다. 원문에 없는 복합 배합을 추정하지 않는다.",
+        "evidence_urls": [],
+        "english_name": "Salmon, tipnuk, fermented"
+      },
+      {
+        "source_id": 168217,
+        "source_description": "Raspberry juice concentrate",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Raspberry juice concentrate"
+      },
+      {
+        "source_id": 168660,
+        "source_description": "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean and fat, trimmed to 0\" fat, all grades, raw",
+        "action": "INCLUDE",
+        "reason": "America’s Beef Roast는 USDA가 명시한 chuck eye roast의 다른 이름이며 브랜드 제품이 아니다.",
+        "evidence_urls": [
+          "https://www.ars.usda.gov/ARSUserFiles/80400525/Articles/MAND2014_BeefCooking.pdf"
+        ],
+        "english_name": "Beef chuck eye roast, boneless"
+      },
+      {
+        "source_id": 168661,
+        "source_description": "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean and fat, trimmed to 0\" fat, choice, raw",
+        "action": "INCLUDE",
+        "reason": "America’s Beef Roast는 USDA가 명시한 chuck eye roast의 다른 이름이며 브랜드 제품이 아니다.",
+        "evidence_urls": [
+          "https://www.ars.usda.gov/ARSUserFiles/80400525/Articles/MAND2014_BeefCooking.pdf"
+        ],
+        "english_name": "Beef chuck eye roast, boneless"
+      },
+      {
+        "source_id": 168662,
+        "source_description": "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean and fat, trimmed to 0\" fat, select, raw",
+        "action": "INCLUDE",
+        "reason": "America’s Beef Roast는 USDA가 명시한 chuck eye roast의 다른 이름이며 브랜드 제품이 아니다.",
+        "evidence_urls": [
+          "https://www.ars.usda.gov/ARSUserFiles/80400525/Articles/MAND2014_BeefCooking.pdf"
+        ],
+        "english_name": "Beef chuck eye roast, boneless"
+      },
+      {
+        "source_id": 168742,
+        "source_description": "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean only, trimmed to 0\" fat, select, raw",
+        "action": "INCLUDE",
+        "reason": "America’s Beef Roast는 USDA가 명시한 chuck eye roast의 다른 이름이며 브랜드 제품이 아니다.",
+        "evidence_urls": [
+          "https://www.ars.usda.gov/ARSUserFiles/80400525/Articles/MAND2014_BeefCooking.pdf"
+        ],
+        "english_name": "Beef chuck eye roast, boneless"
+      },
+      {
+        "source_id": 168758,
+        "source_description": "Toppings, strawberry",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Strawberry topping"
+      },
+      {
+        "source_id": 168821,
+        "source_description": "Pectin, unsweetened, dry mix",
+        "action": "INCLUDE",
+        "reason": "식품용 제빵·응고·유화·감미 원료이므로 포함한다. 첨가물이라는 이유로 제외하지 않는다.",
+        "evidence_urls": [],
+        "english_name": "Pectin, unsweetened, dry mix"
+      },
+      {
+        "source_id": 168841,
+        "source_description": "Toppings, butterscotch or caramel",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Butterscotch or caramel topping"
+      },
+      {
+        "source_id": 168905,
+        "source_description": "Noodles, chinese, chow mein",
+        "action": "INCLUDE",
+        "reason": "완성 chow mein 요리가 아닌 바삭한 가공 면 원료다. USDA dry portion과 수분 1.58%로 형태를 구분한다.",
+        "evidence_urls": [
+          "https://www.nutrition.va.gov/docs/Recipes/MainDishes/Chicken-Chow-Mein-DEC2020.pdf"
+        ],
+        "english_name": "Chow mein noodles, crispy"
+      },
+      {
+        "source_id": 169004,
+        "source_description": "Piki bread, made from blue cornmeal (Hopi)",
+        "action": "INCLUDE",
+        "reason": "Hopi 공식 자료의 기본 Blue Corn Bread로 포함한다.",
+        "evidence_urls": [
+          "https://www.hopi-nsn.gov/wp-content/uploads/2021/05/May-19-issue-FINAL_.pdf"
+        ],
+        "english_name": "Blue corn piki bread"
+      },
+      {
+        "source_id": 169144,
+        "source_description": "Beans, snap, canned, all styles, seasoned, solids and liquids",
+        "action": "EXCLUDE",
+        "reason": "원문에 seasoned를 명시한 양념 결합 반찬·메뉴 제품이므로 제외한다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 169565,
+        "source_description": "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean only, trimmed to 0\" fat, all grades, raw",
+        "action": "INCLUDE",
+        "reason": "America’s Beef Roast는 USDA가 명시한 chuck eye roast의 다른 이름이며 브랜드 제품이 아니다.",
+        "evidence_urls": [
+          "https://www.ars.usda.gov/ARSUserFiles/80400525/Articles/MAND2014_BeefCooking.pdf"
+        ],
+        "english_name": "Beef chuck eye roast, boneless"
+      },
+      {
+        "source_id": 169566,
+        "source_description": "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean only, trimmed to 0\" fat, choice, raw",
+        "action": "INCLUDE",
+        "reason": "America’s Beef Roast는 USDA가 명시한 chuck eye roast의 다른 이름이며 브랜드 제품이 아니다.",
+        "evidence_urls": [
+          "https://www.ars.usda.gov/ARSUserFiles/80400525/Articles/MAND2014_BeefCooking.pdf"
+        ],
+        "english_name": "Beef chuck eye roast, boneless"
+      },
+      {
+        "source_id": 169664,
+        "source_description": "Toppings, marshmallow cream",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Marshmallow cream topping"
+      },
+      {
+        "source_id": 169665,
+        "source_description": "Toppings, pineapple",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Pineapple topping"
+      },
+      {
+        "source_id": 169666,
+        "source_description": "Toppings, nuts in syrup",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Nuts in syrup topping"
+      },
+      {
+        "source_id": 169743,
+        "source_description": "Wheat, KAMUT khorasan, uncooked",
+        "action": "EXCLUDE",
+        "reason": "KAMUT는 등록 브랜드이므로 일반 khorasan wheat로 바꾸어 포함하지 않는다.",
+        "evidence_urls": [
+          "https://www.kamut.com/the-brand"
+        ]
+      },
+      {
+        "source_id": 169744,
+        "source_description": "Wheat, KAMUT khorasan, cooked",
+        "action": "EXCLUDE",
+        "reason": "KAMUT는 등록 브랜드이므로 일반 khorasan wheat로 바꾸어 포함하지 않는다.",
+        "evidence_urls": [
+          "https://www.kamut.com/the-brand"
+        ]
+      },
+      {
+        "source_id": 169763,
+        "source_description": "Potatoes, yellow fleshed, roasted, salt added in processing, frozen, unprepared",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Potato, yellow fleshed, frozen, salt added"
+      },
+      {
+        "source_id": 169830,
+        "source_description": "Bread, blue corn, somiviki (Hopi)",
+        "action": "EXCLUDE",
+        "reason": "Hopi 공식 자료에서 Sweet Tamale로 설명하는 완성 음식이다.",
+        "evidence_urls": [
+          "https://www.hopi-nsn.gov/wp-content/uploads/2021/05/May-19-issue-FINAL_.pdf"
+        ]
+      },
+      {
+        "source_id": 170014,
+        "source_description": "Peas, green, canned, seasoned, solids and liquids",
+        "action": "EXCLUDE",
+        "reason": "원문에 seasoned를 명시한 양념 결합 반찬·메뉴 제품이므로 제외한다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 170031,
+        "source_description": "Potatoes, roasted, salt added in processing, frozen, unprepared",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Potato, frozen, salt added"
+      },
+      {
+        "source_id": 170679,
+        "source_description": "Sweetener, herbal extract powder from Stevia leaf",
+        "action": "INCLUDE",
+        "reason": "식품용 제빵·응고·유화·감미 원료이므로 포함한다. 첨가물이라는 이유로 제외하지 않는다.",
+        "evidence_urls": [],
+        "english_name": "Stevia leaf extract powder sweetener"
+      },
+      {
+        "source_id": 171174,
+        "source_description": "Sauce, sofrito, prepared from recipe",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 171416,
+        "source_description": "Salad dressing, french, home recipe",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 171417,
+        "source_description": "Salad dressing, home recipe, vinegar and oil",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 171426,
+        "source_description": "Oil, soybean lecithin",
+        "action": "INCLUDE",
+        "reason": "식품용 제빵·응고·유화·감미 원료이므로 포함한다. 첨가물이라는 이유로 제외하지 않는다.",
+        "evidence_urls": [],
+        "english_name": "Soybean lecithin oil"
+      },
+      {
+        "source_id": 171503,
+        "source_description": "Turkey roast, boneless, frozen, seasoned, light and dark meat, raw",
+        "action": "EXCLUDE",
+        "reason": "원문에 seasoned를 명시한 양념 결합 반찬·메뉴 제품이므로 제외한다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 171575,
+        "source_description": "Sauce, peanut, made from coconut, water, sugar, peanuts",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Peanut sauce, made from coconut, water, sugar, peanuts"
+      },
+      {
+        "source_id": 171832,
+        "source_description": "Dip, bean, original flavor",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조미 딥·스프레드로 포함한다.",
+        "evidence_urls": [
+          "https://www.myplate.gov/sites/default/files/2024-01/BuildABetterSandwichWithMyPlate-01-03-24.pdf"
+        ],
+        "english_name": "Bean dip, original flavor"
+      },
+      {
+        "source_id": 172200,
+        "source_description": "Cheese sauce, prepared from recipe",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 172340,
+        "source_description": "Fish oil, herring",
+        "action": "INCLUDE",
+        "reason": "일반 식품 원료 어유이며 완성 보충제 제형이 아니다. 정제 수준과 제한 성분은 별도 판정한다.",
+        "evidence_urls": [
+          "https://www.ams.usda.gov/rules-regulations/organic/petitioned-substances/fish-oil"
+        ],
+        "english_name": "Fish oil, herring"
+      },
+      {
+        "source_id": 172341,
+        "source_description": "Fish oil, menhaden",
+        "action": "INCLUDE",
+        "reason": "일반 식품 원료 어유이며 완성 보충제 제형이 아니다. 정제 수준과 제한 성분은 별도 판정한다.",
+        "evidence_urls": [
+          "https://www.ams.usda.gov/rules-regulations/organic/petitioned-substances/fish-oil"
+        ],
+        "english_name": "Fish oil, menhaden"
+      },
+      {
+        "source_id": 172342,
+        "source_description": "Fish oil, menhaden, fully hydrogenated",
+        "action": "INCLUDE",
+        "reason": "일반 식품 원료 어유이며 완성 보충제 제형이 아니다. 정제 수준과 제한 성분은 별도 판정한다.",
+        "evidence_urls": [
+          "https://www.ams.usda.gov/rules-regulations/organic/petitioned-substances/fish-oil"
+        ],
+        "english_name": "Fish oil, menhaden, fully hydrogenated"
+      },
+      {
+        "source_id": 172343,
+        "source_description": "Fish oil, salmon",
+        "action": "INCLUDE",
+        "reason": "일반 식품 원료 어유이며 완성 보충제 제형이 아니다. 정제 수준과 제한 성분은 별도 판정한다.",
+        "evidence_urls": [
+          "https://www.ams.usda.gov/rules-regulations/organic/petitioned-substances/fish-oil"
+        ],
+        "english_name": "Fish oil, salmon"
+      },
+      {
+        "source_id": 172690,
+        "source_description": "Bread, whole-wheat, prepared from recipe",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 172691,
+        "source_description": "Bread, whole-wheat, prepared from recipe, toasted",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 172739,
+        "source_description": "Crackers, crispbread, rye",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Crispbread, rye"
+      },
+      {
+        "source_id": 172740,
+        "source_description": "Crackers, matzo, plain",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Matzo, plain"
+      },
+      {
+        "source_id": 172741,
+        "source_description": "Crackers, matzo, egg",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Matzo, egg"
+      },
+      {
+        "source_id": 172742,
+        "source_description": "Crackers, matzo, whole-wheat",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Matzo, whole-wheat"
+      },
+      {
+        "source_id": 172810,
+        "source_description": "Rolls, dinner, plain, prepared from recipe, made with low fat (2%) milk",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 172812,
+        "source_description": "Crackers, matzo, egg and onion",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Matzo, egg and onion"
+      },
+      {
+        "source_id": 172822,
+        "source_description": "Crackers, melba toast, plain, without salt",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Melba toast, plain, without salt"
+      },
+      {
+        "source_id": 172883,
+        "source_description": "Soup, stock, beef, home-prepared",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 172884,
+        "source_description": "Soup, stock, chicken, home-prepared",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 172885,
+        "source_description": "Soup, stock, fish, home-prepared",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 173577,
+        "source_description": "Fish oil, cod liver",
+        "action": "INCLUDE",
+        "reason": "일반 식품 원료 어유이며 완성 보충제 제형이 아니다. 정제 수준과 제한 성분은 별도 판정한다.",
+        "evidence_urls": [
+          "https://www.ams.usda.gov/rules-regulations/organic/petitioned-substances/fish-oil"
+        ],
+        "english_name": "Fish oil, cod liver"
+      },
+      {
+        "source_id": 173578,
+        "source_description": "Fish oil, sardine",
+        "action": "INCLUDE",
+        "reason": "일반 식품 원료 어유이며 완성 보충제 제형이 아니다. 정제 수준과 제한 성분은 별도 판정한다.",
+        "evidence_urls": [
+          "https://www.ams.usda.gov/rules-regulations/organic/petitioned-substances/fish-oil"
+        ],
+        "english_name": "Fish oil, sardine"
+      },
+      {
+        "source_id": 173858,
+        "source_description": "Chicken spread",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Chicken spread"
+      },
+      {
+        "source_id": 174068,
+        "source_description": "Dip, salsa con queso, cheese and salsa- medium",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조미 딥·스프레드로 포함한다.",
+        "evidence_urls": [
+          "https://www.myplate.gov/sites/default/files/2024-01/BuildABetterSandwichWithMyPlate-01-03-24.pdf"
+        ],
+        "english_name": "Salsa con queso dip, medium"
+      },
+      {
+        "source_id": 174070,
+        "source_description": "Sauce, peanut, made from peanut butter, water, soy sauce",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Peanut sauce, made from peanut butter, water, soy sauce"
+      },
+      {
+        "source_id": 174289,
+        "source_description": "Hummus, commercial",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조미 딥·스프레드로 포함한다.",
+        "evidence_urls": [
+          "https://www.myplate.gov/sites/default/files/2024-01/BuildABetterSandwichWithMyPlate-01-03-24.pdf"
+        ],
+        "english_name": "Hummus"
+      },
+      {
+        "source_id": 174525,
+        "source_description": "Sauce, homemade, white, medium",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 174526,
+        "source_description": "Sauce, homemade, white, thick",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 174542,
+        "source_description": "Sauce, white, thin, prepared-from-recipe, with butter",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 174543,
+        "source_description": "Sauce, sweet and sour, prepared-from-recipe",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 174583,
+        "source_description": "Sandwich spread, pork, beef",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Sandwich spread, pork, beef"
+      },
+      {
+        "source_id": 174686,
+        "source_description": "Guava sauce, cooked",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Guava sauce"
+      },
+      {
+        "source_id": 174926,
+        "source_description": "Bread, white, prepared from recipe, made with nonfat dry milk",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 174927,
+        "source_description": "Bread, white, prepared from recipe, made with low fat (2%) milk",
+        "action": "EXCLUDE",
+        "reason": "원문에 명시된 레시피로 만든 복합 음식이다.",
+        "evidence_urls": []
+      },
+      {
+        "source_id": 174977,
+        "source_description": "Crackers, melba toast, plain",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Melba toast, plain"
+      },
+      {
+        "source_id": 174978,
+        "source_description": "Crackers, melba toast, rye (includes pumpernickel)",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Melba toast, rye"
+      },
+      {
+        "source_id": 174979,
+        "source_description": "Crackers, melba toast, wheat",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Melba toast, wheat"
+      },
+      {
+        "source_id": 175040,
+        "source_description": "Leavening agents, baking soda",
+        "action": "INCLUDE",
+        "reason": "식품용 제빵·응고·유화·감미 원료이므로 포함한다. 첨가물이라는 이유로 제외하지 않는다.",
+        "evidence_urls": [],
+        "english_name": "Baking soda"
+      },
+      {
+        "source_id": 175041,
+        "source_description": "Leavening agents, cream of tartar",
+        "action": "INCLUDE",
+        "reason": "식품용 제빵·응고·유화·감미 원료이므로 포함한다. 첨가물이라는 이유로 제외하지 않는다.",
+        "evidence_urls": [],
+        "english_name": "Cream of tartar"
+      },
+      {
+        "source_id": 175140,
+        "source_description": "Fish, sardine, Pacific, canned in tomato sauce, drained solids with bone",
+        "action": "INCLUDE",
+        "reason": "음식에 넣는 일반 조리 원료이며 레시피 완성 음식이 아니다.",
+        "evidence_urls": [],
+        "english_name": "Sardine, Pacific, canned in tomato sauce, drained solids with bone"
+      }
+    ]
+  },
+  "reused_selection": {
+    "metadata": {
+      "model": "gemini-3.5-flash-lite",
+      "agents": [
+        "a",
+        "b",
+        "c"
+      ],
+      "source": {
+        "url": "https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_sr_legacy_food_csv_2018-04.zip",
+        "release": "2018-04",
+        "archive_sha256": "b80817294b8850530aaedf2e515c02593b1824f763a0ff356e5c2081643e6fd0",
+        "row_count": 7793,
+        "license": "CC0-1.0"
+      },
+      "policy_sha256": "b87d40dd3e67e8a9354093d7d3f5bb70b607d0e00890597c93a32b3ef24639b8",
+      "source_sha256": "e18a402e3790ce9cfdfd1e9cee3f88420d08c1fc2c4b5663df7187ee81ec2726",
+      "temperature": 0.2,
+      "thinking_level": "default"
+    },
+    "votes_per_agent": {
+      "a": 7793,
+      "b": 7793,
+      "c": 7793
+    }
+  },
+  "included_sources": 3207,
+  "restriction_counts": {
+    "ALLERGY.EGGS": {
+      "NEVER": 2067,
+      "ALWAYS": 32,
+      "DEPENDS_ON_PRODUCT": 276,
+      "UNKNOWN": 33
+    },
+    "ALLERGY.FISH": {
+      "NEVER": 2147,
+      "ALWAYS": 144,
+      "DEPENDS_ON_PRODUCT": 35,
+      "UNKNOWN": 82
+    },
+    "ALLERGY.MILK_DAIRY": {
+      "NEVER": 1928,
+      "ALWAYS": 172,
+      "DEPENDS_ON_PRODUCT": 272,
+      "UNKNOWN": 36
+    },
+    "ALLERGY.PEANUTS": {
+      "NEVER": 2261,
+      "ALWAYS": 34,
+      "DEPENDS_ON_PRODUCT": 25,
+      "UNKNOWN": 88
+    },
+    "ALLERGY.SESAME": {
+      "NEVER": 2153,
+      "ALWAYS": 15,
+      "DEPENDS_ON_PRODUCT": 187,
+      "UNKNOWN": 53
+    },
+    "ALLERGY.SHELLFISH": {
+      "NEVER": 2275,
+      "ALWAYS": 35,
+      "DEPENDS_ON_PRODUCT": 9,
+      "UNKNOWN": 89
+    },
+    "ALLERGY.SOY": {
+      "NEVER": 1874,
+      "ALWAYS": 41,
+      "DEPENDS_ON_PRODUCT": 413,
+      "UNKNOWN": 80
+    },
+    "ALLERGY.TREE_NUTS": {
+      "NEVER": 2202,
+      "ALWAYS": 67,
+      "DEPENDS_ON_PRODUCT": 28,
+      "UNKNOWN": 111
+    },
+    "ALLERGY.WHEAT": {
+      "NEVER": 1969,
+      "ALWAYS": 128,
+      "DEPENDS_ON_PRODUCT": 257,
+      "UNKNOWN": 54
+    },
+    "DIETARY_APPROACH.CASEIN_FREE": {
+      "NEVER": 1926,
+      "ALWAYS": 167,
+      "DEPENDS_ON_PRODUCT": 271,
+      "UNKNOWN": 44
+    },
+    "DIETARY_APPROACH.GLUTEN_FREE": {
+      "NEVER": 1965,
+      "ALWAYS": 121,
+      "DEPENDS_ON_PRODUCT": 273,
+      "UNKNOWN": 49
+    },
+    "DIETARY_APPROACH.LACTOSE_FREE": {
+      "NEVER": 1926,
+      "ALWAYS": 94,
+      "DEPENDS_ON_PRODUCT": 340,
+      "UNKNOWN": 48
+    },
+    "VEGETARIAN.DAIRY": {
+      "NEVER": 1928,
+      "ALWAYS": 172,
+      "DEPENDS_ON_PRODUCT": 271,
+      "UNKNOWN": 37
+    },
+    "VEGETARIAN.EGGS": {
+      "NEVER": 2067,
+      "ALWAYS": 32,
+      "DEPENDS_ON_PRODUCT": 275,
+      "UNKNOWN": 34
+    },
+    "VEGETARIAN.LEGUMES_SOY": {
+      "NEVER": 1788,
+      "ALWAYS": 182,
+      "DEPENDS_ON_PRODUCT": 412,
+      "UNKNOWN": 26
+    },
+    "VEGETARIAN.NUTS_SEEDS": {
+      "NEVER": 1997,
+      "ALWAYS": 172,
+      "DEPENDS_ON_PRODUCT": 178,
+      "UNKNOWN": 61
+    },
+    "VEGETARIAN.POULTRY": {
+      "NEVER": 2121,
+      "ALWAYS": 190,
+      "DEPENDS_ON_PRODUCT": 11,
+      "UNKNOWN": 86
+    },
+    "VEGETARIAN.RED_MEAT": {
+      "NEVER": 1850,
+      "ALWAYS": 456,
+      "DEPENDS_ON_PRODUCT": 18,
+      "UNKNOWN": 84
+    },
+    "VEGETARIAN.SEAFOOD": {
+      "NEVER": 2107,
+      "ALWAYS": 193,
+      "DEPENDS_ON_PRODUCT": 33,
+      "UNKNOWN": 75
+    }
+  },
+  "review_withheld_pairs": 1034,
+  "two_to_one_restrictions": 1511,
+  "three_way_restrictions": 29,
+  "restriction_disagreement_examples": [
+    {
+      "ingredient_name": "Acorn",
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "votes": {
+        "a": "ALWAYS",
+        "b": "NEVER",
+        "c": "ALWAYS"
+      },
+      "final": "ALWAYS"
+    },
+    {
+      "ingredient_name": "Acorn flour, full fat",
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "votes": {
+        "a": "ALWAYS",
+        "b": "NEVER",
+        "c": "ALWAYS"
+      },
+      "final": "ALWAYS"
+    },
+    {
+      "ingredient_name": "Acorn, dried",
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "votes": {
+        "a": "ALWAYS",
+        "b": "NEVER",
+        "c": "ALWAYS"
+      },
+      "final": "ALWAYS"
+    },
+    {
+      "ingredient_name": "Alfredo sauce mix, dry",
+      "restriction_type": "ALLERGY.PEANUTS",
+      "votes": {
+        "a": "DEPENDS_ON_PRODUCT",
+        "b": "NEVER",
+        "c": "NEVER"
+      },
+      "final": "UNKNOWN"
+    },
+    {
+      "ingredient_name": "Alfredo sauce mix, dry",
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "votes": {
+        "a": "DEPENDS_ON_PRODUCT",
+        "b": "NEVER",
+        "c": "NEVER"
+      },
+      "final": "UNKNOWN"
+    },
+    {
+      "ingredient_name": "Alfredo sauce mix, dry",
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "votes": {
+        "a": "DEPENDS_ON_PRODUCT",
+        "b": "NEVER",
+        "c": "NEVER"
+      },
+      "final": "UNKNOWN"
+    },
+    {
+      "ingredient_name": "Almond oil",
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "votes": {
+        "a": "ALWAYS",
+        "b": "ALWAYS",
+        "c": "DEPENDS_ON_PRODUCT"
+      },
+      "final": "UNKNOWN"
+    },
+    {
+      "ingredient_name": "Almond, oil roasted",
+      "restriction_type": "ALLERGY.SOY",
+      "votes": {
+        "a": "NEVER",
+        "b": "DEPENDS_ON_PRODUCT",
+        "c": "NEVER"
+      },
+      "final": "NEVER"
+    },
+    {
+      "ingredient_name": "Almond, oil roasted, lightly salted",
+      "restriction_type": "ALLERGY.SOY",
+      "votes": {
+        "a": "NEVER",
+        "b": "DEPENDS_ON_PRODUCT",
+        "c": "NEVER"
+      },
+      "final": "NEVER"
+    },
+    {
+      "ingredient_name": "Almond, oil roasted, with salt added",
+      "restriction_type": "ALLERGY.SOY",
+      "votes": {
+        "a": "NEVER",
+        "b": "DEPENDS_ON_PRODUCT",
+        "c": "NEVER"
+      },
+      "final": "NEVER"
+    }
+  ],
+  "source_name_disagreements": 3025,
+  "source_name_disagreement_examples": [
+    {
+      "source_id": 167568,
+      "description": "Baking chocolate, unsweetened, squares",
+      "names": {
+        "a": "Baking chocolate, unsweetened",
+        "b": "Baking chocolate, unsweetened, squares",
+        "c": "Baking chocolate, unsweetened"
+      },
+      "final": "Baking chocolate, unsweetened"
+    },
+    {
+      "source_id": 167584,
+      "description": "Syrups, table blends, pancake, with butter",
+      "names": {
+        "a": "Pancake table blends syrup, with butter",
+        "b": "Pancake syrup, table blend, with butter",
+        "c": "Pancake syrup, table blends, with butter"
+      },
+      "final": null
+    },
+    {
+      "source_id": 167607,
+      "description": "Moose, meat, raw (Alaska Native)",
+      "names": {
+        "a": "Moose meat",
+        "b": "Moose meat",
+        "c": "Venison, sitka"
+      },
+      "final": "Moose meat"
+    },
+    {
+      "source_id": 167608,
+      "description": "Mashu roots, raw (Alaska Native)",
+      "names": {
+        "a": "Mashu root",
+        "b": "Mashu roots",
+        "c": "Mashu root, raw"
+      },
+      "final": null
+    },
+    {
+      "source_id": 167609,
+      "description": "Moose, liver, braised (Alaska Native)",
+      "names": {
+        "a": "Moose liver",
+        "b": "Moose liver",
+        "c": "Moose liver, braised"
+      },
+      "final": "Moose liver"
+    },
+    {
+      "source_id": 167610,
+      "description": "Seal, bearded (Oogruk), meat, raw (Alaska Native)",
+      "names": {
+        "a": "Bearded seal meat",
+        "b": "Seal meat, bearded",
+        "c": "Bearded seal meat"
+      },
+      "final": "Bearded seal meat"
+    },
+    {
+      "source_id": 167612,
+      "description": "Oopah (tunicate), whole animal (Alaska Native)",
+      "names": {
+        "a": "Oopah whole animal",
+        "b": "Oopah tunicate whole animal",
+        "c": "Oopah whole animal"
+      },
+      "final": "Oopah whole animal"
+    },
+    {
+      "source_id": 167614,
+      "description": "Fish, salmon, king, chinook, smoked and canned (Alaska Native)",
+      "names": {
+        "a": "Salmon, king, smoked and canned",
+        "b": "King salmon, smoked and canned",
+        "c": "King salmon, smoked and canned"
+      },
+      "final": "King salmon, smoked and canned"
+    },
+    {
+      "source_id": 167615,
+      "description": "Fish, salmon, king, chinook, smoked, brined (Alaska Native)",
+      "names": {
+        "a": "Salmon, king, smoked, brined",
+        "b": "King salmon, smoked, brined",
+        "c": "King salmon, smoked, brined"
+      },
+      "final": "King salmon, smoked, brined"
+    },
+    {
+      "source_id": 167616,
+      "description": "Fish, salmon, king, chinook, liver (Alaska Native)",
+      "names": {
+        "a": "Salmon liver, king",
+        "b": "King salmon liver",
+        "c": "King salmon liver"
+      },
+      "final": "King salmon liver"
+    }
+  ],
+  "sha256": {
+    "ingredients.jsonl": "edc0600a5a7026e1392a81cfa97d1e60abfc4ad6cfd284fb8f62fedf8b2d92d1",
+    "ingredients_restrictions.jsonl": "08aa25a3481ad44798134ebe6d218f88d5f822c526f52a3c295f2c23f12387d6"
+  }
+}

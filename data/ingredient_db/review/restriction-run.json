@@ -1,5 +1,5 @@
 {
-  "status": "responses_complete_review_pending",
+  "status": "exported_and_validated",
   "ingredients": 2408,
   "restriction_types": 19,
   "judgments": 45752,
@@ -11,7 +11,10 @@
     "DEPENDS_ON_PRODUCT": 3586,
     "UNKNOWN": 136
   },
-  "catalog_sha256": "a5a8565d8df93c9f57fbb6aeca54eca2a64a7389e17425b7cdb71aace5b9b965",
-  "pending_review": "restriction-review.json",
-  "final_jsonl_generated": false
+  "catalog_sha256": "414a4206b0d7690665f2be97062054563d4fc14912e4c5ea1828788ddfd0db32",
+  "final_jsonl_generated": true,
+  "majority_catalog_sha256": "a5a8565d8df93c9f57fbb6aeca54eca2a64a7389e17425b7cdb71aace5b9b965",
+  "review_decisions": "restriction-decisions.json",
+  "final_relationships": 44582,
+  "withheld_pairs": 1170
 }

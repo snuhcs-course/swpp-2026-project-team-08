@@ -1,12 +1,12 @@
 {
-  "ingredients": 2408,
-  "restrictions": 44582,
-  "unresolved_restrictions": 1170,
+  "ingredients": 1168,
+  "restrictions": 21806,
+  "unresolved_restrictions": 386,
   "restriction_types": 19,
-  "agent_votes": 137256,
+  "agent_votes": 66576,
   "source_rows": 7793,
-  "excluded_sources": 2942,
-  "unresolved_sources": 1644,
+  "excluded_sources": 2957,
+  "unresolved_sources": 1,
   "provenance": {
     "model": "gemini-3.5-flash-lite",
     "thinking_level": "default",
@@ -1011,223 +1011,223 @@
       "c": 7793
     }
   },
-  "included_sources": 3207,
+  "included_sources": 4835,
   "restriction_counts": {
     "ALLERGY.EGGS": {
-      "NEVER": 2067,
-      "ALWAYS": 32,
-      "DEPENDS_ON_PRODUCT": 276,
-      "UNKNOWN": 33
+      "NEVER": 1021,
+      "ALWAYS": 14,
+      "DEPENDS_ON_PRODUCT": 112,
+      "UNKNOWN": 21
     },
     "ALLERGY.FISH": {
-      "NEVER": 2147,
-      "ALWAYS": 144,
-      "DEPENDS_ON_PRODUCT": 35,
-      "UNKNOWN": 82
+      "NEVER": 1058,
+      "ALWAYS": 89,
+      "DEPENDS_ON_PRODUCT": 14,
+      "UNKNOWN": 7
     },
     "ALLERGY.MILK_DAIRY": {
-      "NEVER": 1928,
-      "ALWAYS": 172,
-      "DEPENDS_ON_PRODUCT": 272,
-      "UNKNOWN": 36
-    },
-    "ALLERGY.PEANUTS": {
-      "NEVER": 2261,
-      "ALWAYS": 34,
-      "DEPENDS_ON_PRODUCT": 25,
-      "UNKNOWN": 88
-    },
-    "ALLERGY.SESAME": {
-      "NEVER": 2153,
-      "ALWAYS": 15,
-      "DEPENDS_ON_PRODUCT": 187,
-      "UNKNOWN": 53
-    },
-    "ALLERGY.SHELLFISH": {
-      "NEVER": 2275,
-      "ALWAYS": 35,
-      "DEPENDS_ON_PRODUCT": 9,
-      "UNKNOWN": 89
-    },
-    "ALLERGY.SOY": {
-      "NEVER": 1874,
-      "ALWAYS": 41,
-      "DEPENDS_ON_PRODUCT": 413,
-      "UNKNOWN": 80
-    },
-    "ALLERGY.TREE_NUTS": {
-      "NEVER": 2202,
-      "ALWAYS": 67,
-      "DEPENDS_ON_PRODUCT": 28,
-      "UNKNOWN": 111
-    },
-    "ALLERGY.WHEAT": {
-      "NEVER": 1969,
-      "ALWAYS": 128,
-      "DEPENDS_ON_PRODUCT": 257,
-      "UNKNOWN": 54
-    },
-    "DIETARY_APPROACH.CASEIN_FREE": {
-      "NEVER": 1926,
-      "ALWAYS": 167,
-      "DEPENDS_ON_PRODUCT": 271,
-      "UNKNOWN": 44
-    },
-    "DIETARY_APPROACH.GLUTEN_FREE": {
-      "NEVER": 1965,
-      "ALWAYS": 121,
-      "DEPENDS_ON_PRODUCT": 273,
-      "UNKNOWN": 49
-    },
-    "DIETARY_APPROACH.LACTOSE_FREE": {
-      "NEVER": 1926,
-      "ALWAYS": 94,
-      "DEPENDS_ON_PRODUCT": 340,
-      "UNKNOWN": 48
-    },
-    "VEGETARIAN.DAIRY": {
-      "NEVER": 1928,
-      "ALWAYS": 172,
-      "DEPENDS_ON_PRODUCT": 271,
+      "NEVER": 944,
+      "ALWAYS": 72,
+      "DEPENDS_ON_PRODUCT": 115,
       "UNKNOWN": 37
     },
+    "ALLERGY.PEANUTS": {
+      "NEVER": 1150,
+      "ALWAYS": 5,
+      "DEPENDS_ON_PRODUCT": 11,
+      "UNKNOWN": 2
+    },
+    "ALLERGY.SESAME": {
+      "NEVER": 1107,
+      "ALWAYS": 6,
+      "DEPENDS_ON_PRODUCT": 54,
+      "UNKNOWN": 1
+    },
+    "ALLERGY.SHELLFISH": {
+      "NEVER": 1139,
+      "ALWAYS": 24,
+      "DEPENDS_ON_PRODUCT": 5,
+      "UNKNOWN": 0
+    },
+    "ALLERGY.SOY": {
+      "NEVER": 924,
+      "ALWAYS": 20,
+      "DEPENDS_ON_PRODUCT": 185,
+      "UNKNOWN": 39
+    },
+    "ALLERGY.TREE_NUTS": {
+      "NEVER": 1125,
+      "ALWAYS": 21,
+      "DEPENDS_ON_PRODUCT": 11,
+      "UNKNOWN": 11
+    },
+    "ALLERGY.WHEAT": {
+      "NEVER": 954,
+      "ALWAYS": 35,
+      "DEPENDS_ON_PRODUCT": 146,
+      "UNKNOWN": 33
+    },
+    "DIETARY_APPROACH.CASEIN_FREE": {
+      "NEVER": 943,
+      "ALWAYS": 68,
+      "DEPENDS_ON_PRODUCT": 115,
+      "UNKNOWN": 42
+    },
+    "DIETARY_APPROACH.GLUTEN_FREE": {
+      "NEVER": 944,
+      "ALWAYS": 39,
+      "DEPENDS_ON_PRODUCT": 152,
+      "UNKNOWN": 33
+    },
+    "DIETARY_APPROACH.LACTOSE_FREE": {
+      "NEVER": 943,
+      "ALWAYS": 18,
+      "DEPENDS_ON_PRODUCT": 169,
+      "UNKNOWN": 38
+    },
+    "VEGETARIAN.DAIRY": {
+      "NEVER": 944,
+      "ALWAYS": 73,
+      "DEPENDS_ON_PRODUCT": 115,
+      "UNKNOWN": 36
+    },
     "VEGETARIAN.EGGS": {
-      "NEVER": 2067,
-      "ALWAYS": 32,
-      "DEPENDS_ON_PRODUCT": 275,
-      "UNKNOWN": 34
+      "NEVER": 1021,
+      "ALWAYS": 14,
+      "DEPENDS_ON_PRODUCT": 112,
+      "UNKNOWN": 21
     },
     "VEGETARIAN.LEGUMES_SOY": {
-      "NEVER": 1788,
-      "ALWAYS": 182,
-      "DEPENDS_ON_PRODUCT": 412,
-      "UNKNOWN": 26
+      "NEVER": 888,
+      "ALWAYS": 76,
+      "DEPENDS_ON_PRODUCT": 180,
+      "UNKNOWN": 24
     },
     "VEGETARIAN.NUTS_SEEDS": {
-      "NEVER": 1997,
-      "ALWAYS": 172,
-      "DEPENDS_ON_PRODUCT": 178,
-      "UNKNOWN": 61
+      "NEVER": 1002,
+      "ALWAYS": 83,
+      "DEPENDS_ON_PRODUCT": 51,
+      "UNKNOWN": 32
     },
     "VEGETARIAN.POULTRY": {
-      "NEVER": 2121,
-      "ALWAYS": 190,
-      "DEPENDS_ON_PRODUCT": 11,
-      "UNKNOWN": 86
+      "NEVER": 1061,
+      "ALWAYS": 91,
+      "DEPENDS_ON_PRODUCT": 14,
+      "UNKNOWN": 2
     },
     "VEGETARIAN.RED_MEAT": {
-      "NEVER": 1850,
-      "ALWAYS": 456,
-      "DEPENDS_ON_PRODUCT": 18,
-      "UNKNOWN": 84
+      "NEVER": 927,
+      "ALWAYS": 226,
+      "DEPENDS_ON_PRODUCT": 12,
+      "UNKNOWN": 3
     },
     "VEGETARIAN.SEAFOOD": {
-      "NEVER": 2107,
-      "ALWAYS": 193,
-      "DEPENDS_ON_PRODUCT": 33,
-      "UNKNOWN": 75
+      "NEVER": 1037,
+      "ALWAYS": 115,
+      "DEPENDS_ON_PRODUCT": 12,
+      "UNKNOWN": 4
     }
   },
-  "review_withheld_pairs": 1034,
-  "two_to_one_restrictions": 1511,
-  "three_way_restrictions": 29,
+  "review_withheld_pairs": 346,
+  "two_to_one_restrictions": 773,
+  "three_way_restrictions": 10,
   "restriction_disagreement_examples": [
     {
-      "ingredient_name": "Acorn",
-      "restriction_type": "ALLERGY.TREE_NUTS",
-      "votes": {
-        "a": "ALWAYS",
-        "b": "NEVER",
-        "c": "ALWAYS"
-      },
-      "final": "ALWAYS"
-    },
-    {
-      "ingredient_name": "Acorn flour, full fat",
-      "restriction_type": "ALLERGY.TREE_NUTS",
-      "votes": {
-        "a": "ALWAYS",
-        "b": "NEVER",
-        "c": "ALWAYS"
-      },
-      "final": "ALWAYS"
-    },
-    {
-      "ingredient_name": "Acorn, dried",
-      "restriction_type": "ALLERGY.TREE_NUTS",
-      "votes": {
-        "a": "ALWAYS",
-        "b": "NEVER",
-        "c": "ALWAYS"
-      },
-      "final": "ALWAYS"
-    },
-    {
-      "ingredient_name": "Alfredo sauce mix, dry",
+      "ingredient_name": "Alfredo sauce",
       "restriction_type": "ALLERGY.PEANUTS",
       "votes": {
-        "a": "DEPENDS_ON_PRODUCT",
+        "a": "NEVER",
         "b": "NEVER",
-        "c": "NEVER"
+        "c": "DEPENDS_ON_PRODUCT"
       },
-      "final": "UNKNOWN"
+      "final": "NEVER"
     },
     {
-      "ingredient_name": "Alfredo sauce mix, dry",
+      "ingredient_name": "Alfredo sauce",
       "restriction_type": "ALLERGY.TREE_NUTS",
       "votes": {
-        "a": "DEPENDS_ON_PRODUCT",
+        "a": "NEVER",
         "b": "NEVER",
-        "c": "NEVER"
+        "c": "DEPENDS_ON_PRODUCT"
       },
-      "final": "UNKNOWN"
+      "final": "NEVER"
     },
     {
-      "ingredient_name": "Alfredo sauce mix, dry",
-      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "ingredient_name": "Alfredo sauce",
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
       "votes": {
-        "a": "DEPENDS_ON_PRODUCT",
-        "b": "NEVER",
+        "a": "NEVER",
+        "b": "ALWAYS",
         "c": "NEVER"
       },
       "final": "UNKNOWN"
     },
     {
-      "ingredient_name": "Almond oil",
-      "restriction_type": "ALLERGY.TREE_NUTS",
+      "ingredient_name": "Alfredo sauce",
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
       "votes": {
         "a": "ALWAYS",
         "b": "ALWAYS",
         "c": "DEPENDS_ON_PRODUCT"
       },
+      "final": "ALWAYS"
+    },
+    {
+      "ingredient_name": "Almond milk",
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "votes": {
+        "a": "NEVER",
+        "b": "NEVER",
+        "c": "ALWAYS"
+      },
+      "final": "NEVER"
+    },
+    {
+      "ingredient_name": "Almond oil",
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "votes": {
+        "a": "UNKNOWN",
+        "b": "UNKNOWN",
+        "c": "DEPENDS_ON_PRODUCT"
+      },
       "final": "UNKNOWN"
     },
     {
-      "ingredient_name": "Almond, oil roasted",
-      "restriction_type": "ALLERGY.SOY",
+      "ingredient_name": "American cheese",
+      "restriction_type": "ALLERGY.WHEAT",
       "votes": {
-        "a": "NEVER",
-        "b": "DEPENDS_ON_PRODUCT",
+        "a": "DEPENDS_ON_PRODUCT",
+        "b": "NEVER",
         "c": "NEVER"
       },
       "final": "NEVER"
     },
     {
-      "ingredient_name": "Almond, oil roasted, lightly salted",
-      "restriction_type": "ALLERGY.SOY",
+      "ingredient_name": "American cheese",
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
       "votes": {
         "a": "NEVER",
-        "b": "DEPENDS_ON_PRODUCT",
+        "b": "ALWAYS",
+        "c": "NEVER"
+      },
+      "final": "UNKNOWN"
+    },
+    {
+      "ingredient_name": "American cheese",
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "votes": {
+        "a": "DEPENDS_ON_PRODUCT",
+        "b": "NEVER",
         "c": "NEVER"
       },
       "final": "NEVER"
     },
     {
-      "ingredient_name": "Almond, oil roasted, with salt added",
+      "ingredient_name": "Apricot kernel oil",
       "restriction_type": "ALLERGY.SOY",
       "votes": {
-        "a": "NEVER",
-        "b": "DEPENDS_ON_PRODUCT",
+        "a": "UNKNOWN",
+        "b": "NEVER",
         "c": "NEVER"
       },
       "final": "NEVER"
@@ -1243,7 +1243,7 @@
         "b": "Baking chocolate, unsweetened, squares",
         "c": "Baking chocolate, unsweetened"
       },
-      "final": "Baking chocolate, unsweetened"
+      "final": "Baking chocolate"
     },
     {
       "source_id": 167584,
@@ -1253,7 +1253,7 @@
         "b": "Pancake syrup, table blend, with butter",
         "c": "Pancake syrup, table blends, with butter"
       },
-      "final": null
+      "final": "Pancake syrup"
     },
     {
       "source_id": 167607,
@@ -1263,7 +1263,7 @@
         "b": "Moose meat",
         "c": "Venison, sitka"
       },
-      "final": "Moose meat"
+      "final": "Moose"
     },
     {
       "source_id": 167608,
@@ -1273,7 +1273,7 @@
         "b": "Mashu roots",
         "c": "Mashu root, raw"
       },
-      "final": null
+      "final": "Mashu root"
     },
     {
       "source_id": 167609,
@@ -1293,7 +1293,7 @@
         "b": "Seal meat, bearded",
         "c": "Bearded seal meat"
       },
-      "final": "Bearded seal meat"
+      "final": "Seal"
     },
     {
       "source_id": 167612,
@@ -1303,7 +1303,7 @@
         "b": "Oopah tunicate whole animal",
         "c": "Oopah whole animal"
       },
-      "final": "Oopah whole animal"
+      "final": "Tunicate"
     },
     {
       "source_id": 167614,
@@ -1313,7 +1313,7 @@
         "b": "King salmon, smoked and canned",
         "c": "King salmon, smoked and canned"
       },
-      "final": "King salmon, smoked and canned"
+      "final": "Smoked salmon"
     },
     {
       "source_id": 167615,
@@ -1323,7 +1323,7 @@
         "b": "King salmon, smoked, brined",
         "c": "King salmon, smoked, brined"
       },
-      "final": "King salmon, smoked, brined"
+      "final": "Smoked salmon"
     },
     {
       "source_id": 167616,
@@ -1333,11 +1333,11 @@
         "b": "King salmon liver",
         "c": "King salmon liver"
       },
-      "final": "King salmon liver"
+      "final": "Salmon liver"
     }
   ],
   "sha256": {
-    "ingredients.jsonl": "edc0600a5a7026e1392a81cfa97d1e60abfc4ad6cfd284fb8f62fedf8b2d92d1",
-    "ingredients_restrictions.jsonl": "08aa25a3481ad44798134ebe6d218f88d5f822c526f52a3c295f2c23f12387d6"
+    "ingredients.jsonl": "a2eaebdf2d101c44ded51014f5e9372fd003f70f3c058253aa777e88b7dbc5ea",
+    "ingredients_restrictions.jsonl": "99620339bc21e3dfcff5cbb1e91c963148c26182a071274de53a22714bc80990"
   }
 }

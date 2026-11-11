@@ -1,20 +1,21 @@
 {
   "status": "exported_and_validated",
-  "ingredients": 2408,
+  "ingredients": 1168,
   "restriction_types": 19,
-  "judgments": 45752,
-  "agent_votes": 137256,
-  "successful_requests": 363,
+  "judgments": 22192,
+  "agent_votes": 66576,
+  "successful_new_requests": 141,
+  "reused_ingredients": 234,
   "majority_counts": {
-    "NEVER": 39569,
-    "ALWAYS": 2461,
-    "DEPENDS_ON_PRODUCT": 3586,
-    "UNKNOWN": 136
+    "NEVER": 19447,
+    "ALWAYS": 1117,
+    "DEPENDS_ON_PRODUCT": 1588,
+    "UNKNOWN": 40
   },
-  "catalog_sha256": "414a4206b0d7690665f2be97062054563d4fc14912e4c5ea1828788ddfd0db32",
+  "catalog_sha256": "436298ca4191dc09b37efce13d4d931c9da37ad426588ff1e678a26d14a5177b",
+  "majority_catalog_sha256": "4a5ec8833ecae25e2d56a0516aa0bd5c20c01793718e768330b4cd0e97b3aaf4",
   "final_jsonl_generated": true,
-  "majority_catalog_sha256": "a5a8565d8df93c9f57fbb6aeca54eca2a64a7389e17425b7cdb71aace5b9b965",
   "review_decisions": "restriction-decisions.json",
-  "final_relationships": 44582,
-  "withheld_pairs": 1170
+  "final_relationships": 21806,
+  "withheld_pairs": 386
 }

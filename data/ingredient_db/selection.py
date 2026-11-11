@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
-# Changed: 원본별 재료 선정과 이름·구성원 다수결
+# Changed: 재료 선정 보존과 전체 기본 재료군의 이름·구성원 다수결
 
 """원본 전체의 세 판단을 비교하고 같은 재료를 묶는다."""
 
@@ -10,6 +10,7 @@ from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from copy import deepcopy
 from pathlib import Path
 
+from . import families
 from .audit import apply_audit
 from .runner import AGENTS, digest, write_json
 
@@ -542,10 +543,21 @@ def validate_selected(selected: dict) -> None:
     if sorted(records, key=lambda row: row["source_id"]) != computed:
         raise ValueError("recorded selection differs from its votes")
     audit = selected.get("selection_audit")
-    if audit and audit["policy_sha256"] != selected["metadata"]["policy_sha256"]:
+    origin = selected.get("selection_origin", selected["metadata"])
+    if audit and audit["policy_sha256"] != origin["policy_sha256"]:
         raise ValueError("selection audit belongs to a different policy")
     included, excluded, pending = apply_audit(included, excluded, pending, computed, audit)
-    expected = {tuple(ids) for ids in _components(included, indexed)}
+    family_mode = selected.get("grouping_mode")
+    if family_mode not in (None, families.VERSION):
+        raise ValueError("unknown grouping mode")
+    if family_mode:
+        included, pending = families.candidates(included, pending, computed, audit)
+    components = (
+        families.components(included, indexed, sources)
+        if family_mode
+        else _components(included, indexed)
+    )
+    expected = {tuple(ids) for ids in components}
     grouping_review = selected["grouping_review"]
     if len(grouping_review) != len(expected):
         raise ValueError("grouping review is incomplete")
@@ -556,7 +568,7 @@ def validate_selected(selected: dict) -> None:
         if len(ids) != len(set(ids)) or key not in expected or key in seen:
             raise ValueError("unexpected or duplicate grouping component")
         seen.add(key)
-        if len(ids) == 1 and not _reviewed_inclusion(ids, audit):
+        if not family_mode and len(ids) == 1 and not _reviewed_inclusion(ids, audit):
             if record.get("method") != "source_name" or record["votes"] != _initial_groups(
                 ids, indexed
             ):
@@ -646,12 +658,25 @@ def run(
     max_batches: int | None = None,
     reused: dict | None = None,
     audit: dict | None = None,
+    snapshot: dict | None = None,
+    family_mode: bool = False,
 ) -> dict | None:
     if batch_size < 1 or batch_size > 100:
         raise ValueError("selection batch size must be between 1 and 100")
+    family_mode = family_mode or snapshot is not None
     rows = source["rows"]
     with ThreadPoolExecutor(max_workers=3) as pool:
-        if reused is not None:
+        if snapshot is not None:
+            validate_selected(snapshot)
+            if snapshot["sources"] != rows:
+                raise ValueError("grouping snapshot sources differ")
+            audit = snapshot.get("selection_audit")
+            reused = snapshot.get("selection_reuse")
+            all_votes = {
+                agent: [record["votes"][agent] for record in snapshot["selection_review"]]
+                for agent in AGENTS
+            }
+        elif reused is not None:
             from .reuse import collect_missing
 
             if max_batches is not None:
@@ -671,12 +696,19 @@ def run(
             return None
         included, excluded, unresolved, review, indexed = reconcile_rows(rows, all_votes)
         included, excluded, unresolved = apply_audit(included, excluded, unresolved, review, audit)
+        if family_mode:
+            included, unresolved = families.candidates(included, unresolved, review, audit)
         sources_by_id = {row["source_id"]: row for row in rows}
         groups, grouping_review, pending_groups = [], [], []
-        for group_no, ids in enumerate(_components(included, indexed), 1):
+        components = (
+            families.components(included, indexed, rows)
+            if family_mode
+            else _components(included, indexed)
+        )
+        for group_no, ids in enumerate(components, 1):
             responses = _initial_groups(ids, indexed)
             decided, pending = reconcile_groups(responses, set(ids))
-            if len(ids) > 1 or _reviewed_inclusion(ids, audit):
+            if family_mode or len(ids) > 1 or _reviewed_inclusion(ids, audit):
                 pending_groups.append({"component_id": group_no, "source_ids": ids})
             else:
                 groups.extend(decided)
@@ -684,8 +716,21 @@ def run(
                 grouping_review.append(
                     {"source_ids": ids, "votes": responses, "method": "source_name"}
                 )
-        for batch_no, start in enumerate(range(0, len(pending_groups), 20), 1):
-            batch = pending_groups[start : start + 20]
+        write_json(
+            work_dir / "grouping-plan.json",
+            {
+                "mode": families.VERSION if family_mode else "exact-name",
+                "components": pending_groups,
+                "source_count": sum(len(item["source_ids"]) for item in pending_groups),
+            },
+        )
+        batches = (
+            families.batches(pending_groups)
+            if family_mode
+            else (pending_groups[i : i + 20] for i in range(0, len(pending_groups), 20))
+        )
+        completed_groups = 0
+        for batch_no, batch in enumerate(batches, 1):
             expected = {item["component_id"]: set(item["source_ids"]) for item in batch}
             allowed_ids = sorted(set().union(*expected.values()))
             component_schema = deepcopy(GROUP_SCHEMA)
@@ -727,7 +772,8 @@ def run(
                 if seen != set(expected):
                     raise ValueError("missing component")
 
-            prompt = build_grouping_prompt(
+            prompt_builder = families.prompt if family_mode else build_grouping_prompt
+            prompt = prompt_builder(
                 [
                     {
                         "component_id": item["component_id"],
@@ -769,9 +815,8 @@ def run(
                 grouping_review.append(
                     {"source_ids": ids, "votes": votes, "method": "group_review"}
                 )
-            print(
-                f"grouping {min(start + 20, len(pending_groups))}/{len(pending_groups)}", flush=True
-            )
+            print(f"grouping {completed_groups + len(batch)}/{len(pending_groups)}", flush=True)
+            completed_groups += len(batch)
     ingredients, unresolved = _finish(groups, unresolved)
     result = {
         "metadata": source["metadata"],
@@ -787,6 +832,10 @@ def run(
     if audit is not None:
         result["selection_audit"] = audit
         result["metadata"] = {**source["metadata"], "policy_sha256": audit["policy_sha256"]}
+    if family_mode:
+        result["grouping_mode"] = families.VERSION
+    if snapshot is not None:
+        result["selection_origin"] = snapshot.get("selection_origin", snapshot["metadata"])
     validate_selected(result)
     write_json(work_dir / "selected.json", result)
     return result

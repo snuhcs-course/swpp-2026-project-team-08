@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
-# Changed: 재료별 19개 제한의 독립 판정과 다수결
+# Changed: 전체 Grouping 출처를 보존하는 제한 판정
 
 """Judge each ingredient against the shared restriction vocabulary."""
 
@@ -341,6 +341,7 @@ def run(selected_path, work_dir, *, call_agent, batch_size=20):
             if "grouping_decisions" in selected
             else {}
         ),
+        **{key: selected[key] for key in ("grouping_mode", "selection_origin") if key in selected},
         "schema_version": 1,
         "metadata": selected["metadata"],
         "sources": source_rows,

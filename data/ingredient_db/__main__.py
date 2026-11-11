@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
-# Changed: 재료 생성 단계와 오프라인 검증 명령 제공
+# Changed: 기존 선정 기록을 보존하는 Grouping 재실행 명령
 
 """영어 재료 카탈로그 생성 명령."""
 
@@ -14,7 +14,7 @@ from .runner import ROOT, AgentRunner, digest, pin_run, write_json
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("stage", choices=("prepare", "select", "judge", "export", "check"))
+    parser.add_argument("stage", choices=("prepare", "select", "group", "judge", "export", "check"))
     parser.add_argument("--work-dir", type=Path, default=ROOT / "work")
     parser.add_argument("--review", type=Path, default=ROOT / "review/catalog.json")
     parser.add_argument("--result-dir", type=Path, default=ROOT / "result")
@@ -31,6 +31,7 @@ def main() -> None:
     parser.add_argument(
         "--selection-audit", type=Path, help="Grouping 전에 적용할 보류·확정 검토 기록"
     )
+    parser.add_argument("--from-selected", type=Path, help="group: 검증할 기존 선정 결과")
     args = parser.parse_args()
     if args.stage in {"export", "check"}:
         from .export import check, export_from_review
@@ -70,7 +71,21 @@ def main() -> None:
         source_hash=manifest["source_sha256"],
         model=args.model,
     )
-    if args.stage == "select":
+    snapshot = None
+    if args.stage == "group":
+        snapshot_path = args.work_dir / "grouping-input.json"
+        if args.from_selected:
+            incoming = json.loads(args.from_selected.read_text())
+            selection.validate_selected(incoming)
+            if snapshot_path.exists() and json.loads(snapshot_path.read_text()) != incoming:
+                raise ValueError("grouping input snapshot changed")
+            write_json(snapshot_path, incoming)
+        if not snapshot_path.exists():
+            raise ValueError("group requires --from-selected on first run")
+        snapshot = json.loads(snapshot_path.read_text())
+        if snapshot["metadata"]["source_sha256"] != manifest["source_sha256"]:
+            raise ValueError("grouping input belongs to different source dataset")
+    if args.stage in {"select", "group"}:
         result = selection.run(
             data,
             args.work_dir,
@@ -79,6 +94,8 @@ def main() -> None:
             reused=reused,
             audit=audit,
             max_batches=args.max_batches,
+            snapshot=snapshot,
+            family_mode=True,
         )
         if result is None:
             print("Selected batches cached; full selection has not finished.")

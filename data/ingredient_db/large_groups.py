@@ -66,7 +66,7 @@ SOURCES_JSON:
             value_schema = {
                 "type": "object",
                 "properties": {
-                    "name": {"type": "string", "enum": ["", *names]},
+                    "name": {"type": "string"},
                     "reason": {"type": "string"},
                 },
                 "required": ["name", "reason"],

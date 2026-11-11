@@ -7,6 +7,8 @@
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 추가 추천 생성 시 기존 거절 제안과 사유 반영
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 영어 카탈로그 재료명 사용 명시
 
 """워크플로가 LLM에 보내는 프롬프트 모음.
 
@@ -29,9 +31,8 @@ SYSTEM_PROMPT = """당신은 편식하는 아이를 둔 부모를 돕는 식사 
 규칙:
 - 제안에 쓰는 재료는 사용자 메시지의 "쓸 수 있는 재료" 목록에 있는 이름만, 적힌 그대로 씁니다.
   목록에 없는 재료는 이 아이가 쓸 수 없거나 알 수 없는 재료이므로 쓰지 않습니다.
-- 재료 이름은 목록에 적힌 글자 그대로 ingredients에 적습니다. 다른 언어로 번역하거나 줄이거나
+- 영어 재료 이름은 목록에 적힌 글자 그대로 ingredients에 적습니다. 다른 언어로 번역하거나 줄이거나
   띄어쓰기를 바꾸지 않습니다.
-  영어로 쓰라는 규칙은 설명 문장에만 적용되며 재료 이름에는 적용되지 않습니다.
 - 각 음식에는 식후에 아이가 먹은 정도(outcome)와
   어려워한 이유(difficulty_reasons)가 함께 주어집니다.
   이유는 CATEGORY.VALUE 형태이고 식감만 TEXTURE.SUBCATEGORY.VALUE 형태입니다.

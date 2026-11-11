@@ -10,6 +10,8 @@
 
 <!-- AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung -->
 <!-- Changed: 전용 API 검사 제거에 맞춘 Client CI 안내 -->
+<!-- AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung -->
+<!-- Changed: 재료 데이터 CI와 영어 카탈로그 전환 절차 명시 -->
 
 # 서버 배포 가이드
 
@@ -51,23 +53,33 @@ EC2의 8000번 포트는 CloudFront에서 오는 요청만 받도록 보안그�
 
 | 워크플로 | 파일 | 실행 시점 | 하는 일 |
 | --- | --- | --- | --- |
-| Server CI | `.github/workflows/server-ci.yml` | `server/`가 바뀐 PR | 코드 검사와 테스트 |
+| Server CI | `.github/workflows/server-ci.yml` | 서버·재료 데이터·공통 제한 규칙이 바뀐 PR | 코드·데이터 검사와 테스트 |
 | Server Deploy | `.github/workflows/server-deploy.yml` | `main`에 `server/` 변경 머지 (수동 실행도 가능) | 이미지 빌드와 EC2 배포 |
 
 ### 2.1 CI (PR)
 
-PR이 열리거나 갱신될 때 `server/`에서 아래를 순서대로 실행합니다. 하나라도 실패하면 PR에 빨간 표시가 뜹니다.
+PR이 열리거나 갱신될 때 아래 검사를 순서대로 실행한다. 실행 위치를 따로 적지 않은 명령은
+`server/` 기준이다. 하나라도 실패하면 CI가 실패한다.
 
-1. `ruff check .` — 코드 규칙 검사
-2. `ruff format --check .` — 코드 서식 검사
-3. `pytest` — 테스트. 인메모리 SQLite를 쓰므로 DB나 환경변수 설정이 필요 없습니다.
+1. `ruff check . ../data/ingredient_db` — 서버·재료 생성 코드 검사
+2. `ruff format --check . ../data/ingredient_db` — 코드 서식 검사
+3. `python -m unittest discover -s data/ingredient_db/tests` — 가짜 Gemini로 생성 과정 검사. 저장소 루트에서 실행한다.
+4. `python -m data.ingredient_db check` — 검토 기록과 최종 JSONL 검사. 저장소 루트에서 실행한다.
+5. `pytest` — 서버 테스트. 인메모리 SQLite를 쓰므로 DB나 환경변수 설정이 필요 없다.
 
-PR을 올리기 전에 `server/`에서 같은 명령을 실행하면 CI 결과를 미리 알 수 있습니다.
+PR을 올리기 전에 각 명령의 실행 위치에서 같은 검사를 수행한다.
 
 Client CI는 `client/` 또는 해당 워크플로 파일이 바뀐 PR에서 실행한다.
 루트·Unit·Integration 클라이언트 테스트와 린트·타입 검사를 수행한다.
 
 ### 2.2 배포 (main 머지)
+
+`main` 머지는 자동 배포를 시작하므로 아래 데이터 교체를 마친 뒤 진행한다.
+영어 카탈로그로 전환할 때는 추천 요청을 잠시 중지하고 공용 재료 데이터를 교체한 뒤
+영어 조회 코드를 배포한다. 추천 응답 확인 후 요청을 재개한다.
+JSONL 검사·교체 명령은 [재료 데이터 안내](../../data/ingredient_db/README.md#서버-적용)를 따른다.
+영어 데이터 없이 코드만 배포하면 추천 후보가 비게 된다. 자동 배포는 재료를 적재하지 않는다.
+적재기와 결과 파일은 운영 이미지에 포함되지 않으므로 저장소 체크아웃에서 별도로 실행한다.
 
 ```mermaid
 sequenceDiagram

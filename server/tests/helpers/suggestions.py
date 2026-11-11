@@ -1,6 +1,9 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 새 초안 필드, DB 카탈로그·프로필 시드 헬퍼로 변경
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 영어 추천 카탈로그 fixture 적용
+
 """Explicit LLM responses and DB seeds for API integration; the real graph/validation still run."""
 
 from httpx import AsyncClient
@@ -25,7 +28,7 @@ def suggestion_draft(food_id: str = "0", *, serving_tip: str = "작게 잘라 �
         "what_to_try": "소량 제공",
         "why_this_may_help": "익숙한 형태로 제공",
         "serving_tip": serving_tip,
-        "ingredients": ["쌀"],
+        "ingredients": ["Rice"],
         "cooking_method": "STEAMED",
         "causes": "Soft texture was hard for the child.",
         **fields,
@@ -51,7 +54,7 @@ async def seed_ingredient(
         judgements = dict.fromkeys(PROFILE_RESTRICTIONS, RestrictionDegree.NEVER)
     # 루프 안에서 return 하면 세션이 커밋되기 전에 닫히므로 루프를 끝까지 돈다.
     async for session in app.dependency_overrides[get_session]():
-        ingredient = Ingredient(korean_name=name)
+        ingredient = Ingredient(english_name=name)
         session.add(ingredient)
         await session.flush()
         session.add_all(

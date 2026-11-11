@@ -1,11 +1,15 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
-# server/ 가 바뀐 PR 에서 린트와 테스트를 실행한다.
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 영어 재료 생성 코드와 결과 데이터 검증 추가
+# 서버 또는 재료 데이터가 바뀐 PR에서 검사한다.
 name: Server CI
 
 on:
   pull_request:
     paths:
       - "server/**"
+      - "data/ingredient_db/**"
+      - "docs/food-ingredient-restriction-ids.md"
       - ".github/workflows/server-ci.yml"
 
 permissions:
@@ -33,10 +37,16 @@ jobs:
         run: uv sync --frozen
 
       - name: Lint
-        run: uv run ruff check .
+        run: uv run ruff check . ../data/ingredient_db
 
       - name: Format
-        run: uv run ruff format --check .
+        run: uv run ruff format --check . ../data/ingredient_db
+
+      - name: Ingredient pipeline
+        working-directory: .
+        run: |
+          uv run --project server python -m unittest discover -s data/ingredient_db/tests
+          uv run --project server python -m data.ingredient_db check
 
       # 테스트는 인메모리 SQLite 를 쓰므로 Postgres 서비스가 필요 없다.
       - name: Test

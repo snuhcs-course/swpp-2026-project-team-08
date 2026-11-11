@@ -11,6 +11,8 @@
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 추가 추천 이력 모델 등록
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
+# Changed: 공용 재료 적재 상태 모델 등록
 
 """모든 테이블 모델.
 
@@ -22,6 +24,7 @@ from app.models.food_recommendation import FoodRecommendation
 from app.models.food_recommendation_retry import FoodRecommendationRetry
 from app.models.food_recommendation_try import FoodRecommendationTry
 from app.models.ingredient import Ingredient
+from app.models.ingredient_catalog_state import IngredientCatalogState
 from app.models.ingredient_restriction import IngredientRestriction
 from app.models.meal import Meal
 from app.models.meal_food import MealFood
@@ -37,6 +40,7 @@ __all__ = [
     "FoodRecommendationTry",
     "FoodRecommendationRetry",
     "Ingredient",
+    "IngredientCatalogState",
     "IngredientRestriction",
     "Meal",
     "MealFood",

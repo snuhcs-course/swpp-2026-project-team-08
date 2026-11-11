@@ -3,8 +3,8 @@
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
 
-# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
-# Changed: 영어 카탈로그 교체와 실패 복구·사용자 기록 보존 검증
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
+# Changed: 재료 적재 패키지의 교체·실패 복구·사용자 기록 보존 검증
 
 """영어 재료 파일, 카탈로그 조회, 추천 API를 실제 SQLite로 검증한다."""
 
@@ -20,8 +20,8 @@ from app.features.suggestions.ingredients import ChildRestrictions
 from app.models import Ingredient, IngredientRestriction
 from app.models.ingredient_enums import RestrictionDegree
 from app.models.restriction_enums import RestrictionType
-from scripts import load_ingredients
-from scripts.load_ingredients import RESULT, import_catalog, read_jsonl, validate
+from scripts.ingredient_catalog import load as load_ingredients
+from scripts.ingredient_catalog.load import RESULT, import_catalog, read_jsonl, validate
 from tests.fixtures.meals import food_payload, meal_payload
 from tests.helpers.auth import auth_headers
 from tests.helpers.suggestions import batch, install_model, save_profile, seed_ingredient

@@ -9,8 +9,8 @@
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 추가 추천 테이블과 Eaten 제외에 맞춘 생성 대상
 
-# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
-# Changed: 영어 추천 카탈로그 fixture 적용
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
+# Changed: 영어 추천 fixture와 공용 재료 적재 상태 테이블 계약
 
 """Contract edge cases for authenticated meals, reviews, and suggestions."""
 
@@ -39,6 +39,7 @@ def test_only_current_tables_and_routes_are_registered() -> None:
     assert set(Base.metadata.tables) == {
         "ingredients",
         "ingredient_restrictions",
+        "ingredient_catalog_state",
         "meals",
         "meal_foods",
         "meal_food_ingredients",

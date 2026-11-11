@@ -1,5 +1,5 @@
-# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
-# Changed: 영어 이름·중복 JSON 키와 명시적 실행 모드 검증
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
+# Changed: 재료 적재 패키지의 입력·실행 모드 검증
 
 """JSONL 검증과 CLI 모드 선택은 DB 연결 없이 확인한다."""
 
@@ -8,8 +8,8 @@ import sys
 
 import pytest
 
-from scripts import load_ingredients
-from scripts.load_ingredients import validate
+from scripts.ingredient_catalog import load as load_ingredients
+from scripts.ingredient_catalog.load import validate
 
 RICE = {"id": 1, "korean_name": None, "english_name": "Rice"}
 SAFE = {"ingredient_id": 1, "restriction_type": "ALLERGY.EGGS", "degree": "NEVER"}

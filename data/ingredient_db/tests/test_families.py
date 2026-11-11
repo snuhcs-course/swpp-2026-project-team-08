@@ -152,3 +152,43 @@ class FamilyTests(unittest.TestCase):
             selected = selection.run(source, work, call_agent=call, snapshot=snapshot)
             selection.validate_selected(selected)
             self.assertEqual(calls, {"a": 1, "b": 2, "c": 1})
+
+    def test_failed_small_batch_switches_transport(self):
+        from unittest.mock import patch
+
+        snapshot = self.snapshot()
+        called = []
+
+        def fallback(agent, task, prompt, schema, validate, **kwargs):
+            called.append(agent)
+            return {
+                "components": [
+                    {
+                        "component_id": c["component_id"],
+                        "groups": [
+                            {
+                                "source_ids": [r["source_id"] for r in c["sources"]],
+                                "english_name": f"Ingredient {c['component_id']}",
+                                "reason": "Base",
+                            }
+                        ],
+                        "unresolved": [],
+                    }
+                    for c in kwargs["components"]
+                ]
+            }
+
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            failure = work / "invalid/grouping/a/batch-0001-attempt-3.json"
+            failure.parent.mkdir(parents=True)
+            failure.write_text("{}")
+            with patch("data.ingredient_db.large_groups.call", side_effect=fallback):
+                result = selection.run(
+                    {"metadata": {}, "rows": snapshot["sources"]},
+                    work,
+                    call_agent=lambda *args: self.fail("old request repeated"),
+                    snapshot=snapshot,
+                )
+        self.assertEqual(set(called), set(selection.AGENTS))
+        selection.validate_selected(result)

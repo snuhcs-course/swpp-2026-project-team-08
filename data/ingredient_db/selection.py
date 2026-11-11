@@ -784,7 +784,15 @@ def run(
             ]
             prompt = prompt_builder(component_inputs)
             batch_call = call_agent
-            if family_mode and len(allowed_ids) > 120:
+            batch_prefix = f"batch-{batch_no:04d}"
+            previous_failure = any(
+                path
+                for agent in AGENTS
+                for path in (work_dir / "invalid/grouping" / agent).glob(
+                    f"{batch_prefix}*-attempt-3.json"
+                )
+            )
+            if family_mode and (len(allowed_ids) > 120 or previous_failure):
                 from functools import partial
 
                 from .large_groups import call

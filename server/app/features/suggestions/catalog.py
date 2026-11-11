@@ -1,7 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 아이가 쓸 수 있는 재료를 쿼리 한 번으로 읽는 카탈로그 로더 추가
 # AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
-# Changed: 영어 이름으로 추천 카탈로그 조회
+# Changed: 영어 우선 조회와 전환 전 한국어 목록 호환
 
 """DB 의 재료와 제한 판정에서 아이 한 명이 쓸 수 있는 `Catalog` 를 만든다."""
 
@@ -18,12 +18,14 @@ async def load_catalog(session: AsyncSession, restrictions: ChildRestrictions) -
 
     판정 행이 없으면 미판정 또는 검토 보류이므로 그 제한을 가진 아이에게는 쓸 수 없다.
     `DEPENDS_ON_PRODUCT` 와 `ALWAYS` 도 쓸 수 없다.
-    제한이 없는 아이는 영어 이름이 있는 모든 재료를 쓸 수 있다.
+    영어 이름을 우선하며 영어 데이터 적재 전에는 기존 한국어 이름을 사용한다.
     (재료, 제한) 쌍은 유니크하다. `NEVER` 행 수가 아이의 제한 수와 같으면 조회 조건을 충족한다.
     """
-    query = select(Ingredient.english_name).where(
-        Ingredient.english_name.is_not(None), func.trim(Ingredient.english_name) != ""
+    name = func.coalesce(
+        func.nullif(func.trim(Ingredient.english_name), ""),
+        func.nullif(func.trim(Ingredient.korean_name), ""),
     )
+    query = select(name).where(name.is_not(None))
     if restrictions.types:
         safe_count = (
             select(func.count())

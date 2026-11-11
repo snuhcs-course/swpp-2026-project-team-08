@@ -4,7 +4,7 @@
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
 
 # AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
-# Changed: 재료 적재 패키지의 교체·실패 복구·사용자 기록 보존 검증
+# Changed: 재료 교체·기록 보존과 영어 적재 전후 조회 검증
 
 """영어 재료 파일, 카탈로그 조회, 추천 API를 실제 SQLite로 검증한다."""
 
@@ -40,7 +40,7 @@ async def seed(session) -> None:
         "Unreviewed": {},
     }
     for name, judgements in rows.items():
-        ingredient = Ingredient(english_name=name)
+        ingredient = Ingredient(english_name=name, korean_name="쌀" if name == "Rice" else None)
         session.add(ingredient)
         await session.flush()
         session.add_all(
@@ -70,11 +70,20 @@ async def test_모든_제한에_NEVER_판정이_있어야_추천한다(session_f
     assert await names_for(session_factory, DAIRY) == {"Rice", "Bread"}
 
 
-async def test_제한이_없어도_빈_이름과_한국어_이름만_있는_재료는_제외한다(session_factory) -> None:
+async def test_영어를_우선하고_적재_전_한국어_목록도_읽되_빈_이름은_제외한다(
+    session_factory,
+) -> None:
     async with session_factory.begin() as session:
         await seed(session)
 
-    assert await names_for(session_factory) == {"Rice", "Milk", "Bread", "Carrot", "Unreviewed"}
+    assert await names_for(session_factory) == {
+        "Rice",
+        "Milk",
+        "Bread",
+        "Carrot",
+        "Unreviewed",
+        "한국어 이름만 있음",
+    }
 
 
 async def test_미판정_제한이_있으면_추천하지_않는다(session_factory) -> None:

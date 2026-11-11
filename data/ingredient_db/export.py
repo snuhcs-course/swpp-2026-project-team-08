@@ -8,6 +8,7 @@ import json
 import tempfile
 from pathlib import Path
 
+from .restriction_decisions import apply_decisions
 from .restrictions import AGENTS, DEGREES, RESTRICTION_TYPES, reconcile, validate_ingredients
 from .runner import digest
 from .selection import name_key, validate_selected
@@ -94,6 +95,9 @@ def reviewed_rows(review):
         for row in decisions
     ):
         raise ValueError("reviewed decision does not match its votes")
+    decisions = apply_decisions(
+        decisions, review.get("restriction_decisions"), review["metadata"]["policy_sha256"]
+    )
     ingredient_rows = [
         {"id": item["id"], "english_name": item["english_name"], "korean_name": None}
         for item in sorted(ingredients, key=lambda item: item["id"])
@@ -112,8 +116,13 @@ def review_summary(review):
     names = {item["id"]: item["english_name"] for item in review["ingredients"]}
     examples = []
     two_to_one, three_way = 0, 0
+    final_decisions = apply_decisions(
+        review["restriction_votes"],
+        review.get("restriction_decisions"),
+        review["metadata"]["policy_sha256"],
+    )
     for row in sorted(
-        review["restriction_votes"], key=lambda row: (row["ingredient_id"], row["restriction_type"])
+        final_decisions, key=lambda row: (row["ingredient_id"], row["restriction_type"])
     ):
         counts[row["restriction_type"]][row["degree"]] += 1
         votes = {agent: row["votes"][agent]["degree"] for agent in AGENTS}
@@ -169,6 +178,7 @@ def review_summary(review):
         },
         "included_sources": len(final_names),
         "restriction_counts": counts,
+        "review_withheld_pairs": len(review.get("restriction_decisions", {}).get("edits", [])),
         "two_to_one_restrictions": two_to_one,
         "three_way_restrictions": three_way,
         "restriction_disagreement_examples": examples,

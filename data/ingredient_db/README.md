@@ -98,6 +98,20 @@ Gemini의 세 표와 이전 검토는 그대로 보존하며, 검토 결정을 �
 
 전송 응답은 선정의 `i/d/n/r`, 제한의 `i/t/d/r` 키와 짧은 근거를 사용하며 검토 기록은 원래 필드명으로 저장한다.
 
+### Grouping부터 다시 실행
+
+```bash
+python3 -m data.ingredient_db prepare --work-dir data/ingredient_db/work-regrouped --archive <원본-ZIP>
+python3 -m data.ingredient_db group --work-dir data/ingredient_db/work-regrouped --from-selected data/ingredient_db/work-restrictions/selected.json
+```
+
+`group`는 검증된 기존 선정 기록을 고정하고 선정 API를 호출하지 않는다.
+기존 정책·검토·선정 표는 그대로 보존한다. 새로운 Grouping은 현재 정책을 적용한다.
+모든 포함 후보와 이름만 불일치한 포함 후보가 단독 여부에 관계없이 세 판정을 받는다.
+`grouping-plan.json`에 비교 후보군과 원본 수를 저장한다. 같은 명령은 성공한 Grouping 응답을 재사용한다.
+기존 최종 JSONL과 제한 응답은 덮어쓰지 않는다. 이름·구성원이 바뀐 재료에 이전 제한 ID를 재사용하지 않는다.
+새 목록 검토 후 `judge --work-dir data/ingredient_db/work-regrouped --review <새-검토-경로>`로 제한을 판정한다.
+
 ## 검증
 
 ```bash

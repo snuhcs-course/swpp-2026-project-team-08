@@ -10,6 +10,8 @@
 <!-- Changed: suggestion 관련 문서 업데이트 -->
 <!-- AI-generated with GPT-6, 2026-10-26, reviewed by Haechan Jung -->
 <!-- Changed: 문서 역할 정리 -->
+<!-- AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung -->
+<!-- Changed: 재료 파일을 복사한 뒤 서버 이미지 빌드 안내 -->
 
 # 서버
 
@@ -82,10 +84,14 @@ uv remove <package>
 ```
 
 개발용 의존성은 `--dev`를 붙여 추가하거나 제거한다.
-배포용 Docker 이미지는 같은 디렉터리에서 빌드한다.
+배포용 Docker 이미지는 `server/`를 빌드 컨텍스트로 사용한다. 저장소 루트에서 최종 재료 파일을 복사한 뒤 빌드한다.
+`server/assets/`의 두 복사본은 Git에 넣지 않는다.
 
 ```bash
-docker build -t nurturebites-server .
+mkdir -p server/assets
+cp data/ingredient_db/result/ingredients.jsonl \
+  data/ingredient_db/result/ingredients_restrictions.jsonl server/assets/
+docker build -t nurturebites-server server
 ```
 
 실행 환경변수는 이미지에 포함하지 않고 컨테이너 실행 시 주입한다.

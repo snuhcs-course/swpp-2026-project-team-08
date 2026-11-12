@@ -6,7 +6,7 @@
 // Changed: MyPage 언어 전환 연결 및 언어 변경 버튼 숨김
 
 // AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
-// Changed: 마이페이지 개인정보처리방침 링크 연결
+// Changed: 개인정보처리방침 링크 연결 및 튜토리얼 비활성화
 
 import { AppHeader } from '../../../components/AppHeader';
 import { ExternalLink } from '../../../components/ExternalLink';
@@ -78,15 +78,15 @@ export function MyPageView({
             <Feather name="chevron-right" size={18} color={colors.homeMuted} />
           </View>
         </ExternalLink>
-        <View style={styles.card}>
+        <Pressable disabled accessibilityRole="button" accessibilityState={{ disabled: true }}
+          style={[styles.card, { opacity: 0.5 }]}>
           <View style={styles.settingRow}>
             <View style={styles.settingCopy}>
               <Text style={styles.settingTitle}>{m.helpTitle}</Text>
               <Text style={styles.settingSubtitle}>{m.helpSubtitle}</Text>
             </View>
-            <Feather name="chevron-right" size={18} color={colors.homeMuted} />
           </View>
-        </View>
+        </Pressable>
       </ScrollView>
       <View style={styles.footer}>
         <Pressable accessibilityRole="button" onPress={onLogOut} style={styles.logoutButton}>

@@ -1,0 +1,51 @@
+name: Client Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "client/**"
+      - ".github/workflows/client-deploy.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+
+concurrency:
+  group: client-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26.0.0"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+
+      - name: Verify client
+        run: |
+          npm run lint
+          npx --no-install tsc --noEmit
+          npm test
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android for testers
+        run: >
+          eas build
+          --platform android
+          --profile preview
+          --non-interactive
+          --wait

@@ -13,6 +13,8 @@
 // Changed: Eaten 단계 생략 및 언어 버튼 숨김 검증
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 애니메이션 바텀시트의 네이티브 컴포넌트 대체 지원
+// AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
+// Changed: 개인정보 링크의 네이티브 모듈 테스트 경계 추가
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -65,6 +67,7 @@ function primitive(tag) {
 
 const { mockModules } = require("../helpers/mock-modules.cjs");
 mockModules((name) => {
+  if (name === "expo-linking") return { openURL: async () => true };
   if (name === "react-native")
     return {
       Animated: { createAnimatedComponent: component => component },

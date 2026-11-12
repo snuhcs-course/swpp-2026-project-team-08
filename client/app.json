@@ -8,6 +8,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
+      "bundleIdentifier": "com.nurturebites.ios",
       "supportsTablet": true,
       "config": {
         "usesNonExemptEncryption": false
@@ -27,7 +28,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.client"
+      "package": "com.nurturebites.android"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -50,6 +51,17 @@
         }
       ],
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "ebd087d1-469b-49ee-8c2d-34b0cbf95b4f"
+      }
+    },
+    "owner": "her_she_y"
   }
 }

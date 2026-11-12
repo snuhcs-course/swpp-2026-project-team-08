@@ -5,7 +5,12 @@
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: MyPage 언어 전환 연결 및 언어 변경 버튼 숨김
 
+// AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
+// Changed: 마이페이지 개인정보처리방침 링크 연결
+
 import { AppHeader } from '../../../components/AppHeader';
+import { ExternalLink } from '../../../components/ExternalLink';
+import { PRIVACY_POLICY_URL } from '../../../util/links';
 import Feather from '@expo/vector-icons/Feather';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { colors } from '../../../util/colors';
@@ -64,7 +69,7 @@ export function MyPageView({
             <Feather name="chevron-right" size={18} color={colors.homeMuted} />
           </View>
         </Pressable>
-        <View style={styles.card}>
+        <ExternalLink href={PRIVACY_POLICY_URL} errorMessage={copyFor(language).common.openLinkFailed} style={styles.card}>
           <View style={styles.settingRow}>
             <View style={styles.settingCopy}>
               <Text style={styles.settingTitle}>{m.privacyTitle}</Text>
@@ -72,7 +77,7 @@ export function MyPageView({
             </View>
             <Feather name="chevron-right" size={18} color={colors.homeMuted} />
           </View>
-        </View>
+        </ExternalLink>
         <View style={styles.card}>
           <View style={styles.settingRow}>
             <View style={styles.settingCopy}>

@@ -1,9 +1,13 @@
 // This Code is generated with AI
+// AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
+// Changed: 동의 세부보기 링크를 체크박스와 분리
 
 import Feather from '@expo/vector-icons/Feather';
 import { Pressable, Text, View } from 'react-native';
 import { colors } from '../../../util/colors';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
+import { ExternalLink } from '../../../components/ExternalLink';
+import { PRIVACY_POLICY_URL } from '../../../util/links';
 import { copyFor } from '../../../util/strings';
 import type { Language } from '../../../types/profile';
 import type { OnboardingDraft } from '../types';
@@ -41,9 +45,11 @@ export function ConsentStepView({ consent, language, onToggle }: {
               </View>
               <View style={styles.consentCopy}>
                 <Text style={styles.consentDescription}>{s.onboarding.consentDescriptions[key]}</Text>
-                <Text style={styles.detail}>{s.onboarding.viewDetail}</Text>
               </View>
             </Pressable>
+            <ExternalLink href={PRIVACY_POLICY_URL} errorMessage={s.common.openLinkFailed}>
+              <Text style={styles.detail}>{s.onboarding.viewDetail}</Text>
+            </ExternalLink>
           </View>
         ))}
       </View>

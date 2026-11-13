@@ -7,7 +7,7 @@
 <!-- AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung -->
 <!-- Changed: 초안 뒤로가기의 진입 화면 복귀 규칙 -->
 <!-- AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim -->
-<!-- Changed: 음식 편집에서 저장 추천 연결 -->
+<!-- Changed: 음식 편집에서 저장 추천 연결 및 Record a Try 미리 채움 -->
 
 # Meal Check-in
 
@@ -76,7 +76,7 @@
 
 ### R5 — 이전 제안을 실제 음식에 연결
 
-- Saved Suggestions의 Record a Try 진입은 별도 흐름이다. Trying this suggestion을 기본 선택하고, 저장 성공 후 새 Meal ID로 S.07 Link record (`622:422`)를 연다. 음식이 하나이면 그 음식에 자동 연결한다. 이 흐름은 음식 편집의 저장 추천 선택 화면을 자동으로 열지 않는다. S.07은 저장된 식사의 음식·추적 재료를 왼쪽 라디오가 있는 간단한 목록으로 표시하며 B의 펼침 음식 카드를 재사용하지 않는다. 선택 해제 시 일반 식사 저장 흐름을 따른다.
+- Saved Suggestions의 Record a Try 진입은 별도 흐름이다. Trying this suggestion을 기본 선택하고, 음식 추가 대화상자에 해당 추천 칩을 미리 채운다. 저장 성공 후 새 Meal ID로 S.07 Link record (`622:422`)를 연다. 음식이 하나이면 그 음식에 자동 연결한다. 이 흐름은 저장 추천 선택 화면을 자동으로 열지 않는다. S.07은 저장된 식사의 음식·추적 재료를 왼쪽 라디오가 있는 간단한 목록으로 표시하며 B의 펼침 음식 카드를 재사용하지 않는다. 선택 해제 시 일반 식사 저장 흐름을 따른다.
 - 추가·편집 대화상자의 Saved suggestion에서 보호자가 저장한 실제 추천 목록을 연다. 목록은 `GET /api/v1/suggestions`의 saved·tried 상태와 원본 식사 날짜·유형을 사용한다. 저장한 추천이 없으면 행을 비활성화하고 목록을 열지 않는다.
 - 추천 하나를 고른 뒤 Link suggestion으로 그 음식에 연결한다. 제안의 음식을 목록에 자동 추가하지 않는다. 한 추천은 한 음식에만 연결하고, 한 음식은 한 추천만 가진다.
 - 연결에는 제안 ID, 대상 음식 ID, 확인 가능한 제안 내용 스냅샷을 저장한다. 칩의 ×로 연결을 해제하고 Change로 다른 추천을 고른다. 음식 제거 시 연결을 함께 제거하고 Undo 시 복원한다.

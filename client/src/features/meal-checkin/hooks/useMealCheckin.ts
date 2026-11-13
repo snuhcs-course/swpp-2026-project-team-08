@@ -9,7 +9,7 @@
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 입력 없는 첫 단계 식사 초안 저장 및 복원 방지
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
-// Changed: 음식 편집에서 저장 추천 연결
+// Changed: 음식 편집에서 저장 추천 연결 및 Record a Try 미리 채움
 
 import { hasMealDraftInput } from '../../../rules/mealDraft';
 import { useQueryClient } from '@tanstack/react-query';
@@ -37,6 +37,16 @@ import {
   newDraft,
 } from '../rules';
 
+function snapshotLink(selected: MealSuggestionOption, foodId: string) {
+  return {
+    suggestionId: selected.id,
+    foodId,
+    title: selected.title,
+    description: selected.description,
+    servingTip: selected.servingTip,
+  };
+}
+
 export function useMealCheckin(childId: string, startAfterMealId?: string, freshAfterComplete = false, suggestions: readonly MealSuggestionOption[] = [], initialSuggestionId = '') {
   const [draft, setDraft] = useState<MealDraft | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -56,6 +66,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
   const client = useQueryClient();
   const saving = useSaveMeal();
   const busy = useRef(false);
+  const pendingTryLink = useRef(false);
   const pickBusy = useRef(false);
   const photoRequest = useRef(0);
   const version = useRef(0);
@@ -123,6 +134,21 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     setDraft(value);
     void persist(value);
   };
+  useEffect(() => {
+    const value = current.current;
+    const food = value?.editingFood;
+    if (!pendingTryLink.current || !food || busy.current) return;
+    if (value.foods.some((item) => item.id === food.id)) {
+      pendingTryLink.current = false;
+      return;
+    }
+    const selected = suggestions.find((item) => item.id === suggestionId);
+    if (!selected) return;
+    pendingTryLink.current = false;
+    const links = value.suggestionLinks ?? [];
+    if (links.some((link) => link.suggestionId === selected.id)) return;
+    update({ suggestionLinks: [...links, snapshotLink(selected, food.id)] });
+  }, [suggestions, suggestionId]);
   const go = (step: MealStep) => {
     photoRequest.current += 1;
     pickBusy.current = false;
@@ -141,6 +167,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       return true;
     }
     if (current.current.editingFood) {
+      pendingTryLink.current = false;
       const foodId = current.current.editingFood.id;
       const isNew = !current.current.foods.some((item) => item.id === foodId);
       update({
@@ -244,18 +271,31 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
   };
   const edit = (food?: FoodItem) => {
     if (!current.current || busy.current) return;
-    update({
-      editingFood: food
-        ? {
-            ...food,
-            ingredients: [...food.ingredients],
-          }
-        : newFood(),
-    });
+    if (food) {
+      pendingTryLink.current = false;
+      update({
+        editingFood: {
+          ...food,
+          ingredients: [...food.ingredients],
+        },
+      });
+      return;
+    }
+    const next = newFood();
+    const selected = suggestions.find((item) => item.id === suggestionId);
+    const links = current.current.suggestionLinks ?? [];
+    if (selected && !links.some((link) => link.suggestionId === selected.id)) {
+      pendingTryLink.current = false;
+      update({ editingFood: next, suggestionLinks: [...links, snapshotLink(selected, next.id)] });
+      return;
+    }
+    pendingTryLink.current = !!suggestionId && !selected;
+    update({ editingFood: next });
   };
   const cancelEdit = () => {
     const value = current.current;
     if (!value?.editingFood || busy.current) return;
+    pendingTryLink.current = false;
     const foodId = value.editingFood.id;
     const isNew = !value.foods.some((item) => item.id === foodId);
     setPickerOpen(false);
@@ -273,6 +313,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
   const saveFood = () => {
     const food = current.current?.editingFood;
     if (!food?.name.trim()) return;
+    pendingTryLink.current = false;
     const item: FoodItem = {
       ...food,
       name: food.name.trim(),

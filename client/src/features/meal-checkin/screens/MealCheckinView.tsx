@@ -11,7 +11,7 @@
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
-// Changed: 음식 편집에서 저장 추천 연결
+// Changed: 음식 편집에서 저장 추천 연결 및 Record a Try 미리 채움
 
 import { ProgressBar } from '../../../components/ProgressBar';
 import { AppHeader } from '../../../components/AppHeader';

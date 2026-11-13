@@ -8,7 +8,7 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: Add 없이 입력한 음식·재료 사유의 저장 실패·재시도·복원 검증
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
-// Changed: 음식 편집에서 저장 추천 연결 검증
+// Changed: 음식 편집에서 저장 추천 연결 및 Record a Try 미리 채움 검증
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -232,6 +232,50 @@ test('cancelling a new food drops its pending suggestion link', async (t) => {
   await act(async () => harness.current.cancelEdit());
   await act(async () => { await harness.current.flush(); });
   assert.deepEqual((await readMealDraft('1')).suggestionLinks ?? [], []);
+});
+
+test('recording a try prefills the new food editor with that suggestion', async (t) => {
+  const draft = { ...newDraft('1'), step: 'foods', mealType: 'lunch', setting: 'home', foods: [] };
+  await saveMealDraft(draft);
+  const suggestion = { id: '31', title: 'Try less', description: 'Keep it separate', servingTip: 'No pressure' };
+  const harness = await renderHook(t, suggestions => useMealCheckin('1', undefined, false, suggestions, '31'), { props: [suggestion] });
+  await waitFor(() => harness.current.draft !== null);
+  await act(async () => harness.current.edit());
+  assert.deepEqual(harness.current.draft.suggestionLinks, [{
+    suggestionId: '31',
+    foodId: harness.current.draft.editingFood.id,
+    title: 'Try less',
+    description: 'Keep it separate',
+    servingTip: 'No pressure',
+  }]);
+});
+
+test('recording a try waits for saved suggestions then prefills the new food', async (t) => {
+  const draft = { ...newDraft('1'), step: 'foods', mealType: 'lunch', setting: 'home', foods: [] };
+  await saveMealDraft(draft);
+  const suggestion = { id: '31', title: 'Try less', description: 'Keep it separate', servingTip: 'No pressure' };
+  const harness = await renderHook(t, suggestions => useMealCheckin('1', undefined, false, suggestions, '31'), { props: [] });
+  await waitFor(() => harness.current.draft !== null);
+  await act(async () => harness.current.edit());
+  assert.deepEqual(harness.current.draft.suggestionLinks ?? [], []);
+  await act(async () => { await harness.rerender([suggestion]); });
+  assert.equal(harness.current.draft.suggestionLinks[0].suggestionId, '31');
+  assert.equal(harness.current.draft.suggestionLinks[0].foodId, harness.current.draft.editingFood.id);
+});
+
+test('a second new food does not take a recorded try already linked', async (t) => {
+  const draft = { ...newDraft('1'), step: 'foods', mealType: 'lunch', setting: 'home', foods: [] };
+  await saveMealDraft(draft);
+  const suggestion = { id: '31', title: 'Try less', description: 'Keep it separate', servingTip: 'No pressure' };
+  const harness = await renderHook(t, suggestions => useMealCheckin('1', undefined, false, suggestions, '31'), { props: [suggestion] });
+  await waitFor(() => harness.current.draft !== null);
+  await act(async () => harness.current.edit());
+  const firstId = harness.current.draft.editingFood.id;
+  await act(async () => harness.current.changeFood({ name: 'Rice' }));
+  await act(async () => harness.current.saveFood());
+  await act(async () => harness.current.edit());
+  assert.equal(harness.current.draft.suggestionLinks.length, 1);
+  assert.equal(harness.current.draft.suggestionLinks[0].foodId, firstId);
 });
 
 test('removed food or empty saved list cannot create a stale link', async (t) => {

@@ -10,8 +10,10 @@
 // Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 초안 뒤로가기 시 저장 후 진입 화면으로 복귀
-// AI-generated with Grok 4.6, GPT-6, 2026-11-13, reviewed by Doyeon Kim, Haechan Jung
-// Changed: 음식 편집 추천 연결과 Trying 선택 해제 동기화
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 음식 편집에서 저장 추천 연결
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: Trying 선택 해제와 추천 연결 동기화
 
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';

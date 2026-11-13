@@ -8,7 +8,9 @@
 // Changed: 재료 단위 추천 연결 제거
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 입력 없는 첫 단계 식사 초안 저장 및 복원 방지
-// AI-generated with Grok 4.6, GPT-6, 2026-11-13, reviewed by Doyeon Kim, Haechan Jung
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 음식 편집에서 저장 추천 연결 및 Record a Try 미리 채움
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 편집 추천 연결 초안·취소 및 Record a Try 자동 연결과 해제
 
 import { hasMealDraftInput } from '../../../rules/mealDraft';

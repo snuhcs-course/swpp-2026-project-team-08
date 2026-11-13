@@ -9,7 +9,7 @@
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 입력 없는 첫 단계 식사 초안 저장 및 복원 방지
 // AI-generated with Grok 4.6, GPT-6, 2026-11-13, reviewed by Doyeon Kim, Haechan Jung
-// Changed: 음식 편집 추천 연결의 초안 저장·취소 및 Record a Try 미리 채움
+// Changed: 편집 추천 연결 초안·취소 및 Record a Try 자동 연결과 해제
 
 import { hasMealDraftInput } from '../../../rules/mealDraft';
 import { useQueryClient } from '@tanstack/react-query';
@@ -47,10 +47,10 @@ function snapshotLink(selected: MealSuggestionOption, foodId: string) {
   };
 }
 
-export function useMealCheckin(childId: string, startAfterMealId?: string, freshAfterComplete = false, suggestions: readonly MealSuggestionOption[] = [], initialSuggestionId = '') {
+export function useMealCheckin(childId: string, startAfterMealId?: string, freshAfterComplete = false, suggestions: readonly MealSuggestionOption[] = [], initialSuggestionId = '', onStopTrying?: () => void) {
   const [draft, setDraft] = useState<MealDraft | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [suggestionId, setSuggestionId] = useState(initialSuggestionId);
+  const [pickerSuggestionId, setPickerSuggestionId] = useState('');
   const [resumeRequired, setResumeRequired] = useState(false);
   const current = useRef<MealDraft | null>(null);
   const [removed, setRemoved] = useState<{ food: FoodItem; index: number; links: NonNullable<MealDraft['suggestionLinks']> } | null>(null);
@@ -142,13 +142,13 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       pendingTryLink.current = false;
       return;
     }
-    const selected = suggestions.find((item) => item.id === suggestionId);
+    const selected = suggestions.find((item) => item.id === initialSuggestionId);
     if (!selected) return;
     pendingTryLink.current = false;
     const links = value.suggestionLinks ?? [];
     if (links.some((link) => link.suggestionId === selected.id)) return;
     update({ editingSuggestionLink: snapshotLink(selected, food.id) });
-  }, [suggestions, suggestionId, update]);
+  }, [suggestions, initialSuggestionId, update]);
   const go = (step: MealStep) => {
     photoRequest.current += 1;
     pickBusy.current = false;
@@ -215,7 +215,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
         setError('save');
         return null;
       }
-      if (value.foods.length === 1) {
+      if (value.foods.length === 1 && !(value.suggestionLinks ?? []).some((link) => link.foodId === value.foods[0].id)) {
         value = {
           ...value,
           suggestionLinks: [
@@ -275,14 +275,14 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       return;
     }
     const next = newFood();
-    const selected = suggestions.find((item) => item.id === suggestionId);
+    const selected = suggestions.find((item) => item.id === initialSuggestionId);
     const links = current.current.suggestionLinks ?? [];
     if (selected && !links.some((link) => link.suggestionId === selected.id)) {
       pendingTryLink.current = false;
       update({ editingFood: next, editingSuggestionLink: snapshotLink(selected, next.id) });
       return;
     }
-    pendingTryLink.current = !!suggestionId && !selected;
+    pendingTryLink.current = !!initialSuggestionId && !selected;
     update({ editingFood: next, editingSuggestionLink: null });
   };
   const cancelEdit = () => {
@@ -303,6 +303,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     const value = current.current;
     const food = value?.editingFood;
     if (!value || !food?.name.trim() || busy.current) return;
+    const waitingForTry = pendingTryLink.current;
     pendingTryLink.current = false;
     const item: FoodItem = {
       ...food,
@@ -313,32 +314,54 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     const link = value.editingSuggestionLink;
     const links = (value.suggestionLinks ?? []).filter((old) =>
       old.foodId !== food.id && (!link || old.suggestionId !== link.suggestionId));
+    const nextLinks = link ? [...links, link] : links;
     update({
       foods: foods.some((f) => f.id === item.id)
         ? foods.map((f) => (f.id === item.id ? item : f))
         : [...foods, item],
       editingFood: null,
       editingSuggestionLink: null,
-      suggestionLinks: link ? [...links, link] : links,
+      suggestionLinks: nextLinks,
+    });
+    // Only a saved edit cancels the try intent; Cancel must preserve it.
+    if (initialSuggestionId && !waitingForTry &&
+      (!foods.some((old) => old.id === food.id) || value.suggestionLinks?.some((old) =>
+        old.foodId === food.id && old.suggestionId === initialSuggestionId)) &&
+      !nextLinks.some((next) => next.suggestionId === initialSuggestionId)) {
+      onStopTrying?.();
+    }
+  };
+  const clearTryingSuggestion = (id: string) => {
+    const value = current.current;
+    if (!value || busy.current || !id) return;
+    pendingTryLink.current = false;
+    setPickerSuggestionId((selected) => selected === id ? '' : selected);
+    setRemoved((previous) => previous ? {
+      ...previous, links: previous.links.filter((link) => link.suggestionId !== id),
+    } : null);
+    update({
+      suggestionLinks: value.suggestionLinks?.filter((link) => link.suggestionId !== id),
+      editingSuggestionLink: value.editingSuggestionLink?.suggestionId === id
+        ? null : value.editingSuggestionLink,
     });
   };
   return {
     draft,
     suggestionLinking: {
       pickerOpen,
-      selectedSuggestionId: suggestionId,
+      selectedSuggestionId: pickerSuggestionId,
       canOpenPicker: suggestions.length > 0,
       onOpenPicker: () => {
         if (!suggestions.length) return;
         const linked = current.current?.editingSuggestionLink;
-        setSuggestionId(linked?.suggestionId ?? '');
+        setPickerSuggestionId(linked?.suggestionId ?? '');
         setPickerOpen(true);
       },
       onClosePicker: () => setPickerOpen(false),
-      onSelectSuggestion: setSuggestionId,
+      onSelectSuggestion: setPickerSuggestionId,
       onLink: (foodId) => {
         const value = current.current;
-        const selected = suggestions.find((item) => item.id === suggestionId);
+        const selected = suggestions.find((item) => item.id === pickerSuggestionId);
         if (!value || busy.current || !selected || value.editingFood?.id !== foodId) return;
         pendingTryLink.current = false;
         update({ editingSuggestionLink: snapshotLink(selected, foodId) });
@@ -350,6 +373,9 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
         if (value.editingFood) {
           pendingTryLink.current = false;
           update({ editingSuggestionLink: null });
+        } else if (id === initialSuggestionId) {
+          clearTryingSuggestion(id);
+          onStopTrying?.();
         } else {
           update({ suggestionLinks: value.suggestionLinks?.filter((link) => link.suggestionId !== id) });
         }
@@ -386,6 +412,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     cancelEdit,
     changeFood,
     saveFood,
+    clearTryingSuggestion,
     removeFood: (id: string) => {
       const value = current.current;
       const food = value?.foods.find((item) => item.id === id);

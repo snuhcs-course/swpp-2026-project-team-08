@@ -8,6 +8,8 @@
 // Changed: 추천 카드의 재료 이름 표시 제거
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: 추천 모달 안전 여백 및 음식이 있을 때만 추천 연결 표시
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 식전 사진 높이와 배치
 
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { useState } from "react";
@@ -178,32 +180,23 @@ export function MealFoodsStepView({ p }: { p: Props }) {
         {p.childName} · {displayDate(d.mealDate, p.language)} · {d.mealType ? m.types[d.mealType] : ""}
         {d.setting ? ` · ${m.settings[d.setting]}` : ""}
       </Text>
-      <View style={[styles.photoCard, !d.photo && styles.missingPhotoCard]}>
-        {d.photo ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={m.fullPhoto}
-            onPress={p.onFullPhoto}
-            style={styles.photoOpen}
-          >
-            <Image
-              source={{ uri: d.photo.uri }}
-              style={styles.photoThumbnail}
-              contentFit="cover"
-            />
-            <Text style={styles.photoTitle}>{m.beforePhoto}</Text>
-          </Pressable>
-        ) : (
-          <Text style={[styles.photoTitle, { flex: 1, minWidth: 0 }]}>{a.missingPhoto}</Text>
-        )}
-        {!d.photo && <Pressable
+      {d.photo ? (
+        <Pressable
           accessibilityRole="button"
-          onPress={() => p.onGo("photo")}
-          style={styles.addPhotoButton}
+          accessibilityLabel={m.fullPhoto}
+          onPress={p.onFullPhoto}
+          style={styles.hero}
         >
-          <Text style={styles.addPhotoLabel}>{s.common.add}</Text>
-        </Pressable>}
-      </View>
+          <Image
+            source={{ uri: d.photo.uri }}
+            style={styles.heroImage}
+            contentFit="cover"
+          />
+          <View style={styles.heroBadge}>
+            <Text style={styles.heroBadgeText}>{m.beforeMealBadge}</Text>
+          </View>
+        </Pressable>
+      ) : null}
       <View style={styles.addRow}>
         <AppButton
           variant="meal"
@@ -347,30 +340,20 @@ const styles = StyleSheet.create({
   modal: { flex: 1, backgroundColor: colors.mealReviewBackground },
   modalContent: { paddingHorizontal: 24, paddingTop: 0, paddingBottom: 12, gap: 12 },
   modalFooter: { paddingHorizontal: 24, paddingBottom: 16, paddingTop: 8, gap: 8 },
-  photoCard: {
-    minHeight: 54,
+  hero: { height: 90, borderRadius: 14, overflow: "hidden" },
+  heroImage: { width: "100%", height: "100%" },
+  heroBadge: {
+    position: "absolute",
+    left: 10,
+    bottom: 10,
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.homeBorder,
-    borderRadius: 14,
-    padding: 3,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
-  missingPhotoCard: { minHeight: 57, paddingHorizontal: 10, paddingVertical: 13, gap: 10 },
-  addPhotoButton: { width: 64, height: 29, flexShrink: 0, borderRadius: 10, backgroundColor: colors.onboardingPrimary, alignItems: 'center', justifyContent: 'center' },
-  addPhotoLabel: { color: colors.surface, fontFamily: fonts.poppinsSemiBold, fontSize: 13 },
+  heroBadgeText: { color: colors.homeText, fontSize: 11, fontFamily: fonts.poppinsMedium },
   removedText: { flex: 1, color: colors.surface, fontFamily: fonts.poppinsMedium, fontSize: 12, lineHeight: 17.4 },
   undoText: { color: colors.homePrimary, fontFamily: fonts.poppinsSemiBold, fontSize: 11 },
-  photoOpen: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
-  photoThumbnail: { width: 50, height: 46, borderRadius: 8 },
-  photoTitle: {
-    color: colors.homeText,
-    fontSize: 13,
-    fontFamily: fonts.poppinsSemiBold,
-  },
   legend: { flexDirection: "row", gap: 6 },
   aiBadge: {
     color: colors.suggestionText,

@@ -13,6 +13,8 @@
 // Changed: Eaten 단계 생략 및 언어 버튼 숨김 검증
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 애니메이션 바텀시트의 네이티브 컴포넌트 대체 지원
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 식전 사진 높이와 배치 검증
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -262,6 +264,8 @@ test("photo empty list has guidance but hides the suggestion entry", () => {
       },
     }),
   );
+  assert.match(html, /Before meal/);
+  assert.match(html, /height:90px/);
   assert.match(html, /No foods added yet/);
   assert.doesNotMatch(html, /Are you trying a previous suggestion/);
 });

@@ -18,7 +18,7 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 추가 추천 생성과 재시도 문구
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
-// Changed: 음식 편집의 저장 추천 연결 문구
+// Changed: 음식 편집의 저장 추천 연결과 어려움 안내 문구
 
 import type { Language } from '../types/profile';
 
@@ -157,7 +157,7 @@ const en = {
     unanswered: 'Unanswered', unansweredHint: 'Choose an outcome for each food and selected ingredient.',
     definitionsIntro: 'Use what you observed. You don’t need to estimate exact amounts.',
     outcomeDescriptions: { eaten: 'You observed the child swallow some food.', tasted: 'Licked or tasted, with no confirmed swallow', untouched: 'Neither tasted nor ate', unclear: 'You cannot determine what happened', unanswered: 'This cannot be saved. Choose unclear when the outcome is unknown.' },
-    difficultyIntro: 'Some categories allow multiple value selections.', selectCategory: 'Select category', selectValue: 'value',
+    difficultyIntro: 'Please tap add button when adding the reasoning. Some categories allow multiple value selections.', selectCategory: 'Select category', selectValue: 'value',
     note: 'Optional note', otherValue: 'Describe your answer', addTag: '+ Add', skip: 'Skip',
     categories: { texture: 'Texture', tasteType: 'Taste type', smell: 'Smell', color: 'Color', temperature: 'Temperature', notSure: 'Not sure' },
     values: { smooth: 'Smooth/creamy', soft: 'Soft/mushy', lumpy: 'Lumpy/chunky', crunchy: 'Crunchy/crisp', chewy: 'Chewy/tough', wet: 'Wet/slippery', mixed: 'Mixed textures', other: 'Other', sweet: 'Sweet', salty: 'Salty', sour: 'Sour', bitter: 'Bitter', spicy: 'Spicy/hot', mild: 'Mild', strong: 'Strong', none: 'No noticeable smell', notSure: 'Not sure', red: 'Red', orange: 'Orange', yellow: 'Yellow', green: 'Green', blue: 'Blue', purple: 'Purple', brown: 'Brown', black: 'Black', white: 'White', gray: 'Gray', consistent: 'Consistent', varied: 'Varied', note: 'Optional note', visible: 'Visible', hidden: 'Hidden', room: 'Room temperature', warm: 'Warm', cool: 'Cool / chilled' },
@@ -423,7 +423,7 @@ const ko = {
     unanswered: '미응답', unansweredHint: '모든 음식과 선택한 재료의 결과를 입력해 주세요.',
     definitionsIntro: '직접 본 내용을 선택해 주세요. 정확한 양은 입력하지 않아도 돼요.',
     outcomeDescriptions: { eaten: '아이가 음식을 삼키는 모습을 봤어요.', tasted: '핥거나 맛봤지만 삼켰는지는 확인하지 못했어요.', untouched: '먹거나 맛보지 않았어요.', unclear: '먹거나 맛봤는지 판단하기 어려워요.', unanswered: '결과를 선택해야 저장할 수 있어요. 모르면 ‘확인 어려움’을 선택해 주세요.' },
-    difficultyIntro: '일부 항목은 특징을 여러 개 추가할 수 있어요.', selectCategory: '항목 선택', selectValue: '특징 선택',
+    difficultyIntro: '이유를 추가할 때는 추가 버튼을 눌러 주세요. 일부 항목은 특징을 여러 개 추가할 수 있어요.', selectCategory: '항목 선택', selectValue: '특징 선택',
     note: '메모 (선택)', otherValue: '직접 입력', addTag: '+ 추가', skip: '건너뛰고 저장',
     categories: { texture: '식감', tasteType: '맛 종류', smell: '냄새', color: '색', temperature: '온도', notSure: '잘 모르겠음' },
     values: { smooth: '매끄럽고 크림 같음', soft: '부드럽고 무름', lumpy: '덩어리가 있음', crunchy: '바삭함', chewy: '질김', wet: '젖고 미끄러움', mixed: '혼합 식감', other: '기타', sweet: '단맛', salty: '짠맛', sour: '신맛', bitter: '쓴맛', spicy: '매운맛', mild: '약함', strong: '강함', none: '뚜렷한 냄새 없음', notSure: '잘 모르겠음', red: '빨강', orange: '주황', yellow: '노랑', green: '초록', blue: '파랑', purple: '보라', brown: '갈색', black: '검정', white: '흰색', gray: '회색', consistent: '일정함', varied: '다양함', note: '메모 (선택)', visible: '보임', hidden: '숨김', room: '실온', warm: '따뜻함', cool: '차가움' },

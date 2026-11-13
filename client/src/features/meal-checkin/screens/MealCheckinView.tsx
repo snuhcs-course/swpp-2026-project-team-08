@@ -10,8 +10,8 @@
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
-// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
-// Changed: 음식 편집에서 저장 추천 연결 및 Record a Try 미리 채움
+// AI-generated with Grok 4.6, GPT-6, 2026-11-13, reviewed by Doyeon Kim, Haechan Jung
+// Changed: 음식 편집 추천 연결 초안 표시 및 Record a Try 미리 채움
 
 import { ProgressBar } from '../../../components/ProgressBar';
 import { AppHeader } from '../../../components/AppHeader';
@@ -55,7 +55,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
   const [imageError, setImageError] = useState(false);
   const review = d.step === "foods";
   const linking = p.suggestionLinking;
-  const editingLink = (d.suggestionLinks ?? []).find((item) => item.foodId === d.editingFood?.id);
+  const editingLink = d.editingSuggestionLink;
   const editingLinkTitle = (p.suggestions ?? []).find((item) => item.id === editingLink?.suggestionId)?.title
     || editingLink?.title
     || null;

@@ -8,12 +8,12 @@
 // Changed: 재료 단위 추천 연결 제거
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 입력 없는 첫 단계 식사 초안 저장 및 복원 방지
-// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
-// Changed: 음식 편집에서 저장 추천 연결 및 Record a Try 미리 채움
+// AI-generated with Grok 4.6, GPT-6, 2026-11-13, reviewed by Doyeon Kim, Haechan Jung
+// Changed: 음식 편집 추천 연결의 초안 저장·취소 및 Record a Try 미리 채움
 
 import { hasMealDraftInput } from '../../../rules/mealDraft';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   mealKeys,
   useSaveMeal,
@@ -111,7 +111,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       mounted.current = false;
     };
   }, [childId, startAfterMealId, freshAfterComplete]);
-  const persist = async (value: MealDraft) => {
+  const persist = useCallback(async (value: MealDraft) => {
     const revision = ++version.current;
     setSaveStatus('saving');
     try {
@@ -126,14 +126,14 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
         setSaveStatus('error');
       return false;
     }
-  };
-  const update = (patch: Partial<MealDraft>) => {
+  }, [client]);
+  const update = useCallback((patch: Partial<MealDraft>) => {
     if (!current.current || busy.current) return;
     const value = { ...current.current, ...patch };
     current.current = value;
     setDraft(value);
     void persist(value);
-  };
+  }, [persist]);
   useEffect(() => {
     const value = current.current;
     const food = value?.editingFood;
@@ -147,8 +147,8 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     pendingTryLink.current = false;
     const links = value.suggestionLinks ?? [];
     if (links.some((link) => link.suggestionId === selected.id)) return;
-    update({ suggestionLinks: [...links, snapshotLink(selected, food.id)] });
-  }, [suggestions, suggestionId]);
+    update({ editingSuggestionLink: snapshotLink(selected, food.id) });
+  }, [suggestions, suggestionId, update]);
   const go = (step: MealStep) => {
     photoRequest.current += 1;
     pickBusy.current = false;
@@ -167,15 +167,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       return true;
     }
     if (current.current.editingFood) {
-      pendingTryLink.current = false;
-      const foodId = current.current.editingFood.id;
-      const isNew = !current.current.foods.some((item) => item.id === foodId);
-      update({
-        editingFood: null,
-        suggestionLinks: isNew
-          ? (current.current.suggestionLinks ?? []).filter((link) => link.foodId !== foodId)
-          : current.current.suggestionLinks,
-      });
+      cancelEdit();
       return true;
     }
     const step = current.current.step;
@@ -278,6 +270,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
           ...food,
           ingredients: [...food.ingredients],
         },
+        editingSuggestionLink: current.current.suggestionLinks?.find((link) => link.foodId === food.id) ?? null,
       });
       return;
     }
@@ -286,24 +279,20 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     const links = current.current.suggestionLinks ?? [];
     if (selected && !links.some((link) => link.suggestionId === selected.id)) {
       pendingTryLink.current = false;
-      update({ editingFood: next, suggestionLinks: [...links, snapshotLink(selected, next.id)] });
+      update({ editingFood: next, editingSuggestionLink: snapshotLink(selected, next.id) });
       return;
     }
     pendingTryLink.current = !!suggestionId && !selected;
-    update({ editingFood: next });
+    update({ editingFood: next, editingSuggestionLink: null });
   };
   const cancelEdit = () => {
     const value = current.current;
     if (!value?.editingFood || busy.current) return;
     pendingTryLink.current = false;
-    const foodId = value.editingFood.id;
-    const isNew = !value.foods.some((item) => item.id === foodId);
     setPickerOpen(false);
     update({
       editingFood: null,
-      suggestionLinks: isNew
-        ? (value.suggestionLinks ?? []).filter((link) => link.foodId !== foodId)
-        : value.suggestionLinks,
+      editingSuggestionLink: null,
     });
   };
   const changeFood = (patch: Partial<FoodItem>) => {
@@ -311,20 +300,26 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       update({ editingFood: { ...current.current.editingFood, ...patch } });
   };
   const saveFood = () => {
-    const food = current.current?.editingFood;
-    if (!food?.name.trim()) return;
+    const value = current.current;
+    const food = value?.editingFood;
+    if (!value || !food?.name.trim() || busy.current) return;
     pendingTryLink.current = false;
     const item: FoodItem = {
       ...food,
       name: food.name.trim(),
       confirmed: true,
     };
-    const foods = current.current?.foods ?? [];
+    const foods = value.foods;
+    const link = value.editingSuggestionLink;
+    const links = (value.suggestionLinks ?? []).filter((old) =>
+      old.foodId !== food.id && (!link || old.suggestionId !== link.suggestionId));
     update({
       foods: foods.some((f) => f.id === item.id)
         ? foods.map((f) => (f.id === item.id ? item : f))
         : [...foods, item],
       editingFood: null,
+      editingSuggestionLink: null,
+      suggestionLinks: link ? [...links, link] : links,
     });
   };
   return {
@@ -335,10 +330,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       canOpenPicker: suggestions.length > 0,
       onOpenPicker: () => {
         if (!suggestions.length) return;
-        const foodId = current.current?.editingFood?.id;
-        const linked = foodId
-          ? (current.current?.suggestionLinks ?? []).find((link) => link.foodId === foodId)
-          : undefined;
+        const linked = current.current?.editingSuggestionLink;
         setSuggestionId(linked?.suggestionId ?? '');
         setPickerOpen(true);
       },
@@ -347,23 +339,20 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       onLink: (foodId) => {
         const value = current.current;
         const selected = suggestions.find((item) => item.id === suggestionId);
-        if (!value || busy.current || !selected || !foodId) return;
-        update({
-          suggestionLinks: [
-            ...(value.suggestionLinks ?? []).filter((link) => link.suggestionId !== selected.id && link.foodId !== foodId),
-            {
-              suggestionId: selected.id,
-              foodId,
-              title: selected.title,
-              description: selected.description,
-              servingTip: selected.servingTip,
-            },
-          ],
-        });
+        if (!value || busy.current || !selected || value.editingFood?.id !== foodId) return;
+        pendingTryLink.current = false;
+        update({ editingSuggestionLink: snapshotLink(selected, foodId) });
         setPickerOpen(false);
       },
       onUnlink: (id) => {
-        if (current.current) update({ suggestionLinks: current.current.suggestionLinks?.filter((link) => link.suggestionId !== id) });
+        const value = current.current;
+        if (!value || busy.current) return;
+        if (value.editingFood) {
+          pendingTryLink.current = false;
+          update({ editingSuggestionLink: null });
+        } else {
+          update({ suggestionLinks: value.suggestionLinks?.filter((link) => link.suggestionId !== id) });
+        }
       },
     } satisfies MealSuggestionLinking,
     resumeRequired,

@@ -10,6 +10,8 @@
 // Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 초안 뒤로가기 시 저장 후 진입 화면으로 복귀
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 음식 편집에서 저장 추천 연결
 
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -159,6 +161,7 @@ export function MealCheckinScreen({
         });
       }}
       onEdit={inputs.editFood}
+      onCancelFood={model.cancelEdit}
       onRemove={model.removeFood}
       onRemovePhoto={model.removePhoto}
       onChangeFood={model.changeFood}

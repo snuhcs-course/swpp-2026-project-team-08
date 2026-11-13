@@ -14,7 +14,7 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 애니메이션 바텀시트의 네이티브 컴포넌트 대체 지원
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
-// Changed: 식전 사진 높이와 배치 검증
+// Changed: 음식 편집에서 저장 추천 연결 검증
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -121,14 +121,13 @@ const s = copyFor("en"),
   noop = () => {};
 
 const closedLinking = {
-  step: 0,
-  selectedFoodId: "",
-  canContinue: false,
-  onOpen: noop,
-  onBack: noop,
+  pickerOpen: false,
+  selectedSuggestionId: "",
+  canOpenPicker: false,
+  onOpenPicker: noop,
+  onClosePicker: noop,
   onSelectSuggestion: noop,
-  onSelectFood: noop,
-  onContinue: noop,
+  onLink: noop,
   onUnlink: noop,
 };
 
@@ -227,7 +226,7 @@ test("replacement dialog is centered and exposes body and small gray hint separa
   assert.doesNotMatch(html, /×/);
 });
 
-test("photo-free empty list has only entry guidance and the full-width add action", () => {
+test("photo-free empty list skips the photo and shows the food count with a boxed add action", () => {
   const html = renderToStaticMarkup(
     React.createElement(MealFoodsStepView, {
       p: {
@@ -239,15 +238,16 @@ test("photo-free empty list has only entry guidance and the full-width add actio
       },
     }),
   );
-  assert.match(html, /Add the foods you served, with or without a photo/);
-  assert.match(html, /Add food item/);
+  assert.match(html, /0 food items/);
+  assert.match(html, /\+ Add/);
+  assert.match(html, /No foods added yet/);
   assert.doesNotMatch(
     html,
-    /No foods added yet|No Before-meal photo|previous suggestion/,
+    /Before meal|No Before-meal photo|previous suggestion|Add the foods you served, with or without a photo/,
   );
 });
 
-test("photo empty list has guidance but hides the suggestion entry", () => {
+test("photo empty list shows the before-meal photo and hides the old suggestion entry", () => {
   const html = renderToStaticMarkup(
     React.createElement(MealFoodsStepView, {
       p: {
@@ -265,7 +265,7 @@ test("photo empty list has guidance but hides the suggestion entry", () => {
     }),
   );
   assert.match(html, /Before meal/);
-  assert.match(html, /height:90px/);
+  assert.match(html, /0 food items/);
   assert.match(html, /No foods added yet/);
   assert.doesNotMatch(html, /Are you trying a previous suggestion/);
 });
@@ -333,38 +333,82 @@ test("save failure has a dedicated retry screen with the same meal and no extra 
   assert.doesNotMatch(html, /Rolled omelet/);
 });
 
-test("draft suggestion linking opens explicitly and shows actual source meal metadata", () => {
-  const p = {
-    draft: {
-      ...newDraft("test"),
-      step: "foods",
-      foods: [{ ...newFood(), name: "Soup" }],
-    },
-    language: "en",
-    suggestions: [
-      {
-        id: "real-id",
-        title: "Actual idea",
-        description: "Try it small",
-        mealDate: "2026-10-11",
-        mealType: "lunch",
-      },
-    ],
-    suggestionLinking: closedLinking,
-    onEdit: noop,
+test("food editor exposes saved suggestion linking and the picker shows source meal metadata", () => {
+  const suggestion = {
+    id: "real-id",
+    title: "Actual idea",
+    description: "Try it small",
+    mealDate: "2026-10-11",
+    mealType: "lunch",
   };
   const closed = renderToStaticMarkup(
-    React.createElement(MealFoodsStepView, { p }),
-  );
-  assert.match(closed, /Are you trying a previous suggestion/);
-  assert.doesNotMatch(closed, /Step 1 of 2|Actual idea/);
-  const html = renderToStaticMarkup(
     React.createElement(MealFoodsStepView, {
-      p: { ...p, suggestionLinking: { ...closedLinking, step: 1 } },
+      p: {
+        draft: {
+          ...newDraft("test"),
+          step: "foods",
+          foods: [{ ...newFood(), name: "Soup" }],
+        },
+        language: "en",
+        suggestionLinking: closedLinking,
+        onEdit: noop,
+      },
     }),
   );
-  assert.match(html, /<aside><main[^>]*><div[^>]*data-testid="app-header"/);
-  assert.match(html, /Step 1 of 2/);
+  assert.doesNotMatch(closed, /Are you trying a previous suggestion|Step 1 of 2|Actual idea/);
+  const emptyField = renderToStaticMarkup(
+    React.createElement(MealFoodEditorDialog, {
+      food: newFood(),
+      mode: "add",
+      meal: s.mealCheckin,
+      common: s.common,
+      labels: a,
+      ingredient: "",
+      onIngredientChange: noop,
+      onAddIngredient: noop,
+      onRemoveIngredient: noop,
+      onChange: noop,
+      onSave: noop,
+      onCancel: noop,
+      suggestion: { title: null, canOpen: false, onOpen: noop, onUnlink: noop },
+    }),
+  );
+  assert.match(emptyField, /Saved suggestion/);
+  assert.match(emptyField, /aria-label="Link a saved suggestion" aria-disabled="true"/);
+  const linkedField = renderToStaticMarkup(
+    React.createElement(MealFoodEditorDialog, {
+      food: { ...newFood(), name: "Sushi" },
+      mode: "add",
+      meal: s.mealCheckin,
+      common: s.common,
+      labels: a,
+      ingredient: "",
+      onIngredientChange: noop,
+      onAddIngredient: noop,
+      onRemoveIngredient: noop,
+      onChange: noop,
+      onSave: noop,
+      onCancel: noop,
+      suggestion: { title: "Veggie quesadilla", canOpen: true, onOpen: noop, onUnlink: noop },
+    }),
+  );
+  assert.match(linkedField, /Veggie quesadilla/);
+  assert.match(linkedField, /Change/);
+  const {
+    MealSavedSuggestionPicker,
+  } = require("../../src/features/meal-checkin/components/MealSavedSuggestionPicker.tsx");
+  const html = renderToStaticMarkup(
+    React.createElement(MealSavedSuggestionPicker, {
+      language: "en",
+      suggestions: [suggestion],
+      selectedId: "real-id",
+      onSelect: noop,
+      onLink: noop,
+      onClose: noop,
+    }),
+  );
+  assert.match(html, /Saved suggestions/);
+  assert.match(html, /Choose the suggestion you tried/);
   assert.match(html, /Oct 11, 2026/);
   assert.match(html, /Lunch/);
   assert.match(html, /Actual idea/);

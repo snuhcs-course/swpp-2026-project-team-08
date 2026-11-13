@@ -2,6 +2,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 입력 없는 첫 단계 식사 초안 저장 및 복원 방지
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 편집 중인 음식의 추천 연결 검증
 
 import {
   mealSettings,
@@ -10,12 +12,19 @@ import {
   type FoodItem,
   type MealDraft,
   type Meal,
+  type MealSuggestionLink,
 } from '../../types/meal';
 import { validDate } from '../../util/date';
 const record = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === 'object' && !Array.isArray(v);
 const list = (v: unknown): v is string[] =>
   Array.isArray(v) && v.every((x) => typeof x === 'string');
+function isSuggestionLink(v: unknown): v is MealSuggestionLink {
+  return record(v) && typeof v.suggestionId === 'string' && typeof v.foodId === 'string' &&
+    (v.ingredientId === undefined || v.ingredientId === null || typeof v.ingredientId === 'string') &&
+    typeof v.title === 'string' && typeof v.description === 'string' &&
+    (v.servingTip === undefined || typeof v.servingTip === 'string');
+}
 export function isFood(v: unknown): v is FoodItem {
   if (
     !record(v) ||
@@ -50,7 +59,10 @@ export function isDraft(v: unknown, childId: string): v is MealDraft {
     v.foods.every(isFood) &&
     new Set(v.foods.map((food) => food.id)).size === v.foods.length &&
     (v.editingFood === null || isFood(v.editingFood)) &&
-    (v.suggestionLinks === undefined || (Array.isArray(v.suggestionLinks) && v.suggestionLinks.every((link) => record(link) && typeof link.suggestionId === 'string' && typeof link.foodId === 'string' && (link.ingredientId === undefined || link.ingredientId === null || typeof link.ingredientId === 'string') && typeof link.title === 'string' && typeof link.description === 'string' && (link.servingTip === undefined || typeof link.servingTip === 'string') && v.foods instanceof Array && v.foods.some((food: FoodItem) => food.id === link.foodId)) && new Set(v.suggestionLinks.map((link) => link.suggestionId)).size === v.suggestionLinks.length)) &&
+    (v.editingSuggestionLink === undefined || v.editingSuggestionLink === null ||
+      (isSuggestionLink(v.editingSuggestionLink) && isFood(v.editingFood) &&
+        v.editingSuggestionLink.foodId === v.editingFood.id)) &&
+    (v.suggestionLinks === undefined || (Array.isArray(v.suggestionLinks) && v.suggestionLinks.every((link) => isSuggestionLink(link) && v.foods instanceof Array && v.foods.some((food: FoodItem) => food.id === link.foodId)) && new Set(v.suggestionLinks.map((link) => link.suggestionId)).size === v.suggestionLinks.length)) &&
     (v.savedMealId === null || v.savedMealId === v.id)
   );
 }

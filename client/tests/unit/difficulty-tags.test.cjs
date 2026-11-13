@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 어려움 태그의 언어·제목·삭제 및 기록 화면 표시 검증
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 어려움 추가 버튼 위치와 태그 글자 크기 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -45,6 +47,8 @@ for (const language of ['en', 'ko']) {
       const tag = DifficultyReasonTag({ reason: item.reason, labels: labelsFor(language) });
       const text = tag.props.children.props.children[1];
       assert.equal(text.props.children[0], item[language]);
+      assert.equal(text.props.style.fontSize, 15);
+      assert.equal(text.props.style.fontFamily, 'Inter_400Regular');
       assert.equal(tag.props.onPress, undefined);
     }
   });
@@ -77,6 +81,23 @@ for (const language of ['en', 'ko']) {
     assert.ok(!renderToStaticMarkup(history.current).includes(copyFor(language).mealLog.reason));
   });
 }
+
+test('add stays on the right of the two smaller reason boxes', async t => {
+  const labels = labelsFor('en');
+  const editor = await renderHook(t, () => DifficultyEditor({
+    foodName: 'Rice', category: 'tasteType', value: '', note: '', options: [],
+    tags: [], labels, canAdd: false, showNote: false,
+    onCategory: () => {}, onSubcategory: () => {}, onValue: () => {}, onNote: () => {},
+    onAdd: () => {}, onRemove: () => {},
+  }));
+  const row = editor.current.props.children[1];
+  assert.equal(row.props.style.flexDirection, 'row');
+  assert.notEqual(row.props.style.flexWrap, 'wrap');
+  const fields = row.props.children.filter(Boolean);
+  assert.equal(fields.length, 3);
+  const html = renderToStaticMarkup(editor.current);
+  assert.match(html, /font-size:12px/);
+});
 
 test('color tags retain a color dot and notes, and deletion announces the full reason', () => {
   const labels = labelsFor('en');

@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 식후 입력과 식사 기록의 어려움 태그 표시 통일
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 어려움 태그 글자를 더 작게 하고 굵게 쓰지 않음
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, difficultyColorDots } from '../util/colors';
@@ -40,9 +42,9 @@ export function DifficultyReasonTag({ reason, labels, onRemove }: {
 const styles = StyleSheet.create({
   tag: {
     maxWidth: '100%', borderRadius: 999, backgroundColor: colors.successSurface,
-    paddingHorizontal: 8, paddingVertical: 5, flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 6, paddingVertical: 3, flexDirection: 'row', alignItems: 'center', gap: 4,
   },
-  text: { flexShrink: 1, color: colors.success, fontSize: 16, fontFamily: fonts.interMedium },
+  text: { flexShrink: 1, color: colors.success, fontSize: 15, fontFamily: fonts.interRegular },
   colorDot: {
     width: 11, height: 11, borderRadius: 6, borderWidth: 1,
     borderColor: colors.mealReviewBorder, flexShrink: 0,

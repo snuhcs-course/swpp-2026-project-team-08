@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 어려움 태그의 언어·제목·삭제 및 기록 화면 표시 검증
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 어려움 태그 글자 크기와 두께 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -45,6 +47,8 @@ for (const language of ['en', 'ko']) {
       const tag = DifficultyReasonTag({ reason: item.reason, labels: labelsFor(language) });
       const text = tag.props.children.props.children[1];
       assert.equal(text.props.children[0], item[language]);
+      assert.equal(text.props.style.fontSize, 15);
+      assert.equal(text.props.style.fontFamily, 'Inter_400Regular');
       assert.equal(tag.props.onPress, undefined);
     }
   });

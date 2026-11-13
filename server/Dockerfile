@@ -1,8 +1,10 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
 # Changed: docker build 스크립트 작성
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
+# Changed: 배포 이미지에 최종 재료 파일과 적재 도구 포함
 
 # 운영 배포용 이미지. 빌드 컨텍스트는 server/ 디렉터리다.
-#   docker build -t nurturebites-server server/
+#   docker build -t nurturebites-server server
 # 설정은 이미지에 넣지 않고 실행할 때 환경변수(--env-file)로 주입한다.
 FROM python:3.12-slim
 
@@ -23,6 +25,9 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY alembic.ini ./
 COPY migrations ./migrations
 COPY app ./app
+COPY scripts ./scripts
+COPY assets/ingredients.jsonl ./assets/ingredients.jsonl
+COPY assets/ingredients_restrictions.jsonl ./assets/ingredients_restrictions.jsonl
 
 # root 가 아닌 사용자로 실행한다.
 RUN useradd --create-home --uid 1000 appuser

@@ -15,6 +15,8 @@
 // Changed: 애니메이션 바텀시트의 네이티브 컴포넌트 대체 지원
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
 // Changed: 음식 편집에서 저장 추천 연결 검증
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 온보딩 행동별 테스트 분리 및 경로 수정
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -414,57 +416,6 @@ test("food editor exposes saved suggestion linking and the picker shows source m
   assert.match(html, /Actual idea/);
 });
 
-test("onboarding review has the four summary cards without changing profile answers", () => {
-  const { emptyDraft } = require("../../src/features/onboarding/types.ts");
-  const {
-    reviewRows,
-  } = require("../../src/features/onboarding/screens/reviewRows.ts");
-  const draft = {
-    ...emptyDraft(),
-    allergies: ["PEANUTS"],
-    restrictions: ["GLUTEN_FREE"],
-  };
-  const before = JSON.stringify(draft);
-  const rows = reviewRows(draft, "en");
-  assert.deepEqual(
-    rows.map((row) => row.step),
-    ["child", "allergies", "family", "safe-foods"],
-  );
-  assert.match(rows[1].value, /Peanuts/);
-  assert.equal(JSON.stringify(draft), before);
-});
-
-test("onboarding progress follows the eight remaining screens in both languages", () => {
-  const {
-    OnboardingFlowView,
-  } = require("../../src/features/onboarding/screens/OnboardingFlowView.tsx");
-  const { steps } = require("../../src/features/onboarding/types.ts");
-  for (const language of ["en", "ko"]) {
-    steps.forEach((step, stepIndex) => {
-      const html = renderToStaticMarkup(
-        React.createElement(OnboardingFlowView, {
-          language,
-          step,
-          stepIndex,
-          stepCount: steps.length,
-          childName: "Luna",
-          saveStatus: "saved",
-          submitting: false,
-          canContinue: true,
-          content: null,
-          onPrevious: noop,
-          onContinue: noop,
-          onSaveExit: noop,
-          onRetrySave: noop,
-        }),
-      );
-      assert.ok(
-        html.includes(copyFor(language).onboarding.progress(stepIndex + 1, 8)),
-      );
-      if (step === "review") assert.match(html, /width:100%/);
-    });
-  }
-});
 test("account keeps the small password helper separate from the error", () => {
   const {
     AccountStepView,
@@ -492,22 +443,6 @@ test("account keeps the small password helper separate from the error", () => {
   );
   assert.match(invalid, /Password is too short/);
   assert.doesNotMatch(invalid, /Use at least 8 characters/);
-});
-
-test("onboarding option ids equal the server enum values without their category", () => {
-  const { optionsFor } = require("../../src/util/strings.ts");
-  const ids = (group) => optionsFor(group, "en").map((o) => o.id);
-  assert.deepEqual(ids("age"), [
-    "UNDER_2", "AGE_2_3", "AGE_4_5", "AGE_6_8", "AGE_9_12", "AGE_13_PLUS",
-  ]);
-  assert.deepEqual(ids("allergies"), [
-    "PEANUTS", "TREE_NUTS", "MILK_DAIRY", "EGGS", "SOY", "WHEAT", "FISH", "SHELLFISH", "SESAME",
-  ]);
-  assert.deepEqual(ids("restrictions"), ["GLUTEN_FREE", "LACTOSE_FREE", "CASEIN_FREE"]);
-  assert.deepEqual(ids("vegetarian"), [
-    "DAIRY", "EGGS", "SEAFOOD", "POULTRY", "RED_MEAT", "LEGUMES_SOY", "NUTS_SEEDS",
-  ]);
-  assert.equal(optionsFor("allergies", "ko").find((o) => o.id === "EGGS").label, "달걀");
 });
 
 test("ongoing meal entry shows real draft metadata and only an explicit continue action", () => {

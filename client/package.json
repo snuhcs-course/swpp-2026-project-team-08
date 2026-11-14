@@ -1,4 +1,6 @@
 {
+  "_comment": "AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung",
+  "_changed": "온보딩 하위 테스트 실행 경로 반영",
   "name": "client",
   "version": "1.0.0",
   "main": "expo-router/entry",
@@ -44,7 +46,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test": "node --test tests/*.test.cjs tests/unit/*.test.cjs tests/integration/*.test.cjs",
+    "test": "node --test \"tests/*.test.cjs\" \"tests/unit/**/*.test.cjs\" \"tests/integration/**/*.test.cjs\"",
     "test:coverage": "node scripts/coverage-layers.cjs"
   },
   "engines": {

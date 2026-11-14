@@ -6,15 +6,34 @@
 // Changed: 서버 restrictions 목록·대문자 enum 계약 기준으로 변환 테스트 재작성
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 변환과 선택 입력인 조리 방법 검증을 새 계약에 맞게 수정
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: Verify meal flow actions and shared three-step after-meal progress
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 선택지 id·채식 단계 기준으로 테스트 수정, 카탈로그 검색 테스트 교체
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 추천 모달 안전 여백 및 추천 연결·언어 버튼 및 공통 Outcome 헤더 검증
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: Eaten 단계 생략 및 언어 버튼 숨김 검증
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 애니메이션 바텀시트의 네이티브 컴포넌트 대체 지원
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 음식 편집에서 저장 추천 연결 검증
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 온보딩 행동별 테스트 분리 및 경로 정리
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-require("../helpers/register.cjs");
+require("../../helpers/register.cjs");
 
 let response;
 
 let request;
 
-const { mockModules } = require("../helpers/mock-modules.cjs");
+const { mockModules } = require("../../helpers/mock-modules.cjs");
 mockModules((name) => {
   if (name === "../network/apiClient")
     return {
@@ -36,7 +55,7 @@ const {
   fromOnboardingResponse,
   readOnboarding,
   writeOnboarding,
-} = require("../../src/data/api/onboardingApi.ts");
+} = require("../../../src/data/api/onboardingApi.ts");
 
 const account = { id: "12", email: "parent@example.com", fullName: "Parent" };
 const profile = {
@@ -278,4 +297,20 @@ test("responses with unknown restriction values or the old shape are rejected", 
   delete response.profile.restrictions;
   response.profile.safety = { allergies: { status: "none_known", items: [] } };
   await assert.rejects(readOnboarding());
+});
+
+test("onboarding option ids equal the server enum values without their category", () => {
+  const { optionsFor } = require("../../../src/util/strings.ts");
+  const ids = (group) => optionsFor(group, "en").map((o) => o.id);
+  assert.deepEqual(ids("age"), [
+    "UNDER_2", "AGE_2_3", "AGE_4_5", "AGE_6_8", "AGE_9_12", "AGE_13_PLUS",
+  ]);
+  assert.deepEqual(ids("allergies"), [
+    "PEANUTS", "TREE_NUTS", "MILK_DAIRY", "EGGS", "SOY", "WHEAT", "FISH", "SHELLFISH", "SESAME",
+  ]);
+  assert.deepEqual(ids("restrictions"), ["GLUTEN_FREE", "LACTOSE_FREE", "CASEIN_FREE"]);
+  assert.deepEqual(ids("vegetarian"), [
+    "DAIRY", "EGGS", "SEAFOOD", "POULTRY", "RED_MEAT", "LEGUMES_SOY", "NUTS_SEEDS",
+  ]);
+  assert.equal(optionsFor("allergies", "ko").find((o) => o.id === "EGGS").label, "달걀");
 });

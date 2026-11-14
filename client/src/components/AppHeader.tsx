@@ -1,22 +1,25 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with Grok 4.7, 2026-11-14, reviewed by Doyeon Kim
+// Changed: 저장 화면 헤더가 상태 배경색을 따르게 함
 
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { colors } from '../util/colors';
 import { fonts } from '../util/fonts';
 import { AppIcon } from './AppIcon';
 
 export const topBarLayout = { height: 56, inset: 24, bodyGap: 8, backSize: 36 } as const;
 
-export function AppHeader({ title, backLabel, onBack, disabled, accessory }: {
+export function AppHeader({ title, backLabel, onBack, disabled, accessory, style }: {
   title?: string;
   backLabel?: string;
   onBack?: () => void;
   disabled?: boolean;
   accessory?: ReactNode;
+  style?: StyleProp<ViewStyle>;
 }) {
-  return <View testID="app-header" style={styles.row}>
+  return <View testID="app-header" style={[styles.row, style]}>
     {onBack && backLabel && <Pressable testID="app-header-back" accessibilityRole="button" accessibilityLabel={backLabel}
       accessibilityState={{ disabled: !!disabled }} disabled={disabled} onPress={onBack} style={styles.back}>
       <AppIcon name="back" size={18} />

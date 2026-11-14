@@ -6,6 +6,8 @@
 // Changed: 식후 검토 글자·하단·버튼 조정 및 현재 단계별 진행 표시
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
+// AI-generated with Grok 4.7, 2026-11-14, reviewed by Doyeon Kim
+// Changed: 식후 저장 화면에 사진 라벨과 저장 배경 적용
 
 import { OutcomesHeader } from '../components/OutcomesHeader';
 import { Ionicons } from '@expo/vector-icons';
@@ -65,14 +67,19 @@ export function AfterMealReviewView(
     setSavePanelHidden(false);
     p.onSave();
   };
+  const saved = p.draft.step === 'complete';
+  const savePhotos = [
+    p.meal.photo ? { uri: p.meal.photo.uri, label: s.mealCheckin.beforeMealBadge } : null,
+    p.draft.afterPhoto ? { uri: p.draft.afterPhoto.uri, label: s.mealCheckin.afterMealBadge } : null,
+  ].filter((photo): photo is { uri: string; label: string } => photo !== null);
   if (!savePanelHidden && p.draft.step !== 'complete' && (p.saving || p.finalSaveState === 'error')) return <MealSaveStatusView review
     status={p.saving ? 'saving' : 'error'} language={p.language}
-    photos={[p.meal.photo?.uri, p.draft.afterPhoto?.uri].filter((uri): uri is string => !!uri)}
+    photos={savePhotos}
     mealDate={p.meal.mealDate} mealType={p.meal.mealType} foods={p.meal.foods}
     onRetry={p.onSave} onSaveExit={p.onSaveExit} onReturn={() => setSavePanelHidden(true)} />;
 
   return (
-    <SafeAreaView style={[styles.root, p.draft.step === "outcomes" && styles.outcomesRoot, p.draft.step === "compare" && { backgroundColor: colors.homeBackground }, p.draft.step === "difficulties" && { backgroundColor: colors.difficultyBackground }]} edges={["top", "bottom"]}>
+    <SafeAreaView style={[styles.root, p.draft.step === "outcomes" && styles.outcomesRoot, p.draft.step === "compare" && { backgroundColor: colors.homeBackground }, p.draft.step === "difficulties" && { backgroundColor: colors.difficultyBackground }, saved && { backgroundColor: colors.saveSavedBackground }]} edges={["top", "bottom"]}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -80,6 +87,7 @@ export function AfterMealReviewView(
         {p.draft.step === 'outcomes' ? <OutcomesHeader language={p.language} saveStatus={p.saveStatus} onBack={p.onBack} disabled={p.saving}
           caption={`${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${s.mealCheckin.settings[p.meal.setting]}`} /> : <ReviewProgressHeader
           title={p.draft.step === "complete" ? a.reviewSavedHeader : m.titles[p.draft.step]}
+          headerStyle={saved ? { backgroundColor: colors.saveSavedBackground } : undefined}
           stacked={["outcomes", "difficulties"].includes(p.draft.step)}
           caption={p.draft.step === "preview" && !p.meal.photo ? a.draftFor(p.childName) : !["outcomes", "preview"].includes(p.draft.step) ? undefined : `${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${s.mealCheckin.settings[p.meal.setting]}`}
           backLabel={s.common.back}

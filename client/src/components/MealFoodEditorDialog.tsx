@@ -2,6 +2,8 @@
 // Changed: 재료 입력·접근성 및 드래그 가능한 음식 수용 정도 슬라이더
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 음식 편집의 저장 추천 연결 필드와 칩 크기
 
 import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -26,15 +28,23 @@ type Labels = {
   cookingOptions: readonly string[] 
 };
 
+type SuggestionLink = {
+  title: string | null;
+  canOpen: boolean;
+  onOpen: () => void;
+  onUnlink: () => void;
+};
+
 export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingredient, 
   canAddIngredient, onIngredientChange, onAddIngredient, onRemoveIngredient,
-  onChange, onSave, onCancel }: {
+  onChange, onSave, onCancel, suggestion }: {
   food: FoodItem; mode: 'add' | 'edit'; meal: ReturnType<typeof copyFor>['mealCheckin'];
   common: Pick<ReturnType<typeof copyFor>['common'], 'add' | 'remove' | 'close'>;
   labels: Labels; ingredient: string; onIngredientChange: (value: string) => void;
   canAddIngredient?: boolean;
   onAddIngredient: () => boolean | void; onRemoveIngredient: (value: string) => void;
   onChange: (value: Partial<FoodItem>) => void; onSave: () => void; onCancel: () => void;
+  suggestion?: SuggestionLink;
 }) {
   const [ingredientOpen, setIngredientOpen] = useState(false);
   const ingredientEditing = useRef(false);
@@ -150,6 +160,48 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
         options={labels.acceptanceOptions} unsetLabel={labels.acceptanceUnset}
         onChange={(acceptance) => onChange({ acceptance })} />
     </View>
+    {suggestion && (
+      <View style={styles.field}>
+        <View style={styles.fieldHeading}>
+          <Text style={styles.label}>{m.savedSuggestion}</Text>
+          <Text style={styles.optional}>{m.optional}</Text>
+        </View>
+        {suggestion.title ? (
+          <View style={styles.linkedRow}>
+            <View style={styles.chip}>
+              <Text style={styles.chipText}>{suggestion.title}</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${common.remove}: ${suggestion.title}`}
+                onPress={suggestion.onUnlink}
+                style={styles.chipRemove}
+              >
+                <Text accessible={false} style={styles.chipRemoveText}>×</Text>
+              </Pressable>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !suggestion.canOpen }}
+              disabled={!suggestion.canOpen}
+              onPress={suggestion.onOpen}
+            >
+              <Text style={[styles.change, !suggestion.canOpen && styles.disabledText]}>{m.change}</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={m.linkSavedSuggestion}
+            accessibilityState={{ disabled: !suggestion.canOpen }}
+            disabled={!suggestion.canOpen}
+            onPress={suggestion.onOpen}
+            style={[styles.linkField, !suggestion.canOpen && styles.linkFieldDisabled]}
+          >
+            <Text style={styles.linkPlaceholder}>{m.linkSavedSuggestion}</Text>
+          </Pressable>
+        )}
+      </View>
+    )}
   </Dialog>
   );
 }
@@ -180,4 +232,32 @@ const styles = StyleSheet.create({
   buttonText: { fontSize: 13, fontFamily: fonts.poppinsSemiBold },
   disabledButton: { opacity: 1, backgroundColor: colors.editorDisabled },
   disabledText: { opacity: 1, color: colors.editorPlaceholder },
+  linkedRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    maxWidth: '100%',
+    backgroundColor: colors.homeSelected,
+    borderRadius: 999,
+    paddingLeft: 10,
+    paddingRight: 6,
+    paddingVertical: 4,
+  },
+  chipText: { flexShrink: 1, color: colors.homePrimary, fontSize: 12, fontFamily: fonts.poppinsMedium },
+  chipRemove: { width: 22, height: 22, alignItems: 'center', justifyContent: 'center' },
+  chipRemoveText: { color: colors.homePrimary, fontSize: 18, lineHeight: 20, fontFamily: fonts.poppinsMedium },
+  change: { color: colors.homePrimary, fontSize: 13, fontFamily: fonts.poppinsSemiBold },
+  linkField: {
+    minHeight: 38,
+    height: 38,
+    borderWidth: 1,
+    borderColor: colors.mealReviewBorder,
+    backgroundColor: colors.editorInput,
+    borderRadius: 10,
+    paddingHorizontal: 11,
+    justifyContent: 'center',
+  },
+  linkFieldDisabled: { opacity: 0.55 },
+  linkPlaceholder: { color: colors.editorPlaceholder, fontFamily: fonts.poppinsMedium, fontSize: 13 },
 });

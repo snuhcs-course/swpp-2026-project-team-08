@@ -4,6 +4,8 @@
 // Changed: 추천 연결에서 재료 id 제거
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 입력 없는 첫 단계 식사 초안 저장 및 복원 방지
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 음식 편집 중 추천 연결 초안 분리
 
 export const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 export const mealSettings = ['home', 'restaurant', 'school', 'others'] as const;
@@ -55,5 +57,6 @@ export type MealDraft = Omit<Meal, 'mealType' | 'setting' | 'savedAt'> & {
   setting: Meal['setting'] | null;
   step: MealStep;
   editingFood: FoodItem | null;
+  editingSuggestionLink?: MealSuggestionLink | null;
   savedMealId: string | null;
 };

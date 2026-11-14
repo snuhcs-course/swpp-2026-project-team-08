@@ -17,6 +17,8 @@
 
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 추가 추천·재시도 문구, Skip 제거 및 조리 방법 표시 문구
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 음식 편집의 저장 추천 연결과 어려움 안내 문구
 
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
@@ -122,7 +124,10 @@ const en = {
     permission: 'Photo access was denied. Allow access in device settings or choose another source.', imageError: 'Could not open this image. Choose another supported image.',
     ongoingHeader: 'Meal Check-in', ongoingTitle: 'Ongoing Meal', ongoingIntro: 'Finish your draft before starting a new check-in.', childMeals: (name: string) => `${name}’s meals`, autoSavedDraft: 'AUTO-SAVED DRAFT', continueDraft: 'Continue draft', draftPhotoSaved: 'Photo saved', draftNoPhoto: 'No photo', draftFoodCount: (count: number) => `${count} ${count === 1 ? 'food' : 'foods'}`,
     loadFailed: 'Could not restore your meal draft. Retry before continuing.', saveFailed: 'Could not save the meal. Your food items are preserved.',
-    addFoodsTitle: 'Add food items', addFoodPrompt: 'Add the foods you served, with or without a photo.', emptyFoodBody: 'No foods added yet. Add the foods you served.', foodCount: (count: number) => `${count} food item${count === 1 ? '' : 's'}`, beforePhoto: 'Before-meal photo', addFood: 'Add food item', saveFood: 'Save food',
+    addFoodsTitle: 'Add food items', addFoodPrompt: 'Add the foods you served, with or without a photo.', emptyFoodBody: 'No foods added yet. Add the foods you served.', foodCount: (count: number) => `${count} food item${count === 1 ? '' : 's'}`, beforePhoto: 'Before-meal photo', beforeMealBadge: 'Before meal', addFood: 'Add food item', saveFood: 'Save food',
+    savedSuggestion: 'Saved suggestion', linkSavedSuggestion: 'Link a saved suggestion', savedSuggestionsTitle: 'Saved suggestions',
+    chooseTriedSuggestion: 'Choose the suggestion you tried.', savedSuggestionCount: (count: number) => `${count} saved suggestion${count === 1 ? '' : 's'}`,
+    linkedSuggestion: 'Linked suggestion', change: 'Change',
     name: 'Food name', ingredients: 'Ingredients', addIngredient: 'Add ingredient',
     editFoodTitle: (name: string) => `Edit ${name}`,
     foodNamePlaceholder: 'Enter food name', detailPlaceholder: 'Add detail',
@@ -153,7 +158,7 @@ const en = {
     unanswered: 'Unanswered', unansweredHint: 'Choose an outcome for each food and selected ingredient.',
     definitionsIntro: 'Use what you observed. You don’t need to estimate exact amounts.',
     outcomeDescriptions: { eaten: 'You observed the child swallow some food.', tasted: 'Licked or tasted, with no confirmed swallow', untouched: 'Neither tasted nor ate', unclear: 'You cannot determine what happened', unanswered: 'This cannot be saved. Choose unclear when the outcome is unknown.' },
-    difficultyIntro: 'Some categories allow multiple value selections.', selectCategory: 'Select category', selectValue: 'value',
+    difficultyIntro: 'Please tap add button when adding the reasoning. Some categories allow multiple value selections.', selectCategory: 'Select category', selectValue: 'value',
     note: 'Optional note', otherValue: 'Describe your answer', addTag: '+ Add', skip: 'Skip',
     categories: { texture: 'Texture', tasteType: 'Taste type', smell: 'Smell', color: 'Color', temperature: 'Temperature', notSure: 'Not sure' },
     values: { smooth: 'Smooth/creamy', soft: 'Soft/mushy', lumpy: 'Lumpy/chunky', crunchy: 'Crunchy/crisp', chewy: 'Chewy/tough', wet: 'Wet/slippery', mixed: 'Mixed textures', other: 'Other', sweet: 'Sweet', salty: 'Salty', sour: 'Sour', bitter: 'Bitter', spicy: 'Spicy/hot', mild: 'Mild', strong: 'Strong', none: 'No noticeable smell', notSure: 'Not sure', red: 'Red', orange: 'Orange', yellow: 'Yellow', green: 'Green', blue: 'Blue', purple: 'Purple', brown: 'Brown', black: 'Black', white: 'White', gray: 'Gray', consistent: 'Consistent', varied: 'Varied', note: 'Optional note', visible: 'Visible', hidden: 'Hidden', room: 'Room temperature', warm: 'Warm', cool: 'Cool / chilled' },
@@ -385,7 +390,10 @@ const ko = {
     permission: '사진에 접근할 수 없어요. 기기 설정에서 권한을 허용하거나 다른 방법으로 사진을 선택해 주세요.', imageError: '사진을 열지 못했어요. 지원되는 다른 사진을 선택해 주세요.',
     ongoingHeader: '식사 기록', ongoingTitle: '작성 중인 식사', ongoingIntro: '작성 중인 식사를 마무리한 뒤 새 식사를 기록할 수 있어요.', childMeals: (name: string) => `${name}의 식사`, autoSavedDraft: '자동 저장된 초안', continueDraft: '초안 이어하기', draftPhotoSaved: '사진 저장됨', draftNoPhoto: '사진 없음', draftFoodCount: (count: number) => `음식 ${count}개`,
     loadFailed: '식사 초안을 불러오지 못했어요. 다시 시도해 주세요.', saveFailed: '식사를 저장하지 못했어요. 입력한 음식을 확인하고 다시 시도해 주세요.',
-    addFoodsTitle: '음식 추가', addFoodPrompt: '제공한 음식을 직접 추가해 주세요. 사진은 없어도 돼요.', emptyFoodBody: '‘음식 추가’를 눌러 제공한 음식을 입력해 주세요.', foodCount: (count: number) => `음식 ${count}개`, beforePhoto: '식전 사진', addFood: '음식 추가', saveFood: '음식 저장',
+    addFoodsTitle: '음식 추가', addFoodPrompt: '제공한 음식을 직접 추가해 주세요. 사진은 없어도 돼요.', emptyFoodBody: '‘음식 추가’를 눌러 제공한 음식을 입력해 주세요.', foodCount: (count: number) => `음식 ${count}개`, beforePhoto: '식전 사진', beforeMealBadge: '식전', addFood: '음식 추가', saveFood: '음식 저장',
+    savedSuggestion: '저장한 추천', linkSavedSuggestion: '저장한 추천 연결', savedSuggestionsTitle: '저장한 추천',
+    chooseTriedSuggestion: '시도한 추천을 선택해 주세요.', savedSuggestionCount: (count: number) => `저장한 추천 ${count}개`,
+    linkedSuggestion: '연결한 추천', change: '변경',
     name: '음식 이름', ingredients: '재료', addIngredient: '재료 추가',
     editFoodTitle: (name: string) => `${name} 수정`,
     foodNamePlaceholder: '음식 이름 입력', detailPlaceholder: '설명 추가',
@@ -416,7 +424,7 @@ const ko = {
     unanswered: '미응답', unansweredHint: '모든 음식과 선택한 재료의 결과를 입력해 주세요.',
     definitionsIntro: '직접 본 내용을 선택해 주세요. 정확한 양은 입력하지 않아도 돼요.',
     outcomeDescriptions: { eaten: '아이가 음식을 삼키는 모습을 봤어요.', tasted: '핥거나 맛봤지만 삼켰는지는 확인하지 못했어요.', untouched: '먹거나 맛보지 않았어요.', unclear: '먹거나 맛봤는지 판단하기 어려워요.', unanswered: '결과를 선택해야 저장할 수 있어요. 모르면 ‘확인 어려움’을 선택해 주세요.' },
-    difficultyIntro: '일부 항목은 특징을 여러 개 추가할 수 있어요.', selectCategory: '항목 선택', selectValue: '특징 선택',
+    difficultyIntro: '이유를 추가할 때는 추가 버튼을 눌러 주세요. 일부 항목은 특징을 여러 개 추가할 수 있어요.', selectCategory: '항목 선택', selectValue: '특징 선택',
     note: '메모 (선택)', otherValue: '직접 입력', addTag: '+ 추가', skip: '건너뛰고 저장',
     categories: { texture: '식감', tasteType: '맛 종류', smell: '냄새', color: '색', temperature: '온도', notSure: '잘 모르겠음' },
     values: { smooth: '매끄럽고 크림 같음', soft: '부드럽고 무름', lumpy: '덩어리가 있음', crunchy: '바삭함', chewy: '질김', wet: '젖고 미끄러움', mixed: '혼합 식감', other: '기타', sweet: '단맛', salty: '짠맛', sour: '신맛', bitter: '쓴맛', spicy: '매운맛', mild: '약함', strong: '강함', none: '뚜렷한 냄새 없음', notSure: '잘 모르겠음', red: '빨강', orange: '주황', yellow: '노랑', green: '초록', blue: '파랑', purple: '보라', brown: '갈색', black: '검정', white: '흰색', gray: '회색', consistent: '일정함', varied: '다양함', note: '메모 (선택)', visible: '보임', hidden: '숨김', room: '실온', warm: '따뜻함', cool: '차가움' },

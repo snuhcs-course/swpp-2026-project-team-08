@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 실제 Expo Router와 온보딩 화면의 Node 실행 환경
+// Changed: 실제 Expo Router를 연결한 동의·자녀 정보 화면 실행 환경
 const { beforeEach, after } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -102,10 +102,10 @@ beforeEach(async () => {
   window.history.replaceState({}, '', '/');
 });
 
-async function mountConsent(t) {
+async function mountOnboarding(t, draft) {
   await saveSession({ accessToken: 'access', refreshToken: 'refresh',
     user: { id: '1', email: 'parent@example.com', fullName: 'Parent' } });
-  await saveDraft({ ...emptyDraft(), step: 'consent' });
+  await saveDraft(draft);
   t.mock.method(global, 'fetch', async (url, init = {}) => {
     assert.equal(new URL(url).pathname, '/api/v1/onboarding');
     assert.equal(init.method ?? 'GET', 'GET');
@@ -136,12 +136,24 @@ async function mountConsent(t) {
     await act(async () => root.unmount());
     container.remove();
   });
+  const initialPath = `/onboarding/${draft.step}`;
   await act(async () => root.render(React.createElement(ExpoRoot, {
-    context, location: '/onboarding/consent', wrapper: Providers,
+    context, location: initialPath, wrapper: Providers,
   })));
-  await waitFor(() => current?.ready && pathname === '/onboarding/consent'
-    && container.querySelectorAll('[role="checkbox"]').length === 3);
+  await waitFor(() => current?.ready && pathname === initialPath
+    && container.querySelector('[role="heading"]'));
   return { container, get current() { return current; }, get pathname() { return pathname; } };
 }
 
-module.exports = { act, waitFor, mountConsent };
+function mountConsent(t) {
+  return mountOnboarding(t, { ...emptyDraft(), step: 'consent' });
+}
+
+function mountChildBasics(t) {
+  return mountOnboarding(t, {
+    ...emptyDraft(), step: 'child', caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
+    consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
+  });
+}
+
+module.exports = { act, waitFor, mountConsent, mountChildBasics };

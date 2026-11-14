@@ -7,7 +7,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 단계(family)와 snake_case 식별자 기준으로 수정
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 온보딩 행동별 테스트 분리 및 경로 정리
+// Changed: 자녀 기본 정보 테스트 분리·경계 보강·이름 한글화
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -20,16 +20,22 @@ function completeDraft() {
     allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'] };
 }
 
-const required = [
-  ['child', { childName: ' ' }],
-  ['child', { ageRange: '' }],
-];
-for (const [step, missing] of required) {
-  test(`${step} rejects ${JSON.stringify(missing)} before continuing or finishing`, () => {
-    const draft = completeDraft();
-    assert.equal(canContinue(step, draft, 'password'), true);
-    assert.equal(canContinue(step, { ...draft, ...missing }, 'password'), false);
-    assert.equal(canFinish({ ...draft, ...missing }), false);
-    assert.equal(canFinish(draft), true);
-  });
+function assertProgressAllowed(fields, expected) {
+  const draft = { ...completeDraft(), ...fields };
+  assert.equal(canContinue('child', draft, 'password'), expected);
+  assert.equal(canFinish(draft), expected);
 }
+
+test('닉네임과 연령대가 있으면 진행과 완료를 허용한다', () => {
+  assertProgressAllowed({}, true);
+});
+
+test('닉네임이 비었거나 공백뿐이면 진행과 완료를 차단한다', () => {
+  for (const childName of ['', ' ', '  \n  ']) {
+    assertProgressAllowed({ childName }, false);
+  }
+});
+
+test('연령대를 선택하지 않으면 진행과 완료를 차단한다', () => {
+  assertProgressAllowed({ ageRange: '' }, false);
+});

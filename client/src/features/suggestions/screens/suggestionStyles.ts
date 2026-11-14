@@ -3,8 +3,8 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 
-// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
-// Changed: 거절 직후 추가 추천 선택 단계 배치
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 추가 추천 단계 배치 및 거절·저장 버튼 정리
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
@@ -38,11 +38,9 @@ export const suggestionStyles = StyleSheet.create({
   statusMessage: { flex: 1, fontFamily: fonts.poppinsMedium, fontSize: 12, lineHeight: 18, color: colors.suggestionTried },
   undoAction: { minHeight: 30, minWidth: 70, justifyContent: 'center', alignItems: 'flex-end' },
   undoLabel: { fontFamily: fonts.poppinsSemiBold, fontSize: 14, lineHeight: 19, color: colors.homePrimary },
-  recommendationActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 18 },
+  recommendationActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 48 },
   dismissAction: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.homeBorder, backgroundColor: colors.surface },
   saveAction: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.homePrimary },
-  skipAction: { minHeight: 44, width: 150, alignItems: 'center', justifyContent: 'center' },
-  skipLabel: { fontFamily: fonts.poppinsMedium, fontSize: 16, lineHeight: 21, color: colors.suggestionMuted, textDecorationLine: 'underline' },
   heading: { fontFamily: fonts.poppinsSemiBold, fontSize: 16, lineHeight: 21, color: colors.homeText },
   text: { fontFamily: fonts.poppinsRegular, fontSize: 14, lineHeight: 19, color: colors.homeText },
   muted: {

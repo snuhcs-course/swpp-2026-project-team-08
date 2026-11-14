@@ -8,8 +8,8 @@
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: Keep target chooser available with existing selections and cards
 
-// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
-// Changed: 거절 이유 저장 직후 추가 추천 선택 화면 연결
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 추가 추천 선택 화면 연결 및 Skip 버튼 제거
 
 import { AppHeader } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
@@ -200,10 +200,6 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
         <Pressable accessibilityRole="button" accessibilityLabel={c.dismiss} disabled={model.busy}
           style={[s.dismissAction, model.busy && s.disabled]}
           onPress={() => { setReject(true); setReasons([]); }}><UiAssetIcon name="suggestion-dismiss" /></Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel={c.skip} disabled={model.busy}
-          style={[s.skipAction, model.busy && s.disabled]} onPress={() => router.replace('/home')}>
-          <Text style={s.skipLabel}>{c.skip}</Text>
-        </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel={c.save} disabled={model.busy}
           style={[s.saveAction, model.busy && s.disabled]}
           onPress={() => { void model.decide('saved'); }}><UiAssetIcon name="suggestion-save" /></Pressable>

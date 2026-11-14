@@ -15,12 +15,13 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 채식 단계 문구를 식생활 유형 문구로 되돌리고 식생활 유형 id 를 snake_case 로 변경
 
-// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
-// Changed: 추가 추천 생성과 재시도 문구
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 추가 추천·재시도 문구, Skip 제거 및 조리 방법 표시 문구
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
 // Changed: 음식 편집의 저장 추천 연결과 어려움 안내 문구
 
 import type { Language } from '../types/profile';
+import type { CookingMethod } from '../types/recordValues';
 
 const en = {
   common: {
@@ -608,10 +609,15 @@ const suggestionCopy = {
     regenerate: 'Regenerate', regenerationFailed: 'Could not generate another suggestion. Please retry.',
     what: 'What to try', why: 'Why this may help', serving: 'Serving tip', foodDetails: 'FOOD DETAILS',
     ingredients: 'Ingredients', cooking: 'Cooking method',
+    cookingMethods: {
+      raw: 'Raw', boiled: 'Boiled', steamed: 'Steamed', pan_fried: 'Pan-fried',
+      stir_fried: 'Stir-fried', baked_roasted: 'Baked or roasted',
+      mashed_blended: 'Mashed or blended', other: 'Other',
+    } satisfies Record<CookingMethod, string>,
     tapDetails: 'Tap for food details', tapFront: 'Tap to see suggestion',
     save: 'Save suggestion', dismiss: 'Dismiss suggestion', dismissTitle: 'What does not work for you?',
     reasons: { restriction: 'This conflicts with an allergy or required restriction', dislike: 'My child dislikes this food or form', not_fit: 'This does not fit our food preferences', too_much_preparation: 'Too much preparation', ingredient_hard_to_get: 'The ingredient is hard to get', already_tried: 'We already tried this' },
-    skipReason: 'Skip', done: 'Done', skip: 'Skip for now', undo: '↶ Undo',
+    skipReason: 'Skip', done: 'Done', undo: '↶ Undo',
     savedNotice: '✓ Saved to suggestions', dismissedNotice: 'Suggestion dismissed',
     saveFailed: "Changes couldn't be saved. Please try again.", allDone: 'All Suggestions Reviewed!',
     allDoneBody: 'Your saved suggestions are ready whenever you want to try them.', savedTitle: 'Saved Suggestions',
@@ -635,10 +641,15 @@ const suggestionCopy = {
     regenerate: '새 추천 받기', regenerationFailed: '다른 추천을 만들지 못했어요. 다시 시도해 주세요.',
     what: '시도해 볼 방법', why: '도움이 될 수 있는 이유', serving: '준비 방법', foodDetails: '음식 정보',
     ingredients: '재료', cooking: '조리 방법',
+    cookingMethods: {
+      raw: '생식', boiled: '삶기', steamed: '찜', pan_fried: '팬에 굽기',
+      stir_fried: '볶기', baked_roasted: '오븐에 굽기',
+      mashed_blended: '으깨기 또는 갈기', other: '기타',
+    } satisfies Record<CookingMethod, string>,
     tapDetails: '눌러서 음식 정보 보기', tapFront: '눌러서 추천으로 돌아가기',
     save: '추천 저장', dismiss: '추천 제외', dismissTitle: '어떤 점이 맞지 않나요?',
     reasons: { restriction: '알레르기나 식이 제한과 맞지 않아요', dislike: '아이가 이 음식이나 모양을 싫어해요', not_fit: '우리 가족의 음식 취향과 맞지 않아요', too_much_preparation: '준비할 것이 너무 많아요', ingredient_hard_to_get: '재료를 구하기 어려워요', already_tried: '이미 시도했어요' },
-    skipReason: '건너뛰기', done: '추천 제외하기', skip: '홈으로 이동', undo: '↶ 되돌리기',
+    skipReason: '건너뛰기', done: '추천 제외하기', undo: '↶ 되돌리기',
     savedNotice: '✓ 추천을 저장했어요', dismissedNotice: '추천을 제외했어요',
     saveFailed: '변경을 저장하지 못했어요. 다시 시도해 주세요.', allDone: '추천을 모두 확인했어요',
     allDoneBody: '저장한 추천은 언제든 다시 볼 수 있어요.', savedTitle: '저장된 추천',

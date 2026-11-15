@@ -11,7 +11,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 채식 단계 이름 변경, 직접 입력·안심 음식 없음 제거
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 익숙한 음식 없음 선택 화면 연결
+// Changed: 익숙한 음식 없음 선택 및 완료 실패 시 서버 재제출 연결
 
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -45,6 +45,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
   const fontReady = useFontReady();
   const [completed, setCompleted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [completionFailed, setCompletionFailed] = useState(false);
   const [authError, setAuthError] = useState<string | undefined>();
   const step = typeof routeStep === 'string' && isStep(routeStep) ? routeStep : model.draft.step;
   const s = copyFor(language);
@@ -52,6 +53,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
 
   const origin = typeof from === 'string' ? from : undefined;
   const navigate = (target: OnboardingStep, returnTo = origin) => {
+    setCompletionFailed(false);
     model.setStep(target);
     router.replace({
       pathname: '/onboarding/[step]',
@@ -99,6 +101,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
     if (step === 'review') {
       setSubmitting(true);
       const saved = await model.finish();
+      setCompletionFailed(!saved);
       setSubmitting(false);
       if (saved) { if (model.editing) router.replace('/home'); else setCompleted(true); }
     } else if (origin === 'review' && step === 'allergies') navigate('restrictions', 'review');
@@ -107,6 +110,14 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
   };
   const handleSaveExit = async () => {
     try { await model.retrySave(); router.replace('/'); } catch { /* The save status shows the error. */ }
+  };
+  const handleRetrySave = async () => {
+    if (submitting) return;
+    if (step === 'review' && completionFailed) {
+      await handleContinue();
+      return;
+    }
+    try { await model.retrySave(); } catch { /* The save status shows the error. */ }
   };
   const renderStep = () => {
     if (step === 'account') return (
@@ -195,7 +206,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
       onPrevious={handlePrevious}
       onContinue={() => { void handleContinue(); }}
       onSaveExit={() => { void handleSaveExit(); }}
-      onRetrySave={() => { void model.retrySave(); }}
+      onRetrySave={() => { void handleRetrySave(); }}
     />
   );
 }

@@ -4,13 +4,12 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 안심 음식 없음 선택이 사라진 구조에 맞춰 검증 수정
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 온보딩 행동별 테스트 분리와 실행 환경 추출
+// Changed: 온보딩 테스트 분리·실행 환경 추출 및 사례 이름 한글화
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { values, mount } = require('../../helpers/onboarding-provider-harness.cjs');
 
-// "안심 음식 없음" 선택은 없어졌다. 익숙한 음식이 없으면 목록이 비어 있는 것이 곧 없음이다.
-test('safe foods add without optional details and restore drafts', async () => {
+test('선택 정보 없이 음식을 추가하고 초안을 복원한 뒤 지정한 음식을 삭제한다', async () => {
   values.clear();
   const harness = mount();
   let model = await harness.flush();

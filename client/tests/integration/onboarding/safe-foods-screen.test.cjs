@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 익숙한 음식 자유 입력·포커스·없음 보존과 진행 검증
+// Changed: 음식 추가·개별 삭제·없음 전환과 실제 화면 이동 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { act, waitFor, mountSafeFoods } = require('../../helpers/onboarding-screen.cjs');
@@ -29,37 +29,103 @@ const add = app => control(app, 'button', s.onboarding.addSafeFoodAction);
 const next = app => control(app, 'button', s.common.continue);
 const none = app => control(app, 'checkbox', s.onboarding.noSafeFoods);
 
-test('자유 입력을 추가하면 설명을 표시하고 입력을 비우며 키보드 이동은 음식을 추가하지 않는다', async t => {
+async function keyboardNext(app, label) {
+  await act(async () => {
+    input(app, label).focus();
+    input(app, label).dispatchEvent(new window.KeyboardEvent('keydown', {
+      key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true, cancelable: true,
+    }));
+  });
+}
+function assertSafeFoodsScreen(app) {
+  assert.equal(app.pathname, '/onboarding/safe-foods');
+  assert.ok(control(app, 'heading', s.onboarding.safeFoodsTitle('나루')));
+}
+function assertReviewScreen(app) {
+  assert.equal(app.pathname, '/onboarding/review');
+  assert.ok(control(app, 'heading', s.onboarding.reviewTitle('나루')));
+  assert.equal(app.container.querySelector('input'), null);
+}
+
+test('공백 이름은 추가를 막고 이름만 또는 설명을 함께 추가하면 태그를 표시하고 입력을 비운다', async t => {
   const app = await mountSafeFoods(t);
+  assert.equal(app.current.draft.noSafeFoods, false);
   assert.equal(next(app).getAttribute('aria-disabled'), 'true');
+  await click(next(app));
+  assertSafeFoodsScreen(app);
   await enter(app, s.onboarding.foodName, '  \n  ');
   assert.equal(add(app).getAttribute('aria-disabled'), 'true');
   await click(add(app));
   assert.deepEqual(app.current.draft.safeFoods, []);
+
+  await enter(app, s.onboarding.foodName, 'Rice');
+  assert.notEqual(add(app).getAttribute('aria-disabled'), 'true');
+  await click(add(app));
+  assert.deepEqual(app.current.draft.safeFoods.map(({ id, ...food }) => food), [
+    { name: 'Rice', preparation: '', presentationNote: '' },
+  ]);
+  assert.ok(control(app, 'button', `${s.common.remove} Rice`));
+  assert.equal(input(app, s.onboarding.foodName).value, '');
+  assert.equal(add(app).getAttribute('aria-disabled'), 'true');
+
   await enter(app, s.onboarding.foodName, 'Apple slices');
-  await act(async () => {
-    input(app, s.onboarding.foodName).focus();
-    input(app, s.onboarding.foodName).dispatchEvent(new window.KeyboardEvent('keydown', {
-      key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true, cancelable: true,
-    }));
-  });
+  await keyboardNext(app, s.onboarding.foodName);
   assert.equal(document.activeElement, input(app, s.onboarding.preparation));
-  assert.deepEqual(app.current.draft.safeFoods, []);
+  assert.equal(app.current.draft.safeFoods.length, 1);
   await enter(app, s.onboarding.preparation, 'Sliced and warmed');
+  await keyboardNext(app, s.onboarding.preparation);
+  assert.equal(document.activeElement, input(app, s.onboarding.presentationNote));
+  assert.equal(app.current.draft.safeFoods.length, 1);
   await enter(app, s.onboarding.presentationNote, 'Blue bowl');
   await click(add(app));
   assert.deepEqual(app.current.draft.safeFoods.map(({ id, ...food }) => food), [
+    { name: 'Rice', preparation: '', presentationNote: '' },
     { name: 'Apple slices', preparation: 'Sliced and warmed', presentationNote: 'Blue bowl' },
   ]);
   assert.ok(app.container.textContent.includes('Sliced and warmed, Blue bowl'));
+  assert.ok(control(app, 'button', `${s.common.remove} Apple slices`));
   for (const label of [s.onboarding.foodName, s.onboarding.preparation, s.onboarding.presentationNote]) {
     assert.equal(input(app, label).value, '');
   }
+  assert.equal(add(app).getAttribute('aria-disabled'), 'true');
   assert.equal(document.activeElement, input(app, s.onboarding.foodName));
   assert.notEqual(next(app).getAttribute('aria-disabled'), 'true');
 });
 
-test('없음을 선택해도 음식과 작성 중 입력을 보존하고 해제하면 다시 편집할 수 있다', async t => {
+test('음식 하나를 삭제한 뒤 Review 화면으로 이동해도 나머지 음식과 작성 중 입력이 보존된다', async t => {
+  const app = await mountSafeFoods(t);
+  await enter(app, s.onboarding.foodName, 'Apple');
+  await enter(app, s.onboarding.preparation, 'Sliced');
+  await enter(app, s.onboarding.presentationNote, 'Red bowl');
+  await click(add(app));
+  await enter(app, s.onboarding.foodName, 'Banana');
+  await enter(app, s.onboarding.preparation, 'Mashed');
+  await enter(app, s.onboarding.presentationNote, 'Blue bowl');
+  await click(add(app));
+  await enter(app, s.onboarding.foodName, 'Next food');
+  await enter(app, s.onboarding.preparation, 'Warmed');
+  await enter(app, s.onboarding.presentationNote, 'Small plate');
+  const before = structuredClone(app.current.draft);
+  const remaining = before.safeFoods[0];
+  await click(control(app, 'button', `${s.common.remove} Banana`));
+  assert.deepEqual(app.current.draft, { ...before, safeFoods: [remaining] });
+  assert.equal(app.container.textContent.includes('Banana'), false);
+  assert.equal(app.container.textContent.includes('Mashed, Blue bowl'), false);
+  assert.ok(control(app, 'button', `${s.common.remove} Apple`));
+  assert.ok(app.container.textContent.includes('Sliced, Red bowl'));
+  for (const [label, value] of [
+    [s.onboarding.foodName, 'Next food'], [s.onboarding.preparation, 'Warmed'],
+    [s.onboarding.presentationNote, 'Small plate'],
+  ]) assert.equal(input(app, label).value, value);
+  assert.notEqual(next(app).getAttribute('aria-disabled'), 'true');
+  await click(next(app));
+  await waitFor(() => app.pathname === '/onboarding/review');
+  assertReviewScreen(app);
+  // 아직 Add하지 않은 입력은 다음 단계에서도 음식 목록에 포함하지 않는다.
+  assert.deepEqual(app.current.draft, { ...before, step: 'review', safeFoods: [remaining] });
+});
+
+test('없음을 선택·해제해도 음식과 입력을 보존하고 다시 선택해 진행하면 없음으로 검토 화면에 진입한다', async t => {
   const app = await mountSafeFoods(t);
   await enter(app, s.onboarding.foodName, 'Apple');
   await click(add(app));
@@ -72,27 +138,48 @@ test('없음을 선택해도 음식과 작성 중 입력을 보존하고 해제�
   for (const label of [s.onboarding.foodName, s.onboarding.preparation, s.onboarding.presentationNote]) {
     assert.equal(input(app, label).readOnly, true);
   }
+  assert.equal(app.container.textContent.includes('Apple'), false);
   assert.equal(add(app).getAttribute('aria-disabled'), 'true');
   await click(add(app));
-  assert.deepEqual(app.current.draft.safeFoods, before.safeFoods);
+  assert.deepEqual(app.current.draft, { ...before, noSafeFoods: true });
   await click(none(app));
   assert.deepEqual(app.current.draft, before);
-  assert.equal(input(app, s.onboarding.foodName).readOnly, false);
-  assert.equal(input(app, s.onboarding.foodName).value, 'Banana');
+  for (const [label, value] of [
+    [s.onboarding.foodName, 'Banana'], [s.onboarding.preparation, 'Mashed'],
+    [s.onboarding.presentationNote, 'Small bowl'],
+  ]) {
+    assert.equal(input(app, label).readOnly, false);
+    assert.equal(input(app, label).value, value);
+  }
+  assert.notEqual(add(app).getAttribute('aria-disabled'), 'true');
   assert.ok(control(app, 'button', `${s.common.remove} Apple`));
-});
-
-test('명시적 없음으로 진행하면 보관한 음식 대신 없음 응답을 검토 화면에 표시한다', async t => {
-  const app = await mountSafeFoods(t);
-  await enter(app, s.onboarding.foodName, 'Apple');
-  await click(add(app));
   await click(none(app));
   assert.notEqual(next(app).getAttribute('aria-disabled'), 'true');
   await click(next(app));
   await waitFor(() => app.pathname === '/onboarding/review');
-  assert.ok(control(app, 'heading', s.onboarding.reviewTitle('나루')));
+  assertReviewScreen(app);
   assert.ok(app.container.textContent.includes(s.onboarding.noSafeFoods));
   assert.equal(app.container.textContent.includes('Apple'), false);
+  assert.deepEqual(app.current.draft, { ...before, step: 'review', noSafeFoods: true });
+});
+
+test('마지막 음식을 삭제하거나 빈 목록에서 없음을 해제하면 진행을 차단한다', async t => {
+  const app = await mountSafeFoods(t);
+  await enter(app, s.onboarding.foodName, 'Apple');
+  await click(add(app));
+  await click(control(app, 'button', `${s.common.remove} Apple`));
+  assert.deepEqual(app.current.draft.safeFoods, []);
+  assert.equal(app.current.draft.noSafeFoods, false);
+  assert.equal(next(app).getAttribute('aria-disabled'), 'true');
+  await click(next(app));
+  assertSafeFoodsScreen(app);
+  assert.ok(input(app, s.onboarding.foodName));
+  await click(none(app));
   assert.equal(app.current.draft.noSafeFoods, true);
-  assert.equal(app.current.draft.safeFoods[0].name, 'Apple');
+  assert.notEqual(next(app).getAttribute('aria-disabled'), 'true');
+  await click(none(app));
+  assert.equal(app.current.draft.noSafeFoods, false);
+  assert.equal(next(app).getAttribute('aria-disabled'), 'true');
+  await click(next(app));
+  assertSafeFoodsScreen(app);
 });

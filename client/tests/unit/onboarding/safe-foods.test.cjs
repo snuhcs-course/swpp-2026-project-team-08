@@ -11,13 +11,12 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 단계(family)와 snake_case 식별자 기준으로 수정
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 온보딩 행동별 테스트 분리 및 경로 정리 · 음식 없음 응답 반영
+// Changed: 익숙한 음식 테스트 분리·없음 응답·입력 경계·태그 표시 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
 const { renderHook } = require('../../helpers/react-harness.cjs');
 const { mockModules } = require('../../helpers/mock-modules.cjs');
-const DropdownChoice = () => null;
 mockModules(name => {
   if (name === 'react-native') return {
     View: 'view', Text: 'text', Pressable: 'pressable', TextInput: 'input',
@@ -25,7 +24,6 @@ mockModules(name => {
   };
   if (name.startsWith('@expo/vector-icons/')) return () => null;
   if (name.endsWith('/UiAssetIcon')) return { UiAssetIcon: () => null };
-  if (name.endsWith('/DropdownChoice')) return { DropdownChoice };
   return undefined;
 });
 const { SafeFoodsStepView } = require('../../../src/features/onboarding/screens/SafeFoodsStepView.tsx');
@@ -43,50 +41,52 @@ function elements(node) {
   return [node, ...elements(node.props?.children)];
 }
 
-for (const language of ['en', 'ko']) {
-  test(`${language}: 입력 폼을 유지하고 삭제 버튼은 지정한 음식만 전달한다`, async t => {
-    const input = { name: '', preparation: '', presentationNote: '' };
-    const foods = [];
-    let removed;
-    const props = () => ({
-      language, childName: 'Max', safeFoods: foods, input, noSafeFoods: false, onToggleNone: () => {},
-      canAdd: canAddSafeFood(input),
-      onInputChange: (field, value) => { input[field] = value; },
-      onAdd: () => {
-        foods.push({ id: 'apple', ...input });
-        Object.assign(input, { name: '', preparation: '', presentationNote: '' });
-      },
-      onRemove: id => { removed = id; },
-    });
-    const view = await renderHook(t, () => SafeFoodsStepView(props()));
-    const render = async () => { await view.rerender(); return elements(view.current); };
-    let tree = await render();
-    assert.equal(tree.find(n => n.type === AppButton).props.disabled, true);
-    const fields = tree.filter(n => n.type === FormField);
-    assert.equal(fields.length, 3);
-    assert.equal(fields[1].props.optionalLabel, copyFor(language).onboarding.optional);
-    fields[0].props.onChangeText('Apple slices');
-    tree = await render();
-    assert.equal(tree.find(n => n.type === AppButton).props.disabled, false);
-    fields[1].props.onChangeText('Sliced and warmed');
-    tree = await render();
-    assert.equal(tree.filter(n => n.type === FormField)[1].props.value, 'Sliced and warmed');
-    fields[1].props.onChangeText('');
-    tree.find(n => n.type === AppButton).props.onPress();
-    tree = await render();
-    assert.equal(foods[0].preparation, '');
-    assert.equal(reviewRows({ ...emptyDraft(), safeFoods: foods }, language)[3].value, 'Apple slices');
-    assert.equal(tree.find(n => n.type === FormField).props.value, '');
-    assert.equal(tree.find(n => n.type === AppButton).props.disabled, true);
-    const remove = tree.find(n => n.props?.accessibilityLabel === `${copyFor(language).common.remove} Apple slices`);
-    assert.ok(remove);
-    assert.equal(removed, undefined);
-    remove.props.onPress();
-    assert.equal(removed, 'apple');
-    assert.equal(tree.find(n => n.type === ChoiceRow).props.selected, false);
-    assert.ok(tree.some(n => n.props?.children === copyFor(language).onboarding.multipleInput));
+async function checkFormControls(t, language) {
+  const input = { name: '', preparation: '', presentationNote: '' };
+  const foods = [];
+  let removed;
+  const props = () => ({
+    language, childName: 'Max', safeFoods: foods, input, noSafeFoods: false, onToggleNone: () => {},
+    canAdd: canAddSafeFood(input),
+    onInputChange: (field, value) => { input[field] = value; },
+    onAdd: () => {
+      foods.push({ id: 'apple', ...input });
+      Object.assign(input, { name: '', preparation: '', presentationNote: '' });
+    },
+    onRemove: id => { removed = id; },
   });
+  const view = await renderHook(t, () => SafeFoodsStepView(props()));
+  const render = async () => { await view.rerender(); return elements(view.current); };
+  let tree = await render();
+  assert.equal(tree.find(n => n.type === AppButton).props.disabled, true);
+  const fields = tree.filter(n => n.type === FormField);
+  assert.equal(fields.length, 3);
+  assert.equal(fields[1].props.optionalLabel, copyFor(language).onboarding.optional);
+  fields[0].props.onChangeText('Apple slices');
+  tree = await render();
+  assert.equal(tree.find(n => n.type === AppButton).props.disabled, false);
+  fields[1].props.onChangeText('Sliced and warmed');
+  tree = await render();
+  assert.equal(tree.filter(n => n.type === FormField)[1].props.value, 'Sliced and warmed');
+  fields[1].props.onChangeText('');
+  tree.find(n => n.type === AppButton).props.onPress();
+  tree = await render();
+  assert.equal(foods[0].preparation, '');
+  assert.equal(reviewRows({ ...emptyDraft(), safeFoods: foods }, language)[3].value, 'Apple slices');
+  assert.equal(tree.find(n => n.type === FormField).props.value, '');
+  assert.equal(tree.find(n => n.type === AppButton).props.disabled, true);
+  const remove = tree.find(n => n.props?.accessibilityLabel === `${copyFor(language).common.remove} Apple slices`);
+  assert.ok(remove);
+  assert.equal(removed, undefined);
+  remove.props.onPress();
+  assert.equal(removed, 'apple');
+  assert.equal(tree.find(n => n.type === ChoiceRow).props.selected, false);
+  assert.ok(tree.some(n => n.props?.children === copyFor(language).onboarding.multipleInput));
 }
+
+test('영어 화면은 입력 폼을 유지하고 삭제 버튼에 지정한 음식 ID를 전달한다', t => checkFormControls(t, 'en'));
+
+test('한국어 화면은 입력 폼을 유지하고 삭제 버튼에 지정한 음식 ID를 전달한다', t => checkFormControls(t, 'ko'));
 
 test('기존 제공 형태와 추가 설명을 자유 입력칸에 그대로 표시한다', async t => {
   const input = { name: 'Apple', preparation: 'Sliced and warmed', presentationNote: 'Blue bowl' };
@@ -103,15 +103,47 @@ function completeDraft() {
     allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'] };
 }
 
-test('safe foods require a nonblank name; cooking method is optional', () => {
-  assert.equal(canAddSafeFood({ name: 'Rice', preparation: 'Boiled' }), true);
-  assert.equal(canAddSafeFood({ name: ' ', preparation: 'Boiled' }), false);
-  assert.equal(canAddSafeFood({ name: 'Rice', preparation: ' ' }), true);
-  assert.equal(canAddSafeFood({ name: 'Rice', preparation: '' }), true);
-  assert.equal(canAddSafeFood({ name: '', preparation: '' }), false);
+test('이름이 비었거나 공백뿐이면 선택 설명이 있어도 음식 추가를 차단한다', () => {
+  for (const name of ['', ' ']) {
+    assert.equal(canAddSafeFood({ name, preparation: 'Sliced', presentationNote: 'Blue bowl' }), false);
+  }
 });
 
-test('safe food warnings match a selected allergy but ignore none', () => {
+test('음식 이름이 있으면 제공 형태와 추가 설명을 비우거나 입력해도 추가를 허용한다', () => {
+  for (const input of [
+    { name: 'Rice', preparation: '', presentationNote: '' },
+    { name: 'Rice', preparation: ' ', presentationNote: '' },
+    { name: 'Rice', preparation: 'Boiled', presentationNote: 'Blue bowl' },
+  ]) {
+    assert.equal(canAddSafeFood(input), true);
+  }
+});
+
+test('음식 태그는 입력한 이름과 설명만 표시하고 없는 설명의 빈 줄은 생략한다', async t => {
+  const safeFoods = [
+    { id: 'rice', name: 'Rice', preparation: '', presentationNote: '' },
+    { id: 'apple', name: 'Apple', preparation: 'Sliced', presentationNote: '' },
+    { id: 'banana', name: 'Banana', preparation: '', presentationNote: 'Blue bowl' },
+    { id: 'pear', name: 'Pear', preparation: 'Warmed', presentationNote: 'White plate' },
+  ];
+  const view = await renderHook(t, () => SafeFoodsStepView({
+    language: 'en', safeFoods, noSafeFoods: false,
+    input: emptyDraft().safeFoodInput, canAdd: false,
+    onToggleNone: () => {}, onRemove: () => {}, onInputChange: () => {}, onAdd: () => {},
+  }));
+  const chips = view.current.props.children[0].props.children;
+  assert.deepEqual(chips.map(chip => [
+    chip.key,
+    elements(chip.props.children[0]).filter(node => node.type === 'text').map(node => node.props.children),
+  ]), [
+    ['rice', ['Rice']],
+    ['apple', ['Apple', 'Sliced']],
+    ['banana', ['Banana', 'Blue bowl']],
+    ['pear', ['Pear', 'Warmed, White plate']],
+  ]);
+});
+
+test('알레르기와 이름이 겹치는 음식은 안내하되 알레르기 없음은 제외한다', () => {
   const draft = { ...completeDraft(), allergies: ['EGGS'], safeFoods: [
     { name: 'Eggs soup', preparation: 'Boiled' }, { name: 'Rice', preparation: 'Boiled' },
   ] };

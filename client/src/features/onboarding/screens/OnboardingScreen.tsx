@@ -11,10 +11,10 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 채식 단계 이름 변경, 직접 입력·안심 음식 없음 제거
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 익숙한 음식 없음 선택 및 완료 실패 시 서버 재제출 연결
+// Changed: 익숙한 음식 없음·완료 재시도 및 연속 제출 잠금
 
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useFontReady } from '../../../components/FontReadyContext';
 import { useAuth } from '../../../providers/AuthProvider';
@@ -45,6 +45,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
   const fontReady = useFontReady();
   const [completed, setCompleted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const completionInFlight = useRef(false);
   const [completionFailed, setCompletionFailed] = useState(false);
   const [authError, setAuthError] = useState<string | undefined>();
   const step = typeof routeStep === 'string' && isStep(routeStep) ? routeStep : model.draft.step;
@@ -70,7 +71,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
     else navigate(previousStep(step));
   };
   const handleContinue = async () => {
-    if (submitting || !model.canContinue(step)) return;
+    if (submitting || completionInFlight.current || !model.canContinue(step)) return;
     if (origin === 'child-profile') {
       if (step === 'allergies') {
         navigate('restrictions', 'child-profile');
@@ -99,11 +100,16 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
       }
     }
     if (step === 'review') {
+      completionInFlight.current = true;
       setSubmitting(true);
-      const saved = await model.finish();
-      setCompletionFailed(!saved);
-      setSubmitting(false);
-      if (saved) { if (model.editing) router.replace('/home'); else setCompleted(true); }
+      try {
+        const saved = await model.finish();
+        setCompletionFailed(!saved);
+        if (saved) { if (model.editing) router.replace('/home'); else setCompleted(true); }
+      } finally {
+        completionInFlight.current = false;
+        setSubmitting(false);
+      }
     } else if (origin === 'review' && step === 'allergies') navigate('restrictions', 'review');
     else if (origin === 'review') navigate('review');
     else navigate(nextStep(step));

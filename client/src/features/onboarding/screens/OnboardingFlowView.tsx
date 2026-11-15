@@ -8,11 +8,13 @@
 // Changed: Dietary Pattern 선택 및 저장; 동작별 버튼 문구 구분
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 채식 단계의 필수 표시 제거
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 온보딩 완료 제출 중 버튼 회전 표시
 
 import { ProgressBar } from '../../../components/ProgressBar';
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from '@expo/vector-icons/Feather';
 import { AppButton } from '../../../components/AppButton';
@@ -78,6 +80,10 @@ export function OnboardingFlowView({
           <AppButton
             label={continueLabel ?? (step === 'review' ? s.onboarding.looksGood : s.common.continue)}
             disabled={submitting || !canContinue}
+            icon={step === 'review' && submitting
+              ? <ActivityIndicator size="small" color={colors.surface}
+                  accessibilityRole="progressbar" accessibilityLabel={s.common.saving} />
+              : undefined}
             onPress={onContinue}
             style={styles.next}
           />

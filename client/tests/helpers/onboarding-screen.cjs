@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 실제 Expo Router를 연결한 온보딩 입력·검토 화면 실행 환경
+// Changed: 실제 라우터·서버 경계를 연결한 온보딩 입력·검토·완료 실행 환경
 const { beforeEach, after } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -12,7 +12,7 @@ require('./register.cjs');
 const environment = { NODE_ENV: 'test', EXPO_OS: 'web', EXPO_ROUTER_IMPORT_MODE: 'sync' };
 const savedEnvironment = new Map(Object.keys(environment).map(key => [key, process.env[key]]));
 Object.assign(process.env, environment);
-const { React, act, waitFor } = require('./react-harness.cjs');
+const { React, act, waitFor, deferred } = require('./react-harness.cjs');
 const globals = {
   ShadowRoot: window.ShadowRoot,
   HTMLElement: window.HTMLElement,
@@ -80,6 +80,7 @@ const { values } = require('./native-boundaries.cjs').nativeBoundaries(name => {
   if (name === '@expo/vector-icons/Feather') return () => null;
   if (name === '@expo/vector-icons') return { Feather: () => null };
   if (name === 'expo-image') return { Image: () => null };
+  if (['expo-image-picker', 'expo-document-picker', 'expo-file-system'].includes(name)) return {};
   if (/\.(svg|png)$/.test(name)) return name;
 });
 
@@ -87,7 +88,8 @@ const { createRoot } = require('react-dom/client');
 const { ExpoRoot } = require('expo-router/build/ExpoRoot');
 const { Slot, usePathname } = require('expo-router');
 const { AuthProvider } = require('../../src/providers/AuthProvider.tsx');
-const { ProfileProvider } = require('../../src/providers/ProfileProvider.tsx');
+const { ProfileProvider, useProfile } = require('../../src/providers/ProfileProvider.tsx');
+const { QueryClient, QueryClientProvider } = require('@tanstack/react-query');
 const { OnboardingProvider } = require('../../src/features/onboarding/OnboardingProvider.tsx');
 const { useOnboarding } = require('../../src/features/onboarding/hooks/useOnboarding.ts');
 const { FontReadyContext } = require('../../src/components/FontReadyContext.tsx');
@@ -102,38 +104,61 @@ beforeEach(async () => {
   window.history.replaceState({}, '', '/');
 });
 
-async function mountOnboarding(t, draft) {
+async function mountOnboarding(t, draft, { submit, completion = false } = {}) {
   await saveSession({ accessToken: 'access', refreshToken: 'refresh',
     user: { id: '1', email: 'parent@example.com', fullName: 'Parent' } });
   await saveDraft(draft);
+  const submissions = [];
   t.mock.method(global, 'fetch', async (url, init = {}) => {
-    assert.equal(new URL(url).pathname, '/api/v1/onboarding');
-    assert.equal(init.method ?? 'GET', 'GET');
-    return Response.json({ profile: null, consents: [] });
+    const pathname = new URL(url).pathname;
+    const method = init.method ?? 'GET';
+    if (pathname === '/api/v1/onboarding') {
+      if (method === 'PUT') {
+        const body = JSON.parse(init.body);
+        submissions.push(body);
+        assert.ok(submit, '예상하지 않은 온보딩 제출');
+        return submit(body);
+      }
+      assert.equal(method, 'GET');
+      return Response.json({ profile: null, consents: [] });
+    }
+    assert.ok(completion && ['/api/v1/meals', '/api/v1/suggestions'].includes(pathname), pathname);
+    assert.equal(method, 'GET');
+    return Response.json([]);
   });
 
-  let current, pathname;
+  let current, pathname, profile;
   function Layout() {
     current = useOnboarding();
     pathname = usePathname();
+    profile = useProfile().profile;
     return React.createElement(Slot);
   }
-  // Only the feature's route is mounted; app-wide authentication redirects are separate tests.
+  // 실제 온보딩·완료 목적 화면을 연결한다. 앱 전체 레이아웃과 전역 인증 분기는 별도 검사다.
   const routes = { './_layout.tsx': { default: Layout }, './onboarding/[step].tsx': onboardingRoute };
+  if (completion) {
+    routes['./home.tsx'] = require('../../src/app/(main)/home.tsx');
+    routes['./meal-checkin.tsx'] = require('../../src/app/meal-checkin.tsx');
+  }
   const context = Object.assign(key => routes[key], {
     keys: () => Object.keys(routes), resolve: key => key, id: 'onboarding-test',
   });
+  const client = new QueryClient({ defaultOptions: {
+    queries: { retry: false, gcTime: Infinity, staleTime: Infinity },
+    mutations: { retry: false, gcTime: Infinity },
+  } });
   function Providers({ children }) {
-    return React.createElement(AuthProvider, null,
+    return React.createElement(QueryClientProvider, { client }, React.createElement(AuthProvider, null,
       React.createElement(ProfileProvider, null,
         React.createElement(OnboardingProvider, null,
-          React.createElement(FontReadyContext.Provider, { value: true }, children))));
+          React.createElement(FontReadyContext.Provider, { value: true }, children)))));
   }
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
   t.after(async () => {
-    await act(async () => root.unmount());
+    await act(async () => { root.unmount(); await client.cancelQueries(); });
+    client.clear();
     container.remove();
   });
   const initialPath = `/onboarding/${draft.step}`;
@@ -142,7 +167,8 @@ async function mountOnboarding(t, draft) {
   })));
   await waitFor(() => current?.ready && pathname === initialPath
     && container.querySelector('[role="heading"]'));
-  return { container, get current() { return current; }, get pathname() { return pathname; } };
+  return { container, submissions, get current() { return current; },
+    get pathname() { return pathname; }, get profile() { return profile; } };
 }
 
 function mountConsent(t) {
@@ -184,4 +210,9 @@ function mountReview(t, answers) {
   return mountOnboarding(t, { ...emptyDraft(), ...answers, step: 'review' });
 }
 
-module.exports = { act, waitFor, mountConsent, mountChildBasics, mountAllergies, mountDietaryPattern, mountSafeFoods, mountReview };
+function mountCompletion(t, answers, submit) {
+  return mountOnboarding(t, { ...emptyDraft(), ...answers, step: 'review' }, { submit, completion: true });
+}
+
+module.exports = { act, waitFor, deferred, mountConsent, mountChildBasics, mountAllergies,
+  mountDietaryPattern, mountSafeFoods, mountReview, mountCompletion };

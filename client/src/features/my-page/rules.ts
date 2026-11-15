@@ -4,6 +4,8 @@
 // Changed: 채식 제한 요약으로 변경, 안심 음식 없음 인자 제거
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 카드 복원에 따라 채식 제한 요약 제거
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 프로필의 익숙한 음식 없음 응답 표시
 
 import type { Language, SafeFood } from '../../types/profile';
 import { copyFor, labelFor, type OptionGroup } from '../../util/strings';
@@ -24,8 +26,9 @@ export function safetySummary(allergies: string[], restrictions: string[], langu
   return labels.length ? labels.join(', ') : copyFor(language).myPage.nothing;
 }
 
-export function safeFoodSummary(foods: SafeFood[], language: Language): string {
-  if (!foods.length) return copyFor(language).myPage.nothing;
+export function safeFoodSummary(foods: SafeFood[], language: Language, noSafeFoods = false): string {
+  if (noSafeFoods) return copyFor(language).onboarding.noSafeFoods;
+  if (!foods.length) return copyFor(language).common.notEntered;
   return foods.map((food) => {
     const detail = [food.preparation, food.presentationNote].filter((value) => value.trim()).join(', ');
     return detail ? `${food.name} (${detail})` : food.name;

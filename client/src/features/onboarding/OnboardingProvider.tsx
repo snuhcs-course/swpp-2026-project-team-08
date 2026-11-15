@@ -12,6 +12,8 @@
 
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 프로필 저장·초안 초기화 성공 시 저장 상태 완료 처리
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 없음 선택 중 입력 보존·변경 차단과 제출 목록 분리
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
@@ -115,7 +117,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const addSafeFood = useCallback((food: Omit<SafeFood, 'id'>) => {
     if (!canAddSafeFood(food)) return;
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    setDraft((current) => ({
+    setDraft((current) => current.noSafeFoods ? current : ({
       ...current,
       safeFoods: [...current.safeFoods, {
         id,
@@ -127,10 +129,13 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
   const setSafeFoodInput = useCallback((field: keyof OnboardingDraft['safeFoodInput'], value: string) => {
-    setDraft((current) => ({ ...current, safeFoodInput: { ...current.safeFoodInput, [field]: value } }));
+    setDraft((current) => current.noSafeFoods ? current : ({ ...current, safeFoodInput: { ...current.safeFoodInput, [field]: value } }));
   }, []);
   const removeSafeFood = useCallback((id: string) => {
-    setDraft((current) => ({ ...current, safeFoods: current.safeFoods.filter((food) => food.id !== id) }));
+    setDraft((current) => current.noSafeFoods ? current : ({ ...current, safeFoods: current.safeFoods.filter((food) => food.id !== id) }));
+  }, []);
+  const setNoSafeFoods = useCallback((value: boolean) => {
+    setDraft((current) => ({ ...current, noSafeFoods: value }));
   }, []);
   const setStep = useCallback((step: OnboardingStep) => {
     setDraft((current) => ({ ...current, step }));
@@ -138,7 +143,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const draftFromProfile = useCallback((step: OnboardingStep): OnboardingDraft | null => {
     if (!profile) return null;
     const { id: _id, updatedAt: _updatedAt, ...values } = profile;
-    return { ...values, step, safeFoodInput: { name: '', preparation: '', presentationNote: '' } };
+    return { ...values, noSafeFoods: values.noSafeFoods ?? false, step, safeFoodInput: { name: '', preparation: '', presentationNote: '' } };
   }, [profile]);
   const startEdit = useCallback(() => {
     if (editing) return;
@@ -169,6 +174,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       const { step: _step, safeFoodInput: _safeFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,
+        safeFoods: draft.noSafeFoods ? [] : draft.safeFoods,
         id: profile?.id ?? auth.session?.user.id ?? `child-${Date.now()}`,
         updatedAt: new Date().toISOString(),
       };
@@ -213,6 +219,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       const { step: _step, safeFoodInput: _safeFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,
+        safeFoods: draft.noSafeFoods ? [] : draft.safeFoods,
         id: profile?.id ?? auth.session?.user.id ?? `child-${Date.now()}`,
         updatedAt: new Date().toISOString(),
       };
@@ -234,7 +241,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     ready: ready && status !== 'loading', loadError: loadError || status === 'error',
     draft, password, saveStatus, editing, hasDraft,
     setPassword, setField, setConsent, toggleList,
-    addSafeFood, setSafeFoodInput, removeSafeFood, setStep,
+    addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setStep,
     startEdit, startProfileEdit, cancelEdit, applyEdit, resetLocal,
     retrySave, retryLoad, finish, canContinue: (step) => step === 'review' ? canFinish(draft)
       : step === 'account' && (editing || !!auth.session) ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)

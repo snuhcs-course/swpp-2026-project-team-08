@@ -10,6 +10,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 채식 단계 이름 변경, 직접 입력·안심 음식 없음 제거
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 익숙한 음식 없음 선택 화면 연결
 
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -134,6 +136,8 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         childName={model.draft.childName}
         language={language}
         safeFoods={model.draft.safeFoods}
+        noSafeFoods={model.draft.noSafeFoods}
+        onToggleNone={() => model.setNoSafeFoods(!model.draft.noSafeFoods)}
         input={model.draft.safeFoodInput}
         canAdd={canAddSafeFood(model.draft.safeFoodInput)}
         onRemove={model.removeSafeFood}

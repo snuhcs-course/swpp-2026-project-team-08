@@ -1,5 +1,7 @@
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim -->
 <!-- Changed: DB 스키마 개편에 따른 클라이언트 API 연동 변경 정리 -->
+<!-- AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung -->
+<!-- Changed: 익숙한 음식 명시적 없음과 미응답 API 계약 -->
 
 # API 연동 변경 사항 (클라이언트)
 
@@ -169,7 +171,9 @@
   값은 `VEGAN` `LACTO_VEGETARIAN` `OVO_VEGETARIAN` `LACTO_OVO_VEGETARIAN` `PESCATARIAN` `FLEXITARIAN`
   `NO_SPECIFIC_PATTERN` 중 하나이며 `restrictions`와 별개다. 추천 생성에는 적용하지 않는다.
 - `age_group`은 2절의 `AgeGroup` 값을 쓴다.
-- `safe_foods`는 `status` 없이 항목 목록만 보낸다. 빈 목록이 "없음"이다.
+- `safe_foods`는 필수 필드다. `null`은 명시적 없음, `[]`는 미응답, 비어 있지 않은 배열은 음식 목록이다.
+  기존 클라이언트의 빈 배열은 미응답으로 유지한다. `preparation`은 자유 입력 제공 형태이며 `presentation_note`는 추가 설명이다.
+  서버는 `user_profiles.no_safe_foods`로 명시적 없음을 저장한다. 신규 클라이언트보다 서버 마이그레이션·API를 먼저 배포한다.
   - 항목은 `name`, `preparation`, `presentation_note`만 보낸다. `name`은 필수이고 `preparation`(조리 방법)과
     `presentation_note`는 선택이라 `null`을 보낼 수 있다. 공백뿐인 `preparation`은 `null`로 저장한다. **`id`는 보내지 않는다.** 서버가 저장할 때마다 목록 전체를
     요청 순서대로 교체하고, 응답에 새로 발급한 `id`를 돌려준다. `id`가 저장마다 바뀔 수 있으므로 클라이언트는 이 `id`를 서버에

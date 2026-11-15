@@ -24,7 +24,7 @@
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
 // Changed: 음식 편집에서 저장 추천 연결 검증
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 온보딩 행동별 테스트 분리 및 경로 정리
+// Changed: 온보딩 테스트 분리 및 익숙한 음식 응답 상태 변환 검증
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../../helpers/register.cjs");
@@ -313,4 +313,21 @@ test("onboarding option ids equal the server enum values without their category"
     "DAIRY", "EGGS", "SEAFOOD", "POULTRY", "RED_MEAT", "LEGUMES_SOY", "NUTS_SEEDS",
   ]);
   assert.equal(optionsFor("allergies", "ko").find((o) => o.id === "EGGS").label, "달걀");
+});
+
+
+test('보관한 음식이 있어도 명시적 없음은 null로 보내고 미응답과 구분해 읽는다', async () => {
+  const source = { ...profile, noSafeFoods: true };
+  assert.equal(toOnboardingWrite(source).profile.safe_foods, null);
+  assert.ok(source.safeFoods.length > 0);
+  response = serverResponse();
+  response.profile.safe_foods = null;
+  const saved = await writeOnboarding(source);
+  const restored = fromOnboardingResponse(saved, account);
+  assert.equal(restored.noSafeFoods, true);
+  assert.deepEqual(restored.safeFoods, []);
+  response.profile.safe_foods = [];
+  await assert.rejects(writeOnboarding(source), /Safe foods answer was not saved/);
+  assert.equal(fromOnboardingResponse(response, account).noSafeFoods, false);
+  assert.deepEqual(toOnboardingWrite({ ...profile, safeFoods: [] }).profile.safe_foods, []);
 });

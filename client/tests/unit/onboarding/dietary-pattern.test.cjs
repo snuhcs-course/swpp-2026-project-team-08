@@ -9,7 +9,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 단계(family)와 snake_case 식별자 기준으로 수정
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 식생활 유형 테스트 분리 및 화면 구성·진행 경계 보강
+// Changed: 식생활 유형 테스트 분리 및 화면 구성·진행 경계 보강 · 음식 없음 응답 반영
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -59,7 +59,7 @@ const { canContinue, canFinish, isDraft } = require('../../../src/features/onboa
 function completeDraft() {
   return { ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
     childName: 'Child', ageRange: 'AGE_4_5', consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
-    allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'] };
+    allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'], noSafeFoods: true };
 }
 
 test('dietary pattern is optional and a draft without it restores as unanswered', () => {

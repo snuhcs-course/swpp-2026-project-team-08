@@ -7,7 +7,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 단계(family)와 snake_case 식별자 기준으로 수정
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 온보딩 행동별 테스트 분리 및 경로 정리
+// Changed: 온보딩 행동별 테스트 분리 및 경로 정리 · 음식 없음 응답 반영
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -17,10 +17,10 @@ const { canContinue, canFinish } = require('../../../src/features/onboarding/rul
 function completeDraft() {
   return { ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
     childName: 'Child', ageRange: 'AGE_4_5', consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
-    allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'] };
+    allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'], noSafeFoods: true };
 }
 
-test('dietary pattern step and safe foods are optional and may stay empty', () => {
+test('식생활 유형은 미응답이고 익숙한 음식은 명시적 없음이어도 완료할 수 있다', () => {
   const draft = { ...completeDraft(), dietaryPattern: null, safeFoods: [] };
   assert.equal(canContinue('family', draft, 'password'), true);
   assert.equal(canFinish(draft), true);

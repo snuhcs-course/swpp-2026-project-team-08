@@ -7,7 +7,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 단계(family)와 snake_case 식별자 기준으로 수정
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 자녀 기본 정보 테스트 분리·경계 보강·이름 한글화
+// Changed: 자녀 기본 정보 테스트 분리·경계 보강·이름 한글화 · 음식 없음 응답 반영
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -17,7 +17,7 @@ const { canContinue, canFinish } = require('../../../src/features/onboarding/rul
 function completeDraft() {
   return { ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
     childName: 'Child', ageRange: 'AGE_4_5', consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
-    allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'] };
+    allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'], noSafeFoods: true };
 }
 
 function assertProgressAllowed(fields, expected) {

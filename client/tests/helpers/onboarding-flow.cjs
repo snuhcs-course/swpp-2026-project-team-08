@@ -10,7 +10,7 @@
 // Connects Auth/Profile/Onboarding providers, validation, API conversion and draft storage.
 // Only HTTP and native storage boundaries are mocked.
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 온보딩 행동별 테스트 분리와 실행 환경 추출
+// Changed: 온보딩 행동별 테스트 분리와 실행 환경 추출 · 음식 없음 응답 반영
 const { beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('./register.cjs');
@@ -23,12 +23,17 @@ const { useOnboarding } = require('../../src/features/onboarding/hooks/useOnboar
 const { emptyDraft } = require('../../src/features/onboarding/types.ts');
 const { saveDraft, readDraft } = require('../../src/data/storage/onboardingDraftStorage.ts');
 const { saveSession, clearSession } = require('../../src/data/storage/authStorage.ts');
-const { profileResponse } = require('../fixtures/account-profile.cjs');
+const { profileResponse: baseProfileResponse } = require('../fixtures/account-profile.cjs');
 beforeEach(async () => { await clearSession(); values.clear(); });
+const profileResponse = (userId, options) => {
+  const response = baseProfileResponse(userId, options);
+  response.profile.safe_foods = null;
+  return response;
+};
 function completeDraft() {
   return { ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com', childName: 'Child 1', ageRange: 'AGE_4_5',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false }, allergies: ['none'], restrictions: ['none'],
-    vegetarianRestrictions: ['EGGS'], step: 'review' };
+    vegetarianRestrictions: ['EGGS'], noSafeFoods: true, step: 'review' };
 }
 async function mount(t, put = () => new Response(JSON.stringify(profileResponse()))) {
   await saveSession({ accessToken: 'access', refreshToken: 'refresh', user: { id: '1', email: 'parent@example.com', fullName: 'Parent' } });

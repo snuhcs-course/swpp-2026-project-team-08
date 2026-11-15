@@ -14,6 +14,8 @@
 // Changed: 온보딩 선택지 id 를 서버 값으로, 채식 단계 문구 재작성, 지원 안 하는 난이도 문구 제거
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 채식 단계 문구를 식생활 유형 문구로 되돌리고 식생활 유형 id 를 snake_case 로 변경
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 익숙한 음식 제공 형태와 명시적 없음 문구
 
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 추가 추천 생성과 재시도 문구
@@ -66,7 +68,8 @@ const en = {
     allergySafetyBody: 'Always check labels, preparation and cross-contact yourself. The app does not replace medical advice.',
     treeNutsHint: 'almonds, walnuts, or cashews',
     noKnownAllergies: 'No known food allergies', noOtherRestrictions: 'No other dietary restrictions',
-    foodName: 'Food name', preparation: 'Cooking method', presentationNote: 'Additional details',
+    foodName: 'Food name', preparation: 'Presentation', presentationNote: 'Additional details',
+    noSafeFoods: 'No Safe Foods Yet',
     addSafeFood: 'Add safe food', addSafeFoodAction: '+ Add',
     safeFoodExamples: 'e.g. apple slices, white bread', safeFoodNameExample: 'e.g. apple slices',
     safeFoodPreparationExample: 'e.g. sliced, mashed, warmed', safeFoodPresentationExample: 'e.g. blue bowl, cut into coins',
@@ -331,7 +334,8 @@ const ko = {
     allergySafetyBody: '식품 표시와 조리 과정을 확인해 주세요. 다른 음식의 알레르기 유발 성분이 섞일 가능성도 확인해 주세요. 앱은 의학적 조언을 대신하지 않아요.',
     treeNutsHint: '아몬드, 호두, 캐슈넛',
     noKnownAllergies: '알려진 식품 알레르기 없음', noOtherRestrictions: '기타 식이 제한 없음',
-    foodName: '음식 이름', preparation: '조리 방법', presentationNote: '추가 설명',
+    foodName: '음식 이름', preparation: '제공 형태', presentationNote: '추가 설명',
+    noSafeFoods: '아직 익숙한 음식 없음',
     addSafeFood: '익숙한 음식 추가', addSafeFoodAction: '+ 추가',
     safeFoodExamples: '예: 사과 조각, 흰 빵', safeFoodNameExample: '예: 사과 조각',
     safeFoodPreparationExample: '예: 얇게 썰기, 으깨기, 데우기', safeFoodPresentationExample: '예: 파란 그릇, 동전 모양으로 자르기',

@@ -7,20 +7,25 @@
 // Changed: 안심 음식 없음 선택 제거
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 상시 표시 카드에서 안심 음식 없음 토글을 빼고 입력 안내만 표시
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 제공 형태 자유 입력·없음 보존·키보드 포커스 연결
 
-import { Pressable, Text, View } from 'react-native';
+import { useRef, type ComponentRef } from 'react';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
-import { DropdownChoice } from '../../../components/DropdownChoice';
+import { ChoiceRow } from '../../../components/ChoiceRow';
 import { FormField } from '../../../components/FormField';
-import { abcCopyFor, copyFor } from '../../../util/strings';
+import { copyFor } from '../../../util/strings';
 import type { Language, SafeFood } from '../../../types/profile';
 import type { OnboardingDraft } from '../types';
 import { styles } from './onboardingStyles';
 
-export function SafeFoodsStepView({ language, childName, safeFoods, input, canAdd, onRemove, onInputChange, onAdd }: {
+export function SafeFoodsStepView({ language, childName, safeFoods, noSafeFoods, input, canAdd, onToggleNone, onRemove, onInputChange, onAdd }: {
   language: Language;
   childName?: string;
   safeFoods: SafeFood[];
+  noSafeFoods: boolean;
+  onToggleNone: () => void;
   input: OnboardingDraft['safeFoodInput'];
   canAdd: boolean;
   onRemove: (id: string) => void;
@@ -28,10 +33,12 @@ export function SafeFoodsStepView({ language, childName, safeFoods, input, canAd
   onAdd: () => void;
 }) {
   const s = copyFor(language);
-  const cooking = abcCopyFor(language);
+  const nameRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const presentationRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const detailsRef = useRef<ComponentRef<typeof TextInput>>(null);
   return (
     <View>
-      {safeFoods.length > 0 && <View style={styles.safeFoodChips}>
+      {!noSafeFoods && safeFoods.length > 0 && <View style={styles.safeFoodChips}>
         {safeFoods.map((food) => (
           <View key={food.id} style={styles.safeFoodChip}>
             <View style={styles.safeFoodChipCopy}>
@@ -59,25 +66,33 @@ export function SafeFoodsStepView({ language, childName, safeFoods, input, canAd
         </View>
         <View style={styles.safeFoodFields}>
           <FormField variant="safe"
+            inputRef={nameRef}
+            editable={!noSafeFoods}
+            returnKeyType="next"
+            submitBehavior="submit"
+            onSubmitEditing={() => presentationRef.current?.focus()}
             label={s.onboarding.foodName}
             value={input.name}
             onChangeText={(value) => onInputChange('name', value)}
             placeholder={s.onboarding.safeFoodNameExample}
           />
-          <View style={styles.safeFoodCooking}>
-            <View style={styles.safeFoodFieldHeading}>
-              <Text style={styles.safeFoodFieldLabel}>{s.onboarding.preparation}</Text>
-              <Text style={styles.safeFoodOptional}>{s.onboarding.optional}</Text>
-            </View>
-            <DropdownChoice
-              options={[{ id: '', label: s.common.none }, ...cooking.cookingOptions.map(label => ({ id: label, label }))]}
-              value={input.preparation}
-              displayFallback={input.preparation || undefined}
-              onChange={(value) => onInputChange('preparation', value)}
-              placeholder={cooking.selectCooking}
-            />
-          </View>
+          <FormField variant="safe"
+            inputRef={presentationRef}
+            editable={!noSafeFoods}
+            returnKeyType="next"
+            submitBehavior="submit"
+            onSubmitEditing={() => detailsRef.current?.focus()}
+            label={s.onboarding.preparation}
+            optionalLabel={s.onboarding.optional}
+            value={input.preparation}
+            onChangeText={(value) => onInputChange('preparation', value)}
+            placeholder={s.onboarding.safeFoodPreparationExample}
+          />
           <FormField variant="safe-note"
+            inputRef={detailsRef}
+            editable={!noSafeFoods}
+            returnKeyType="done"
+            onSubmitEditing={() => detailsRef.current?.blur()}
             label={s.onboarding.presentationNote}
             optionalLabel={s.onboarding.optional}
             value={input.presentationNote}
@@ -90,11 +105,17 @@ export function SafeFoodsStepView({ language, childName, safeFoods, input, canAd
           compact
           style={styles.safeFoodSubmit}
           labelStyle={styles.safeFoodSubmitLabel}
-          disabled={!canAdd}
-          onPress={onAdd}
+          disabled={noSafeFoods || !canAdd}
+          onPress={() => {
+            if (noSafeFoods || !canAdd) return;
+            onAdd();
+            nameRef.current?.focus();
+          }}
         />
       </View>
       <View style={styles.safeFoodNone}>
+        <ChoiceRow label={s.onboarding.noSafeFoods} selected={noSafeFoods}
+          multiple onPress={onToggleNone} />
         <Text style={styles.multipleHint}>{s.onboarding.multipleInput}</Text>
       </View>
     </View>

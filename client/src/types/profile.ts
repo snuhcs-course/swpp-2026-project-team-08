@@ -6,6 +6,8 @@
 // Changed: 채식 제한 필드 이름 변경, 안심 음식 없음 플래그 제거
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형을 vegetarianRestrictions 와 함께 두고 familyFoods 제거
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 익숙한 음식 없음 응답 보존
 
 import type { DietaryPattern } from './dietaryPattern';
 
@@ -35,5 +37,6 @@ export type ChildProfile = {
   vegetarianRestrictions: string[];
   dietaryPattern?: DietaryPattern | null;
   safeFoods: SafeFood[];
+  noSafeFoods?: boolean;
   updatedAt: string;
 };

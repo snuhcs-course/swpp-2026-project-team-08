@@ -11,10 +11,11 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 단계(family)와 snake_case 식별자 기준으로 수정
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 온보딩 행동별 테스트 분리 및 경로 정리
+// Changed: 온보딩 행동별 테스트 분리 및 경로 정리 · 음식 없음 응답 반영
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
+const { renderHook } = require('../../helpers/react-harness.cjs');
 const { mockModules } = require('../../helpers/mock-modules.cjs');
 const DropdownChoice = () => null;
 mockModules(name => {
@@ -43,12 +44,12 @@ function elements(node) {
 }
 
 for (const language of ['en', 'ko']) {
-  test(`${language}: form stays available and only the remove control deletes a food`, () => {
+  test(`${language}: 입력 폼을 유지하고 삭제 버튼은 지정한 음식만 전달한다`, async t => {
     const input = { name: '', preparation: '', presentationNote: '' };
     const foods = [];
     let removed;
-    const render = () => elements(SafeFoodsStepView({
-      language, childName: 'Max', safeFoods: foods, input,
+    const props = () => ({
+      language, childName: 'Max', safeFoods: foods, input, noSafeFoods: false, onToggleNone: () => {},
       canAdd: canAddSafeFood(input),
       onInputChange: (field, value) => { input[field] = value; },
       onAdd: () => {
@@ -56,23 +57,23 @@ for (const language of ['en', 'ko']) {
         Object.assign(input, { name: '', preparation: '', presentationNote: '' });
       },
       onRemove: id => { removed = id; },
-    }));
-    let tree = render();
+    });
+    const view = await renderHook(t, () => SafeFoodsStepView(props()));
+    const render = async () => { await view.rerender(); return elements(view.current); };
+    let tree = await render();
     assert.equal(tree.find(n => n.type === AppButton).props.disabled, true);
     const fields = tree.filter(n => n.type === FormField);
-    assert.equal(fields.length, 2);
+    assert.equal(fields.length, 3);
     assert.equal(fields[1].props.optionalLabel, copyFor(language).onboarding.optional);
     fields[0].props.onChangeText('Apple slices');
-    tree = render();
+    tree = await render();
     assert.equal(tree.find(n => n.type === AppButton).props.disabled, false);
-    const dropdown = tree.find(n => n.type === DropdownChoice);
-    const choice = dropdown.props.options[1];
-    dropdown.props.onChange(choice.id);
-    tree = render();
-    assert.equal(tree.find(n => n.type === DropdownChoice).props.value, choice.id);
-    dropdown.props.onChange('');
+    fields[1].props.onChangeText('Sliced and warmed');
+    tree = await render();
+    assert.equal(tree.filter(n => n.type === FormField)[1].props.value, 'Sliced and warmed');
+    fields[1].props.onChangeText('');
     tree.find(n => n.type === AppButton).props.onPress();
-    tree = render();
+    tree = await render();
     assert.equal(foods[0].preparation, '');
     assert.equal(reviewRows({ ...emptyDraft(), safeFoods: foods }, language)[3].value, 'Apple slices');
     assert.equal(tree.find(n => n.type === FormField).props.value, '');
@@ -82,18 +83,18 @@ for (const language of ['en', 'ko']) {
     assert.equal(removed, undefined);
     remove.props.onPress();
     assert.equal(removed, 'apple');
-    // "안심 음식 없음" 선택은 없고, 여러 항목을 입력할 수 있다는 안내만 항상 표시한다.
-    assert.equal(tree.some(n => n.type === ChoiceRow), false);
+    assert.equal(tree.find(n => n.type === ChoiceRow).props.selected, false);
     assert.ok(tree.some(n => n.props?.children === copyFor(language).onboarding.multipleInput));
   });
 }
 
-test('legacy free-text cooking methods remain visible in a restored form', () => {
+test('기존 제공 형태와 추가 설명을 자유 입력칸에 그대로 표시한다', async t => {
   const input = { name: 'Apple', preparation: 'Sliced and warmed', presentationNote: 'Blue bowl' };
-  const tree = elements(SafeFoodsStepView({ language: 'en', safeFoods: [],
-    input, canAdd: true }));
-  assert.equal(tree.find(n => n.type === DropdownChoice).props.displayFallback, input.preparation);
-  assert.equal(tree.filter(n => n.type === FormField)[1].props.value, input.presentationNote);
+  const view = await renderHook(t, () => SafeFoodsStepView({ language: 'en', safeFoods: [],
+    noSafeFoods: false, input, canAdd: true }));
+  const tree = elements(view.current);
+  assert.equal(tree.filter(n => n.type === FormField)[1].props.value, input.preparation);
+  assert.equal(tree.filter(n => n.type === FormField)[2].props.value, input.presentationNote);
 });
 
 function completeDraft() {

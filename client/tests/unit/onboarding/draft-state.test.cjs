@@ -19,7 +19,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 단계(family)를 선택 사항으로 되돌려 수정
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 온보딩 행동별 테스트 분리 및 경로 정리
+// Changed: 온보딩 행동별 테스트 분리 및 경로 정리 · 음식 없음 응답 반영
 const { test } = require('node:test');
 
 const assert = require('node:assert/strict');
@@ -62,7 +62,7 @@ test('invalid persisted profile and draft are rejected at their boundaries', asy
 function completeDraft() {
   return { ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
     childName: 'Child', ageRange: 'AGE_4_5', consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
-    allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'] };
+    allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'], noSafeFoods: true };
 }
 
 test('retired steps are omitted on restore and resume at the dietary pattern step', () => {

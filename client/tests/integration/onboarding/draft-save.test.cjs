@@ -19,7 +19,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 단계(family)를 선택 사항으로 되돌려 수정
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 온보딩 행동별 테스트 분리와 실행 환경 추출
+// Changed: 온보딩 행동별 테스트 분리와 실행 환경 추출 · 음식 없음 응답 반영
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { act, waitFor, deferred, storage, failNextWrite, saveDraft, readDraft, completeDraft, mount } = require('../../helpers/onboarding-flow.cjs');
@@ -92,7 +92,7 @@ function completedDraft() {
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
     allergies: ["none"],
     restrictions: ["none"],
-    vegetarianRestrictions: ["DAIRY"],
+    vegetarianRestrictions: ["DAIRY"], noSafeFoods: true,
   };
 }
 

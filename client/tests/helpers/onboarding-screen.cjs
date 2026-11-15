@@ -172,4 +172,12 @@ function mountDietaryPattern(t) {
   });
 }
 
-module.exports = { act, waitFor, mountConsent, mountChildBasics, mountAllergies, mountDietaryPattern };
+function mountSafeFoods(t) {
+  return mountOnboarding(t, {
+    ...emptyDraft(), step: 'safe-foods', caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
+    consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
+    childName: '나루', ageRange: 'AGE_4_5', allergies: ['none'], restrictions: ['none'],
+  });
+}
+
+module.exports = { act, waitFor, mountConsent, mountChildBasics, mountAllergies, mountDietaryPattern, mountSafeFoods };

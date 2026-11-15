@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 실제 Expo Router를 연결한 동의·자녀 정보 화면 실행 환경
+// Changed: 실제 Expo Router를 연결한 온보딩 입력 화면 실행 환경
 const { beforeEach, after } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -156,4 +156,12 @@ function mountChildBasics(t) {
   });
 }
 
-module.exports = { act, waitFor, mountConsent, mountChildBasics };
+function mountAllergies(t) {
+  return mountOnboarding(t, {
+    ...emptyDraft(), step: 'allergies', caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
+    consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
+    childName: '나루', ageRange: 'AGE_4_5',
+  });
+}
+
+module.exports = { act, waitFor, mountConsent, mountChildBasics, mountAllergies };

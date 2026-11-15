@@ -1,5 +1,5 @@
-<!-- AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung -->
-<!-- Changed: 온보딩 테스트 배치와 동의·자녀 정보 검증 범위 -->
+<!-- AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung -->
+<!-- Changed: 온보딩 테스트 배치·검증 범위 및 자동 저장 기준 -->
 
 # 온보딩 테스트 파일 구성
 
@@ -49,7 +49,7 @@ Dietary Pattern의 7개 값: Vegan, Lacto-vegetarian, Ovo-vegetarian, Lacto-ovo 
 | `allergies-restrictions.test.cjs` | 실제 체크박스·Provider·라우터를 연결한다. 복수 선택·개별 해제→각 다음 화면, 없음↔항목 전환과 다른 질문 보존, 마지막 항목/없음 해제→버튼 비활성화·현재 화면 유지. |
 | `step-navigation.test.cjs` | **미생성.** 동의·자녀 정보 외 각 입력의 화면 조작→답변·진행 조건 반영→이전/다음 이동. 필수 누락 차단, Dietary Pattern 미응답 허용, Safe Foods↔검토 연결, 답변·진행 표시 유지. Unit의 모든 입력 조합은 반복하지 않음. |
 | `safe-foods.test.cjs` | UI에서 추가→음식·부가 정보 표시와 입력칸 비우기, 제거→해당 항목만 삭제. 추가된 목록과 작성 중 입력 구분. D2·D3 확정 후 없음 처리·입력 복원 확인. |
-| `draft-save.test.cjs` | 모든 입력 단계의 답변·단계가 저장됨. 성공 후에만 저장 완료 표시, 실패 시 입력 유지·실패 표시. Save & exit는 제공되는 단계에서 성공 후 이탈·실패 시 유지. 공통 실패·재시도·연속 저장 순서 확인. |
+| `draft-save.test.cjs` | 모든 입력 단계의 답변·단계가 자동 저장됨. 성공 후에만 저장 완료 표시, 실패 시 입력 유지·실패 표시. 공통 실패·재시도·연속 저장 순서 확인. |
 | `draft-resume.test.cjs` | 메모리 상태를 버리고 새 Provider·화면에서 최신 저장값·단계 복원. 기본값·늦은 초기화의 덮어쓰기 방지, 손상·읽기 실패의 정상 복원 오인 방지. 계정별 초안이 있다면 계정 구분 확인. |
 | `draft-resume-provider.test.cjs` | 기존 대체 React 실행 도구로 검사하는 계정 정보 초기 채움·빈 답변 보존·초안 재개. 실제 React를 사용하는 `draft-resume`과 모듈 캐시가 충돌하지 않도록 분리한다. |
 | `review-edit.test.cjs` | **미생성.** 각 요약에서 해당 입력 단계 진입→수정→검토 복귀 시 요약 갱신·다른 답변 보존. 수정 없이 돌아와도 답변 유지. 재시작 복원은 `draft-resume`이 담당. |

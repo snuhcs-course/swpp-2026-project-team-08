@@ -4,8 +4,8 @@
 <!-- Changed: 화면 디자인 및 식사 흐름 개선 -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim -->
 <!-- Changed: 식생활 유형 저장을 새 서버 계약(dietary_pattern, 채식 제한 보존)으로 수정 -->
-<!-- AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung -->
-<!-- Changed: 익숙한 음식 응답·포커스 및 완료 대기·재시도 동작 명시 -->
+<!-- AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung -->
+<!-- Changed: 익숙한 음식 입력·완료 대기·재시도 및 자동 저장 기준 -->
 
 # Onboarding
 
@@ -110,7 +110,7 @@
    작성 중인 입력은 Add 전까지 제출 목록에 포함하지 않는다.
 7. API의 `safe_foods`는 null이면 명시적 없음, 빈 배열이면 미응답, 비어 있지 않은 배열이면 음식 목록이다.
    없음으로 제출할 때 보관 중인 음식은 서버에 보내지 않는다. 기존 빈 목록을 명시적 없음으로 추정하지 않는다.
-8. Previous와 Save & exit는 없음 선택·음식 목록·작성 중 입력을 포함한 초안을 보존한다.
+8. 없음 선택·음식 목록·작성 중 입력은 초안에 자동 저장하며, Previous 이동 시에도 보존한다.
 
 ### R9 — Review profile
 
@@ -135,7 +135,7 @@
 - 가족 식품군 필수 선택을 비운 상태로 다음 단계·완료를 시도함
 - Safe Food의 Food name 또는 Preparation을 입력하지 않은 채 Add를 누름
 - `No safe foods yet`을 선택한 상태에서 Safe Food를 추가하거나, Safe Food가 있는 상태에서 이를 선택함
-- Safe Food를 추가한 뒤 제거하거나, 입력 도중 Save \& exit를 누름
+- Safe Food를 추가한 뒤 제거하거나, 추가하지 않은 음식 입력이 자동 저장된 뒤 앱을 다시 시작함
 - 자동 저장이 완료되기 전에 앱이 종료되거나 저장에 실패함
 - 검토 화면에서 항목을 수정한 뒤 돌아옴
 - 새 식이 제한이 기존 Safe Food 또는 Learning Food와 충돌함
@@ -199,7 +199,7 @@ Given 보호자가 `No safe foods yet`을 선택했고<br>
 When Safe Food를 추가하면<br>
 Then `No safe foods yet` 선택이 해제된다.
 
-Given 보호자가 Safe Foods 화면에서 Save \& exit를 눌렀고<br>
+Given Safe Foods의 답변과 작성 중 입력이 자동 저장되었고<br>
 When 온보딩을 다시 시작하면<br>
 Then 저장된 답변과 진행 단계에서 이어서 입력할 수 있다.
 
@@ -219,7 +219,6 @@ Then 검토 화면과 입력값이 유지되고 다시 시도할 수 있다.
 
 - 알레르기·제한·가족 식품군의 검색·직접 입력·제거 가능한 토큰, None 배타 선택을 유지한다.
 - 가족 식품군은 필수 입력으로 바꾸고 검토 완료 조건에도 반영한다. 선택과 미선택은 테두리·체크·문구로 구분한다.
-- Safe foods의 Save & exit로 초안을 저장하고 홈으로 나갈 수 있어야 한다. 실패하면 화면과 입력을 유지한다.
 - 검토 뒤 `You’re ready to begin` 완료 화면에서 실제 아동 이름과 Go to home을 보여주고 홈으로 이동한다.
 - 기존의 지원되지 않는 제한 안내와 실제 추천 안전성 검사는 유지한다. 임의 제한이 검증된 것처럼 안내하지 않는다.
 

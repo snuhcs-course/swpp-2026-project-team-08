@@ -164,4 +164,12 @@ function mountAllergies(t) {
   });
 }
 
-module.exports = { act, waitFor, mountConsent, mountChildBasics, mountAllergies };
+function mountDietaryPattern(t) {
+  return mountOnboarding(t, {
+    ...emptyDraft(), step: 'family', caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
+    consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
+    childName: '나루', ageRange: 'AGE_4_5', allergies: ['EGGS'], restrictions: ['GLUTEN_FREE'],
+  });
+}
+
+module.exports = { act, waitFor, mountConsent, mountChildBasics, mountAllergies, mountDietaryPattern };

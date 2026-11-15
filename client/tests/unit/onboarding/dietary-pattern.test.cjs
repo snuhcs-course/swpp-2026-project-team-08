@@ -9,7 +9,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 단계(family)와 snake_case 식별자 기준으로 수정
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 온보딩 행동별 테스트 분리 및 경로 정리
+// Changed: 식생활 유형 테스트 분리 및 화면 구성·진행 경계 보강
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -77,4 +77,50 @@ test('dietary pattern is optional and a draft without it restores as unanswered'
     assert.equal(restoreDraft(JSON.parse(JSON.stringify(draft))).dietaryPattern, dietaryPattern);
   }
   assert.equal(isDraft({ ...legacy, dietaryPattern: 'eggs' }), false);
+});
+
+test('처음에는 선택 없이 일곱 식생활 유형과 설명·닉네임 안내·추천 반영 한계를 표시한다', async t => {
+  const props = {
+    step: 'family', values: { ...emptyDraft(), childName: 'Max' }, language: 'en',
+    onSetField: () => {},
+  };
+  const view = await renderHook(t, input => ChoiceStepView(input), { props });
+  const [helper, choices, guidance] = view.current.props.children;
+  const copy = copyFor('en').onboarding.dietaryPattern;
+  const rows = choices.props.children;
+  assert.equal(helper.props.children, copy.helper('Max'));
+  assert.match(helper.props.children, /Max/);
+  assert.equal(choices.props.accessibilityRole, 'radiogroup');
+  assert.deepEqual(rows.map(row => [row.key, row.props.label]), [
+    ['vegan', 'Vegan'],
+    ['lacto_vegetarian', 'Lacto-vegetarian'],
+    ['ovo_vegetarian', 'Ovo-vegetarian'],
+    ['lacto_ovo_vegetarian', 'Lacto-ovo vegetarian'],
+    ['pescatarian', 'Pescatarian'],
+    ['flexitarian', 'Flexitarian'],
+    ['no_specific_pattern', 'No specific dietary pattern'],
+  ]);
+  assert.equal(rows.every(row => !row.props.selected), true);
+  for (const row of rows) {
+    assert.equal(row.props.subtitle, copy.options.find(option => option.id === row.key).description);
+    assert.ok(row.props.subtitle.trim());
+  }
+  assert.equal(guidance.props.body,
+    'We’ll try to follow this dietary pattern when suggesting meals, '
+    + 'but it may not be fully reflected in every suggestion.');
+  await view.rerender({ ...props, values: { ...props.values, dietaryPattern: 'pescatarian' } });
+  assert.deepEqual(view.current.props.children[1].props.children
+    .filter(row => row.props.selected).map(row => row.props.label), ['Pescatarian']);
+});
+
+test('미응답·유효한 식생활 유형·특정 유형 없음은 다음 단계 진행을 허용한다', () => {
+  for (const dietaryPattern of [null, 'vegan', 'no_specific_pattern']) {
+    assert.equal(canContinue('family', { ...emptyDraft(), dietaryPattern }, ''), true);
+  }
+});
+
+test('등록되지 않은 식생활 유형과 빈 문자열은 다음 단계 진행을 차단한다', () => {
+  for (const dietaryPattern of ['eggs', '']) {
+    assert.equal(canContinue('family', { ...emptyDraft(), dietaryPattern }, ''), false);
+  }
 });

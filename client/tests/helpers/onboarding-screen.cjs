@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
-// Changed: 실제 온보딩 라우터·입력·완료·초안 재시작 및 저장소 실패 실행 환경
+// Changed: 실제 온보딩·프로필 라우터와 재시작·서버 조회·저장소 실패 실행 환경
 const { beforeEach, after } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -105,7 +105,7 @@ beforeEach(async () => {
 });
 
 async function mountOnboarding(t, draft, {
-  submit, completion = false, initialPath = draft ? `/onboarding/${draft.step}` : '/',
+  submit, loadProfile, completion = false, initialPath = draft ? `/onboarding/${draft.step}` : '/',
   waitUntilReady = true,
 } = {}) {
   await saveSession({ accessToken: 'access', refreshToken: 'refresh',
@@ -123,7 +123,7 @@ async function mountOnboarding(t, draft, {
         return submit(body);
       }
       assert.equal(method, 'GET');
-      return Response.json({ profile: null, consents: [] });
+      return loadProfile ? loadProfile() : Response.json({ profile: null, consents: [] });
     }
     assert.ok(completion && ['/api/v1/meals', '/api/v1/suggestions'].includes(pathname), pathname);
     assert.equal(method, 'GET');
@@ -143,6 +143,8 @@ async function mountOnboarding(t, draft, {
   if (completion) {
     routes['./home.tsx'] = require('../../src/app/(main)/home.tsx');
     routes['./meal-checkin.tsx'] = require('../../src/app/meal-checkin.tsx');
+    routes['./profile.tsx'] = require('../../src/app/(main)/profile.tsx');
+    routes['./child-profile.tsx'] = require('../../src/app/child-profile.tsx');
   }
   const context = Object.assign(key => routes[key], {
     keys: () => Object.keys(routes), resolve: key => key, id: 'onboarding-test',

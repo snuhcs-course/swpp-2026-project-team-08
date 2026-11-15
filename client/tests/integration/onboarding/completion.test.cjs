@@ -9,11 +9,12 @@
 // Changed: 식생활 유형 요청·응답 기준으로 수정
 // Connects Auth/Profile/Onboarding providers, validation, API conversion and draft storage.
 // Only HTTP and native storage boundaries are mocked.
-// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 완료·재시도의 회전 표시·중복 차단·답변 보존·식사 기록 진입 검증
+// AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
+// Changed: 완료 대기·실패 재시도·로컬 저장 실패·식사 진입·프로필 재열기 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { act, waitFor, deferred, mountCompletion } = require('../../helpers/onboarding-screen.cjs');
+const { act, waitFor, deferred, mountCompletion, mountDraft, failNextWrite } =
+  require('../../helpers/onboarding-screen.cjs');
 const { readDraft } = require('../../../src/data/storage/onboardingDraftStorage.ts');
 const { readProfile } = require('../../../src/data/storage/profileStorage.ts');
 const { profileResponse } = require('../../fixtures/account-profile.cjs');
@@ -136,11 +137,93 @@ test('완료하면 선택한 답변과 음식 상세를 저장하고 홈에서 �
   assert.equal(await readDraft(), null);
 });
 
+// Wiki UAT-AC-01.3: 메모리의 완료 상태 없이 서버에서 다시 읽은 답변을 실제 화면에 표시한다.
+test('완료 후 앱을 다시 열어 프로필을 조회하면 저장한 자녀 정보·제한·식생활·음식 상세가 표시된다', async t => {
+  const response = profileResponse('1', { aiTraining: true, dietaryPattern: 'PESCATARIAN' });
+  response.profile.child_name = '하루';
+  response.profile.age_group = 'AGE_6_8';
+  response.profile.restrictions = ['ALLERGY.PEANUTS', 'DIETARY_APPROACH.GLUTEN_FREE', 'VEGETARIAN.EGGS'];
+  response.profile.safe_foods = [
+    { id: '91', name: 'Apple', preparation: 'Sliced', presentation_note: 'Blue bowl' },
+  ];
+  const app = await mountCompletion(t, completeAnswers({
+    childName: '하루', ageRange: 'AGE_6_8',
+    consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: true },
+    allergies: ['PEANUTS'], restrictions: ['GLUTEN_FREE'], dietaryPattern: 'pescatarian', noSafeFoods: false,
+  }), () => Response.json(response));
+  await click(button(app, 'Looks good'));
+  await waitFor(() => app.current.hasDraft === false);
+  assert.deepEqual(app.submissions, [{
+    ...expectedNoneRequest,
+    profile: {
+      child_name: '하루', age_group: 'AGE_6_8',
+      restrictions: ['ALLERGY.PEANUTS', 'DIETARY_APPROACH.GLUTEN_FREE', 'VEGETARIAN.EGGS'],
+      dietary_pattern: 'PESCATARIAN',
+      safe_foods: [{ name: 'Apple', preparation: 'Sliced', presentation_note: 'Blue bowl' }],
+    },
+    consents: expectedNoneRequest.consents.map(consent => ({ ...consent, granted: true })),
+  }]);
+  assert.equal(await readDraft(), null);
+  await app.unmount();
+
+  // 저장소만 유지하고 화면·Provider·Query 캐시는 새로 만든다.
+  let fetchedProfile = false;
+  const reopened = await mountDraft(t, undefined, {
+    completion: true, initialPath: '/profile',
+    loadProfile: () => { fetchedProfile = true; return Response.json(response); },
+  });
+  assert.equal(fetchedProfile, true);
+  assert.ok(control(reopened, 'heading', 'My Page'));
+  await click(button(reopened, '하루6-8 yearsView profile >'));
+  await waitFor(() => reopened.pathname === '/child-profile');
+  assert.ok(control(reopened, 'heading', 'Child Profile'));
+  assert.equal(button(reopened, 'Edit').parentElement.textContent, '하루6-8 yearsEdit');
+  assert.ok(button(reopened, 'Allergies & RestrictionsPeanuts, Gluten-free'));
+  assert.ok(button(reopened, 'Dietary PatternPescatarian'));
+  assert.ok(button(reopened, 'Safe FoodsApple (Sliced, Blue bowl)'));
+  assert.deepEqual(reopened.profile, {
+    ...expectedNoneProfile, childName: '하루', ageRange: 'AGE_6_8',
+    consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: true },
+    allergies: ['PEANUTS'], restrictions: ['GLUTEN_FREE'], dietaryPattern: 'pescatarian', noSafeFoods: false,
+    safeFoods: [{ id: '91', name: 'Apple', preparation: 'Sliced', presentationNote: 'Blue bowl' }],
+  });
+  assert.deepEqual(reopened.submissions, []);
+  assert.equal(reopened.current.hasDraft, false);
+  assert.equal(await readDraft(), null);
+});
+
 test('선택 동의 거부·식생활 미응답·음식 없음을 제출하면 그 상태로 완료하고 보관 음식과 작성 중 입력은 전송하지 않는다', async t => {
   const app = await mountCompletion(t, completeAnswers(), noneResponse);
   await click(button(app, 'Looks good'));
   await waitFor(() => app.current.hasDraft === false);
 
+  assert.deepEqual(app.submissions, [expectedNoneRequest]);
+  assert.deepEqual(app.profile, expectedNoneProfile);
+  assert.deepEqual(await readProfile(), expectedNoneProfile);
+  assert.equal(await readDraft(), null);
+  assertCompleted(app);
+});
+
+test('완료 직전 초안 저장이 실패하면 서버에 제출하지 않고 답변을 보존하며 Retry 성공 후에만 완료한다', async t => {
+  const app = await mountCompletion(t, completeAnswers(), noneResponse);
+  const before = structuredClone(app.current.draft);
+  failNextWrite('nurturebites.onboarding.v1');
+  await click(button(app, 'Looks good'));
+  await waitFor(() => app.current.saveStatus === 'error');
+
+  assert.deepEqual(app.submissions, []);
+  assertReview(app);
+  assert.ok(app.container.textContent.includes('Could not save. Retry before leaving.'));
+  assert.notEqual(button(app, 'Looks good').getAttribute('aria-disabled'), 'true');
+  assert.equal(button(app, 'Looks good').querySelector('[role="progressbar"]'), null);
+  assert.equal(app.profile, null);
+  assert.equal(await readProfile(), null);
+  assert.equal(app.current.hasDraft, true);
+  assert.deepEqual(app.current.draft, before);
+  assert.deepEqual(await readDraft(), before);
+
+  await click(button(app, 'Retry'));
+  await waitFor(() => app.current.hasDraft === false);
   assert.deepEqual(app.submissions, [expectedNoneRequest]);
   assert.deepEqual(app.profile, expectedNoneProfile);
   assert.deepEqual(await readProfile(), expectedNoneProfile);

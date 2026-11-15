@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
-// Changed: 검토 수정·무수정 왕복과 Previous 복귀·답변 보존·진행 표시 검증
+// Changed: 검토 수정·충돌 안내·Previous 복귀의 요약·답변 보존·진행 표시 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { act, waitFor, mountReview } = require('../../helpers/onboarding-screen.cjs');
@@ -105,6 +105,43 @@ test('알레르기와 식이 제한을 차례로 수정하고 Review로 돌아�
     ...initialSummaries, 'Safety restrictions': 'Allergies: Peanuts · Other dietary restrictions: None',
   });
   assert.deepEqual(app.current.draft, { ...before, allergies: ['PEANUTS'], restrictions: ['none'] });
+});
+
+// 내부 온보딩 명세 R9.5: 충돌 안내의 수정 경로는 음식 기록을 자동으로 삭제하지 않는다.
+test('충돌 안내에서 제한을 수정해 충돌을 해소하면 안내가 사라지고 요약만 바뀌며 음식과 다른 입력은 보존된다', async t => {
+  const app = await mountReview(t, reviewAnswers({
+    safeFoods: [
+      { id: 'eggs', name: 'Eggs soup', preparation: 'Warmed', presentationNote: 'Small bowl' },
+      ...reviewAnswers().safeFoods,
+    ],
+  }));
+  const before = structuredClone(app.current.draft);
+  const summaries = {
+    ...initialSummaries,
+    'Safe foods': 'Eggs soup · Warmed · Small bowl, Apple · Sliced · Blue bowl',
+  };
+  assertSummaries(app, summaries);
+  const warning = control(app, 'button', `${s.onboarding.conflict} Eggs soup · ${s.common.edit}`);
+  await click(warning);
+  await assertScreen(app, 'allergies', 'Food allergies');
+  assert.deepEqual(app.current.draft, { ...before, step: 'allergies' });
+
+  await click(control(app, 'checkbox', 'Eggs'));
+  assert.deepEqual(app.current.draft.allergies, []);
+  await click(control(app, 'checkbox', 'Peanuts'));
+  await click(next(app));
+  await assertScreen(app, 'restrictions', 'Other dietary restrictions');
+  assert.deepEqual(app.current.draft, { ...before, step: 'restrictions', allergies: ['PEANUTS'] });
+  await click(control(app, 'checkbox', s.onboarding.noOtherRestrictions));
+  await click(next(app));
+
+  await assertScreen(app, 'review', 'Review 나루’s profile');
+  assert.equal(app.container.textContent.includes(s.onboarding.conflict), false);
+  assertSummaries(app, {
+    ...summaries, 'Safety restrictions': 'Allergies: Peanuts · Other dietary restrictions: None',
+  });
+  assert.deepEqual(app.current.draft, { ...before, allergies: ['PEANUTS'], restrictions: ['none'] });
+  assert.deepEqual(app.submissions, []);
 });
 
 test('미응답인 식생활 유형을 선택하고 Review로 돌아오면 선택한 유형을 표시하고 다른 답변은 보존된다', async t => {

@@ -15,7 +15,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 채식 단계 문구를 식생활 유형 문구로 되돌리고 식생활 유형 id 를 snake_case 로 변경
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 익숙한 음식 제공 형태와 명시적 없음 문구
+// Changed: 익숙한 음식 제공 형태·명시적 없음 및 검토 화면 응답 상태 문구
 
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 추가 추천 생성과 재시도 문구
@@ -100,6 +100,7 @@ const en = {
     },
     reviewAllergies: 'Allergies', reviewChild: 'Child basics', reviewSafety: 'Safety restrictions', reviewFamily: 'Dietary Pattern',
     reviewSafeFoods: 'Safe foods',
+    reviewNotAnswered: 'Not answered', reviewNone: 'None',
     conflict: 'A safe food name matches a listed restriction. Review it before relying on that food.',
     looksGood: 'Looks good',
     start: 'Start setup', resume: 'Resume setup',
@@ -366,6 +367,7 @@ const ko = {
     },
     reviewAllergies: '알레르기', reviewChild: '아이 기본 정보', reviewSafety: '안전 관련 제한', reviewFamily: '식생활 유형',
     reviewSafeFoods: '익숙한 음식',
+    reviewNotAnswered: '미응답', reviewNone: '없음',
     conflict: '익숙한 음식 이름이 식이 제한 항목과 겹쳐요. 해당 음식을 다시 확인해 주세요.',
     looksGood: '프로필 저장하기',
     createAccount: '계정 만들기', returnToReview: '확인 화면으로', cancelEdit: '수정 취소',

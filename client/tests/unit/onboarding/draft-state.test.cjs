@@ -18,70 +18,15 @@
 // Changed: family 단계를 vegetarian 으로, 채식 제한을 선택 사항으로 수정
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 단계(family)를 선택 사항으로 되돌려 수정
-// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 온보딩 행동별 테스트 분리 및 경로 정리 · 음식 없음 응답 반영
+// AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
+// Changed: 온보딩 테스트 분리 및 현재 초안 복원·잘못된 저장값 경계 검증
 const { test } = require('node:test');
-
 const assert = require('node:assert/strict');
-
 require('../../helpers/register.cjs');
-
-const { createMemoryStorage } = require('../../helpers/memory-storage.cjs');
-
-const { values, storage } = createMemoryStorage();
-
-const { mockModules } = require('../../helpers/mock-modules.cjs');
-
-mockModules((name) => {
-  return name === '@react-native-async-storage/async-storage' ? storage : undefined;
-});
-
 const { emptyDraft } = require('../../../src/features/onboarding/types.ts');
+const { isDraft, restoreDraft } = require('../../../src/features/onboarding/rules.ts');
 
-const { canFinish, isDraft } = require('../../../src/features/onboarding/rules.ts');
-
-const { readProfile } = require('../../../src/data/storage/profileStorage.ts');
-
-function completedDraft() {
-  return {
-    ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
-    childName: 'Child', ageRange: 'AGE_2_3',
-    consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
-    allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['DAIRY'],
-  };
-}
-
-test('invalid persisted profile and draft are rejected at their boundaries', async () => {
-  values.clear();
-  values.set('nurturebites.profile.v1', JSON.stringify({ id: 'broken' }));
-  await assert.rejects(readProfile());
-  assert.equal(isDraft({ ...completedDraft(), step: 'unknown' }), false);
-  assert.equal(canFinish({ ...completedDraft(), caregiverEmail: 'invalid' }), false);
-});
-
-function completeDraft() {
-  return { ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
-    childName: 'Child', ageRange: 'AGE_4_5', consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
-    allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'], noSafeFoods: true };
-}
-
-test('retired steps are omitted on restore and resume at the dietary pattern step', () => {
-  const { restoreDraft } = require('../../../src/features/onboarding/rules.ts');
-  for (const step of ['approaches', 'vegetarian']) {
-    const restored = restoreDraft({ ...completeDraft(), step, approaches: [] });
-    assert.deepEqual(restored, { ...completeDraft(), step: 'family' });
-    assert.equal(canFinish(restored), true);
-  }
-});
-
-test('saved vegetarian restrictions survive a draft restore even without an input screen', () => {
-  const { restoreDraft } = require('../../../src/features/onboarding/rules.ts');
-  const draft = { ...completeDraft(), vegetarianRestrictions: ['EGGS', 'POULTRY'], step: 'review' };
-  assert.deepEqual(restoreDraft(JSON.parse(JSON.stringify(draft))).vegetarianRestrictions,
-    ['EGGS', 'POULTRY']);
-});
-
-test('draft validation rejects missing fields and invalid consent types', () => {
+test('필수 필드가 없거나 동의·음식 입력 형식이 잘못되면 초안 검사를 통과하지 못한다', () => {
   assert.equal(isDraft(emptyDraft()), true);
   for (const invalid of [null, {}, { ...emptyDraft(), step: 'unknown' },
     { ...emptyDraft(), consent: { accountPrivacy: 'true' } }, { ...emptyDraft(), safeFoodInput: null }]) {
@@ -89,48 +34,32 @@ test('draft validation rejects missing fields and invalid consent types', () => 
   }
 });
 
-const { restoreDraft } = require("../../../src/features/onboarding/rules.ts");
+test('작성 중인 초안은 미응답·공백 입력과 현재 단계를 그대로 복원한다', () => {
+  const draft = { ...emptyDraft(), step: 'child', childName: '  나루  ', caregiverName: '' };
+  assert.deepEqual(restoreDraft(JSON.parse(JSON.stringify(draft))), draft);
+});
 
-test("a retired saved step preserves answers and removes obsolete draft fields", () => {
-  const draft = completedDraft();
-  assert.deepEqual(
-    restoreDraft({
-      ...draft,
-      step: "retired-step",
-      obsoleteSelections: ["old"],
-    }),
-    { ...draft, step: "family" },
-  );
-  for (const step of [
-    "texture",
-    "smell",
-    "taste",
-    "presentation",
-    "temperature",
-    "familiarity",
+test('없음과 실제 선택을 구분하고 음식 목록·설명·작성 중 입력을 모두 복원한다', () => {
+  const draft = {
+    ...emptyDraft(), step: 'safe-foods', childName: '나루', ageRange: 'AGE_4_5',
+    consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
+    allergies: ['EGGS', 'MILK_DAIRY'],
+    restrictions: ['none'], dietaryPattern: 'no_specific_pattern', noSafeFoods: true,
+    safeFoods: [{ id: 'apple', name: 'Apple', preparation: 'Sliced', presentationNote: 'Blue bowl' }],
+    safeFoodInput: { name: 'Banana', preparation: 'Mashed', presentationNote: 'Small plate' },
+  };
+  assert.deepEqual(restoreDraft(JSON.parse(JSON.stringify(draft))), draft);
+});
+
+test('초안의 기본 구조·필드 형식이 잘못되면 복원하지 않는다', () => {
+  const draft = emptyDraft();
+  for (const invalid of [null, [], 'draft', {}, { ...draft, step: null },
+    { ...draft, childName: 1 }, { ...draft, consent: { ...draft.consent, aiTraining: 'false' } },
+    { ...draft, allergies: null }, { ...draft, restrictions: 'none' },
+    { ...draft, vegetarianRestrictions: {} }, { ...draft, safeFoods: {} },
+    { ...draft, dietaryPattern: 'unknown' }, { ...draft, noSafeFoods: 'true' },
+    { ...draft, safeFoodInput: { ...draft.safeFoodInput, presentationNote: null } },
   ]) {
-    assert.deepEqual(
-      restoreDraft({
-        ...draft,
-        step,
-        texture: ["soft"],
-        smell: "yes",
-        taste: ["sour"],
-        presentation: ["separate"],
-        temperature: "warm",
-        familiarity: "plate",
-      }),
-      { ...draft, step: "family" },
-    );
+    assert.equal(restoreDraft(invalid), null, JSON.stringify(invalid));
   }
-  assert.deepEqual(
-    restoreDraft({
-      ...draft,
-      step: "safe-foods",
-      texture: ["soft"],
-      familiarity: "plate",
-    }),
-    { ...draft, step: "safe-foods" },
-  );
-  assert.equal(restoreDraft({ step: "retired-step" }), null);
 });

@@ -12,8 +12,8 @@
 
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 프로필 저장·초안 초기화 성공 시 저장 상태 완료 처리
-// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 없음 선택 중 입력 보존·변경 차단과 제출 목록 분리
+// AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
+// Changed: 없음 선택 중 입력 보존·제출 목록 분리 및 최신 초안 저장 상태 유지
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
@@ -37,6 +37,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [editing, setEditing] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
   const saveGate = useRef(createDraftSaveGate());
+  const saveRequestId = useRef(0);
   const skipFirstSave = useRef(true);
   const clearedDraft = useRef<OnboardingDraft | null>(null);
   const finishing = useRef(false);
@@ -82,12 +83,14 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [ready, loadError, status, auth.session, profile]);
 
   const persist = useCallback((value: OnboardingDraft) => {
+    const requestId = ++saveRequestId.current;
     setSaveStatus('saving');
     setHasDraft(true);
     const pending = saveGate.current.persist(() => saveDraft(value));
+    // 이전 저장의 결과는 최신 요청의 저장 중·실패 표시를 덮어쓰지 않는다.
     pending.then(
-      () => { if (!finishing.current) setSaveStatus('saved'); },
-      () => { if (!finishing.current) setSaveStatus('error'); },
+      () => { if (!finishing.current && requestId === saveRequestId.current) setSaveStatus('saved'); },
+      () => { if (!finishing.current && requestId === saveRequestId.current) setSaveStatus('error'); },
     );
     return pending;
   }, []);

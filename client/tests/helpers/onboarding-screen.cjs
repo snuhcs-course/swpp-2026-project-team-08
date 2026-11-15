@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 실제 라우터·서버 경계를 연결한 온보딩 입력·검토·완료 실행 환경
+// AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
+// Changed: 실제 온보딩 라우터·입력·완료·초안 재시작 및 저장소 실패 실행 환경
 const { beforeEach, after } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -68,7 +68,7 @@ const safeArea = {
   SafeAreaInsetsContext: React.createContext(insets),
   useSafeAreaInsets: () => insets,
 };
-const { values } = require('./native-boundaries.cjs').nativeBoundaries(name => {
+const { values, storage, failNextWrite } = require('./native-boundaries.cjs').nativeBoundaries(name => {
   if (name === 'react-native') return native;
   if (name === 'react-native-safe-area-context') return safeArea;
   if (name === 'expo') return { Platform: native.Platform, requireOptionalNativeModule: () => null,
@@ -104,10 +104,13 @@ beforeEach(async () => {
   window.history.replaceState({}, '', '/');
 });
 
-async function mountOnboarding(t, draft, { submit, completion = false } = {}) {
+async function mountOnboarding(t, draft, {
+  submit, completion = false, initialPath = draft ? `/onboarding/${draft.step}` : '/',
+  waitUntilReady = true,
+} = {}) {
   await saveSession({ accessToken: 'access', refreshToken: 'refresh',
     user: { id: '1', email: 'parent@example.com', fullName: 'Parent' } });
-  await saveDraft(draft);
+  if (draft !== undefined) await saveDraft(draft);
   const submissions = [];
   t.mock.method(global, 'fetch', async (url, init = {}) => {
     const pathname = new URL(url).pathname;
@@ -134,8 +137,9 @@ async function mountOnboarding(t, draft, { submit, completion = false } = {}) {
     profile = useProfile().profile;
     return React.createElement(Slot);
   }
-  // 실제 온보딩·완료 목적 화면을 연결한다. 앱 전체 레이아웃과 전역 인증 분기는 별도 검사다.
-  const routes = { './_layout.tsx': { default: Layout }, './onboarding/[step].tsx': onboardingRoute };
+  // 실제 진입·온보딩·완료 목적 화면을 연결한다. 앱 전체 레이아웃은 별도 검사다.
+  const routes = { './_layout.tsx': { default: Layout }, './onboarding/[step].tsx': onboardingRoute,
+    './index.tsx': require('../../src/app/index.tsx') };
   if (completion) {
     routes['./home.tsx'] = require('../../src/app/(main)/home.tsx');
     routes['./meal-checkin.tsx'] = require('../../src/app/meal-checkin.tsx');
@@ -156,18 +160,22 @@ async function mountOnboarding(t, draft, { submit, completion = false } = {}) {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
-  t.after(async () => {
+  let mounted = true;
+  async function unmount() {
+    if (!mounted) return;
+    mounted = false;
     await act(async () => { root.unmount(); await client.cancelQueries(); });
     client.clear();
     container.remove();
-  });
-  const initialPath = `/onboarding/${draft.step}`;
+  }
+  t.after(unmount);
+  window.history.replaceState({}, '', initialPath);
   await act(async () => root.render(React.createElement(ExpoRoot, {
     context, location: initialPath, wrapper: Providers,
   })));
-  await waitFor(() => current?.ready && pathname === initialPath
-    && container.querySelector('[role="heading"]'));
-  return { container, submissions, get current() { return current; },
+  if (waitUntilReady) await waitFor(() => current?.ready && pathname === initialPath
+    && (initialPath === '/' || container.querySelector('[role="heading"]')));
+  return { container, submissions, unmount, get current() { return current; },
     get pathname() { return pathname; }, get profile() { return profile; } };
 }
 
@@ -214,5 +222,29 @@ function mountCompletion(t, answers, submit) {
   return mountOnboarding(t, { ...emptyDraft(), ...answers, step: 'review' }, { submit, completion: true });
 }
 
+function control(app, role, label) {
+  const matches = [...app.container.querySelectorAll(`[role="${role}"]`)].filter(element => {
+    const text = element.getAttribute('aria-label') ?? element.textContent;
+    return ['checkbox', 'radio'].includes(role) ? text.startsWith(label) : text === label;
+  });
+  assert.equal(matches.length, 1, `${label} ${role} 요소가 하나 있어야 한다`);
+  return matches[0];
+}
+function input(app, label) {
+  const element = [...app.container.querySelectorAll('input')]
+    .find(element => element.getAttribute('aria-label') === label);
+  assert.ok(element, `${label} 입력칸이 있어야 한다`);
+  return element;
+}
+const click = async element => act(async () => element.click());
+async function enter(app, label, value) {
+  const element = input(app, label);
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(element, value);
+    element.dispatchEvent(new window.Event('input', { bubbles: true }));
+  });
+}
+
 module.exports = { act, waitFor, deferred, mountConsent, mountChildBasics, mountAllergies,
-  mountDietaryPattern, mountSafeFoods, mountReview, mountCompletion };
+  mountDietaryPattern, mountSafeFoods, mountReview, mountCompletion, mountDraft: mountOnboarding,
+  values, storage, failNextWrite, control, input, click, enter };

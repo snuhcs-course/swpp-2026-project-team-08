@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 검토 카드별 실제 수정 왕복과 최신 요약·다른 답변 보존 검증
+// AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
+// Changed: 검토 수정·무수정 왕복과 Previous 복귀·답변 보존·진행 표시 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { act, waitFor, mountReview } = require('../../helpers/onboarding-screen.cjs');
@@ -53,6 +53,13 @@ async function enter(app, label, value) {
 async function assertScreen(app, step, title) {
   await waitFor(() => app.pathname === `/onboarding/${step}`);
   assert.ok(control(app, 'heading', title));
+  const position = { child: 3, allergies: 4, restrictions: 5, family: 6, 'safe-foods': 7, review: 8 }[step];
+  const labels = [...app.container.querySelectorAll('*')]
+    .filter(el => el.childElementCount === 0 && el.textContent === `STEP ${position} OF 8`);
+  assert.equal(labels.length, 1, `${step} 화면의 단계 번호`);
+  const fill = labels[0].parentElement.nextElementSibling?.firstElementChild;
+  assert.ok(fill, `${step} 화면의 진행 막대`);
+  assert.equal(fill.style.width, `${position * 12.5}%`, `${step} 화면의 진행률`);
 }
 function assertSummaries(app, expected) {
   for (const [title, value] of Object.entries(expected)) {
@@ -140,4 +147,55 @@ test('음식 없음을 해제하고 음식을 추가해 Review로 돌아오면 �
     ...before, noSafeFoods: false,
     safeFoods: [{ id: food.id, name: 'Banana', preparation: 'Mashed', presentationNote: 'Small bowl' }],
   });
+});
+
+test('Review의 각 수정 화면에서 변경 없이 계속하면 기존 요약·답변·작성 중 음식 입력을 그대로 유지한다', async t => {
+  const app = await mountReview(t, reviewAnswers());
+  const before = structuredClone(app.current.draft);
+  for (const [card, steps] of [
+    ['Child basics', ['child']], ['Safety restrictions', ['allergies', 'restrictions']],
+    ['Dietary Pattern', ['family']], ['Safe foods', ['safe-foods']],
+  ]) {
+    await click(edit(app, card));
+    for (const step of steps) {
+      const title = step === 'safe-foods' ? s.onboarding.safeFoodsTitle('나루') : s.onboarding.titles[step];
+      await assertScreen(app, step, title);
+      assert.deepEqual(app.current.draft, { ...before, step });
+      await click(next(app));
+    }
+    await assertScreen(app, 'review', s.onboarding.reviewTitle('나루'));
+    assertSummaries(app, initialSummaries);
+    assert.deepEqual(app.current.draft, before);
+  }
+  assert.deepEqual(app.submissions, []);
+});
+
+test('Review에서 연 수정 화면의 Previous는 Review로 바로 돌아오고 기존 요약·답변을 보존한다', async t => {
+  const app = await mountReview(t, reviewAnswers());
+  const before = structuredClone(app.current.draft);
+  for (const [card, target] of [
+    ['Child basics', 'child'], ['Safety restrictions', 'allergies'],
+    ['Safety restrictions', 'restrictions'], ['Dietary Pattern', 'family'], ['Safe foods', 'safe-foods'],
+  ]) {
+    await click(edit(app, card));
+    // 제한 화면에서도 Review에서 시작한 수정이라는 정보가 유지되어야 한다.
+    if (target === 'restrictions') {
+      await assertScreen(app, 'allergies', s.onboarding.titles.allergies);
+      await click(next(app));
+    }
+    const title = target === 'safe-foods' ? s.onboarding.safeFoodsTitle('나루') : s.onboarding.titles[target];
+    await assertScreen(app, target, title);
+    await click(control(app, 'button', s.common.previous));
+    await assertScreen(app, 'review', s.onboarding.reviewTitle('나루'));
+    assertSummaries(app, initialSummaries);
+    assert.deepEqual(app.current.draft, before);
+  }
+  // 검토로 돌아온 뒤에는 수정 출처가 남아 일반 Previous 이동을 가로막으면 안 된다.
+  await click(control(app, 'button', s.common.previous));
+  await assertScreen(app, 'safe-foods', s.onboarding.safeFoodsTitle('나루'));
+  assert.deepEqual(app.current.draft, { ...before, step: 'safe-foods' });
+  await click(control(app, 'button', s.common.previous));
+  await assertScreen(app, 'family', s.onboarding.titles.family);
+  assert.deepEqual(app.current.draft, { ...before, step: 'family' });
+  assert.deepEqual(app.submissions, []);
 });

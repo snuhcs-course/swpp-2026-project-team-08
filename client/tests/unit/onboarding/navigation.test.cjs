@@ -24,13 +24,13 @@
 // Changed: family 단계를 vegetarian 으로, 채식 제한을 선택 사항으로 수정
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 단계(family)를 선택 사항으로 되돌려 수정
-// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 온보딩 행동별 테스트 분리 및 경로 수정
+// AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
+// Changed: 온보딩 테스트 분리 및 단계 경계·검토 복귀 경로·진행 표시 검증
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../../helpers/register.cjs");
 
-const { React, act, renderHook } = require("../../helpers/react-harness.cjs");
+const { React } = require("../../helpers/react-harness.cjs");
 
 const { renderToStaticMarkup } = require("react-dom/server");
 
@@ -105,18 +105,32 @@ mockModules((name) => {
   return undefined;
 });
 
-const { copyFor, abcCopyFor } = require("../../../src/util/strings.ts");
+const { copyFor } = require("../../../src/util/strings.ts");
 
 const { steps, nextStep, previousStep } = require("../../../src/features/onboarding/types.ts");
+const { onboardingRouteParams } = require("../../../src/features/onboarding/navigation.ts");
 const noop = () => {};
 
-test("the dietary pattern step leads directly to safe foods in both directions", () => {
+test('식생활 유형과 음식 단계는 바로 왕복하고 첫 단계 이전·마지막 단계 다음으로 벗어나지 않는다', () => {
   assert.equal(nextStep("family"), "safe-foods");
   assert.equal(previousStep("safe-foods"), "family");
+  assert.equal(previousStep('account'), 'account');
+  assert.equal(nextStep('review'), 'review');
   assert.equal(steps.length, 8);
 });
 
-test("onboarding progress follows the eight remaining screens in both languages", () => {
+test('일반 이동은 단계만 전달하고 Review에서 시작한 수정은 입력 화면 사이에서도 복귀 대상을 유지한다', () => {
+  assert.deepEqual(onboardingRouteParams('child'), { step: 'child' });
+  for (const step of ['child', 'allergies', 'restrictions']) {
+    assert.deepEqual(onboardingRouteParams(step, 'review'), { step, from: 'review' });
+  }
+});
+
+test('Review로 복귀하면 수정 출처를 제거해 이후 일반 이동에 남기지 않는다', () => {
+  assert.deepEqual(onboardingRouteParams('review', 'review'), { step: 'review' });
+});
+
+test('각 단계의 번호와 진행률을 한글·영어로 표시하고 Review의 진행률은 100%가 된다', () => {
   const {
     OnboardingFlowView,
   } = require("../../../src/features/onboarding/screens/OnboardingFlowView.tsx");
@@ -143,7 +157,7 @@ test("onboarding progress follows the eight remaining screens in both languages"
       assert.ok(
         html.includes(copyFor(language).onboarding.progress(stepIndex + 1, 8)),
       );
-      if (step === "review") assert.match(html, /width:100%/);
+      assert.ok(html.includes(`width:${(stepIndex + 1) * 12.5}%`));
     });
   }
 });

@@ -22,10 +22,15 @@
 // AI-generated with Grok 4.7, 2026-11-14, reviewed by Doyeon Kim
 // Changed: 저장 화면의 사진 라벨과 단계 표시 문구
 
+// AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
+// Changed: 개인정보처리방침 링크 및 열기 실패 문구
+
 import type { Language } from '../types/profile';
 
 const en = {
   common: {
+    privacyPolicy: 'Privacy Policy',
+    openLinkFailed: 'Could not open the link. Please try again.',
     brand: 'NurtureBites',
     previous: 'Previous', continue: 'Continue', add: 'Add', remove: 'Remove', edit: 'Edit',
     retry: 'Retry', saveExit: 'Save & exit', saved: 'Auto-saved', saving: 'Saving…',
@@ -248,8 +253,8 @@ const en = {
     viewProfile: 'View profile',
     settings: 'SETTINGS',
     caregiverAccount: 'Caregiver Account',
-    privacyTitle: 'Privacy and photo data',
-    privacySubtitle: 'How your information is used',
+    privacyTitle: 'Privacy Policy',
+    privacySubtitle: 'Read how your information is used',
     helpTitle: 'Help',
     helpSubtitle: 'View tutorial again',
     logOut: 'Log out',
@@ -290,6 +295,8 @@ const en = {
 
 const ko = {
   common: {
+    privacyPolicy: '개인정보처리방침',
+    openLinkFailed: '링크를 열지 못했어요. 다시 시도해 주세요.',
     brand: 'NurtureBites',
     previous: '이전', continue: '다음', add: '추가', remove: '삭제', edit: '수정',
     retry: '다시 시도', saveExit: '초안 저장 후 나가기', saved: '자동 저장됨', saving: '저장 중…',
@@ -513,8 +520,8 @@ const ko = {
     viewProfile: '프로필 보기',
     settings: '설정',
     caregiverAccount: '보호자 계정',
-    privacyTitle: '개인정보 및 사진 데이터',
-    privacySubtitle: '아직 준비 중이에요',
+    privacyTitle: '개인정보처리방침',
+    privacySubtitle: '개인정보 처리방침 자세히 보기',
     helpTitle: '도움말',
     helpSubtitle: '아직 준비 중이에요',
     logOut: '로그아웃',

@@ -7,6 +7,9 @@
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 추천 가능한 음식으로 식사 추천 흐름 검증
 
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 영어 추천 카탈로그 fixture 적용
+
 """Integration: 실제 API·서비스·SQLite 연결. LLM만 가짜 모델로 대체한다."""
 
 import pytest
@@ -38,7 +41,7 @@ async def test_meal_review_suggestion_and_history_flow(
     owner = await auth_headers(api_client, "owner@example.com")
     stranger = await auth_headers(api_client, "stranger@example.com")
     await save_profile(api_client, owner)
-    await seed_ingredient("쌀")
+    await seed_ingredient("Rice")
 
     saved = await api_client.put(
         "/api/v1/meals",

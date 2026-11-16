@@ -6,6 +6,8 @@
 <!-- Changed: suggestion 관련 문서 업데이트 -->
 <!-- AI-generated with GPT-6, 2026-10-26, reviewed by Haechan Jung -->
 <!-- Changed: AI 주석 규칙 및 문서 정리 -->
+<!-- AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung -->
+<!-- Changed: 재료 카탈로그 교체 옵션 명시 -->
 
 이 디렉터리는 FastAPI + Postgres 백엔드 서버다. 이 문서는 **LLM이 특히 지켜야 할 규칙**만 담는다.
 설치·실행·검사 명령은 `README.md`, 아키텍처는 `docs/architecture.md`, 배포는 `docs/deploy.md`에 있다.
@@ -45,7 +47,7 @@ DB 데이터나 스키마를 바꾸거나 지울 수 있는 작업은 **실행 �
 - `uv run alembic upgrade ...` / `downgrade ...` (마이그레이션 적용 · 되돌리기)
 - `docker compose down -v` 등 DB 볼륨을 지우는 명령, DB 컨테이너 재생성
 - `DROP` / `TRUNCATE` / `DELETE` 등을 직접 실행하는 SQL, 시드 · 데이터 수정 스크립트 실행
-  (`scripts/load_ingredients.py`는 `--check` 없이 실행하면 DB를 바꾼다)
+  (`scripts/load_ingredients.py --replace-catalog`는 공용 재료와 판정을 모두 교체한다)
 
 마이그레이션 파일을 *생성*(`alembic revision`)하거나 `alembic upgrade head --sql`처럼 SQL만 출력하는 것은
 DB를 바꾸지 않으므로 확인 없이 해도 된다.

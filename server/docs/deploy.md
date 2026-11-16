@@ -10,6 +10,8 @@
 
 <!-- AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung -->
 <!-- Changed: 전용 API 검사 제거에 맞춘 Client CI 안내 -->
+<!-- AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung -->
+<!-- Changed: 서버 교체 후 적재와 실패 시 서비스 유지 절차 정의 -->
 
 # 서버 배포 가이드
 
@@ -17,7 +19,7 @@
 
 ## 1. 개요
 
-`main` 브랜치에 `server/` 변경이 머지되면 GitHub Actions가 Docker 이미지를 만들어 AWS ECR에 올리고, EC2에서 새 이미지를 실행합니다. 데이터베이스는 RDS의 PostgreSQL입니다.
+`main` 브랜치에 서버 코드 또는 최종 재료 JSONL 변경이 머지되면 GitHub Actions가 Docker 이미지를 만들어 AWS ECR에 올리고, EC2에서 새 이미지를 실행합니다. 데이터베이스는 RDS의 PostgreSQL입니다.
 
 ```mermaid
 flowchart LR
@@ -51,23 +53,47 @@ EC2의 8000번 포트는 CloudFront에서 오는 요청만 받도록 보안그�
 
 | 워크플로 | 파일 | 실행 시점 | 하는 일 |
 | --- | --- | --- | --- |
-| Server CI | `.github/workflows/server-ci.yml` | `server/`가 바뀐 PR | 코드 검사와 테스트 |
-| Server Deploy | `.github/workflows/server-deploy.yml` | `main`에 `server/` 변경 머지 (수동 실행도 가능) | 이미지 빌드와 EC2 배포 |
+| Server CI | `.github/workflows/server-ci.yml` | 서버·재료 데이터·공통 제한 규칙이 바뀐 PR | 코드·데이터 검사와 테스트 |
+| Server Deploy | `.github/workflows/server-deploy.yml` | `main`에 서버·최종 재료 JSONL 변경 머지 (수동 실행도 가능) | 이미지 빌드·재료 적재·EC2 배포 |
 
 ### 2.1 CI (PR)
 
-PR이 열리거나 갱신될 때 `server/`에서 아래를 순서대로 실행합니다. 하나라도 실패하면 PR에 빨간 표시가 뜹니다.
+PR이 열리거나 갱신될 때 아래 검사를 순서대로 실행한다. 실행 위치를 따로 적지 않은 명령은
+`server/` 기준이다. 하나라도 실패하면 CI가 실패한다.
 
-1. `ruff check .` — 코드 규칙 검사
-2. `ruff format --check .` — 코드 서식 검사
-3. `pytest` — 테스트. 인메모리 SQLite를 쓰므로 DB나 환경변수 설정이 필요 없습니다.
+1. `ruff check . ../data/ingredient_db` — 서버·재료 생성 코드 검사
+2. `ruff format --check . ../data/ingredient_db` — 코드 서식 검사
+3. `python -m unittest discover -s data/ingredient_db/tests` — 가짜 Gemini로 생성 과정 검사. 저장소 루트에서 실행한다.
+4. `python -m data.ingredient_db check` — 검토 기록과 최종 JSONL 검사. 저장소 루트에서 실행한다.
+5. `pytest` — 서버 테스트. 인메모리 SQLite를 사용하며 운영 DB에는 접속하지 않는다.
+6. 저장소 루트에서 최종 JSONL 두 파일을 `server/assets/`에 복사하고 `docker build -t server-check server`로 빌드한다. 이미지의 적재기는 `assets/`의 파일을 `--check`로 검사한다.
 
-PR을 올리기 전에 `server/`에서 같은 명령을 실행하면 CI 결과를 미리 알 수 있습니다.
+PR을 올리기 전에 각 명령의 실행 위치에서 같은 검사를 수행한다.
 
 Client CI는 `client/` 또는 해당 워크플로 파일이 바뀐 PR에서 실행한다.
 루트·Unit·Integration 클라이언트 테스트와 린트·타입 검사를 수행한다.
 
 ### 2.2 배포 (main 머지)
+
+CI와 CD는 빌드 직전에 `data/ingredient_db/result/`의 JSONL 두 파일을 `server/assets/`에 복사한다.
+배포 이미지는 서버 코드, 적재기와 이 두 파일을 함께 담는다. 복사본은 Git에 넣지 않는다.
+재료 생성 코드·원본 다운로드·Gemini 응답·검토 기록·비밀 파일은 이미지에 넣지 않는다.
+빌드 컨텍스트는 `server/`, 이미지의 작업 디렉터리는 `/app`이다. 로컬 복사·빌드 명령은
+[서버 README](../README.md#의존성과-빌드)를 따른다. 이미지 안의 적재 명령은
+`--ingredients assets/ingredients.jsonl --restrictions assets/ingredients_restrictions.jsonl`로 입력을 지정한다.
+
+공용 재료는 Git의 JSONL을 기준으로 관리하며 운영 API는 읽기만 한다.
+배포 적재기는 마지막 적재 해시와 두 파일의 해시를 비교한다. 최초 적재 또는 파일 변경 시
+공용 재료·제한 판정을 전부 교체하고 해시를 같은 DB 트랜잭션에 기록한다. 같으면 교체를 건너뛴다.
+재료 생성 API는 배포에서 호출하지 않는다. 수동 검사·적재 명령은
+[재료 데이터 안내](../../data/ingredient_db/README.md#서버-적용)에 둔다.
+
+준비 작업 동안 기존 서버를 유지하고, 컨테이너를 교체하는 순간에만 짧은 중단이 발생한다.
+새 서버는 영어 이름을 우선하며 적재 전에는 기존 한국어 이름도 읽는다.
+새 서버의 기동을 확인한 뒤 서버를 실행한 상태로 재료를 적재한다.
+서버 교체에 실패하면 데이터 변경 전이므로 이전 이미지를 다시 실행한다.
+적재 중 오류는 트랜잭션을 롤백하고 새 서버를 유지한다. 적재 후 검증 실패도 서버와 데이터를 유지하며
+원인을 수정한 뒤 재배포한다. 사용자 식사 기록과 저장된 추천은 변경하지 않는다.
 
 ```mermaid
 sequenceDiagram
@@ -84,6 +110,9 @@ sequenceDiagram
   EC2->>ECR: 이미지 pull
   EC2->>DB: alembic upgrade head
   EC2->>EC2: 컨테이너 교체, /health 확인
+  Note over EC2: 교체 실패 시 이전 서버 재시작
+  EC2->>DB: 서비스 중 JSONL 변경 시 전체 교체·검증
+  Note over EC2,DB: 적재 실패 시 데이터 롤백·서버 유지
   EC2-->>GH: 성공 또는 실패
 ```
 
@@ -93,16 +122,17 @@ GitHub Actions 쪽 단계는 이렇습니다.
 2. 이미지를 빌드해서 ECR에 올립니다. 태그는 커밋 SHA이므로, 어떤 이미지가 어느 커밋인지 바로 알 수 있습니다.
 3. `server/deploy/deploy.sh`를 SSM으로 EC2에 보내 실행하고, 끝날 때까지(최대 10분) 기다립니다. EC2의 출력은 Actions 로그에 그대로 나옵니다. 성공이 아니면 워크플로가 실패합니다.
 
-EC2에서 `deploy.sh`가 하는 일은 이렇습니다.
+EC2에서 `deploy.sh`는 다음 순서로 실행한다.
 
-1. SSM Parameter Store의 `/nurturebites/prod/*` 값을 읽어 임시 환경변수 파일을 만듭니다. 필수 파라미터(`ENVIRONMENT`, `JWT_SECRET_KEY`, `POSTGRES_HOST`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`)가 하나라도 없거나 비어 있거나, `ENVIRONMENT`가 `production`이 아니면 중단합니다.
-2. 새 이미지를 pull합니다.
-3. 새 이미지로 `alembic upgrade head`를 실행해 DB 마이그레이션을 적용합니다.
-4. 실행 중인 컨테이너를 지우고 새 컨테이너를 띄웁니다.
-5. `/health`가 응답하는지 최대 60초 동안 확인합니다. 응답하면 배포 성공입니다.
-6. 응답하지 않으면 컨테이너 로그를 남기고 **이전 이미지로 되돌린 뒤** 배포를 실패 처리합니다.
+1. 호스트 잠금을 획득하고 SSM Parameter Store에서 운영 환경변수를 읽는다. 값은 로그에 출력하지 않는다.
+2. 중단된 배포의 작업 컨테이너가 남아 있으면 종료한다.
+3. 새 이미지를 받아 JSONL을 검사하고 DB 마이그레이션을 적용한다. 이 단계의 실패는 기존 서버를 중지하지 않는다.
+4. 현재 이미지를 기록하고 컨테이너를 교체한다. 새 서버의 `/health` 확인에 실패하면 이전 이미지를 다시 실행한다.
+5. 새 서버의 자동 재시작을 활성화한 뒤, 서버를 실행한 상태로 JSONL 변경 시 데이터를 교체한다.
+6. DB 카탈로그와 이미지 JSONL의 일치를 확인한다. 적재·검증 실패는 배포 실패로 기록하되 서버를 중지하지 않는다.
 
-한 번에 배포는 하나만 실행됩니다. 앞선 배포가 끝나기 전에 또 머지되면 뒤의 배포가 기다렸다가 실행됩니다.
+GitHub Actions와 EC2 호스트 잠금으로 배포를 직렬 실행한다.
+스냅샷·복구 기록은 저장하지 않는다. 배포 프로세스가 강제 종료된 경우에는 재배포한다.
 
 ### 2.3 워크플로가 읽는 GitHub Variables
 
@@ -168,7 +198,7 @@ aws ssm put-parameter --region ap-southeast-2 --type String --overwrite \
 
 1. `Settings`에 필드를 추가하고 `.env.example`에도 같은 이름을 추가합니다.
 2. 같은 이름으로 Parameter Store에 `/nurturebites/prod/<이름>`을 **먼저** 등록합니다.
-3. 그 뒤에 PR을 머지합니다. 등록 전에 배포되면, 기본값이 없는 필드는 서버가 기동하지 못하고 배포가 실패합니다. 이때는 이전 이미지로 되돌아가므로 서비스가 멈추지는 않습니다.
+3. 그 뒤에 PR을 머지합니다. 등록 전에 배포되면, 기본값이 없는 필드는 서버가 기동하지 못하고 배포가 실패합니다. 교체 전 실패는 기존 서버를 유지하고, 교체 중 실패는 이전 이미지를 다시 실행합니다. 교체 순간에는 짧은 중단이 있습니다.
 
 ## 4. 운영
 
@@ -201,12 +231,15 @@ Actions 탭에서 실패한 Server Deploy 실행을 열고 **"EC2 에 배포 (SS
 | `SSM 경로 ... 에서 파라미터를 읽지 못했습니다` | Parameter Store에 값이 없거나, EC2 역할의 읽기 권한이 없습니다. |
 | `docker pull` 또는 ECR 로그인 오류 | EC2 역할의 ECR 읽기 권한을 확인합니다. |
 | `alembic upgrade head`에서 오류 | 마이그레이션 코드 문제이거나 RDS에 접속하지 못한 경우입니다. 이 단계에서 실패하면 기존 컨테이너는 그대로 실행 중입니다. |
-| `헬스체크 실패` | 컨테이너 로그가 함께 출력됩니다. 이전 이미지로 자동으로 되돌아갑니다. |
+| 새 서버 시작 실패 | 데이터 변경 전에 이전 이미지를 다시 실행한다. |
+| 적재·검증 실패 | 실행 중인 새 서버를 유지한다. 적재 중 오류는 데이터를 롤백하며, 적재 완료 후에는 새 데이터를 유지한다. 원인을 수정한 뒤 재배포한다. |
 | 워크플로가 AWS 인증 단계에서 실패 | GitHub Variables 값(`AWS_ROLE_ARN` 등)과 AWS 역할의 신뢰 정책을 확인합니다. |
 
 ### 4.4 이전 버전으로 되돌리기
 
 문제가 있는 변경을 **되돌리는 PR(revert)을 만들어 머지**합니다. 머지하면 평소처럼 자동으로 배포되어, 이전 코드가 새 이미지로 다시 올라갑니다. 급할 때는 팀 규칙에 따라 리뷰를 최소화하고 바로 머지하세요.
+
+자동 적재가 포함된 버전으로 되돌리면 해당 버전의 JSONL을 다시 적재한다. 최초 영어 전환 이전 버전으로 수동 revert할 때는 그 버전에 자동 적재가 없으므로 별도의 데이터 복구 절차가 필요하다. 배포 도중의 실패에도 이전 데이터로 자동 복원하지 않는다.
 
 되돌려도 **DB 마이그레이션은 되돌아가지 않습니다.** 이미 적용된 스키마 변경은 남으므로, 마이그레이션이 포함된 변경을 되돌릴 때는 DB를 어떻게 맞출지 팀에서 먼저 확인하세요. 마이그레이션을 되돌리는 `alembic downgrade`는 데이터를 지울 수 있어 자동으로 실행하지 않습니다.
 
@@ -226,9 +259,9 @@ psql -h <RDS 엔드포인트> -U <사용자> -d <DB 이름>   # 비밀번호는 
 | 항목 | 내용 |
 | --- | --- |
 | CloudFront → EC2 구간은 HTTP | 앱과 CloudFront 사이는 HTTPS이지만, CloudFront에서 EC2까지는 HTTP(8000번)로 전달됩니다. 이 구간까지 암호화하려면 EC2에 nginx와 인증서가 필요합니다. 도메인이 생기면 CloudFront에 대체 도메인과 인증서를 붙일 수 있습니다. |
-| 배포 중 짧은 중단 | 서버가 1대라서 컨테이너를 교체하는 몇 초 동안 요청이 실패할 수 있습니다. |
+| 배포 중 짧은 중단 | 서버가 1대라서 컨테이너 교체·기동 확인 동안 요청이 실패할 수 있다. 준비·적재 중에는 서버를 유지한다. |
 | 단일 장애 지점 | EC2와 RDS가 각각 1대(단일 AZ)입니다. 장애가 나면 수동으로 복구해야 합니다. |
-| Dockerfile 검증 시점 | CI는 이미지를 빌드하지 않습니다. `Dockerfile`을 고친 PR의 빌드 오류는 머지 후 배포 단계에서야 드러나므로, 고쳤다면 로컬에서 `docker build server`로 먼저 확인하세요. |
+| 배포 검증 범위 | CI는 서버 테스트·이미지 빌드·파일 검사를 실행한다. 배포 스크립트의 실패 경로와 실제 EC2·RDS 배포는 자동 검사하지 않는다. |
 | DB 비밀번호 문자 제한 | `database_url`이 비밀번호를 URL 인코딩하지 않아서, 특수문자가 있으면 접속 주소가 깨집니다. 그래서 비밀번호를 영문과 숫자로만 만듭니다. |
 | DB 접속 암호화 미강제 | 접속 설정에 `sslmode`가 없어 기본값(`prefer`)으로 동작합니다. 연결은 되지만 암호화를 강제하지 않습니다. |
 | 공개 전 확인 | CORS가 모든 출처를 허용(`allow_origins=["*"]`)합니다. 식사 API는 `CurrentUser`로 로그인 사용자를 확인합니다. 허용할 CORS 출처는 운영 요구사항에 맞게 검토해야 합니다. |

@@ -8,6 +8,8 @@
 # Changed: 식생활 유형·선택 조리 방법 마이그레이션(0025) 이력과 SQL 검증
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 추가 추천 마이그레이션 연결 확인
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
+# Changed: 재료 적재 상태 마이그레이션의 head와 기존 이력 연결 검증
 
 """Unit: 마이그레이션의 이력·SQL 생성 계약. DB 적용이나 Postgres 동작은 검사하지 않는다."""
 
@@ -24,7 +26,11 @@ MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0026_recommendation_retry"]
+    assert scripts.get_heads() == ["0027_ingredient_catalog_state"]
+    assert (
+        scripts.get_revision("0027_ingredient_catalog_state").down_revision
+        == "0026_recommendation_retry"
+    )
     assert scripts.get_revision("0026_recommendation_retry").down_revision == "0025_dietary_pattern"
     assert scripts.get_revision("0025_dietary_pattern").down_revision == "0024_food_recommendations"
     assert (

@@ -14,6 +14,8 @@
 <!-- Changed: 식사 재료와 공용 카탈로그의 저장 경계 -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim -->
 <!-- Changed: 모델 값 검증·StrEnum 규칙 추가, 재료 저장 경계 갱신, ingredients 기능 제거 -->
+<!-- AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung -->
+<!-- Changed: DB 기반 영어 재료 카탈로그의 검증 경계 명시 -->
 
 # server — 아키텍처
 
@@ -255,7 +257,9 @@ async def list_meal_logs(
   이 행이 갖는다.
 
 추천(`FoodRecommendation`)의 `ingredients`는 LLM이 반환한 재료 이름을 그대로 저장한 문자열 목록이며, 어느 테이블도 참조하지 않는다.
-LLM의 제한 검증은 현재 별도 JSON 카탈로그를 사용한다.
+LLM의 제한 검증은 DB에서 아이의 제한에 맞춰 읽은 영어 재료 카탈로그를 사용한다.
+공용 재료의 데이터 흐름은 `JSONL → scripts/load_ingredients.py → DB → suggestions/catalog.py`다.
+JSONL은 적재기를 실행할 때 읽는다. 서버 시작과 추천 요청은 파일을 다시 읽거나 DB에 자동 적재하지 않는다.
 
 ## 3. 의존성 방향과 기능 간 규칙
 

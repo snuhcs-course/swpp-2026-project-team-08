@@ -3,6 +3,9 @@
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
 
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 영어 추천 카탈로그 fixture 적용
+
 """추천 생성이 LLM에 넘기는 맥락 검증. 실제 API·서비스·SQLite를 거치고 LLM만 가짜로 바꾼다."""
 
 import pytest
@@ -85,7 +88,7 @@ async def test_prompt_carries_reasons_safe_foods_and_past_eaten_foods(
     model = install_model(monkeypatch, [batch("0")])
     owner = await auth_headers(api_client, "owner@example.com")
     await save_profile(api_client, owner)
-    await seed_ingredient("쌀")
+    await seed_ingredient("Rice")
     await eaten_meal(api_client, owner, "2026-10-18", food("계란찜", "달걀"))
     meal = await save_meal(
         api_client,
@@ -138,7 +141,7 @@ async def test_same_named_eaten_foods_are_listed_once_with_the_latest_form(
     model = install_model(monkeypatch, [batch("0")])
     owner = await auth_headers(api_client, "owner@example.com")
     await save_profile(api_client, owner)
-    await seed_ingredient("쌀")
+    await seed_ingredient("Rice")
     await eaten_meal(
         api_client, owner, "2026-10-16", food("계란찜", "달걀", cooking_method="BOILED")
     )
@@ -162,7 +165,7 @@ async def test_only_the_most_recent_eaten_foods_are_listed(
     model = install_model(monkeypatch, [batch("0")])
     owner = await auth_headers(api_client, "owner@example.com")
     await save_profile(api_client, owner)
-    await seed_ingredient("쌀")
+    await seed_ingredient("Rice")
     await eaten_meal(api_client, owner, "2026-10-14", food("가장 오래된 음식", "쌀"))
     await eaten_meal(api_client, owner, "2026-10-16", food("중간 음식", "쌀"))
     await eaten_meal(api_client, owner, "2026-10-18", food("최근 음식", "쌀"))
@@ -193,7 +196,7 @@ async def test_other_users_records_never_reach_the_prompt(
         await api_client.put("/api/v1/onboarding", headers=stranger, json=other)
     ).status_code == 200
     await eaten_meal(api_client, stranger, "2026-10-18", food("남이 잘 먹은 음식", "쌀"))
-    await seed_ingredient("쌀")
+    await seed_ingredient("Rice")
     meal = await save_meal(api_client, owner, "2026-10-20", food("당근볶음", "당근"))
     await review_meal(api_client, owner, meal, {"outcome": "UNTOUCHED"})
 
@@ -214,7 +217,7 @@ async def test_generation_works_when_nothing_is_known_about_what_the_child_eats_
     body = request_body()
     body["profile"]["safe_foods"] = []
     assert (await api_client.put("/api/v1/onboarding", headers=owner, json=body)).status_code == 200
-    await seed_ingredient("쌀")
+    await seed_ingredient("Rice")
     meal = await save_meal(api_client, owner, "2026-10-20", food("당근볶음", "당근"))
     await review_meal(api_client, owner, meal, {"outcome": "UNTOUCHED"})
 

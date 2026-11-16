@@ -3,83 +3,94 @@
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
 
-"""쓸 수 있는 재료 쿼리(`catalog.py`)와 적재 스크립트(`scripts/load_ingredients.py`) 테스트."""
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
+# Changed: 재료 교체·기록 보존과 영어 적재 전후 조회 검증
+
+"""영어 재료 파일, 카탈로그 조회, 추천 API를 실제 SQLite로 검증한다."""
 
 import json
 from pathlib import Path
 
 import pytest
+from langchain_core.messages import HumanMessage
 from sqlalchemy import select
 
-from app.core.database import get_session
 from app.features.suggestions.catalog import load_catalog
 from app.features.suggestions.ingredients import ChildRestrictions
-from app.main import app
 from app.models import Ingredient, IngredientRestriction
 from app.models.ingredient_enums import RestrictionDegree
 from app.models.restriction_enums import RestrictionType
-from scripts.load_ingredients import import_catalog, read_jsonl, validate
+from scripts.ingredient_catalog import load as load_ingredients
+from scripts.ingredient_catalog.load import RESULT, import_catalog, read_jsonl, validate
+from tests.fixtures.meals import food_payload, meal_payload
+from tests.helpers.auth import auth_headers
+from tests.helpers.suggestions import batch, install_model, save_profile, seed_ingredient
 
 NEVER = RestrictionDegree.NEVER
 EGGS = RestrictionType.ALLERGY_EGGS
 DAIRY = RestrictionType.VEGETARIAN_DAIRY
-ASSETS = Path(__file__).resolve().parents[2] / "assets"
-
-
-async def with_session(action):
-    # 세션을 루프 밖으로 돌려주면 커밋되기 전에 닫히므로, 안에서 모두 처리하고 결과만 꺼낸다.
-    result = None
-    async for session in app.dependency_overrides[get_session]():
-        result = await action(session)
-    return result
 
 
 async def seed(session) -> None:
     rows = {
-        "쌀": {EGGS: NEVER, DAIRY: NEVER},
-        "우유": {EGGS: NEVER, DAIRY: RestrictionDegree.ALWAYS},
-        "빵": {EGGS: RestrictionDegree.DEPENDS_ON_PRODUCT, DAIRY: NEVER},
-        "당근": {EGGS: NEVER},  # 채식 판정이 없다
-        "판정 없음": {},
+        "Rice": {EGGS: NEVER, DAIRY: NEVER},
+        "Milk": {EGGS: NEVER, DAIRY: RestrictionDegree.ALWAYS},
+        "Bread": {EGGS: RestrictionDegree.DEPENDS_ON_PRODUCT, DAIRY: NEVER},
+        "Carrot": {EGGS: NEVER},
+        "Unreviewed": {},
     }
     for name, judgements in rows.items():
-        ingredient = Ingredient(korean_name=name)
+        ingredient = Ingredient(english_name=name, korean_name="쌀" if name == "Rice" else None)
         session.add(ingredient)
         await session.flush()
         session.add_all(
             IngredientRestriction(ingredient_id=ingredient.id, restriction_type=kind, degree=degree)
             for kind, degree in judgements.items()
         )
-    session.add(Ingredient(korean_name=None, english_name="no korean name"))
+    session.add_all(
+        [
+            Ingredient(korean_name="한국어 이름만 있음"),
+            Ingredient(english_name="  "),
+        ]
+    )
 
 
-async def names_for(*types: RestrictionType) -> set[str]:
-    async def action(session):
+async def names_for(session_factory, *types: RestrictionType) -> set[str]:
+    async with session_factory() as session:
         catalog = await load_catalog(session, ChildRestrictions(frozenset(types)))
         return set(catalog.names.values())
 
-    return await with_session(action)
+
+async def test_모든_제한에_NEVER_판정이_있어야_추천한다(session_factory) -> None:
+    async with session_factory.begin() as session:
+        await seed(session)
+
+    assert await names_for(session_factory, EGGS, DAIRY) == {"Rice"}
+    assert await names_for(session_factory, EGGS) == {"Rice", "Milk", "Carrot"}
+    assert await names_for(session_factory, DAIRY) == {"Rice", "Bread"}
 
 
-async def test_catalog_requires_a_never_judgement_for_every_restriction(api_client) -> None:
-    await with_session(seed)
+async def test_영어를_우선하고_적재_전_한국어_목록도_읽되_빈_이름은_제외한다(
+    session_factory,
+) -> None:
+    async with session_factory.begin() as session:
+        await seed(session)
 
-    assert await names_for(EGGS, DAIRY) == {"쌀"}
-    # 한 제한만 보면 그 제한에 NEVER 가 있는 재료가 모두 쓸 수 있다.
-    assert await names_for(EGGS) == {"쌀", "우유", "당근"}
-    assert await names_for(DAIRY) == {"쌀", "빵"}
+    assert await names_for(session_factory) == {
+        "Rice",
+        "Milk",
+        "Bread",
+        "Carrot",
+        "Unreviewed",
+        "한국어 이름만 있음",
+    }
 
 
-async def test_catalog_without_restrictions_lists_every_named_ingredient(api_client) -> None:
-    await with_session(seed)
+async def test_미판정_제한이_있으면_추천하지_않는다(session_factory) -> None:
+    async with session_factory.begin() as session:
+        await seed(session)
 
-    assert await names_for() == {"쌀", "우유", "빵", "당근", "판정 없음"}
-
-
-async def test_catalog_is_empty_when_nothing_is_judged_for_the_restriction(api_client) -> None:
-    await with_session(seed)
-
-    assert await names_for(RestrictionType.ALLERGY_PEANUTS) == set()
+    assert await names_for(session_factory, RestrictionType.ALLERGY_PEANUTS) == set()
 
 
 def write_files(tmp_path: Path, ingredients: list[dict], restrictions: list[dict]):
@@ -89,103 +100,166 @@ def write_files(tmp_path: Path, ingredients: list[dict], restrictions: list[dict
     return first, second
 
 
+def ingredient(ingredient_id: int, name: str) -> dict:
+    return {"id": ingredient_id, "korean_name": None, "english_name": name}
+
+
 def judged(ingredient_id: int, kind: str, degree: str = "NEVER") -> dict:
     return {"ingredient_id": ingredient_id, "restriction_type": kind, "degree": degree}
 
 
-async def test_import_is_repeatable_and_replaces_the_judgements_of_listed_ingredients(
-    api_client, tmp_path
-) -> None:
-    files = write_files(
-        tmp_path,
-        [{"id": 1, "korean_name": "쌀"}, {"id": 2, "korean_name": "우유"}],
-        [judged(1, "ALLERGY.EGGS"), judged(2, "ALLERGY.EGGS", "ALWAYS")],
-    )
-
-    async def stranger(session):
-        session.add(Ingredient(id=50, korean_name="목록 밖 재료"))
-        await session.flush()
-        session.add(
-            IngredientRestriction(
-                ingredient_id=50, restriction_type=EGGS, degree=RestrictionDegree.ALWAYS
-            )
+async def read_catalog(session_factory):
+    async with session_factory() as session:
+        names = list(
+            (
+                await session.execute(
+                    select(Ingredient.id, Ingredient.korean_name, Ingredient.english_name).order_by(
+                        Ingredient.id
+                    )
+                )
+            ).all()
         )
-
-    await with_session(stranger)
-
-    async def load(session):
-        return await import_catalog(session, *files)
-
-    first = await with_session(load)
-    again = await with_session(load)
-    assert (first.ingredients, first.restrictions) == (2, 2) and again == first
-
-    # 이름이 바뀌고 판정이 달라진 파일을 다시 적재한다.
-    files = write_files(
-        tmp_path,
-        [{"id": 1, "korean_name": "흰쌀"}, {"id": 2, "korean_name": "우유"}],
-        [judged(1, "ALLERGY.EGGS"), judged(1, "VEGETARIAN.DAIRY")],
-    )
-    await with_session(load)
-
-    async def read(session):
-        names = dict((await session.execute(select(Ingredient.id, Ingredient.korean_name))).all())
         pairs = sorted(
             (row.ingredient_id, row.restriction_type.value, row.degree.value)
             for row in (await session.scalars(select(IngredientRestriction))).all()
         )
         return names, pairs
 
-    names, pairs = await with_session(read)
-    assert names == {1: "흰쌀", 2: "우유", 50: "목록 밖 재료"}
-    assert pairs == [
-        (1, "ALLERGY.EGGS", "NEVER"),
-        (1, "VEGETARIAN.DAIRY", "NEVER"),
-        (50, "ALLERGY.EGGS", "ALWAYS"),  # 파일에 없는 재료의 판정은 그대로 둔다
-    ]
 
-
-@pytest.mark.parametrize(
-    "ingredients,restrictions",
-    [
-        ([{"id": 1, "korean_name": "쌀"}], [judged(1, "ALLERGY.UNKNOWN")]),
-        ([{"id": 1, "korean_name": "쌀"}], [judged(1, "ALLERGY.EGGS", "SOMETIMES")]),
-        ([{"id": 1, "korean_name": "쌀"}], [judged(1, "ALLERGY.NONE")]),
-        ([{"id": 1, "korean_name": "쌀"}], [judged(9, "ALLERGY.EGGS")]),
-        ([{"id": 1, "korean_name": "쌀"}], [judged(1, "ALLERGY.EGGS"), judged(1, "ALLERGY.EGGS")]),
-        ([{"id": 1, "korean_name": "쌀"}, {"id": 1, "korean_name": "밥"}], []),
-        ([{"id": 1, "korean_name": " "}], []),
-    ],
-    ids=[
-        "unknown-type",
-        "unknown-degree",
-        "allergy-none",
-        "orphan",
-        "duplicate",
-        "dup-id",
-        "blank",
-    ],
-)
-async def test_import_rejects_invalid_files_without_writing(
-    api_client, tmp_path, ingredients, restrictions
+async def test_반복_교체와_ID_재사용은_이전_카탈로그와_판정을_남기지_않는다(
+    session_factory, tmp_path
 ) -> None:
-    files = write_files(tmp_path, ingredients, restrictions)
-
-    async def load(session):
-        return await import_catalog(session, *files)
-
-    with pytest.raises(ValueError):
-        await with_session(load)
-
-    async def count(session):
-        return len((await session.scalars(select(Ingredient))).all())
-
-    assert await with_session(count) == 0
-
-
-def test_the_raw_asset_files_match_the_current_enums() -> None:
-    names, judgements = validate(
-        read_jsonl(ASSETS / "ingredients.jsonl"),
-        read_jsonl(ASSETS / "ingredients_restrictions.jsonl"),
+    async with session_factory.begin() as session:
+        session.add_all(
+            [
+                Ingredient(id=1, korean_name="예전 이름"),
+                Ingredient(id=50, english_name="Old ingredient"),
+            ]
+        )
+        await session.flush()
+        session.add(
+            IngredientRestriction(
+                ingredient_id=50, restriction_type=EGGS, degree=RestrictionDegree.ALWAYS
+            )
+        )
+    files = write_files(
+        tmp_path,
+        [ingredient(1, "Rice"), ingredient(2, "Milk")],
+        [judged(1, "ALLERGY.EGGS"), judged(2, "ALLERGY.EGGS", "ALWAYS")],
     )
-    assert len(names) == 1613 and len(judgements) == 18711
+    for _ in range(2):
+        async with session_factory.begin() as session:
+            result = await import_catalog(session, *files, replace_catalog=True)
+        assert (result.ingredients, result.restrictions) == (2, 2)
+    assert await read_catalog(session_factory) == (
+        [(1, None, "Rice"), (2, None, "Milk")],
+        [(1, "ALLERGY.EGGS", "NEVER"), (2, "ALLERGY.EGGS", "ALWAYS")],
+    )
+
+    files = write_files(tmp_path, [ingredient(1, "Brown rice")], [])
+    async with session_factory.begin() as session:
+        await import_catalog(session, *files, replace_catalog=True)
+    assert await read_catalog(session_factory) == ([(1, None, "Brown rice")], [])
+
+
+async def test_명시적_교체_선택이_없으면_DB를_바꾸지_않는다(session_factory, tmp_path) -> None:
+    files = write_files(tmp_path, [ingredient(1, "Rice")], [])
+    async with session_factory.begin() as session:
+        await seed(session)
+    before = await read_catalog(session_factory)
+    async with session_factory.begin() as session:
+        with pytest.raises(ValueError, match="replacement must be explicit"):
+            await import_catalog(session, *files, replace_catalog=False)
+    assert await read_catalog(session_factory) == before
+
+
+async def test_파일_검증_실패는_기존_카탈로그를_보존한다(session_factory, tmp_path) -> None:
+    files = write_files(tmp_path, [ingredient(1, "Rice")], [judged(9, "ALLERGY.EGGS")])
+    async with session_factory.begin() as session:
+        await seed(session)
+    before = await read_catalog(session_factory)
+    async with session_factory.begin() as session:
+        with pytest.raises(ValueError, match="unknown ingredient id"):
+            await import_catalog(session, *files, replace_catalog=True)
+    assert await read_catalog(session_factory) == before
+
+
+async def test_삭제_후_저장_실패도_기존_카탈로그를_복구한다(
+    session_factory, tmp_path, monkeypatch
+) -> None:
+    files = write_files(tmp_path, [ingredient(1, "Rice")], [judged(1, "ALLERGY.EGGS")])
+    async with session_factory.begin() as session:
+        await seed(session)
+    before = await read_catalog(session_factory)
+
+    async def fail_after_insert(session):
+        raise RuntimeError("injected write failure")
+
+    monkeypatch.setattr(load_ingredients, "sync_ingredient_sequence", fail_after_insert)
+    async with session_factory.begin() as session:
+        with pytest.raises(RuntimeError, match="injected write failure"):
+            await import_catalog(session, *files, replace_catalog=True)
+    assert await read_catalog(session_factory) == before
+
+
+async def test_영어_재료로_추천하고_교체_후에도_식사와_저장_추천을_보존한다(
+    api_client, session_factory, monkeypatch, tmp_path
+) -> None:
+    owner = await auth_headers(api_client, "catalog@example.com")
+    await save_profile(api_client, owner)
+    await seed_ingredient("Rice")
+    model = install_model(monkeypatch, [batch("0")])
+    saved = await api_client.put(
+        "/api/v1/meals", headers=owner, json=meal_payload(food_payload("Rice bowl", "Rice"))
+    )
+    assert saved.status_code == 200
+    meal = saved.json()
+    meal_path = f"/api/v1/meals/{meal['id']}"
+    reviewed = await api_client.put(
+        meal_path + "/review",
+        headers=owner,
+        json={"food_results": [{"food_id": meal["foods"][0]["id"], "outcome": "TASTED"}]},
+    )
+    assert reviewed.status_code == 200
+    generated = await api_client.post(
+        meal_path + "/suggestions",
+        headers=owner,
+        json={"targets": [{"food_id": meal["foods"][0]["id"]}]},
+    )
+    assert generated.status_code == 201, generated.text
+    recommendation = generated.json()[0]
+    assert recommendation["ingredients"] == ["Rice"]
+    prompt = next(m.content for m in model.compose_inputs[0] if isinstance(m, HumanMessage))
+    assert prompt.split("쓸 수 있는 재료 (한 줄에 하나):\n")[1] == "Rice"
+    decision = await api_client.put(
+        f"/api/v1/suggestions/{recommendation['id']}/decision",
+        headers=owner,
+        json={"status": "SAVED", "dismiss_reasons": []},
+    )
+    assert decision.status_code == 200
+    before_meal = (await api_client.get(meal_path, headers=owner)).json()
+    before_recommendations = (await api_client.get("/api/v1/suggestions", headers=owner)).json()
+
+    files = write_files(tmp_path, [ingredient(1, "Broccoli")], [])
+    async with session_factory.begin() as session:
+        await import_catalog(session, *files, replace_catalog=True)
+
+    assert (await api_client.get(meal_path, headers=owner)).json() == before_meal
+    assert (
+        await api_client.get("/api/v1/suggestions", headers=owner)
+    ).json() == before_recommendations
+    assert await names_for(session_factory) == {"Broccoli"}
+
+
+def test_최종_파일이_서버_계약과_검토_집계를_만족한다() -> None:
+    names, judgements = validate(
+        read_jsonl(RESULT / "ingredients.jsonl"),
+        read_jsonl(RESULT / "ingredients_restrictions.jsonl"),
+    )
+    summary = json.loads((RESULT.parent / "review" / "summary.json").read_text(encoding="utf-8"))
+    assert len(names) == summary["ingredients"]
+    assert len(judgements) == summary["restrictions"]
+    assert summary["restriction_types"] == len(RestrictionType) - 1
+    assert len(judgements) + summary["unresolved_restrictions"] == len(names) * (
+        len(RestrictionType) - 1
+    )

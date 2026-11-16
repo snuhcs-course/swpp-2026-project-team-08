@@ -1,6 +1,9 @@
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 통합 생성 API의 추가 추천·재시도·횟수·권한 검증
 
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 영어 추천 카탈로그 fixture 적용
+
 """실제 API·DB·그래프로 추가 추천 한도와 재요청을 검증한다."""
 
 from langchain_core.messages import HumanMessage
@@ -15,7 +18,7 @@ from tests.integration.test_contract_api import food
 async def setup_meal(client, monkeypatch, *, extra_food=False):
     owner = await auth_headers(client, "retry@example.com")
     await save_profile(client, owner)
-    await seed_ingredient("쌀")
+    await seed_ingredient("Rice")
     meal = (
         await client.put(
             "/api/v1/meals",

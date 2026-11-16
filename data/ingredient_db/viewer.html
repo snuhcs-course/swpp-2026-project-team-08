@@ -1,0 +1,462 @@
+<!-- AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung -->
+<!-- Changed: 재료 검색·제한 판정·보류 근거 확인 화면 -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>영어 재료 DB 검토</title>
+<style>
+:root {
+  font:15px/1.6 system-ui,sans-serif;
+  color:#213129;
+  background:#f4f5f1
+}
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0
+}
+main {
+  max-width:1440px;
+  margin:auto;
+  padding:36px
+}
+h1 {
+  font-size:30px;
+  margin:0
+}
+h2 {
+  font-size:23px;
+  margin:0 0 8px
+}
+h3 {
+  font-size:16px;
+  margin:24px 0 8px
+}
+p {
+  margin:6px 0 16px
+}
+.muted {
+  color:#66746b;
+  font-size:13px
+}
+header {
+  display:flex;
+  justify-content:space-between;
+  gap:24px;
+  align-items:start
+}
+a {
+  color:#246344;
+  text-underline-offset:3px
+}
+.downloads {
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap
+}
+.stats {
+  display:flex;
+  gap:12px;
+  margin:24px 0
+}
+.stat {
+  background:white;
+  border:1px solid #dce2d9;
+  border-radius:10px;
+  padding:14px 22px;
+  flex:1
+}
+.stat strong {
+  font-size:26px;
+  display:block
+}
+.toolbar {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:18px
+}
+input,select,button {
+  font:inherit;
+  border:1px solid #cbd4ca;
+  border-radius:7px;
+  background:white;
+  padding:9px 12px;
+  color:inherit
+}
+input {
+  flex:1;
+  min-width:210px
+}
+button {
+  cursor:pointer
+}
+button:hover {
+  background:#eaf0e8
+}
+button:disabled {
+  opacity:.45;
+  cursor:default
+}
+.layout {
+  display:grid;
+  grid-template-columns:minmax(260px,340px) minmax(0,1fr);
+  gap:20px
+}
+.panel {
+  background:#fff;
+  border:1px solid #dce2d9;
+  border-radius:10px;
+  overflow:hidden
+}
+.list {
+  max-height:70vh;
+  overflow:auto
+}
+.entry {
+  display:block;
+  width:100%;
+  border:0;
+  border-radius:0;
+  border-bottom:1px solid #eef0eb;
+  text-align:left;
+  padding:12px 16px
+}
+.entry.active {
+  background:#e2efdf;
+  box-shadow:inset 3px 0 #38714b
+}
+.entry small {
+  display:block;
+  color:#748078;
+  font-size:12px
+}
+.pager {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px;
+  border-top:1px solid #dde3da;
+  font-size:12px
+}
+.detail {
+  padding:24px;
+  max-height:80vh;
+  overflow:auto
+}
+.badge {
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:5px;
+  font-size:12px;
+  background:#edf2ec;
+  white-space:nowrap
+}
+.UNKNOWN {
+  background:#fff0d2;
+  color:#7f5400
+}
+.ALWAYS {
+  background:#f7e2df;
+  color:#8c3930
+}
+.DEPENDS_ON_PRODUCT {
+  background:#e8e7f7;
+  color:#575181
+}
+.NEVER {
+  background:#e3f0e4;
+  color:#30643a
+}
+table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px
+}
+th,td {
+  text-align:left;
+  vertical-align:top;
+  padding:10px 8px;
+  border-bottom:1px solid #e8ede5
+}
+th {
+  color:#6d7b71;
+  font-size:12px
+}
+td:first-child {
+  width:29%
+}
+details {
+  margin-top:4px
+}
+summary {
+  cursor:pointer;
+  color:#4e6b55
+}
+.reason {
+  background:#fff7e6;
+  border-radius:6px;
+  padding:10px;
+  margin:7px 0
+}
+.source {
+  padding:10px 0;
+  border-bottom:1px solid #edf0e9;
+  font-size:13px
+}
+.note {
+  padding:12px 16px;
+  background:#eef2e9;
+  border-radius:8px;
+  margin:16px 0;
+  font-size:13px
+}
+.empty {
+  padding:40px;
+  color:#7a867d
+}
+#error {
+  color:#ae3d35
+}
+code {
+  font-size:12px;
+  word-break:break-word
+}
+@media(max-width:800px) {
+  main {
+    padding:18px
+  }
+  header {
+    display:block
+  }
+  .stats {
+    gap:6px
+  }
+  .stat {
+    padding:10px
+  }
+  .stat strong {
+    font-size:22px
+  }
+  .layout {
+    grid-template-columns:1fr
+  }
+  .list {
+    max-height:240px
+  }
+  .detail {
+    max-height:none
+  }
+  .downloads {
+    margin-top:14px
+  }
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div>
+<div class="muted">USDA SR Legacy 2018 · 읽기 전용</div>
+<h1>영어 재료 DB 검토</h1>
+<p class="muted">재료를 고르면 최종 판정, 원래 세 응답, 검토 이유를 함께 볼 수 있습니다.</p>
+</div>
+<nav class="downloads" aria-label="결과 다운로드">
+<a href="/download/ingredients.jsonl">재료 JSONL ↓</a>
+<a href="/download/ingredients_restrictions.jsonl">제한 JSONL ↓</a>
+<a href="/download/review.md">검토 요약 ↓</a>
+</nav>
+</header>
+<div class="stats">
+<div class="stat">최종 재료<strong id="ingredientCount">—</strong>
+</div>
+<div class="stat">제한 관계<strong id="relationCount">—</strong>
+</div>
+<div class="stat">제한 보류<strong id="heldCount">—</strong>
+</div>
+</div>
+<div class="toolbar">
+<select id="mode" aria-label="목록 종류">
+<option value="ingredients">최종 재료</option>
+<option value="pending">선정·이름 통합 보류 원본</option>
+</select>
+<input id="query" type="search" placeholder="영어 재료명 또는 ID 검색" aria-label="재료 검색">
+<select id="kind" aria-label="제한 종류">
+<option value="">제한 전체</option>
+</select>
+<select id="degree" aria-label="최종 판정">
+<option value="">판정 전체</option>
+<option value="UNKNOWN">보류만 보기</option>
+<option value="NEVER">해당 원료·성분 없음</option>
+<option value="ALWAYS">항상 포함</option>
+<option value="DEPENDS_ON_PRODUCT">제품에 따라 다름</option>
+</select>
+</div>
+<div id="error" role="alert">
+</div>
+<div class="layout">
+<section class="panel">
+<div id="list" class="list">
+</div>
+<div class="pager">
+<button id="prev">이전</button>
+<span id="count">
+</span>
+<button id="next">다음</button>
+</div>
+</section>
+<section id="detail" class="panel detail">
+<div class="empty">왼쪽 목록에서 재료를 선택하세요.</div>
+</section>
+</div>
+<div class="note">보류(UNKNOWN)는 최종 제한 JSONL에 행이 없습니다. 해당 제한이 있는 아이의 추천 후보에서 제외됩니다. ‘없음’은 이 자료의 판정이며 개별 제품의 안전 보증이 아닙니다. 이 화면은 DB를 변경하지 않습니다.</div>
+</main>
+<script>
+const labels= {
+  'ALLERGY.PEANUTS':'알레르기 · 땅콩','ALLERGY.TREE_NUTS':'알레르기 · 나무 견과','ALLERGY.MILK_DAIRY':'알레르기 · 우유','ALLERGY.EGGS':'알레르기 · 달걀','ALLERGY.SOY':'알레르기 · 대두','ALLERGY.WHEAT':'알레르기 · 밀','ALLERGY.FISH':'알레르기 · 생선','ALLERGY.SHELLFISH':'알레르기 · 갑각류·연체류','ALLERGY.SESAME':'알레르기 · 참깨','VEGETARIAN.DAIRY':'피할 원료 · 유제품','VEGETARIAN.EGGS':'피할 원료 · 알','VEGETARIAN.SEAFOOD':'피할 원료 · 해산물','VEGETARIAN.POULTRY':'피할 원료 · 가금육','VEGETARIAN.RED_MEAT':'피할 원료 · 붉은 고기','VEGETARIAN.LEGUMES_SOY':'피할 원료 · 콩과 식물','VEGETARIAN.NUTS_SEEDS':'피할 원료 · 견과·씨앗','DIETARY_APPROACH.GLUTEN_FREE':'식이 제한 · 글루텐','DIETARY_APPROACH.CASEIN_FREE':'식이 제한 · 카세인','DIETARY_APPROACH.LACTOSE_FREE':'식이 제한 · 유당'
+}
+;
+const degrees= {
+  NEVER:'없음',ALWAYS:'항상 포함',DEPENDS_ON_PRODUCT:'제품에 따라 다름',UNKNOWN:'보류'
+}
+;
+const $=id=>document.getElementById(id);
+function el(tag,text,cls) {
+  const e=document.createElement(tag);
+  if(text!==undefined)e.textContent=text;
+  if(cls)e.className=cls;
+  return e
+}
+function badge(d) {
+  return el('span',degrees[d]||d,'badge '+d)
+}
+let page=0,sequence=0,detailSequence=0,selected=null,timer;
+async function api(path) {
+  const r=await fetch(path);
+  if(!r.ok)throw Error('자료를 불러오지 못했습니다.');
+  return r.json()
+}
+for(const [k,v]of Object.entries(labels)) {
+  const o=el('option',v);
+  o.value=k;
+  $('kind').append(o)
+}
+function display(d) {
+  const box=$('detail');
+  box.replaceChildren(el('div',(d.pending?'USDA 원본 ':'재료 ID ')+d.id,'muted'),el('h2',d.name));
+  if(d.pending) {
+    box.append(el('p',d.pending,'reason'),el('h3','원래 선정 응답'));
+    for(const [a,v]of Object.entries(d.selection.votes)) {
+      box.append(el('p',a.toUpperCase()+' · '+v.decision+' · '+(v.english_name||'이름 없음')),el('p',v.reason,'muted'))
+    }
+  }
+  else {
+    box.append(el('p','19개 제한 · 보류는 최종 관계 파일에서 제외됩니다.','muted'));
+    const table=el('table'),head=el('tr');
+    for(const t of ['제한 종류','최종 판정','근거 확인'])head.append(el('th',t));
+    table.append(head);
+    for(const r of d.judgments) {
+      const tr=el('tr'),kind=el('td',labels[r.restriction_type]||r.restriction_type),degree=el('td'),why=el('td');
+      degree.append(badge(r.degree));
+      const more=el('details'),title=el('summary',r.review_reason?'검토로 보류 · 원래 '+(degrees[r.majority]||r.majority):'A·B·C 응답 보기');
+      more.append(title);
+      if(r.review_reason)more.append(el('p',r.review_reason,'reason'));
+      for(const [a,v]of Object.entries(r.votes)) {
+        more.append(el('div',a.toUpperCase()+' · '+degrees[v.degree]),el('p',v.reason,'muted'))
+      }
+      why.append(more);
+      tr.append(kind,degree,why);
+      table.append(tr)
+    }
+    box.append(table)
+  }
+  box.append(el('h3','대응하는 USDA 원문'));
+  for(const s of d.sources) {
+    const row=el('div',undefined,'source');
+    row.append(el('div','USDA '+s.source_id+' · '+s.category,'muted'),el('div',s.description));
+    box.append(row)
+  }
+}
+async function choose(id,button) {
+  const token=++detailSequence;
+  selected=id;
+  document.querySelectorAll('.entry').forEach(e=>e.classList.remove('active'));
+  button.classList.add('active');
+  $('detail').replaceChildren(el('p','판정 근거를 불러오는 중…','muted'));
+  try {
+    const d=await api('/api/detail?'+new URLSearchParams( {
+      id,mode:$('mode').value
+    }
+    ));
+    if(token===detailSequence)display(d)
+  }
+  catch(e) {
+    if(token===detailSequence)$('error').textContent=e.message
+  }
+}
+async function search() {
+  const token=++sequence;
+  ++detailSequence;
+  selected=null;
+  $('error').textContent='';
+  $('detail').replaceChildren(el('div','왼쪽 목록에서 재료를 선택하세요.','empty'));
+  const pending=$('mode').value==='pending';
+  $('kind').disabled=pending;
+  $('degree').disabled=pending;
+  try {
+    const d=await api('/api/search?'+new URLSearchParams( {
+      q:$('query').value,mode:$('mode').value,kind:pending?'':$('kind').value,degree:pending?'':$('degree').value,page
+    }
+    ));
+    if(token!==sequence)return;
+    $('list').replaceChildren();
+    if(!d.rows.length)$('list').append(el('div','검색 결과가 없습니다.','empty'));
+    for(const r of d.rows) {
+      const b=el('button',r.name,'entry');
+      b.append(el('small','#'+r.id+' · '+r.note));
+      b.onclick=()=>choose(r.id,b);
+      $('list').append(b)
+    }
+    $('count').textContent=d.total.toLocaleString()+'개 · '+(page+1)+' / '+Math.max(1,Math.ceil(d.total/50));
+    $('prev').disabled=page===0;
+    $('next').disabled=(page+1)*50>=d.total;
+  }
+  catch(e) {
+    $('error').textContent=e.message
+  }
+}
+for(const id of ['mode','kind','degree'])$(id).onchange=()=> {
+  page=0;
+  search()
+}
+;
+$('query').oninput=()=> {
+  clearTimeout(timer);
+  timer=setTimeout(()=> {
+    page=0;
+    search()
+  }
+  ,180)
+}
+;
+$('prev').onclick=()=> {
+  page--;
+  search()
+}
+;
+$('next').onclick=()=> {
+  page++;
+  search()
+}
+;
+api('/api/summary').then(s=> {
+  for(const [id,key]of [['ingredientCount','ingredients'],['relationCount','restrictions'],['heldCount','unresolved_restrictions']])$(id).textContent=s[key].toLocaleString()
+}
+).catch(e=>$('error').textContent=e.message);
+search();
+</script>
+</body>
+</html>

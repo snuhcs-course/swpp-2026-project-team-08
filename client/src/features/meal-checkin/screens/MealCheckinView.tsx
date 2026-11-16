@@ -14,6 +14,8 @@
 // Changed: 음식 편집에서 저장 추천 연결 및 Record a Try 미리 채움
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 편집 중인 추천 연결 초안 표시
+// AI-generated with Grok 4.7, 2026-11-14, reviewed by Doyeon Kim
+// Changed: 식전 저장 화면에 사진 라벨과 저장 배경 적용
 
 import { ProgressBar } from '../../../components/ProgressBar';
 import { AppHeader } from '../../../components/AppHeader';
@@ -36,6 +38,7 @@ import { MealFoodEditorDialog } from "../../../components/MealFoodEditorDialog";
 import { MealSavedSuggestionPicker } from "../components/MealSavedSuggestionPicker";
 import { formStyles as ui } from "../../../components/formStyles";
 import { abcCopyFor, copyFor, suggestionCopyFor } from "../../../util/strings";
+import { colors } from "../../../util/colors";
 import { MealCompleteStepView } from "./MealCompleteStepView";
 import { MealDetailsStepView } from "./MealDetailsStepView";
 import { MealFoodsStepView } from "./MealFoodsStepView";
@@ -77,7 +80,8 @@ export function MealCheckinView(p: MealCheckinViewProps) {
   }[d.step];
 
   if (!savePanelHidden && d.step !== 'complete' && (p.saving || p.error === 'save')) return <MealSaveStatusView
-    status={p.saving ? 'saving' : 'error'} language={p.language} photos={d.photo ? [d.photo.uri] : []}
+    status={p.saving ? 'saving' : 'error'} language={p.language}
+    photos={d.photo ? [{ uri: d.photo.uri, label: m.beforeMealBadge }] : []}
     mealDate={d.mealDate} mealType={d.mealType} foods={d.foods} onRetry={p.onConfirm} onSaveExit={p.onSaveExit}
     onReturn={() => setSavePanelHidden(true)} />;
 
@@ -87,6 +91,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
         styles.root,
         d.step === "photo" && styles.photoRoot,
         review && styles.reviewRoot,
+        d.step === 'complete' && { backgroundColor: colors.saveSavedBackground },
       ]}
       edges={["top", "bottom"]}
     >
@@ -94,7 +99,8 @@ export function MealCheckinView(p: MealCheckinViewProps) {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <AppHeader title={d.step === 'complete' ? a.mealCheckinHeader : m.titles[d.step]} backLabel={s.common.back} onBack={p.onBack} disabled={p.saving} />
+        <AppHeader title={d.step === 'complete' ? a.mealCheckinHeader : m.titles[d.step]} backLabel={s.common.back} onBack={p.onBack} disabled={p.saving}
+          style={d.step === 'complete' ? { backgroundColor: colors.saveSavedBackground } : undefined} />
         <View style={{ flex: 1 }} pointerEvents={p.saving ? "none" : "auto"}>
           <ScrollView
             contentContainerStyle={[

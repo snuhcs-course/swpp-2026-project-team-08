@@ -5,6 +5,9 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
 # Changed: 재료별 리뷰 결과와 아이가 잘 먹는 음식(safe food, EATEN)을 그래프 입력에 추가
 
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 거절한 추천과 보호자 제외 이유 입력
+
 """워크플로의 입출력 값과 그래프 상태. ORM 객체가 아니라 평범한 값만 담는다."""
 
 from dataclasses import dataclass
@@ -31,6 +34,16 @@ class IngredientResult:
 
 
 @dataclass(frozen=True)
+class RejectedSuggestion:
+    """보호자가 거절한 추천. 아이의 식후 반응과 구분한다."""
+
+    what_to_try: str
+    why_this_may_help: str
+    serving_tip: str | None
+    dismiss_reasons: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class FoodInput:
     """제안을 만들 음식 하나와, 아이가 어려워한 원인을 서술하는 데 쓸 식후 리뷰 정보.
 
@@ -45,6 +58,7 @@ class FoodInput:
     outcome: str = ""
     difficulty_reasons: tuple[str, ...] = ()
     ingredient_results: tuple[IngredientResult, ...] = ()
+    rejected_suggestion: RejectedSuggestion | None = None
 
 
 @dataclass(frozen=True)

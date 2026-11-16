@@ -2,9 +2,12 @@
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 바텀시트 핸들 드래그 이동 및 취소 시 위치 복원
 
-import { useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
+  Animated,
   Modal,
   PanResponder,
   Pressable,
@@ -23,6 +26,9 @@ import { colors } from '../util/colors';
 import { formStyles as styles } from './formStyles';
 import { fonts } from '../util/fonts';
 import { UiAssetIcon } from './UiAssetIcon';
+
+const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
+
 export function BottomSheet({
   title,
   children,
@@ -48,10 +54,25 @@ export function BottomSheet({
   overlay?: ReactNode;
   titleStyle?: StyleProp<TextStyle>;
 }) {
-  const dismissGesture = useMemo(() => PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 8 && gesture.dy > Math.abs(gesture.dx),
-    onPanResponderRelease: (_, gesture) => { if (gesture.dy > 72 || gesture.vy > 0.8) onClose(); },
-  }), [onClose]);
+  const [translateY] = useState(() => new Animated.Value(0));
+  useEffect(() => () => translateY.stopAnimation(), [translateY]);
+  const dismissGesture = useMemo(() => {
+    const resetPosition = () => Animated.spring(translateY, {
+      toValue: 0, useNativeDriver: true, overshootClamping: true,
+    }).start();
+    return PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 8 && gesture.dy > Math.abs(gesture.dx),
+      onPanResponderGrant: () => translateY.stopAnimation(),
+      onPanResponderMove: (_, gesture) => translateY.setValue(Math.max(0, gesture.dy)),
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > 72 || (gesture.dy > 8 && gesture.vy > 0.8)) onClose();
+        else resetPosition();
+      },
+      onPanResponderTerminate: resetPosition,
+      onPanResponderTerminationRequest: () => false,
+    });
+  }, [onClose, translateY]);
   return (
     <Modal transparent animationType={variant === 'dialog' ? 'fade' : 'slide'} onRequestClose={onClose}>
       <KeyboardAvoidingView
@@ -64,7 +85,7 @@ export function BottomSheet({
           accessibilityLabel={closeLabel}
           onPress={onClose}
         />}
-        <SafeAreaView style={[styles.sheet, variant === 'dialog' && styles.dialog, appearance && design.sheet, height ? { height } : undefined]} edges={variant === 'dialog' ? [] : ['bottom']}>
+        <AnimatedSafeAreaView style={[styles.sheet, variant === 'dialog' && styles.dialog, appearance && design.sheet, height ? { height } : undefined, { transform: [{ translateY }] }]} edges={variant === 'dialog' ? [] : ['bottom']}>
           {variant === 'sheet' && <View {...dismissGesture.panHandlers} style={{ paddingVertical: 8, alignSelf: 'stretch', alignItems: 'center' }}><View style={styles.handle} /></View>}
           <View style={styles.row}>
             <Text
@@ -92,7 +113,7 @@ export function BottomSheet({
           </ScrollView>
           {footer && <View style={[styles.sheetFooter, appearance && design.footer]}>{footer}</View>}
           {overlay}
-        </SafeAreaView>
+        </AnimatedSafeAreaView>
       </KeyboardAvoidingView>
     </Modal>
   );

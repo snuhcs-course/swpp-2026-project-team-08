@@ -4,14 +4,17 @@
 // Changed: 식사 기록 화면 디자인 개선
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 식사 기록의 어려움 사유를 항목명 포함 태그로 표시
 
 import { Feather } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { DifficultyReasonTag } from '../../../components/DifficultyReasonTag';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
-import { copyFor } from '../../../util/strings';
+import { abcCopyFor, copyFor } from '../../../util/strings';
 import { acceptanceFill } from '../rules';
 import type { FoodResponseCard as Card } from '../types';
 import { styles } from '../screens/mealLogStyles';
@@ -34,6 +37,7 @@ export function FoodResponseCard({
   const s = copyFor(language);
   const m = s.mealLog;
   const review = s.afterMealReview;
+  const a = abcCopyFor(language);
   const linked = !!card.suggestion;
   const fill = acceptanceFill(card.outcome);
   const meta = card.kind === 'ingredient' && card.parentName
@@ -97,11 +101,6 @@ export function FoodResponseCard({
     );
   }
 
-  const reasonText = card.reasons
-    .map((reason) => reason.note || review.values[reason.value as keyof typeof review.values] || reason.value)
-    .filter(Boolean)
-    .join('\n');
-
   return (
     <View style={styles.foodCard}>
       <Pressable accessibilityRole="button" onPress={() => setOpen((value) => !value)} style={styles.foodHeader}>
@@ -128,10 +127,18 @@ export function FoodResponseCard({
             <View style={styles.acceptanceTrack}>
               <View style={[styles.acceptanceFill, { width: `${Math.round(fill * 100)}%` }]} />
             </View>
-            {reasonText ? (
+            {card.reasons.length ? (
               <>
                 <Text style={styles.outcomeLabel}>{m.reason}</Text>
-                <Text style={styles.outcomeValue}>{reasonText}</Text>
+                <View style={styles.chipWrap}>
+                  {card.reasons.map((reason, index) => (
+                    <DifficultyReasonTag key={`${reason.category}:${reason.subcategory}:${reason.value}:${index}`}
+                      reason={reason} labels={{
+                        categories: a.difficultyCategories, questions: a.subcategories,
+                        values: { ...review.values, ...a.values }, remove: s.common.remove,
+                      }} />
+                  ))}
+                </View>
               </>
             ) : null}
           </View>

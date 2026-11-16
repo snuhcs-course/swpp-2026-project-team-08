@@ -3,12 +3,18 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 거절 직후 추가 추천 선택 단계 배치
+
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
 
 export const suggestionStyles = StyleSheet.create({
+  regenerationBody: { gap: 18, paddingVertical: 12 },
+  regenerationActions: { flexDirection: 'row', gap: 12 },
+  regenerationButton: { flex: 1, paddingHorizontal: 8 },
   root: { flex: 1, backgroundColor: colors.homeBackground },
   content: { padding: 24, gap: 18, flexGrow: 1 },
   title: { fontFamily: fonts.poppinsSemiBold, fontSize: 20, color: colors.homeText },
@@ -23,7 +29,7 @@ export const suggestionStyles = StyleSheet.create({
   savedCardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   savedDate: { flexShrink: 1, fontFamily: fonts.poppinsMedium, fontSize: 12, lineHeight: 18, color: colors.suggestionMuted },
   recommendationFooter: { paddingHorizontal: 24, paddingBottom: 20, gap: 10 },
-  recommendationContent: { flex: 1, ...topBarStyles.content, paddingBottom: 16, gap: 20 },
+  recommendationContent: { flexGrow: 1, ...topBarStyles.content, paddingBottom: 16, gap: 20 },
   mealContextDate: { fontFamily: fonts.poppinsMedium, fontSize: 16, lineHeight: 21, color: colors.homeText },
   targetSection: { gap: 10, paddingHorizontal: 4 },
   changeFoodsLabel: { fontFamily: fonts.poppinsMedium, fontSize: 14, lineHeight: 24, color: colors.homePrimary },
@@ -136,7 +142,7 @@ export const suggestionStyles = StyleSheet.create({
   loadingSegment: { width: 72, height: 6, borderRadius: 3, backgroundColor: colors.homePrimary },
   emptyState: { alignItems: 'center', gap: 20, paddingHorizontal: 16, paddingVertical: 110 },
   fullWidth: { alignSelf: 'stretch' },
-  completed: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 20, paddingHorizontal: 40 },
+  completed: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', gap: 20, paddingHorizontal: 40, paddingVertical: 24 },
   completionBadge: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.suggestionChipSurface },
   completionTitle: { maxWidth: 260, fontFamily: fonts.poppinsSemiBold, fontSize: 22, lineHeight: 33, color: colors.homeText, textAlign: 'center' },
   completionBody: { fontFamily: fonts.poppinsRegular, fontSize: 14, lineHeight: 21, color: colors.suggestionMuted, textAlign: 'center' },

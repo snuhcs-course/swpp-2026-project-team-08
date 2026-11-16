@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 미추가 어려움 입력의 저장·중복·미완성·대상 제외 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -56,4 +58,42 @@ test('legacy follow-up drafts resume at difficulties without changing current st
   const { normalizeReviewStep } = require('../../src/features/after-meal-review/rules.ts');
   assert.equal(normalizeReviewStep('suggestions'), 'difficulties');
   for (const step of ['photo', 'preview', 'compare', 'outcomes', 'difficulties', 'complete']) assert.equal(normalizeReviewStep(step), step);
+});
+
+test('final review includes complete inputs using the existing duplicate and single-choice rules', () => {
+  const meal = savedMeal('pending-difficulties');
+  const draft = newReviewDraft(meal);
+  draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'tasted');
+  draft.difficulties['food-1'] = addDifficulty([], 'smell', 'fruit');
+  draft.difficultyInputs['food-1'] = { category: 'smell', value: 'mint', note: '' };
+  const review = reviewFromDraft(draft, meal);
+  assert.deepEqual(review.difficulties['food-1'].map(tag => tag.value), ['mint']);
+  assert.equal(draft.difficulties['food-1'][0].value, 'fruit');
+  assert.equal(draft.difficultyInputs['food-1'].value, 'mint');
+  draft.difficulties = review.difficulties;
+  assert.equal(reviewFromDraft(draft, meal).difficulties['food-1'].length, 1);
+  draft.difficultyInputs['food-1'] = { category: 'texture', subcategory: 'hardness', value: 'firm', note: '' };
+  assert.deepEqual(reviewFromDraft(draft, meal).difficulties['food-1'].map(tag => tag.value), ['mint', 'firm']);
+  for (const input of [
+    { category: null, value: '', note: '' },
+    { category: 'texture', value: 'firm', note: '' },
+    { category: 'texture', subcategory: 'moisture', value: 'firm', note: '' },
+    { category: 'color', value: 'other', note: ' ' },
+  ]) {
+    draft.difficultyInputs['food-1'] = input;
+    assert.deepEqual(reviewFromDraft(draft, meal).difficulties['food-1'].map(tag => tag.value), ['mint']);
+  }
+});
+
+test('pending reasons for eaten foods and deselected ingredients are excluded', () => {
+  const meal = savedMeal('excluded-inputs');
+  const draft = newReviewDraft(meal);
+  draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'eaten');
+  const ingredient = draft.outcomes[0].ingredients[0].id;
+  draft.difficultyInputs['food-1'] = { category: 'smell', value: 'mint', note: '' };
+  draft.difficultyInputs[ingredient] = { category: 'color', value: 'red', note: '' };
+  assert.deepEqual(reviewFromDraft(draft, meal).difficulties, {});
+  draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'untouched', ingredient);
+  assert.deepEqual(Object.keys(reviewFromDraft(draft, meal).difficulties), [ingredient]);
+  assert.equal(reviewFromDraft(draft, meal).difficulties[ingredient][0].value, 'red');
 });

@@ -9,6 +9,9 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
 # Changed: 재료별 리뷰 결과와 아이가 잘 먹는 음식(safe food, EATEN)을 생성 입력에 추가
 
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 음식별 추가 추천 1회와 재요청 결과 재사용
+
 """인증된 사용자의 음식 추천을 만들고 조회하고 결정한다."""
 
 import asyncio
@@ -26,12 +29,18 @@ from app.features.suggestions.catalog import load_catalog
 from app.features.suggestions.familiar import load_familiar_foods
 from app.features.suggestions.generator import generate_suggestions
 from app.features.suggestions.ingredients import ChildRestrictions
-from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion, IngredientResult
-from app.models import FoodRecommendation, MealFood, UserProfile
+from app.features.suggestions.workflow.state import (
+    FoodInput,
+    GeneratedSuggestion,
+    IngredientResult,
+    RejectedSuggestion,
+)
+from app.models import FoodRecommendation, FoodRecommendationRetry, MealFood, UserProfile
 from app.models.food_recommendation_enums import (
     FoodRecommendationDismissReason,
     FoodRecommendationStatus,
 )
+from app.models.meal_enums import EatingOutcome
 from app.models.restriction_enums import RestrictionType
 
 # 목록에 보이는 추천. 시도한(TRIED) 추천도 저장한 추천과 함께 계속 보인다.
@@ -62,6 +71,10 @@ class RecommendationTriedError(AppError):
     pass
 
 
+class RecommendationRetryUnavailableError(AppError):
+    pass
+
+
 class GenerationFailedError(AppError):
     pass
 
@@ -72,6 +85,8 @@ class RecommendationRecord:
 
     item: FoodRecommendation
     meal_id: int
+    can_regenerate: bool = False
+    replacement_for_id: int | None = None
 
 
 class FoodRecommendationService:
@@ -97,10 +112,12 @@ class FoodRecommendationService:
             )
             stmt = stmt.where(FoodRecommendation.created_at >= cutoff)
         stmt = stmt.order_by(FoodRecommendation.created_at.desc(), FoodRecommendation.id.desc())
-        return [
-            RecommendationRecord(item, meal_id)
-            for item, meal_id in (await self._session.execute(stmt)).all()
-        ]
+        return await self._with_retry_state(
+            [
+                RecommendationRecord(item, meal_id)
+                for item, meal_id in (await self._session.execute(stmt)).all()
+            ]
+        )
 
     async def list_for_meal(
         self, *, user_id: int, meal_id: int, include_all: bool
@@ -115,13 +132,107 @@ class FoodRecommendationService:
         if not include_all:
             stmt = stmt.where(FoodRecommendation.status.in_(LISTED_STATUSES))
         stmt = stmt.order_by(FoodRecommendation.created_at.desc(), FoodRecommendation.id.desc())
-        return [
-            RecommendationRecord(item, meal_id)
-            for item in (await self._session.scalars(stmt)).all()
-        ]
+        return await self._with_retry_state(
+            [
+                RecommendationRecord(item, meal_id)
+                for item in (await self._session.scalars(stmt)).all()
+            ]
+        )
 
     async def generate(
-        self, *, user_id: int, meal_id: int, food_ids: list[int]
+        self,
+        *,
+        user_id: int,
+        meal_id: int,
+        food_ids: list[int],
+        rejected_suggestions: dict[int, int] | None = None,
+    ) -> list[RecommendationRecord]:
+        if await owned_meal(self._session, user_id, meal_id) is None:
+            raise SourceMealNotFoundError()
+        rejected_suggestions = rejected_suggestions or {}
+        # Initial and additional generation share the same per-food lock order.
+        foods = list(
+            (
+                await self._session.scalars(
+                    select(MealFood)
+                    .where(MealFood.meal_id == meal_id, MealFood.id.in_(food_ids))
+                    .order_by(MealFood.id)
+                    .with_for_update()
+                    .execution_options(populate_existing=True)
+                )
+            ).all()
+        )
+        if (
+            len(foods) != len(food_ids)
+            or len(set(food_ids)) != len(food_ids)
+            or not rejected_suggestions.keys() <= set(food_ids)
+        ):
+            raise InvalidSuggestionTargetError()
+        if all(food.outcome is None for food in foods):
+            raise ReviewRequiredError()
+        if any(food.outcome in (None, EatingOutcome.EATEN) for food in foods):
+            raise InvalidSuggestionTargetError()
+        existing = list(
+            (
+                await self._session.scalars(
+                    select(FoodRecommendation)
+                    .where(FoodRecommendation.origin_food_id.in_(food_ids))
+                    .order_by(FoodRecommendation.id.desc())
+                )
+            ).all()
+        )
+        by_food: dict[int, RecommendationRecord] = {}
+        by_id = {item.id: item for item in existing}
+        for item in existing:
+            by_food.setdefault(item.origin_food_id, RecommendationRecord(item, meal_id))
+        retries = {
+            retry.food_id: retry
+            for retry in (
+                await self._session.scalars(
+                    select(FoodRecommendationRetry).where(
+                        FoodRecommendationRetry.food_id.in_(food_ids)
+                    )
+                )
+            ).all()
+        }
+        previous: dict[int, FoodRecommendation] = {}
+        # Validate the entire batch before invoking the model or writing new cards.
+        for food_id, suggestion_id in rejected_suggestions.items():
+            item = by_id.get(suggestion_id)
+            if item is None or item.origin_food_id != food_id or item.user_id != user_id:
+                raise InvalidSuggestionTargetError()
+            retry = retries.get(food_id)
+            if retry is None or retry.dismissed_id != item.id:
+                raise RecommendationRetryUnavailableError()
+            if retry.replacement_id is not None:
+                by_food[food_id] = RecommendationRecord(by_id[retry.replacement_id], meal_id)
+            elif item.status == FoodRecommendationStatus.DISMISSED:
+                previous[food_id] = item
+            else:
+                raise RecommendationRetryUnavailableError()
+        missing = [food_id for food_id in food_ids if food_id not in by_food or food_id in previous]
+        if missing:
+            created = await self._create(
+                user_id=user_id,
+                meal_id=meal_id,
+                food_ids=missing,
+                previous=previous,
+            )
+            for record in created:
+                food_id = record.item.origin_food_id
+                by_food[food_id] = record
+                if food_id in previous:
+                    retries[food_id].replacement_id = record.item.id
+            await self._session.flush()
+        return await self._with_retry_state([by_food[food_id] for food_id in food_ids])
+
+    async def _create(
+        self,
+        *,
+        user_id: int,
+        meal_id: int,
+        food_ids: list[int],
+        previous: dict[int, FoodRecommendation],
     ) -> list[RecommendationRecord]:
         meal = await owned_meal(self._session, user_id, meal_id)
         if meal is None:
@@ -140,6 +251,16 @@ class FoodRecommendationService:
         inputs = [
             FoodInput(
                 id=str(index),
+                rejected_suggestion=(
+                    RejectedSuggestion(
+                        what_to_try=previous[food_id].what_to_try,
+                        why_this_may_help=previous[food_id].why_this_may_help,
+                        serving_tip=previous[food_id].serving_tip,
+                        dismiss_reasons=tuple(previous[food_id].dismiss_reasons),
+                    )
+                    if food_id in previous
+                    else None
+                ),
                 name=by_id[food_id].food.name,
                 ingredients=tuple(item.name for item in by_id[food_id].ingredients),
                 cooking_method=(
@@ -210,6 +331,23 @@ class FoodRecommendationService:
         dismiss_reasons: list[FoodRecommendationDismissReason],
     ) -> RecommendationRecord:
         item = await self._owned(user_id, suggestion_id)
+        if (
+            status == FoodRecommendationStatus.DISMISSED
+            and item.status != FoodRecommendationStatus.DISMISSED
+        ):
+            first_id = await self._session.scalar(
+                select(FoodRecommendation.id)
+                .where(FoodRecommendation.origin_food_id == item.origin_food_id)
+                .order_by(FoodRecommendation.id)
+                .limit(1)
+            )
+            if (
+                item.id == first_id
+                and await self._session.get(FoodRecommendationRetry, item.origin_food_id) is None
+            ):
+                self._session.add(
+                    FoodRecommendationRetry(food_id=item.origin_food_id, dismissed_id=item.id)
+                )
         item.status = status
         item.dismiss_reasons = [reason.value for reason in dismiss_reasons]
         item.saved_at = now_kst() if status == FoodRecommendationStatus.SAVED else None
@@ -235,10 +373,24 @@ class FoodRecommendationService:
         return ChildRestrictions(types=frozenset(types - {RestrictionType.ALLERGY_NONE}))
 
     async def _owned(self, user_id: int, suggestion_id: int) -> FoodRecommendation:
+        food_id = await self._session.scalar(
+            select(FoodRecommendation.origin_food_id).where(
+                FoodRecommendation.id == suggestion_id, FoodRecommendation.user_id == user_id
+            )
+        )
+        if food_id is None:
+            raise SuggestionNotFoundError()
+        await self._session.scalar(
+            select(MealFood)
+            .where(MealFood.id == food_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
         item = await self._session.scalar(
             select(FoodRecommendation)
             .where(FoodRecommendation.id == suggestion_id, FoodRecommendation.user_id == user_id)
             .with_for_update()
+            .execution_options(populate_existing=True)
         )
         if item is None:
             raise SuggestionNotFoundError()
@@ -251,4 +403,33 @@ class FoodRecommendationService:
         meal_id = await self._session.scalar(
             select(MealFood.meal_id).where(MealFood.id == item.origin_food_id)
         )
-        return RecommendationRecord(item, int(meal_id))
+        return (await self._with_retry_state([RecommendationRecord(item, int(meal_id))]))[0]
+
+    async def _with_retry_state(
+        self, records: list[RecommendationRecord]
+    ) -> list[RecommendationRecord]:
+        if not records:
+            return []
+        food_ids = {record.item.origin_food_id for record in records}
+        rows = (
+            await self._session.execute(
+                select(FoodRecommendationRetry, MealFood.outcome)
+                .join(MealFood, MealFood.id == FoodRecommendationRetry.food_id)
+                .where(FoodRecommendationRetry.food_id.in_(food_ids))
+            )
+        ).all()
+        retries = {retry.food_id: (retry, outcome) for retry, outcome in rows}
+        result = []
+        for record in records:
+            item = record.item
+            retry, outcome = retries.get(item.origin_food_id, (None, None))
+            eligible = bool(
+                retry
+                and retry.dismissed_id == item.id
+                and retry.replacement_id is None
+                and item.status == FoodRecommendationStatus.DISMISSED
+                and outcome not in (None, EatingOutcome.EATEN)
+            )
+            parent_id = retry.dismissed_id if retry and retry.replacement_id == item.id else None
+            result.append(RecommendationRecord(item, record.meal_id, eligible, parent_id))
+        return result

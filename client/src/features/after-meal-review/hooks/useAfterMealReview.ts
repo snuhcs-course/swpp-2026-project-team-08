@@ -6,6 +6,8 @@
 // Changed: Preserve ingredient difficulty drafts across food edits and removal
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 저장 완료 상태에 자동 반영한 어려움 사유 동기화
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -261,7 +263,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
       const review = reviewFromDraft(value, meal);
       await saveMutation.mutateAsync({ review, detail });
       if (mounted.current && current.current?.mealId === value.mealId) {
-        update({ step: 'complete' });
+        update({ step: 'complete', difficulties: review.difficulties, difficultyInputs: {} });
         setFinalSaveState('idle');
       }
       return true;

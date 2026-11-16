@@ -4,6 +4,9 @@
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
 
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 추천 가능한 음식으로 식사 추천 흐름 검증
+
 """Integration: 실제 API·서비스·SQLite 연결. LLM만 가짜 모델로 대체한다."""
 
 import pytest
@@ -85,7 +88,7 @@ async def test_meal_review_suggestion_and_history_flow(
                         }
                     ],
                 },
-                {"food_id": rice["id"], "outcome": "EATEN", "difficulty_reasons": []},
+                {"food_id": rice["id"], "outcome": "TASTED", "difficulty_reasons": []},
             ],
         }
 

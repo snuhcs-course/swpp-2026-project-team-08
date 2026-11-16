@@ -7,6 +7,8 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 삭제된 mealLogApi 를 검증하던 테스트 제거, 추천 연결을 음식 카드에만 붙이도록 수정
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 식사 기록에서 음식·재료의 어려움 세부 항목 보존 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -153,12 +155,18 @@ test('food cards join stored outcomes, difficulties, and linked suggestions', ()
         decision: { confirmed: 'tasted', suggested: 'tasted' },
         ingredients: [{ id: 'ing-egg', name: 'Egg', decision: { confirmed: 'tasted', suggested: null } }],
       }],
-      difficulties: { 'food-1': [{ id: 'd1', category: 'texture', value: 'soft' }] },
+      difficulties: {
+        'food-1': [{ id: 'd1', category: 'texture', subcategory: 'hardness', value: 'soft' }],
+        'ing-egg': [{ id: 'd2', category: 'texture', subcategory: 'surface', value: 'rough', note: 'Edges' }],
+      },
     },
     [{ id: 'sug-1', foodId: 'food-1', title: 'Offer a small portion', description: 'Keep the same form', servingTip: 'Place separately' }],
   );
   assert.equal(cards[0].outcome, 'tasted');
-  assert.deepEqual(cards[0].reasons, [{ category: 'texture', value: 'soft', note: undefined }]);
+  assert.deepEqual(cards[0].reasons,
+    [{ category: 'texture', subcategory: 'hardness', value: 'soft', note: undefined }]);
+  assert.deepEqual(cards[1].reasons,
+    [{ category: 'texture', subcategory: 'surface', value: 'rough', note: 'Edges' }]);
   assert.equal(cards[0].kind, 'food');
   assert.equal(cards[0].suggestion.id, 'sug-1');
   assert.equal(cards[0].suggestion.title, 'Offer a small portion');

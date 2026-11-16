@@ -3,6 +3,9 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 음식 단위 추천, 대문자 조회 필터, 프로필·시도 상태 오류 코드 추가
 
+# AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+# Changed: 기존 생성 API에서 선택적 추가 추천 처리
+
 """인증된 사용자의 음식 추천 API."""
 
 from datetime import date
@@ -27,6 +30,7 @@ from app.features.suggestions.service import (
     InvalidSuggestionTargetError,
     ProfileRequiredError,
     RecommendationRecord,
+    RecommendationRetryUnavailableError,
     RecommendationTriedError,
     ReviewRequiredError,
     SourceMealNotFoundError,
@@ -57,6 +61,8 @@ def response(record: RecommendationRecord) -> SuggestionResponse:
     item = record.item
     return SuggestionResponse(
         id=str(item.id),
+        can_regenerate=record.can_regenerate,
+        replacement_for_id=str(record.replacement_for_id) if record.replacement_for_id else None,
         user_id=str(item.user_id),
         origin_food_id=str(item.origin_food_id),
         meal_id=str(record.meal_id),
@@ -111,6 +117,9 @@ async def list_for_meal(
 @error_specs(
     {
         **SOURCE_ERRORS,
+        RecommendationRetryUnavailableError: ErrorSpec(
+            status_code=409, error_code="RECOMMENDATION_RETRY_UNAVAILABLE"
+        ),
         ReviewRequiredError: ErrorSpec(status_code=409, error_code="REVIEW_REQUIRED"),
         ProfileRequiredError: ErrorSpec(status_code=409, error_code="PROFILE_REQUIRED"),
         InvalidSuggestionTargetError: ErrorSpec(
@@ -126,10 +135,18 @@ async def generate(
     service: Service,
 ) -> list[SuggestionResponse]:
     food_ids = [int(item.food_id) for item in payload.targets]
+    rejected_suggestions = {
+        int(item.food_id): int(item.rejected_suggestion_id)
+        for item in payload.targets
+        if item.rejected_suggestion_id is not None
+    }
     return [
         response(record)
         for record in await service.generate(
-            user_id=current_user.id, meal_id=meal_id, food_ids=food_ids
+            user_id=current_user.id,
+            meal_id=meal_id,
+            food_ids=food_ids,
+            rejected_suggestions=rejected_suggestions,
         )
     ]
 

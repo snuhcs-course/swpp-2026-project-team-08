@@ -4,6 +4,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 입력 없는 첫 단계 식사 초안 저장 및 복원 방지
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 편집 추천 연결 복원 및 이전 초안 호환
 
 import { hasMealDraftInput } from '../../rules/mealDraft';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -63,10 +65,14 @@ export async function readMealDraft(
   if (value.step === 'complete') return value;
   const keepFood = (food: FoodItem) => food.source !== 'ai' || food.confirmed === true;
   const foods = value.foods.filter(keepFood);
+  const editingFood = value.editingFood && keepFood(value.editingFood) ? value.editingFood : null;
   return {
     ...value,
     foods,
-    editingFood: value.editingFood && keepFood(value.editingFood) ? value.editingFood : null,
+    editingFood,
+    editingSuggestionLink: !editingFood ? null : value.editingSuggestionLink === undefined
+      ? value.suggestionLinks?.find((link) => link.foodId === editingFood.id) ?? null
+      : value.editingSuggestionLink,
     suggestionLinks: value.suggestionLinks?.filter((link) => foods.some((food) => food.id === link.foodId)),
     step: ['method', 'analyzing', 'analysis-error'].includes(value.step) ? 'foods' : value.step,
   };

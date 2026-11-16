@@ -2,6 +2,8 @@
 // Changed: Ingredient interactions and native icon boundary for CI
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 삭제된 재료 카탈로그 훅의 모의 항목 제거
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 음식 목록의 + Add 와 재료 추가 버튼을 구분
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -109,7 +111,12 @@ function editorHarness({ photo = true, language = 'en', selected = [] } = {}) {
       nodes = flatten(renderTree(jsx(MealCheckinView, { draft, language, foodInput })));
       return harness;
     },
-    button(label) { return nodes.find(node => node.type === 'Pressable' && (node.props.accessibilityLabel === label || textOf(node) === label)); },
+    button(label) {
+      return nodes.find(node => node.type === 'Pressable' && (
+        node.props.accessibilityLabel === label
+        || (textOf(node) === label && !node.props.accessibilityLabel)
+      ));
+    },
     field() { return nodes.find(node => node.type === 'TextInput' && node.props.accessibilityLabel === copy.mealCheckin.addIngredient); },
     text() { return nodes.map(node => node.text ?? '').join(' '); },
     open() { harness.button(`+ ${copy.common.add}`).props.onPress(); return harness.render(); },

@@ -7,6 +7,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 음식 편집에서 저장 추천 연결
 
 import type { FoodItem, MealDraft, MealStep, PhotoSource } from '../../../types/meal';
 import type { Language } from '../../../types/profile';
@@ -58,6 +60,7 @@ export type MealCheckinViewProps = {
   onPick: (source: PhotoSource) => void;
   onFullPhoto: () => void;
   onEdit: (food?: FoodItem) => void;
+  onCancelFood: () => void;
   onRemove: (id: string) => void;
   onRemovePhoto: () => void;
   onChangeFood: (value: Partial<FoodItem>) => void;

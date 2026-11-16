@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "declared": "2026-11-06",
+    "rule": "Declared before the first evaluation run. Do not change after results are reported; add a revised value next to the original and explain it in the Testing wiki page."
+  },
+  "metrics": {
+    "verdict_accuracy": { "threshold": 1.0, "definition": "Cases whose actual verdict (accept/reject) equals the expected verdict, over all cases." },
+    "problem_match": { "threshold": 1.0, "definition": "Cases whose set of reported problems (kind, ingredient, field) equals the expected set, over all cases. This is also the overall ground-truth pass rate." },
+    "restriction_rejection": { "threshold": 1.0, "definition": "Restriction-conflict cases (groups allergy, dietary_approach, depends_on_product, multiple_restrictions) that are rejected for exactly the expected ingredient, over those cases." },
+    "false_rejection_free": { "threshold": 1.0, "definition": "Accept cases (group accept) that are accepted with no problem, over those cases." },
+    "schema_validity": { "threshold": 1.0, "definition": "Schema cases (group schema) that are rejected with exactly the expected problem, over those cases." }
+  },
+  "minimum_cases": 30
+}

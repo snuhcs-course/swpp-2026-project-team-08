@@ -7,8 +7,8 @@
 
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 음식 단위 추천 요청 기대값 반영
-// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
-// Changed: 선택적 추가 추천·중복 클릭·응답 유실·재진입 검증
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 선택적 추가 추천·중복 클릭·응답 복구·대상 재선택 검증
 
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
@@ -522,4 +522,34 @@ test('a late optional generation updates only its original meal cache', async t 
   await act(async () => { pause.resolve(); await pending; });
   assert.deepEqual(h.client.getQueryData(otherKey), otherItems);
   assert.equal(h.client.getQueryData(mealSuggestionKeys.all('1', meal.id))[0].replacementForId, '901');
+});
+
+
+test('target reselection reuses the manually regenerated card without another generation request', async t => {
+  const meal = mealWithFoods(2);
+  const api = retryServer(t, meal);
+  const h = await renderHook(t, () => useRecommendationFlow('1', meal.id));
+  await waitFor(() => h.current.current);
+  await act(async () => { assert.equal(await h.current.decide('dismissed', ['dislike']), true); });
+  assert.equal(h.current.regenerationPrompt.id, '901');
+  assert.equal(h.current.current, null);
+  assert.deepEqual(api.requests, []);
+  await act(async () => { assert.equal(await h.current.regenerate('901'), true); });
+  const replacementId = h.current.current.id;
+  assert.equal(h.current.current.replacementForId, '901');
+  assert.deepEqual(api.requests, ['901']);
+
+  await act(async () => { assert.equal(await h.current.selectTargets([{ foodId: '2' }]), true); });
+  assert.equal(h.current.current.id, '902');
+  await act(async () => { assert.equal(await h.current.decide('saved'), true); });
+  await act(async () => { assert.equal(await h.current.selectTargets([{ foodId: '1' }]), true); });
+  assert.equal(h.current.current.id, replacementId);
+  assert.equal(h.current.current.replacementForId, '901');
+  assert.equal(h.current.regenerationPrompt, null);
+  await act(async () => { assert.equal(await h.current.selectTargets([{ foodId: '1' }, { foodId: '2' }]), true); });
+  assert.equal(h.current.current.id, replacementId);
+  assert.equal(h.current.items.find(item => item.id === '902').status, 'saved');
+  assert.equal(h.current.items.find(item => item.id === '901').status, 'dismissed');
+  assert.deepEqual(h.current.items.find(item => item.id === '901').dismissReasons, ['dislike']);
+  assert.deepEqual(api.requests, ['901']);
 });

@@ -4,12 +4,14 @@
 # AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 # AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 # Changed: Dietary Pattern 선택 및 저장을 새 ERD 의 dietary_pattern StrEnum 컬럼으로 반영
+# AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+# Changed: 익숙한 음식 명시적 없음 저장 컬럼
 
 """계정당 하나의 자녀 프로필."""
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Integer, String
+from sqlalchemy import BigInteger, Boolean, DateTime, Enum, ForeignKey, Integer, String, false
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base, StringList
@@ -38,6 +40,10 @@ class UserProfile(Base):
     dietary_pattern: Mapped[DietaryPattern | None] = mapped_column(
         Enum(DietaryPattern, native_enum=False, create_constraint=False, length=30),
         nullable=True,
+    )
+    # 빈 목록을 명시적 없음으로 추정하지 않는다.
+    no_safe_foods: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=false(), nullable=False
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False

@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-31, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 기능별 하위 폴더의 테스트를 커버리지 실행에 포함
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -130,7 +132,7 @@ async function main() {
     fs.rmSync(path.join(directory, name), { recursive: true, force: true });
   }
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'client-c8-'));
-  const args = ['--test', '--test-reporter=tap', 'tests/*.test.cjs', 'tests/unit/*.test.cjs', 'tests/integration/*.test.cjs'];
+  const args = ['--test', '--test-reporter=tap', 'tests/*.test.cjs', 'tests/unit/**/*.test.cjs', 'tests/integration/**/*.test.cjs'];
   const metadata = [
     `Date (Asia/Seoul): ${new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' })}`,
     `Commit: ${git('rev-parse', 'HEAD')}`,

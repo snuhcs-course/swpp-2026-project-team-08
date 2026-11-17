@@ -6,6 +6,8 @@
 // Changed: 직접 입력·안심 음식 없음 동작 제거, 채식 필드 이름 변경
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 필드를 채식 제한 보존 구조 위에 반영
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 익숙한 음식 없음 선택 명령 추가
 
 import { createContext } from 'react';
 import type { SafeFood } from '../../types/profile';
@@ -31,6 +33,7 @@ export type OnboardingContextValue = {
   addSafeFood: (food: Omit<SafeFood, 'id'>) => void;
   setSafeFoodInput: (field: keyof OnboardingDraft['safeFoodInput'], value: string) => void;
   removeSafeFood: (id: string) => void;
+  setNoSafeFoods: (value: boolean) => void;
   setStep: (step: OnboardingStep) => void;
   startEdit: () => void;
   startProfileEdit: () => void;

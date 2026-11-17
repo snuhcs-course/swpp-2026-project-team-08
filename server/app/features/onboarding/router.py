@@ -4,6 +4,8 @@
 # Changed: 온보딩 요청·응답을 restrictions 목록 기반으로 변환하고 SAFE_FOOD_NOT_FOUND 제거
 # AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 # Changed: 식생활 유형을 요청·응답에 반영
+# AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+# Changed: 익숙한 음식 null 요청과 응답 연결
 
 """로그인한 사용자의 온보딩 API."""
 
@@ -47,7 +49,9 @@ def _input(payload: OnboardingWriteRequest) -> OnboardingInput:
         age_group=profile.age_group,
         restrictions=tuple(profile.restrictions),
         dietary_pattern=profile.dietary_pattern,
-        safe_foods=tuple(
+        safe_foods=None
+        if profile.safe_foods is None
+        else tuple(
             SafeFoodInput(item.name, item.preparation, item.presentation_note)
             for item in profile.safe_foods
         ),
@@ -65,7 +69,9 @@ def _response(snapshot: OnboardingSnapshot) -> OnboardingResponse:
             age_group=profile.age_group,
             restrictions=[RestrictionType(item) for item in profile.restrictions],
             dietary_pattern=profile.dietary_pattern,
-            safe_foods=[
+            safe_foods=None
+            if profile.no_safe_foods
+            else [
                 SafeFoodDto(
                     id=str(food.id),
                     name=food.name,

@@ -6,6 +6,8 @@
 // Changed: 채식 제한 요약·이동으로 변경
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 채식 제한 카드를 식생활 유형 카드로 되돌려 반영
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 명시적 음식 없음 프로필 요약 연결
 
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
@@ -65,7 +67,7 @@ export function ChildProfileScreen() {
       ageRange={editing ? ageRange : profile.ageRange}
       allergies={safetySummary(profile.allergies, profile.restrictions, appProfile.language)}
       dietaryPattern={dietaryPatternLabel(profile.dietaryPattern, appProfile.language)}
-      safeFoods={safeFoodSummary(profile.safeFoods, appProfile.language)}
+      safeFoods={safeFoodSummary(profile.safeFoods, appProfile.language, profile.noSafeFoods)}
       saving={saving}
       saveError={saveError}
       deleteError={account.deleteError}

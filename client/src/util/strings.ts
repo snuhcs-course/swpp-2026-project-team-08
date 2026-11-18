@@ -27,6 +27,9 @@
 // AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
 // Changed: 개인정보처리방침 링크 및 열기 실패 문구
 
+// AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
+// Changed: 개인정보처리방침 링크 및 열기 실패 문구
+
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
 

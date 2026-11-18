@@ -4,6 +4,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 바텀시트 핸들 드래그 이동 및 취소 시 위치 복원
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 저장 목록 제거 중 바텀시트 닫기와 드래그 차단
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
@@ -41,6 +43,7 @@ export function BottomSheet({
   height,
   overlay,
   titleStyle,
+  dismissDisabled = false,
 }: {
   title: string;
   children: ReactNode;
@@ -53,6 +56,7 @@ export function BottomSheet({
   height?: number;
   overlay?: ReactNode;
   titleStyle?: StyleProp<TextStyle>;
+  dismissDisabled?: boolean;
 }) {
   const [translateY] = useState(() => new Animated.Value(0));
   useEffect(() => () => translateY.stopAnimation(), [translateY]);
@@ -61,20 +65,21 @@ export function BottomSheet({
       toValue: 0, useNativeDriver: true, overshootClamping: true,
     }).start();
     return PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 8 && gesture.dy > Math.abs(gesture.dx),
+      onStartShouldSetPanResponder: () => !dismissDisabled,
+      onMoveShouldSetPanResponder: (_, gesture) => !dismissDisabled && gesture.dy > 8 && gesture.dy > Math.abs(gesture.dx),
       onPanResponderGrant: () => translateY.stopAnimation(),
       onPanResponderMove: (_, gesture) => translateY.setValue(Math.max(0, gesture.dy)),
       onPanResponderRelease: (_, gesture) => {
-        if (gesture.dy > 72 || (gesture.dy > 8 && gesture.vy > 0.8)) onClose();
+        if (!dismissDisabled && (gesture.dy > 72 || (gesture.dy > 8 && gesture.vy > 0.8))) onClose();
         else resetPosition();
       },
       onPanResponderTerminate: resetPosition,
       onPanResponderTerminationRequest: () => false,
     });
-  }, [onClose, translateY]);
+  }, [dismissDisabled, onClose, translateY]);
   return (
-    <Modal transparent animationType={variant === 'dialog' ? 'fade' : 'slide'} onRequestClose={onClose}>
+    <Modal transparent animationType={variant === 'dialog' ? 'fade' : 'slide'}
+      onRequestClose={() => { if (!dismissDisabled) onClose(); }}>
       <KeyboardAvoidingView
         style={[styles.scrim, appearance && design.scrim, variant === 'dialog' && styles.dialogScrim]}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -83,6 +88,7 @@ export function BottomSheet({
           style={styles.dismiss}
           accessibilityRole="button"
           accessibilityLabel={closeLabel}
+          disabled={dismissDisabled}
           onPress={onClose}
         />}
         <AnimatedSafeAreaView style={[styles.sheet, variant === 'dialog' && styles.dialog, appearance && design.sheet, height ? { height } : undefined, { transform: [{ translateY }] }]} edges={variant === 'dialog' ? [] : ['bottom']}>
@@ -97,6 +103,7 @@ export function BottomSheet({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={closeLabel}
+              disabled={dismissDisabled}
               onPress={onClose}
               style={[styles.close, appearance && design.close]}
             >

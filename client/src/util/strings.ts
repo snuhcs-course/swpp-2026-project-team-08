@@ -26,6 +26,8 @@
 
 // AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
 // Changed: 개인정보처리방침 링크 및 열기 실패 문구
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 저장 목록 제거 완료 안내
 
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
@@ -637,7 +639,7 @@ const suggestionCopy = {
     saveFailed: "Changes couldn't be saved. Please try again.", allDone: 'All Suggestions Reviewed!',
     allDoneBody: 'Your saved suggestions are ready whenever you want to try them.', savedTitle: 'Saved Suggestions',
     savedIntro: 'Suggestions you can come back to', backMeal: 'Back to Meal', empty: 'No saved suggestions yet',
-    history: 'View Meal History', remove: 'Remove',
+    history: 'View Meal History', remove: 'Remove', removedNotice: 'Suggestion removed from saved.',
     recordTry: 'Record a Try', tried: 'Tried',
     unavailable: 'This suggestion is no longer saved.', trying: 'Trying this suggestion', swipeSave: 'Keep swiping to save', swipeDismiss: 'Keep swiping to dismiss', count: (n: number, total: number) => `${n} of ${total}`,
     update: 'Update suggestions', close: 'Close', cancel: 'Cancel', back: 'Back', retry: 'Retry',
@@ -669,7 +671,7 @@ const suggestionCopy = {
     saveFailed: '변경을 저장하지 못했어요. 다시 시도해 주세요.', allDone: '추천을 모두 확인했어요',
     allDoneBody: '저장한 추천은 언제든 다시 볼 수 있어요.', savedTitle: '저장된 추천',
     savedIntro: '다시 살펴볼 수 있는 추천이에요', backMeal: '식사로 돌아가기', empty: '아직 저장된 추천이 없어요',
-    history: '식사 기록 보기', remove: '저장 해제',
+    history: '식사 기록 보기', remove: '저장 해제', removedNotice: '저장 목록에서 추천을 제거했어요.',
     recordTry: '시도 기록', tried: '시도함',
     unavailable: '더 이상 저장된 추천이 아니에요.', trying: '이 추천을 시도하는 식사', swipeSave: '더 밀면 저장해요', swipeDismiss: '더 밀면 제외해요', count: (n: number, total: number) => `${total}개 중 ${n}번째`,
     update: '추천받기', close: '닫기', cancel: '취소', back: '뒤로', retry: '다시 시도',

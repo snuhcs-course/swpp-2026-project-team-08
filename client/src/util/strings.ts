@@ -27,7 +27,7 @@
 // AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
 // Changed: 개인정보처리방침 링크 및 열기 실패 문구
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
-// Changed: 저장 목록 제거 안내 및 Wiki 조리법 8개 선택지
+// Changed: 저장 목록 제거 안내 및 조리법 열 가지 표시명
 
 // AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
 // Changed: 개인정보처리방침 링크 및 열기 실패 문구
@@ -631,8 +631,8 @@ const suggestionCopy = {
     ingredients: 'Ingredients', cooking: 'Cooking method',
     cookingMethods: {
       raw: 'Raw', boiled: 'Boiled', steamed: 'Steamed', pan_fried: 'Pan-fried',
-      stir_fried: 'Stir-fried', baked_roasted: 'Baked or roasted',
-      mashed_blended: 'Mashed or blended', other: 'Other',
+      stir_fried: 'Stir-fried', baked: 'Baked', roasted: 'Roasted',
+      mashed: 'Mashed', blended: 'Blended', other: 'Other',
     } satisfies Record<CookingMethod, string>,
     tapDetails: 'Tap for food details', tapFront: 'Tap to see suggestion',
     save: 'Save suggestion', dismiss: 'Dismiss suggestion', dismissTitle: 'What does not work for you?',
@@ -663,8 +663,8 @@ const suggestionCopy = {
     ingredients: '재료', cooking: '조리 방법',
     cookingMethods: {
       raw: '생식', boiled: '삶기', steamed: '찜', pan_fried: '팬에 굽기',
-      stir_fried: '볶기', baked_roasted: '오븐에 굽기',
-      mashed_blended: '으깨기 또는 갈기', other: '기타',
+      stir_fried: '볶기', baked: '오븐에 굽기', roasted: '로스팅',
+      mashed: '으깨기', blended: '갈기', other: '기타',
     } satisfies Record<CookingMethod, string>,
     tapDetails: '눌러서 음식 정보 보기', tapFront: '눌러서 추천으로 돌아가기',
     save: '추천 저장', dismiss: '추천 제외', dismissTitle: '어떤 점이 맞지 않나요?',
@@ -692,7 +692,7 @@ const abcCopy = {
     acceptanceOptions: ['Unfamiliar', 'Often\nRejected', 'Often\nAccepted', 'Safe Food'] as const,
     acceptanceUnset: 'Not entered',
     cooking: 'Cooking method', detail: 'Additional detail', selectCooking: 'Select method',
-    cookingOptions: ['Raw/unheated', 'Boiled', 'Steamed', 'Pan-fried', 'Stir-fried', 'Baked/roasted', 'Mashed/blended', 'Other'],
+    cookingOptions: ['Raw', 'Boiled', 'Steamed', 'Pan-fried', 'Stir-fried', 'Baked', 'Roasted', 'Mashed', 'Blended', 'Other'],
     missingPhoto: 'No Before-meal photo added', removed: (name: string) => `${name} removed`, undo: 'Undo',
     previousSuggestion: 'Are you trying a previous suggestion?', chooseSuggestion: 'Choose from recommendations you saved earlier.', linkStep: (step: number) => `Step ${step} of 2`, savedEarlier: 'Saved earlier', selectedSuggestion: 'Selected Suggestion', foodList: 'Food List', selectMealFood: 'Select the food card in this meal.',
     selectFood: 'Which food does this apply to?', link: 'Link suggestion', linked: 'Linked · pending after-meal review',
@@ -717,7 +717,7 @@ const abcCopy = {
     acceptanceOptions: ['낯선 음식', '자주\n거부해요', '자주\n먹어요', '익숙한 음식'] as const,
     acceptanceUnset: '입력하지 않음',
     cooking: '조리 방법', detail: '추가 설명', selectCooking: '조리 방법 선택',
-    cookingOptions: ['생식·비가열', '삶기', '찜', '팬에 굽기', '볶기', '오븐에 굽기·로스팅', '으깨기·갈기', '기타'],
+    cookingOptions: ['생식', '삶기', '찜', '팬에 굽기', '볶기', '오븐에 굽기', '로스팅', '으깨기', '갈기', '기타'],
     missingPhoto: '식전 사진이 없어요', removed: (name: string) => `${name} 삭제됨`, undo: '되돌리기',
     previousSuggestion: '저장한 추천을 시도하고 있나요?', chooseSuggestion: '저장한 추천에서 선택해 주세요.',
     selectFood: '어느 음식에 적용하나요?', link: '추천 연결', linked: '연결됨 · 식후 기록 전',

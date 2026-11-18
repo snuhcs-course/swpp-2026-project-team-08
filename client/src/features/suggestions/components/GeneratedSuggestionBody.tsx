@@ -3,6 +3,9 @@
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 추천 조리 방법을 화면 언어에 맞는 표현으로 표시
 
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 추천 조리법 공통 표시명과 미입력 표시
+
 import { Text, View } from 'react-native';
 import type { Language } from '../../../types/profile';
 import type { Suggestion } from '../../../types/suggestionRecord';
@@ -23,7 +26,7 @@ export function GeneratedSuggestionBody({ item, language, details = false }: {
   const sections = details
     ? [
         [c.ingredients, item.ingredients.join(', ') || c.noDetails],
-        [c.cooking, c.cookingMethods[item.cookingMethod]],
+        [c.cooking, item.cookingMethod ? c.cookingMethods[item.cookingMethod] : c.noDetails],
         [c.serving, item.servingTip ?? c.noDetails],
       ]
     : [

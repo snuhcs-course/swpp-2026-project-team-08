@@ -2,6 +2,8 @@
 # Changed: add suggestion LLM workflow
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: used_ingredients 를 ingredients 로 바꾸고 cooking_method, causes 추가
+# AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+# Changed: 추천 생성 조리법을 식사 입력과 같은 열 가지로 제한
 
 """LLM 구조화 출력 스키마.
 
@@ -12,7 +14,7 @@ LLM이 돌려주는 값은 외부에서 온 값이므로 Pydantic으로 파싱�
 from pydantic import BaseModel, Field
 
 from app.features.suggestions.workflow.state import GeneratedSuggestion
-from app.models.meal_enums import MealCookingMethod
+from app.models.meal_enums import MealCookingMethodInput
 
 
 class SuggestionDraft(BaseModel):
@@ -25,7 +27,7 @@ class SuggestionDraft(BaseModel):
     ingredients: list[str] = Field(
         description="제안하는 음식에 들어가는 재료. 도구가 허용한 이름 그대로 적는다."
     )
-    cooking_method: MealCookingMethod = Field(description="제안하는 음식의 조리 방법.")
+    cooking_method: MealCookingMethodInput = Field(description="제안하는 음식의 조리 방법.")
     causes: str = Field(
         description="식후 리뷰에서 참고한 특성, 즉 아이가 어려워했던 원인을 서술한 문장."
     )

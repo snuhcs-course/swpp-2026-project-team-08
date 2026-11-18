@@ -2,7 +2,7 @@
 // Changed: 서버 대문자 enum 과 앱 소문자 값을 변환하는 함수 추가
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
-// Changed: 조리법 OTHER 저장·조회 의미 보존
+// Changed: 조리법 열 가지 변환과 기존 통합값의 미입력 처리
 
 import type {
   CookingMethod,
@@ -75,8 +75,14 @@ export function toApiEnum<T extends string>(value: unknown, choices: readonly T[
 export const mealTypes =['breakfast', 'lunch', 'dinner', 'snack'] as const satisfies readonly MealType[];
 export const mealLocations = ['home', 'restaurant', 'school', 'others'] as const satisfies readonly MealLocation[];
 export const cookingMethods = [
-  'raw', 'boiled', 'steamed', 'pan_fried', 'stir_fried', 'baked_roasted', 'mashed_blended', 'other',
+  'raw', 'boiled', 'steamed', 'pan_fried', 'stir_fried',
+  'baked', 'roasted', 'mashed', 'blended', 'other',
 ] as const satisfies readonly CookingMethod[];
+
+export function fromApiCookingMethod(value: unknown): CookingMethod | null {
+  if (value === 'BAKED_ROASTED' || value === 'MASHED_BLENDED') return null;
+  return fromApiEnum(value, cookingMethods);
+}
 
 export function acceptance(value: unknown): number | null {
   if (value === null) return null;

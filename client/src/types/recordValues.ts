@@ -1,3 +1,6 @@
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 조리법 열 가지 타입 정의
+
 export type Id = string;
 export type IngredientId = Id;
 export type DateString = string;
@@ -11,6 +14,8 @@ export type CookingMethod =
   | 'steamed'
   | 'pan_fried'
   | 'stir_fried'
-  | 'baked_roasted'
-  | 'mashed_blended'
+  | 'baked'
+  | 'roasted'
+  | 'mashed'
+  | 'blended'
   | 'other';

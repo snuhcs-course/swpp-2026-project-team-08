@@ -2,7 +2,7 @@
 // Changed: 대문자 enum·서버 발급 id·음식 안 리뷰와 추천 시도 기준으로 변환 재작성
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
-// Changed: 조리법 OTHER 저장·조회 의미 보존
+// Changed: 조리법 열 가지 저장 및 기존 통합값 미입력 처리
 
 import type { Meal, MealDetail, MealDraft, FoodItem } from '../../types/mealRecord';
 import type { SuggestionMealLink } from '../../types/suggestionRecord';
@@ -10,7 +10,7 @@ import type { IngredientInputDto } from './ingredientDto';
 import { toIngredient, toIngredientInput } from './ingredientDto';
 import { toMealReview } from './reviewDto';
 import {
-  acceptance, array, cookingMethods, date, fromApiEnum, id, mealLocations,
+  acceptance, array, cookingMethods, date, fromApiCookingMethod, fromApiEnum, id, mealLocations,
   mealTypes, nullable, object, text, timestamp, toApiEnum,
 } from './values';
 
@@ -52,7 +52,7 @@ export function toFoodItem(value: unknown): FoodItem {
     mealId: id(dto.meal_id),
     name: text(dto.name),
     ingredients: array(dto.ingredients, toIngredient),
-    cookingMethod: nullable(dto.cooking_method, (method) => fromApiEnum(method, cookingMethods)),
+    cookingMethod: nullable(dto.cooking_method, fromApiCookingMethod),
     servingNote: nullable(dto.serving_note, text),
     acceptance: acceptance(dto.acceptance),
   };

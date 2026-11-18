@@ -5,6 +5,8 @@
 # Changed: 서버 발급 id·음식 안 리뷰 결과·추천 시도·난이도 사유 문자열 기준으로 재작성
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
+# AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+# Changed: 개별 조리법 저장·수정과 이전 통합값 조회 검증
 
 """인증된 식사 저장·수정·리뷰·삭제와 추천 시도 연결."""
 
@@ -138,6 +140,67 @@ async def test_write_meal_returns_server_issued_ids_for_foods_and_ingredients(
     listed = (await api_client.get("/api/v1/meals", headers=headers)).json()
     assert without_saved_at(detail) == without_saved_at(body)
     assert [without_saved_at(item) for item in listed] == [without_saved_at(body)]
+
+
+@pytest.mark.asyncio
+async def test_식사_저장과_수정_후_선택한_조리법이_그대로_조회된다(api_client: AsyncClient) -> None:
+    expected = [
+        "RAW",
+        "BOILED",
+        "STEAMED",
+        "PAN_FRIED",
+        "STIR_FRIED",
+        "BAKED",
+        "ROASTED",
+        "MASHED",
+        "BLENDED",
+        "OTHER",
+    ]
+    headers = await auth_headers(api_client, "meal@example.com")
+    foods = [{**food_payload(method), "cooking_method": method} for method in expected]
+    saved = await save_meal(api_client, headers, meal_payload(*foods))
+    detail = await api_client.get(f"/api/v1/meals/{saved['id']}", headers=headers)
+    assert detail.status_code == 200, detail.text
+    assert [item["cooking_method"] for item in detail.json()["foods"]] == expected
+
+    changed = [
+        {**food_payload(item["name"]), "id": item["id"], "cooking_method": method}
+        for item, method in zip(saved["foods"], reversed(expected), strict=True)
+    ]
+    updated = await api_client.put(
+        f"/api/v1/meals/{saved['id']}/foods", headers=headers, json={"foods": changed}
+    )
+    assert updated.status_code == 200, updated.text
+    reloaded = await api_client.get(f"/api/v1/meals/{saved['id']}", headers=headers)
+    assert reloaded.status_code == 200, reloaded.text
+    assert [item["cooking_method"] for item in reloaded.json()["foods"]] == expected[::-1]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("method", ["BAKED_ROASTED", "MASHED_BLENDED"])
+async def test_레거시_조리법은_조회만_가능하다(
+    api_client: AsyncClient, session_factory, method: str
+) -> None:
+    headers = await auth_headers(api_client, "meal@example.com")
+    meal = await save_meal(api_client, headers)
+    recommendation_id = await seed_recommendation(1)
+    async with session_factory() as session:
+        await session.execute(
+            text("UPDATE meal_foods SET cooking_method = :method WHERE id = :id"),
+            {"method": method, "id": int(meal["foods"][0]["id"])},
+        )
+        await session.execute(
+            text("UPDATE food_recommendations SET cooking_method = :method WHERE id = :id"),
+            {"method": method, "id": recommendation_id},
+        )
+        await session.commit()
+
+    detail = await api_client.get(f"/api/v1/meals/{meal['id']}", headers=headers)
+    suggestions = await api_client.get("/api/v1/suggestions", headers=headers)
+    assert detail.status_code == 200, detail.text
+    assert suggestions.status_code == 200, suggestions.text
+    assert detail.json()["foods"][0]["cooking_method"] == method
+    assert suggestions.json()[0]["cooking_method"] == method
 
 
 @pytest.mark.asyncio

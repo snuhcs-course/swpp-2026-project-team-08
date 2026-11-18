@@ -1,6 +1,8 @@
 {
   "_comment": "AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung",
   "_changed": "온보딩 하위 테스트 실행 경로 반영",
+  "_comment2": "AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo",
+  "_changed2": "스플래시 패키지 추가",
   "name": "client",
   "version": "1.0.0",
   "main": "expo-router/entry",
@@ -24,6 +26,7 @@
     "expo-linking": "~58.0.14",
     "expo-router": "~58.0.26",
     "expo-secure-store": "~58.0.2",
+    "expo-splash-screen": "~58.0.14",
     "expo-status-bar": "~58.0.4",
     "react": "19.3.0",
     "react-dom": "19.3.0",

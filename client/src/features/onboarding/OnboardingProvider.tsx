@@ -12,6 +12,8 @@
 
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 프로필 저장·초안 초기화 성공 시 저장 상태 완료 처리
+// AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
+// Changed: 없음 선택 중 입력 보존·제출 목록 분리 및 최신 초안 저장 상태 유지
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
@@ -35,6 +37,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [editing, setEditing] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
   const saveGate = useRef(createDraftSaveGate());
+  const saveRequestId = useRef(0);
   const skipFirstSave = useRef(true);
   const clearedDraft = useRef<OnboardingDraft | null>(null);
   const finishing = useRef(false);
@@ -80,12 +83,14 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [ready, loadError, status, auth.session, profile]);
 
   const persist = useCallback((value: OnboardingDraft) => {
+    const requestId = ++saveRequestId.current;
     setSaveStatus('saving');
     setHasDraft(true);
     const pending = saveGate.current.persist(() => saveDraft(value));
+    // 이전 저장의 결과는 최신 요청의 저장 중·실패 표시를 덮어쓰지 않는다.
     pending.then(
-      () => { if (!finishing.current) setSaveStatus('saved'); },
-      () => { if (!finishing.current) setSaveStatus('error'); },
+      () => { if (!finishing.current && requestId === saveRequestId.current) setSaveStatus('saved'); },
+      () => { if (!finishing.current && requestId === saveRequestId.current) setSaveStatus('error'); },
     );
     return pending;
   }, []);
@@ -115,7 +120,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const addSafeFood = useCallback((food: Omit<SafeFood, 'id'>) => {
     if (!canAddSafeFood(food)) return;
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    setDraft((current) => ({
+    setDraft((current) => current.noSafeFoods ? current : ({
       ...current,
       safeFoods: [...current.safeFoods, {
         id,
@@ -127,10 +132,13 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
   const setSafeFoodInput = useCallback((field: keyof OnboardingDraft['safeFoodInput'], value: string) => {
-    setDraft((current) => ({ ...current, safeFoodInput: { ...current.safeFoodInput, [field]: value } }));
+    setDraft((current) => current.noSafeFoods ? current : ({ ...current, safeFoodInput: { ...current.safeFoodInput, [field]: value } }));
   }, []);
   const removeSafeFood = useCallback((id: string) => {
-    setDraft((current) => ({ ...current, safeFoods: current.safeFoods.filter((food) => food.id !== id) }));
+    setDraft((current) => current.noSafeFoods ? current : ({ ...current, safeFoods: current.safeFoods.filter((food) => food.id !== id) }));
+  }, []);
+  const setNoSafeFoods = useCallback((value: boolean) => {
+    setDraft((current) => ({ ...current, noSafeFoods: value }));
   }, []);
   const setStep = useCallback((step: OnboardingStep) => {
     setDraft((current) => ({ ...current, step }));
@@ -138,7 +146,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const draftFromProfile = useCallback((step: OnboardingStep): OnboardingDraft | null => {
     if (!profile) return null;
     const { id: _id, updatedAt: _updatedAt, ...values } = profile;
-    return { ...values, step, safeFoodInput: { name: '', preparation: '', presentationNote: '' } };
+    return { ...values, noSafeFoods: values.noSafeFoods ?? false, step, safeFoodInput: { name: '', preparation: '', presentationNote: '' } };
   }, [profile]);
   const startEdit = useCallback(() => {
     if (editing) return;
@@ -169,6 +177,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       const { step: _step, safeFoodInput: _safeFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,
+        safeFoods: draft.noSafeFoods ? [] : draft.safeFoods,
         id: profile?.id ?? auth.session?.user.id ?? `child-${Date.now()}`,
         updatedAt: new Date().toISOString(),
       };
@@ -213,6 +222,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       const { step: _step, safeFoodInput: _safeFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,
+        safeFoods: draft.noSafeFoods ? [] : draft.safeFoods,
         id: profile?.id ?? auth.session?.user.id ?? `child-${Date.now()}`,
         updatedAt: new Date().toISOString(),
       };
@@ -234,7 +244,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     ready: ready && status !== 'loading', loadError: loadError || status === 'error',
     draft, password, saveStatus, editing, hasDraft,
     setPassword, setField, setConsent, toggleList,
-    addSafeFood, setSafeFoodInput, removeSafeFood, setStep,
+    addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setStep,
     startEdit, startProfileEdit, cancelEdit, applyEdit, resetLocal,
     retrySave, retryLoad, finish, canContinue: (step) => step === 'review' ? canFinish(draft)
       : step === 'account' && (editing || !!auth.session) ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)

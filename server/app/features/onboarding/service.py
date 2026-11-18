@@ -4,6 +4,8 @@
 # Changed: 프로필 제한을 restrictions 목록으로 저장하고 안전 음식은 전체 교체로 변경
 # AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 # Changed: 식생활 유형 저장, 조리 방법 없는 안전 음식 허용
+# AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+# Changed: 익숙한 음식 없음 상태와 음식 목록 원자적 저장
 
 """한 사용자의 온보딩 데이터를 읽고 통째로 교체한다."""
 
@@ -39,7 +41,7 @@ class OnboardingInput:
     age_group: AgeGroup
     restrictions: tuple[RestrictionType, ...]
     dietary_pattern: DietaryPattern | None
-    safe_foods: tuple[SafeFoodInput, ...]
+    safe_foods: tuple[SafeFoodInput, ...] | None
     consents: tuple[ConsentInput, ...]
 
 
@@ -89,6 +91,7 @@ class OnboardingService:
         profile.age_group = data.age_group
         profile.restrictions = [item.value for item in data.restrictions]
         profile.dietary_pattern = data.dietary_pattern
+        profile.no_safe_foods = data.safe_foods is None
         # 안전 음식만 바뀌어도 프로필의 수정 시각이 갱신되도록 직접 지정한다.
         profile.updated_at = now_kst()
         await self._session.flush()
@@ -98,7 +101,7 @@ class OnboardingService:
         await self._session.execute(
             delete(UserProfileSafeFood).where(UserProfileSafeFood.user_id == user_id)
         )
-        for food in data.safe_foods:
+        for food in data.safe_foods or ():
             self._session.add(
                 UserProfileSafeFood(
                     user_id=user_id,

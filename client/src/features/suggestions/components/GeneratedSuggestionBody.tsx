@@ -1,5 +1,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 음식 스냅샷 대신 추천의 재료·조리법을 보여주고 근거 음식 이름은 원본 식사에서 찾음
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 추천 조리 방법을 화면 언어에 맞는 표현으로 표시
 
 import { Text, View } from 'react-native';
 import type { Language } from '../../../types/profile';
@@ -21,7 +23,7 @@ export function GeneratedSuggestionBody({ item, language, details = false }: {
   const sections = details
     ? [
         [c.ingredients, item.ingredients.join(', ') || c.noDetails],
-        [c.cooking, item.cookingMethod],
+        [c.cooking, c.cookingMethods[item.cookingMethod]],
         [c.serving, item.servingTip ?? c.noDetails],
       ]
     : [

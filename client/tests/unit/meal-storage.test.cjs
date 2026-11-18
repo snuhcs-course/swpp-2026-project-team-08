@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 편집 추천 초안 검증 및 이전 초안 복원
 const { test } = require('node:test');
 
 const assert = require('node:assert/strict');
@@ -126,4 +128,47 @@ test('legacy food traits are removed from meals, drafts and editor data', async 
   values.set(`nurturebites.meals.${draft.childId}.v1`, JSON.stringify([{ ...meal, foods: [legacyFood] }]));
   assert.deepEqual(await readMeals(draft.childId), [meal]);
   assert.equal(Object.hasOwn(newFood(), 'traits'), false);
+});
+
+test('legacy editor restores its committed link, while explicit null preserves an unlink', async () => {
+  const draft = completeDraft('legacy-suggestion-editor');
+  const link = { suggestionId: '31', foodId: draft.foods[0].id, title: 'Rice', description: 'Try less' };
+  draft.editingFood = draft.foods[0];
+  draft.suggestionLinks = [link];
+  await saveMealDraft(draft);
+  assert.deepEqual((await readMealDraft(draft.childId)).editingSuggestionLink, link);
+  await saveMealDraft({ ...draft, editingSuggestionLink: null });
+  const restored = await readMealDraft(draft.childId);
+  assert.equal(restored.editingSuggestionLink, null);
+  assert.deepEqual(restored.suggestionLinks, [link]);
+});
+
+test('pending links require their editing food and cannot enter committed links before Save food', async () => {
+  const draft = completeDraft('pending-suggestion-validation');
+  draft.editingFood = { ...newFood(), name: 'Soup' };
+  const link = { suggestionId: '31', foodId: draft.editingFood.id, title: 'Soup', description: 'Try less' };
+  await saveMealDraft({ ...draft, editingSuggestionLink: link });
+  assert.deepEqual((await readMealDraft(draft.childId)).editingSuggestionLink, link);
+  for (const invalid of [
+    { ...draft, editingSuggestionLink: { ...link, foodId: 'missing' } },
+    { ...draft, editingSuggestionLink: { ...link, description: 123 } },
+    { ...draft, editingFood: null, editingSuggestionLink: link },
+    { ...draft, suggestionLinks: [link] },
+  ]) {
+    await assert.rejects(saveMealDraft(invalid), /Invalid meal draft/);
+    assert.deepEqual((await readMealDraft(draft.childId)).editingSuggestionLink, link);
+  }
+});
+
+test('discarding an unconfirmed legacy editor also discards its pending link', async () => {
+  const draft = completeDraft('discard-legacy-editor-link');
+  draft.editingFood = { ...newFood(), source: 'ai', name: 'Old suggestion' };
+  draft.editingSuggestionLink = {
+    suggestionId: '31', foodId: draft.editingFood.id, title: 'Old suggestion', description: 'Try less',
+  };
+  await saveMealDraft(draft);
+  const restored = await readMealDraft(draft.childId);
+  assert.equal(restored.editingFood, null);
+  assert.equal(restored.editingSuggestionLink, null);
+  assert.deepEqual(restored.foods, draft.foods);
 });

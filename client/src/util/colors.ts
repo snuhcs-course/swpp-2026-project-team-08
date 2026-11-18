@@ -6,6 +6,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: Match calendar density and after-meal review design colors
+// AI-generated with Grok 4.7, 2026-11-14, reviewed by Doyeon Kim
+// Changed: 저장 화면의 상태별 배경색
 
 export const colors = {
   homeShadow: '#392D45',
@@ -41,6 +43,14 @@ export const colors = {
   reviewBackground: '#F4F6FB',
   reviewHeading: '#173B64',
   afterMealBackground: '#F5F8FD',
+  saveSavingBackground: '#F4F8FE',
+  saveSavedBackground: '#F3FBF6',
+  saveErrorBackground: '#FDF6F7',
+  saveSavingHalo: '#E4EEFF',
+  saveSavedHalo: '#DDF3E6',
+  saveErrorHalo: '#FCE8EC',
+  saveLoadingButton: '#E3ECFF',
+  savePhotoTag: 'rgba(19,35,58,0.66)',
   difficultyBackground: '#F7FBFF',
   ingredientChip: '#EAEAEA',
   outcomeDefinitionText: '#61758A',

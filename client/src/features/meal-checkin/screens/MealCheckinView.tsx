@@ -10,6 +10,12 @@
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 음식 편집에서 저장 추천 연결 및 Record a Try 미리 채움
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 편집 중인 추천 연결 초안 표시
+// AI-generated with Grok 4.7, 2026-11-14, reviewed by Doyeon Kim
+// Changed: 식전 저장 화면에 사진 라벨과 저장 배경 적용
 
 import { ProgressBar } from '../../../components/ProgressBar';
 import { AppHeader } from '../../../components/AppHeader';
@@ -29,8 +35,10 @@ import { MealFlowButton } from "../../../components/MealFlowButton";
 import { MealTextButton } from "../../../components/MealTextButton";
 import { UiAssetIcon } from "../../../components/UiAssetIcon";
 import { MealFoodEditorDialog } from "../../../components/MealFoodEditorDialog";
+import { MealSavedSuggestionPicker } from "../components/MealSavedSuggestionPicker";
 import { formStyles as ui } from "../../../components/formStyles";
 import { abcCopyFor, copyFor, suggestionCopyFor } from "../../../util/strings";
+import { colors } from "../../../util/colors";
 import { MealCompleteStepView } from "./MealCompleteStepView";
 import { MealDetailsStepView } from "./MealDetailsStepView";
 import { MealFoodsStepView } from "./MealFoodsStepView";
@@ -51,7 +59,11 @@ export function MealCheckinView(p: MealCheckinViewProps) {
   const [replace, setReplace] = useState(false);
   const [imageError, setImageError] = useState(false);
   const review = d.step === "foods";
-  const emptyManual = review && !d.photo && !d.foods.length && !p.removedName;
+  const linking = p.suggestionLinking;
+  const editingLink = d.editingSuggestionLink;
+  const editingLinkTitle = (p.suggestions ?? []).find((item) => item.id === editingLink?.suggestionId)?.title
+    || editingLink?.title
+    || null;
   const photoStep = [
     "photo",
     "preview",
@@ -68,7 +80,8 @@ export function MealCheckinView(p: MealCheckinViewProps) {
   }[d.step];
 
   if (!savePanelHidden && d.step !== 'complete' && (p.saving || p.error === 'save')) return <MealSaveStatusView
-    status={p.saving ? 'saving' : 'error'} language={p.language} photos={d.photo ? [d.photo.uri] : []}
+    status={p.saving ? 'saving' : 'error'} language={p.language}
+    photos={d.photo ? [{ uri: d.photo.uri, label: m.beforeMealBadge }] : []}
     mealDate={d.mealDate} mealType={d.mealType} foods={d.foods} onRetry={p.onConfirm} onSaveExit={p.onSaveExit}
     onReturn={() => setSavePanelHidden(true)} />;
 
@@ -78,6 +91,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
         styles.root,
         d.step === "photo" && styles.photoRoot,
         review && styles.reviewRoot,
+        d.step === 'complete' && { backgroundColor: colors.saveSavedBackground },
       ]}
       edges={["top", "bottom"]}
     >
@@ -85,7 +99,8 @@ export function MealCheckinView(p: MealCheckinViewProps) {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <AppHeader title={emptyManual ? m.addFoodsTitle : d.step === 'complete' ? a.mealCheckinHeader : m.titles[d.step]} backLabel={s.common.back} onBack={p.onBack} disabled={p.saving} />
+        <AppHeader title={d.step === 'complete' ? a.mealCheckinHeader : m.titles[d.step]} backLabel={s.common.back} onBack={p.onBack} disabled={p.saving}
+          style={d.step === 'complete' ? { backgroundColor: colors.saveSavedBackground } : undefined} />
         <View style={{ flex: 1 }} pointerEvents={p.saving ? "none" : "auto"}>
           <ScrollView
             contentContainerStyle={[
@@ -103,13 +118,6 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             <ProgressBar current={segment + 1} total={5} style={styles.progress}
               trackStyle={[styles.segment, d.step === 'photo' && styles.photoSegment]}
               fillStyle={styles.activeSegment} />
-            {review && !emptyManual && (
-              <View style={styles.reviewIntro}>
-                <Text style={styles.reviewIntroTitle}>
-                  {m.foodCount(d.foods.length)}
-                </Text>
-              </View>
-            )}
             {d.step === "details" && (
               <View style={styles.mealDetailViewColumn}>
                 <MealDetailsStepView
@@ -168,16 +176,10 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                   language: p.language,
                   onEdit: p.onEdit,
                   onRemove: p.onRemove,
-                  onGo: p.onGo,
                   onFullPhoto: p.onFullPhoto,
-                  onConfirmFood: p.onConfirmFood,
                   removedName: p.removedName,
                   onUndoRemove: p.onUndoRemove,
-                  suggestions: p.suggestions,
-                  suggestionLinking: p.suggestionLinking,
-                  suggestionsLoading: p.suggestionsLoading,
-                  suggestionsError: p.suggestionsError,
-                  onRetrySuggestions: p.onRetrySuggestions,
+                  suggestionLinking: linking,
                 }}
               />
             )}
@@ -225,16 +227,14 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                         ? s.common.retry
                         : m.confirmFoods
                   }
-                  labelStyle={{ fontSize: emptyManual ? 13 : 16 }}
+                  labelStyle={{ fontSize: 16 }}
                   disabled={!d.foods.length || p.saving}
                   onPress={() => { setSavePanelHidden(false); p.onConfirm(); }}
                 />
                 {p.saving && (
                   <Text style={styles.confirmHint}>{a.draftKept}</Text>
                 )}
-                {!emptyManual && (
-                  <MealTextButton label={a.saveExit} onPress={p.onSaveExit} />
-                )}
+                <MealTextButton label={a.saveExit} onPress={p.onSaveExit} />
               </>
             )}
             {d.step === "photo" && (
@@ -249,7 +249,19 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             )}
           </MealFlowFooter>
         )}
-        {d.editingFood && (
+        {d.editingFood && linking?.pickerOpen && (
+          <MealSavedSuggestionPicker
+            language={p.language}
+            suggestions={p.suggestions}
+            selectedId={linking.selectedSuggestionId}
+            onSelect={linking.onSelectSuggestion}
+            onLink={() => {
+              if (d.editingFood) linking.onLink(d.editingFood.id);
+            }}
+            onClose={linking.onClosePicker}
+          />
+        )}
+        {d.editingFood && !linking?.pickerOpen && (
           <MealFoodEditorDialog
             key={d.editingFood.id}
             food={d.editingFood}
@@ -259,8 +271,16 @@ export function MealCheckinView(p: MealCheckinViewProps) {
             {...p.foodInput}
             onChange={p.onChangeFood}
             onSave={p.onSaveFood}
-            onCancel={() => p.onUpdate({ editingFood: null })}
+            onCancel={p.onCancelFood}
             labels={a}
+            suggestion={linking ? {
+              title: editingLinkTitle,
+              canOpen: linking.canOpenPicker,
+              onOpen: linking.onOpenPicker,
+              onUnlink: () => {
+                if (editingLink) linking.onUnlink(editingLink.suggestionId);
+              },
+            } : undefined}
           />
         )}
         {replaceConfirm && (

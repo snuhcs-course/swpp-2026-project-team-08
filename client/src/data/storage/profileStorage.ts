@@ -2,6 +2,8 @@
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 채식 제한 필드가 없는 예전 프로필 캐시 거부
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 프로필 음식 없음 상태 유효성 확인
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ChildProfile } from '../../types/profile';
@@ -18,6 +20,7 @@ export async function readProfile(): Promise<ChildProfile | null> {
     || typeof profile.caregiverEmail !== 'string' || typeof profile.childName !== 'string'
     || typeof profile.ageRange !== 'string' || typeof profile.updatedAt !== 'string'
     || !Array.isArray(profile.allergies) || !Array.isArray(profile.restrictions)
+    || (profile.noSafeFoods !== undefined && typeof profile.noSafeFoods !== 'boolean')
     || !Array.isArray(profile.vegetarianRestrictions) || !Array.isArray(profile.safeFoods)) throw new Error('Invalid profile');
   return parsed as ChildProfile;
 }

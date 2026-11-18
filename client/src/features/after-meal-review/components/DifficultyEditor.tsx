@@ -9,6 +9,8 @@
 // Changed: 활성 여부와 무관하게 네이티브 선택 필드 너비 유지
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 어려움 태그에 항목명과 식감 세부 항목 표시
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 어려움 추가 버튼을 오른쪽에 두고 선택 상자 글자 축소
 
 import { DifficultyReasonTag } from '../../../components/DifficultyReasonTag';
 import { UiAssetIcon, type UiAssetIconName } from "../../../components/UiAssetIcon";
@@ -65,7 +67,7 @@ function DifficultySelect({ label, value, placeholder, options, disabled = false
 }) {
   const [fieldWidth, setFieldWidth] = useState<number>();
   const content = <>
-    <Text style={styles.selectText}>{label || placeholder}</Text>
+    <Text style={styles.selectText} numberOfLines={1}>{label || placeholder}</Text>
     <UiAssetIcon name="abc-select" />
   </>;
   if (Platform.OS === 'android' || Platform.OS === 'ios') return (
@@ -161,13 +163,13 @@ export function DifficultyEditor({
           style={styles.categorySelect}
         />
         {!isTexture && valueSelect}
-        {isTexture && <View style={styles.spacer} />}
         <MealFlowButton
           label={labels.add}
           icon={null}
           disabled={!canAdd}
           onPress={onAdd}
           style={styles.addButton}
+          labelStyle={styles.addLabel}
         />
       </View>
       {isTexture && (
@@ -261,12 +263,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.interBold,
     fontSize: 18,
   },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" },
-  spacer: { flex: 1 },
+  row: { flexDirection: "row", alignItems: "center", gap: 8 },
   select: {
-    minHeight: 50,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    minHeight: 44,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
     borderWidth: 1,
     borderColor: colors.mealReviewBorder,
     borderRadius: 12,
@@ -274,24 +275,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 5,
+    gap: 4,
     maxWidth: "100%",
   },
   nativeMenu: { width: "100%" },
-  categorySelect: { flexBasis: 170, flexGrow: 1, flexShrink: 1 },
-  valueSelect: { flexBasis: 120, flexGrow: 1, flexShrink: 1 },
+  categorySelect: { flex: 1, minWidth: 0 },
+  valueSelect: { flex: 1, minWidth: 0 },
   selectText: {
     flexShrink: 1,
     color: colors.homeText,
-    fontSize: 16,
+    fontSize: 12,
     fontFamily: fonts.interRegular,
   },
   chevron: { color: colors.homeText, fontSize: 18 },
   addButton: {
-    minWidth: 72,
-    paddingHorizontal: 12,
+    minWidth: 64,
+    minHeight: 44,
+    flexShrink: 0,
+    alignSelf: "center",
+    paddingHorizontal: 10,
     paddingVertical: 8,
   },
+  addLabel: { fontSize: 13 },
   disabled: { opacity: 0.45 },
   sentence: {
     backgroundColor: colors.textureSentence,

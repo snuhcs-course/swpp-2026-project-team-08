@@ -1,5 +1,7 @@
 <!-- AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo -->
 <!-- Changed: 누락 없는 테스트 실행 범위 및 API 통합 검사 -->
+<!-- AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung -->
+<!-- Changed: 온보딩 기능별 테스트 폴더와 실행 범위 안내 -->
 
 # Frontend 테스트 기준
 
@@ -15,13 +17,14 @@
 |---|---|
 | `unit/` | 규칙·날짜·입력 검증, API 변환, 저장소, UI 컴포넌트의 Unit 테스트 |
 | `integration/` | 실제 React·Provider·Query·API·저장소를 연결한 통합 테스트 |
+| `unit/onboarding/`·`integration/onboarding/` | [온보딩 행동별 파일 구성](../unit/onboarding/README.md) |
 | `examples/unit/`·`examples/integration/` | 테스트 작성 시 따르는 레이어별·시나리오별 예시 |
 | `e2e/` | 기기·시뮬레이터에서 실행하는 사용자 흐름과 기기 검사 시나리오 |
 | `docs/test.md`·`docs/c8.md` | 테스트 작성 기준과 커버리지 측정 기준 |
 | `helpers/` | TS 로더, React 실행 환경, 외부 모듈 대체 등 공통 실행 도구 |
 | `fixtures/` | 테스트 입력과 서버 응답을 만드는 공통 데이터 factory |
 
-`npm test`는 모든 테스트를 실행한다.
+`npm test`는 `tests/` 바로 아래와 `unit/`·`integration/`의 하위 폴더까지 실행한다. 예시는 별도로 실행한다.
 `Unit`, `Integration`, `E2E` 테스트는 책임으로 구분한다.
 
 ## 2. 작성·수정·검증 순서

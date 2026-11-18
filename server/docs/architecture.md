@@ -154,6 +154,7 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 | `config.py` | pydantic-settings 설정 (싱글턴). `.env`/환경변수 타입 안전 로딩 |
 | `database.py` | async 엔진/세션, `DeclarativeBase`, `get_session`(요청 단위 트랜잭션 경계) |
 | `timezone.py` | KST 현재 시각 `now_kst` |
+| `tracing.py` | 서버 시작 시 `.env`의 LangSmith 변수를 환경변수로 내보내기 (§2.5) |
 | `errors.py` | `AppError`(에러 베이스), `RequestInvalidError` — FastAPI import 없는 순수 파이썬 |
 | `llm.py` (필요 시) | 둘 이상의 기능이 LLM을 쓰게 되면 두는 LLM 클라이언트 생성 코드. 비즈니스 지식 없이 설정에서 키를 읽는다. LLM을 쓰는 기능이 하나뿐인 동안은 그 기능의 `workflow/llm.py`에 둔다 (§2.5) |
 
@@ -228,8 +229,10 @@ features/suggestions/
 - LangSmith 추적은 코드를 바꾸지 않고 환경변수로 켤 수 있다. 그래프와 LangChain 모델 호출은 자동으로 추적되고,
   LangChain을 거치지 않는 판정 모델 호출(`jev.py`)은 `@traceable`로 감싸 같은 트레이스에 자식 실행으로 붙는다.
   호출 함수 인자에는 API 키를 넣지 않는다 (트레이스 입력에 남지 않도록). `Settings`는 `.env`를 읽어도
-  `os.environ`에는 넣지 않으므로, LangSmith 변수는 실행 환경에서 내보내야 한다. 프롬프트에 아이의 식사 정보가
-  들어가므로, 운영에서 켜기 전에 외부 서비스로 보내도 되는지 팀이 정한다.
+  `os.environ`에는 넣지 않고 LangSmith SDK는 `os.environ`만 읽으므로, 서버가 시작할 때(`lifespan`)
+  `core/tracing.py`가 `.env`의 `LANGSMITH_*` · `LANGCHAIN_*`만 환경변수로 내보낸다 (이미 있는 값은
+  덮어쓰지 않고, 테스트는 lifespan을 실행하지 않아 영향이 없다). 운영은 컨테이너에 환경변수를 직접 주입한다.
+  프롬프트에 아이의 식사 정보가 들어가므로, 운영에서 켜기 전에 외부 서비스로 보내도 되는지 팀이 정한다.
 
 ### 2.6 로그인한 사용자 받기
 

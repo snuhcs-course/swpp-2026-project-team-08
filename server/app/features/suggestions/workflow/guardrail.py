@@ -39,9 +39,11 @@ def _ingredient_question(food_id: str, ingredient: str) -> str:
 
 def _text_question(food_id: str) -> str:
     return (
-        f"food_id {food_id} 제안의 what_to_try, why_this_may_help, serving_tip 문장에 "
-        f"{RESTRICTIONS_KEY} 중 하나라도 어겨서 이 아이가 먹을 수 없는 재료나 음식이 "
-        "들어 있습니까? 재료 목록에 없더라도 문장에 나온 것은 포함해서 판단하세요."
+        f"food_id {food_id} 제안의 what_to_try, why_this_may_help, serving_tip 문장만 "
+        "보고 판단하세요. "
+        f"이 문장들이 {RESTRICTIONS_KEY} 중 하나라도 어겨서 이 아이가 먹을 수 없는 재료나 음식을 "
+        "먹이거나 곁들이라고 권합니까? ingredients 필드의 재료는 따로 판단하므로 이 질문에서는 "
+        "고려하지 마세요. 먹이지 않겠다고 배제하는 표현은 해당하지 않습니다."
     )
 
 

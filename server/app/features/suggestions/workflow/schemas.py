@@ -11,6 +11,7 @@ LLM이 돌려주는 값은 외부에서 온 값이므로 Pydantic으로 파싱�
 
 from pydantic import BaseModel, Field
 
+from app.features.suggestions.workflow.cooking_methods import cooking_method_choices
 from app.features.suggestions.workflow.state import GeneratedSuggestion
 from app.models.meal_enums import MealCookingMethod
 
@@ -23,9 +24,14 @@ class SuggestionDraft(BaseModel):
     why_this_may_help: str = Field(description="이 시도가 도움이 될 수 있는 이유.")
     serving_tip: str = Field(description="음식을 내놓을 때의 팁.")
     ingredients: list[str] = Field(
-        description="제안하는 음식에 들어가는 재료. 도구가 허용한 이름 그대로 적는다."
+        description=(
+            "제안한 음식에 들어가는 재료를 빠짐없이 모두. "
+            "쓸 수 있는 재료 목록의 이름 그대로 적는다."
+        )
     )
-    cooking_method: MealCookingMethod = Field(description="제안하는 음식의 조리 방법.")
+    cooking_method: MealCookingMethod = Field(
+        description=f"제안하는 음식의 조리 방법. 선택지: {cooking_method_choices()}."
+    )
     causes: str = Field(
         description="식후 리뷰에서 참고한 특성, 즉 아이가 어려워했던 원인을 서술한 문장."
     )

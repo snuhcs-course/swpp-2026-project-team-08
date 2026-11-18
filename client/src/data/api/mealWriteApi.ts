@@ -1,12 +1,10 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 서버 발급 id 기준으로 저장 요청·응답 변환 재작성
 
-// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
-// Changed: 조리법 선택값 저장 및 이전 초안 통합값 미입력 처리
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 고정 조리법 ID를 DTO에서 직접 저장
 
 import type { Meal as CheckinMeal } from '../../types/meal';
-import { normalizeCookingMethod } from '../../util/cookingMethods';
-import type { CookingMethod } from '../../types/recordValues';
 import { toMealDetail, toMealWrite } from '../dto/mealDto';
 import { apiRequest } from '../network/apiClient';
 
@@ -25,7 +23,7 @@ export function prepareMealWrite(meal: CheckinMeal) {
       id: food.id,
       name: food.name,
       ingredients: food.ingredients.map((name) => ({ id: null, name })),
-      cookingMethod: cookingMethodFor(food.preparation),
+      cookingMethod: food.preparation || null,
       servingNote: food.servingNote || null,
       acceptance: food.acceptance ?? null,
     })),
@@ -35,18 +33,6 @@ export function prepareMealWrite(meal: CheckinMeal) {
     })),
   });
   return { body };
-}
-
-export function cookingMethodFor(value: string): CookingMethod | null {
-  if (!value) return null;
-  // 이전 초안의 통합 조리법은 새 입력으로 보내지 않는다.
-  if ([
-    'baked_roasted', 'mashed_blended', 'Baked/roasted', 'Mashed/blended',
-    '오븐에 굽기·로스팅', '으깨기·갈기',
-  ].includes(value)) return null;
-  const method = normalizeCookingMethod(value);
-  if (!method) throw new Error('Unknown cooking method');
-  return method;
 }
 
 export async function writeMeal(meal: CheckinMeal): Promise<CheckinMeal> {

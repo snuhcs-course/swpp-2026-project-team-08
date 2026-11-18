@@ -1,7 +1,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 서버 대문자 enum 과 앱 소문자 값을 변환하는 함수 추가
 
-// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 조리법 열 가지 변환과 기존 통합값의 미입력 처리
 
 import type {
@@ -9,6 +9,7 @@ import type {
   MealLocation,
   MealType,
 } from '../../types/recordValues';
+import { cookingMethodIds } from '../../types/recordValues';
 
 export function object(value: unknown): Record<string, unknown> {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
@@ -74,14 +75,9 @@ export function toApiEnum<T extends string>(value: unknown, choices: readonly T[
 
 export const mealTypes =['breakfast', 'lunch', 'dinner', 'snack'] as const satisfies readonly MealType[];
 export const mealLocations = ['home', 'restaurant', 'school', 'others'] as const satisfies readonly MealLocation[];
-export const cookingMethods = [
-  'raw', 'boiled', 'steamed', 'pan_fried', 'stir_fried',
-  'baked', 'roasted', 'mashed', 'blended', 'other',
-] as const satisfies readonly CookingMethod[];
-
 export function fromApiCookingMethod(value: unknown): CookingMethod | null {
   if (value === 'BAKED_ROASTED' || value === 'MASHED_BLENDED') return null;
-  return fromApiEnum(value, cookingMethods);
+  return fromApiEnum(value, cookingMethodIds);
 }
 
 export function acceptance(value: unknown): number | null {

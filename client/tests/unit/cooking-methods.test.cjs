@@ -1,13 +1,13 @@
-// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 조리법 열 개의 저장·표시와 기존 통합값의 미입력 처리 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
 require('../helpers/mock-modules.cjs').mockModules(name => name.endsWith('/network/apiClient')
   ? { apiRequest: () => { throw new Error('Unexpected HTTP'); } } : undefined);
-const { cookingMethodIds, cookingMethodLabel } = require('../../src/util/cookingMethods.ts');
+const { cookingMethodIds } = require('../../src/types/recordValues.ts');
 const { abcCopyFor, suggestionCopyFor } = require('../../src/util/strings.ts');
-const { prepareMealWrite, cookingMethodFor } = require('../../src/data/api/mealWriteApi.ts');
+const { prepareMealWrite } = require('../../src/data/api/mealWriteApi.ts');
 const { toMealDetail } = require('../../src/data/dto/mealDto.ts');
 const { toLegacyMeal } = require('../../src/data/dto/mealLegacyDto.ts');
 const { toSuggestion } = require('../../src/data/dto/suggestionDto.ts');
@@ -44,13 +44,12 @@ test('조리법 열 개는 저장과 재조회 후 식사·리뷰·추천에서 
     assert.equal(detail.review.foodResults[0].foodSnapshot.cookingMethod, id);
     assert.equal(toLegacyMeal(detail).foods[0].preparation, id);
     assert.equal(suggestion.cookingMethod, id);
-    assert.equal(cookingMethodLabel(id, abcCopyFor('en').cookingOptions), englishLabel);
+    assert.equal(abcCopyFor('en').cookingMethods[id], englishLabel);
     for (const language of ['en', 'ko']) {
-      const label = cookingMethodLabel(id, abcCopyFor(language).cookingOptions);
+      const label = abcCopyFor(language).cookingMethods[id];
       assert.equal(typeof label, 'string');
       assert.ok(label.length > 0);
       assert.equal(suggestionCopyFor(language).cookingMethods[id], label);
-      assert.equal(cookingMethodFor(label), id);
     }
   }
 });
@@ -84,35 +83,10 @@ test('조리법 응답은 기존 통합값 외의 잘못된 형식을 거절한�
   assert.throws(() => toSuggestion(suggestionResponse({ cooking_method: null })));
 });
 
-test('이전 표시 이름은 뜻이 같은 개별 조리법으로 저장된다', () => {
-  for (const [value, expected] of [
-    ['Baked', 'baked'], ['Roasted', 'roasted'], ['Mashed', 'mashed'], ['Blended', 'blended'],
-    ['Steamed', 'steamed'], ['삶기', 'boiled'], ['Other', 'other'], ['기타', 'other'],
-  ]) {
-    assert.equal(cookingMethodFor(value), expected);
-  }
-});
-
-test('이전 초안의 통합 조리법은 미입력으로 저장하고 나머지 음식 입력을 보존한다', () => {
-  const meal = toLegacyMeal(toMealDetail(mealResponse()));
-  meal.foods[0].servingNote = 'Small pieces';
-  for (const preparation of [
-    'baked_roasted', 'mashed_blended', 'Baked/roasted', 'Mashed/blended',
-    '오븐에 굽기·로스팅', '으깨기·갈기',
-  ]) {
-    meal.foods[0].preparation = preparation;
-    const written = prepareMealWrite(meal).body.foods[0];
-    assert.equal(written.cooking_method, null);
-    assert.equal(written.name, meal.foods[0].name);
-    assert.equal(written.serving_note, 'Small pieces');
-    assert.equal(meal.foods[0].preparation, preparation);
-  }
-});
-
-test('새 식사 저장은 미입력을 유지하고 지원하지 않는 조리법을 거절한다', () => {
+test('새 식사 저장은 현재 조리법 ID와 미입력만 받는다', () => {
   const meal = toLegacyMeal(toMealDetail(mealResponse()));
   assert.equal(prepareMealWrite(meal).body.foods[0].cooking_method, null);
-  for (const preparation of ['invalid', 'constructor', 'toString']) {
+  for (const preparation of ['baked_roasted', 'mashed_blended', 'Baked', '삶기', 'constructor']) {
     meal.foods[0].preparation = preparation;
     assert.throws(() => prepareMealWrite(meal));
   }

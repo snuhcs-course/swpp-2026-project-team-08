@@ -11,8 +11,8 @@
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
 // Changed: 식전 사진 배치·높이 및 음식별 저장 추천 연결
 
-// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
-// Changed: Wiki 조리법 선택값 및 저장 후 표시 일치
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 식사 조리법을 공통 표시명으로 표시
 
 import { useState } from "react";
 import { Image } from "expo-image";
@@ -24,7 +24,6 @@ import {
 } from "react-native";
 import { AppButton } from "../../../components/AppButton";
 import { UiAssetIcon } from "../../../components/UiAssetIcon";
-import { cookingMethodLabel } from "../../../util/cookingMethods";
 import { displayDate } from "../../../util/date";
 import { colors } from "../../../util/colors";
 import { fonts } from "../../../util/fonts";
@@ -110,7 +109,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
               <View style={styles.column}>
                 <Text style={styles.sectionLabel}>{a.cooking}</Text>
                 <Text style={styles.fieldValue}>
-                  {cookingMethodLabel(food.preparation, a.cookingOptions) || s.common.notEntered}
+                  {food.preparation ? a.cookingMethods[food.preparation] : s.common.notEntered}
                 </Text>
               </View>
               <View style={styles.column}>

@@ -1,11 +1,13 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 기존 음식은 서버 id 로 갱신하고 새 음식은 id 없이 보내도록 변경
 
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 음식 수정 시 고정 조리법 ID를 직접 저장
+
 import type { FoodItem as LegacyFood } from '../../types/meal';
 import type { MealDetail } from '../../types/mealRecord';
 import { toMealDetail, toMealFoodWrite } from '../dto/mealDto';
 import { apiRequest } from '../network/apiClient';
-import { cookingMethodFor } from './mealWriteApi';
 
 export async function updateReviewMealFoods(
   mealId: string, foods: LegacyFood[], existingFoodIds: string[],
@@ -22,7 +24,7 @@ export async function updateReviewMealFoods(
         id: food.id,
         name: food.name,
         ingredients: food.ingredients.map((name) => ({ id: null, name })),
-        cookingMethod: cookingMethodFor(food.preparation),
+        cookingMethod: food.preparation || null,
         servingNote: food.servingNote || null,
         acceptance: food.acceptance ?? null,
       }),

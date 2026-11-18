@@ -198,7 +198,7 @@ test("editing keeps caregiver food and optional details; adding does not change 
   const food = {
     ...newFood(),
     name: "My soup",
-    preparation: "Steamed",
+    preparation: "steamed",
     servingNote: "Small pieces",
     acceptance: 0,
   };

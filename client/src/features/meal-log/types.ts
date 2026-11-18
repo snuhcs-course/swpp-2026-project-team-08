@@ -7,8 +7,11 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 식사 기록의 어려움 사유에 세부 항목 보존
 
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 식사 상세 조리법을 음식 입력 타입과 일치
+
 import type { Outcome } from '../../types/afterMealReview';
-import type { Meal } from '../../types/meal';
+import type { FoodItem, Meal } from '../../types/meal';
 
 export type MealRecord = {
   id: string;
@@ -27,7 +30,7 @@ export type FoodResponseCard = {
   parentName: string | null;
   name: string;
   ingredients: string[];
-  preparation: string;
+  preparation: FoodItem['preparation'];
   servingNote: string;
   outcome: Outcome | null;
   reasons: { category: string; value: string; subcategory?: string | null; note?: string }[];

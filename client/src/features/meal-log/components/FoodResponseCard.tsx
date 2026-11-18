@@ -7,8 +7,8 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 식사 기록의 어려움 사유를 항목명 포함 태그로 표시
 
-// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
-// Changed: Wiki 조리법 선택값 및 저장 후 표시 일치
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 식사 조리법을 공통 표시명으로 표시
 
 import { Feather } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -16,7 +16,6 @@ import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { DifficultyReasonTag } from '../../../components/DifficultyReasonTag';
 import type { Language } from '../../../types/profile';
-import { cookingMethodLabel } from '../../../util/cookingMethods';
 import { colors } from '../../../util/colors';
 import { abcCopyFor, copyFor } from '../../../util/strings';
 import { acceptanceFill } from '../rules';
@@ -46,7 +45,7 @@ export function FoodResponseCard({
   const fill = acceptanceFill(card.outcome);
   const meta = card.kind === 'ingredient' && card.parentName
     ? m.inDish(card.parentName)
-    : [cookingMethodLabel(card.preparation, a.cookingOptions), card.servingNote].filter((value) => value.trim()).join(' · ');
+    : [card.preparation ? a.cookingMethods[card.preparation] : '', card.servingNote].filter((value) => value.trim()).join(' · ');
   const badgeLabel = card.outcome ? review.outcomes[card.outcome] : m.noRecord;
   const eaten = card.outcome === 'eaten';
   const [open, setOpen] = useState(defaultOpen);

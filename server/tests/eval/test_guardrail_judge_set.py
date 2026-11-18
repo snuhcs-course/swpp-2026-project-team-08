@@ -20,8 +20,10 @@ from scripts.evaluate_guardrail import (
     evaluate,
     failed_metrics,
     format_report,
+    is_gating,
     load_json,
     metrics,
+    risk_threshold,
 )
 from scripts.load_ingredients import import_catalog
 from tests.helpers.fake_judge import ScriptedJudge
@@ -123,11 +125,26 @@ def perfect_judge(spec: dict) -> ScriptedJudge:
     return ScriptedJudge(rule)
 
 
+def test_revisions_keep_the_original_values_next_to_the_new_ones() -> None:
+    _, limits = spec_and_limits()
+
+    # 처음 선언한 값은 지우지 않고, 효력이 있는 값은 수정한 값이다.
+    assert limits["risk_threshold"] == 0.3
+    assert risk_threshold(limits) == 0.4
+    assert limits["risk_threshold_revised"]["reason"]
+    assert limits["metrics"]["hard_recall"]["threshold"] == 0.6
+    assert not is_gating(limits["metrics"]["hard_recall"])
+    assert limits["metrics"]["hard_recall"]["revised"]["reason"]
+    assert all(
+        is_gating(limit) for name, limit in limits["metrics"].items() if name != "hard_recall"
+    )
+
+
 async def test_a_perfect_judge_meets_every_declared_threshold() -> None:
     spec, limits = spec_and_limits()
 
     results = await evaluate(perfect_judge(spec), spec)
-    rates = metrics(results, limits["risk_threshold"])
+    rates = metrics(results, risk_threshold(limits))
 
     assert failed_metrics(limits, rates) == []
     assert all(rate.total > 0 for rate in rates.values())
@@ -139,8 +156,10 @@ async def test_a_judge_that_never_flags_fails_the_recall_metrics() -> None:
 
     results = await evaluate(ScriptedJudge(), spec)
 
-    failed = failed_metrics(limits, metrics(results, limits["risk_threshold"]))
-    assert {"core_recall", "hard_recall", "prose_recall"} <= set(failed)
+    failed = failed_metrics(limits, metrics(results, risk_threshold(limits)))
+    assert {"core_recall", "prose_recall"} <= set(failed)
+    # 제품 의존 재료는 규칙 검증이 먼저 걸러내므로 판정에 쓰지 않고 참고용으로만 본다.
+    assert "hard_recall" not in failed
     assert "false_rejection_rate" not in failed
 
 
@@ -149,6 +168,6 @@ async def test_a_judge_that_always_flags_fails_the_false_rejection_metrics() -> 
 
     results = await evaluate(ScriptedJudge(lambda state, name, question: 0.99), spec)
 
-    failed = failed_metrics(limits, metrics(results, limits["risk_threshold"]))
+    failed = failed_metrics(limits, metrics(results, risk_threshold(limits)))
     assert {"false_rejection_rate", "safe_case_pass"} <= set(failed)
     assert "core_recall" not in failed

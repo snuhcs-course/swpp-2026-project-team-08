@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     SUGGESTION_MODEL: str = "openai/gpt-6-luna"
     # 가드레일 판정 모델(OpenRouter Decisions API)과, 이 확률 이상이면 제안을 거부하는 임계값.
     GUARDRAIL_MODEL: str = "typesafe/jev-1.14"
-    GUARDRAIL_RISK_THRESHOLD: float = Field(default=0.3, ge=0.0, le=1.0)
+    GUARDRAIL_RISK_THRESHOLD: float = Field(default=0.4, ge=0.0, le=1.0)
 
     @model_validator(mode="after")
     def _forbid_dev_secret_outside_local(self) -> "Settings":

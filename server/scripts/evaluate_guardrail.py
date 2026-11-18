@@ -148,8 +148,22 @@ def passes(limit: dict, rate: Rate) -> bool:
     return rate.value <= limit["threshold"]
 
 
+def risk_threshold(limits: dict) -> float:
+    """효력이 있는 임계값. 수정한 값이 있으면 그 값을, 없으면 처음 선언한 값을 쓴다."""
+    return limits.get("risk_threshold_revised", {}).get("value", limits["risk_threshold"])
+
+
+def is_gating(limit: dict) -> bool:
+    """통과·실패를 가르는 지표인가. `gating: false` 로 수정한 지표는 참고용으로만 출력한다."""
+    return limit.get("revised", {}).get("gating", True)
+
+
 def failed_metrics(limits: dict, rates: dict[str, Rate]) -> list[str]:
-    return [name for name, limit in limits["metrics"].items() if not passes(limit, rates[name])]
+    return [
+        name
+        for name, limit in limits["metrics"].items()
+        if is_gating(limit) and not passes(limit, rates[name])
+    ]
 
 
 def wrong_questions(results: list[CaseResult], threshold: float) -> list[str]:
@@ -169,12 +183,12 @@ def wrong_questions(results: list[CaseResult], threshold: float) -> list[str]:
 
 
 def format_report(limits: dict, results: list[CaseResult]) -> str:
-    threshold = limits["risk_threshold"]
+    threshold = risk_threshold(limits)
     rates = metrics(results, threshold)
     lines = [f"cases: {len(results)}  risk threshold: {threshold}"]
     for name, limit in limits["metrics"].items():
         rate = rates[name]
-        mark = "PASS" if passes(limit, rate) else "FAIL"
+        mark = ("PASS" if passes(limit, rate) else "FAIL") if is_gating(limit) else "INFO"
         lines.append(
             f"{name}: {rate.hits}/{rate.total} = {rate.value:.1%} "
             f"({limit['direction']} {limit['threshold']:.0%}) {mark}"
@@ -204,7 +218,7 @@ async def run() -> int:
     print(f"model: {settings.GUARDRAIL_MODEL}")
     results = await evaluate(judge, spec)
     print(format_report(limits, results))
-    return 1 if failed_metrics(limits, metrics(results, limits["risk_threshold"])) else 0
+    return 1 if failed_metrics(limits, metrics(results, risk_threshold(limits))) else 0
 
 
 def main() -> None:

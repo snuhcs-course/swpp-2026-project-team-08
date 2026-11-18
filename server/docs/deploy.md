@@ -147,7 +147,7 @@ DB 비밀번호나 JWT 키 같은 비밀 값은 GitHub에 없고, EC2가 배포�
 | `OPENROUTER_API_KEY` | SecureString | 제안 생성(LLM)에 쓰는 OpenRouter API 키. 필수 파라미터가 아니라서 없어도 배포와 서버 기동은 되지만, 제안 생성 요청이 실패(502 `GENERATION_FAILED`)합니다. |
 | `SUGGESTION_MODEL` | String | 제안 생성에 쓰는 OpenRouter 모델 이름(`provider/model`). 생략하면 코드의 기본값(`openai/gpt-6-luna`)을 씁니다. |
 | `GUARDRAIL_MODEL` | String | 제안이 아이의 식이 제한에 어긋날 확률을 판정하는 모델 이름(OpenRouter Decisions API). `OPENROUTER_API_KEY`를 함께 씁니다. 생략하면 코드의 기본값(`typesafe/jev-1.14`)을 씁니다. |
-| `GUARDRAIL_RISK_THRESHOLD` | String | 이 확률(0~1) 이상이면 제안을 거부하고 다시 쓰게 합니다. 생략하면 `0.3`을 씁니다. 판정 호출이 실패하면 제안을 만들지 않고 502 `GENERATION_FAILED`로 끝납니다. |
+| `GUARDRAIL_RISK_THRESHOLD` | String | 이 확률(0~1) 이상이면 제안을 거부하고 다시 쓰게 합니다. 생략하면 `0.4`를 씁니다. 판정 호출이 실패하면 제안을 만들지 않고 502 `GENERATION_FAILED`로 끝납니다. |
 
 `SecureString`은 암호화되어 저장되고, EC2가 배포할 때만 복호화해서 읽습니다. 비밀 값은 채팅, 이슈, 커밋에 올리지 마세요.
 

@@ -19,6 +19,9 @@
 // Changed: 음식 편집에서 저장 추천 연결 검증
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 // Changed: 온보딩 행동별 테스트 분리 및 경로 수정
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 저장된 조리법 ID의 편집 화면 표시 검증
+
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -844,4 +847,13 @@ test('all-eaten review completion offers Home without a suggestion action', () =
   assert.equal(!!findElement(AfterMealFollowUpView({ p }).props.actions, n => n.type === MealFlowButton), false);
   p.draft.outcomes[0].decision.confirmed = 'tasted';
   assert.ok(findElement(AfterMealFollowUpView({ p }).props.actions, n => n.type === MealFlowButton));
+});
+
+
+test('saved cooking method IDs render readable labels in the food editor', () => {
+  for (const preparation of ['baked_roasted', 'Baked', 'Roasted']) {
+    const html = editor({ ...newFood(), name: 'Apple', preparation }, 'edit');
+    assert.match(html, />Baked\/roasted</);
+    assert.doesNotMatch(html, />baked_roasted</);
+  }
 });

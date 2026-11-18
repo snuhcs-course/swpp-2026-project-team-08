@@ -1,19 +1,15 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 서버 발급 id 기준으로 저장 요청·응답 변환 재작성
 
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: Wiki 조리법 선택값 및 저장 후 표시 일치
+
 import type { Meal as CheckinMeal } from '../../types/meal';
+import { normalizeCookingMethod } from '../../util/cookingMethods';
 import type { CookingMethod } from '../../types/recordValues';
 import { toMealDetail, toMealWrite } from '../dto/mealDto';
 import { apiRequest } from '../network/apiClient';
 
-const cookingMethods: Record<string, CookingMethod> = {
-  raw: 'raw', boiled: 'boiled', steamed: 'steamed', pan_fried: 'pan_fried',
-  stir_fried: 'stir_fried', baked_roasted: 'baked_roasted', mashed_blended: 'mashed_blended', other: 'other',
-  Steamed: 'steamed', Boiled: 'boiled', 'Pan-fried': 'pan_fried', Baked: 'baked_roasted',
-  Roasted: 'baked_roasted', Grilled: 'other', Raw: 'raw', Other: 'other',
-  '찜': 'steamed', '삶기': 'boiled', '팬에 굽기': 'pan_fried', '오븐에 굽기': 'baked_roasted',
-  '로스팅': 'baked_roasted', '직화 구이': 'other', '생식': 'raw', '기타': 'other',
-};
 
 export function prepareMealWrite(meal: CheckinMeal) {
   if (new Set(meal.foods.map((food) => food.id)).size !== meal.foods.length) {
@@ -43,7 +39,7 @@ export function prepareMealWrite(meal: CheckinMeal) {
 
 export function cookingMethodFor(value: string): CookingMethod | null {
   if (!value) return null;
-  const method = cookingMethods[value];
+  const method = normalizeCookingMethod(value);
   if (!method) throw new Error('Unknown cooking method');
   return method;
 }

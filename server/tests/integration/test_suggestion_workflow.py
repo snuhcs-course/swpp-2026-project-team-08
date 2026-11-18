@@ -35,6 +35,7 @@ FOODS = [
     FoodInput(id="f2", name="Egg"),
 ]
 CATALOG = build_catalog(["당근", "쌀", "Tofu"])
+CATALOG_HEADING = "쓸 수 있는 재료 (세미콜론 ';'으로 구분, 이름 안의 쉼표는 이름의 일부):\n"
 
 
 def draft(food_id: str, ingredients: list[str]) -> SuggestionDraft:
@@ -75,8 +76,11 @@ async def test_valid_result_is_returned_and_the_prompt_carries_the_context():
     assert "쓸 수 있는 재료" in user_prompt
     for name in ("당근", "쌀", "Tofu"):
         assert name in user_prompt
-    assert "outcome: UNTOUCHED" in user_prompt
-    assert "difficulty_reasons: TEXTURE.HARDNESS.SOFT, COLOR.GREEN" in user_prompt
+    assert "outcome: 입에 대지 않았다" in user_prompt
+    assert "UNTOUCHED" not in user_prompt
+    # 이유 코드는 그대로 던지지 않고 설명으로 풀어 쓴다.
+    assert "difficulty_reasons: 식감이 무르고 부드러워서 / 색이 초록색이어서" in user_prompt
+    assert "TEXTURE.HARDNESS" not in user_prompt and "COLOR.GREEN" not in user_prompt
     assert "ingredients: 브로콜리" in user_prompt
 
 
@@ -86,8 +90,7 @@ async def test_prompt_lists_only_the_usable_ingredients():
     await generate_suggestions(FOODS, build_catalog(["당근", "쌀"]), llm=llm)
 
     user_prompt = next(m.content for m in llm.compose_inputs[0] if isinstance(m, HumanMessage))
-    listed = user_prompt.split("쓸 수 있는 재료 (한 줄에 하나):\n")[1].splitlines()
-    assert listed == ["당근", "쌀"]
+    assert user_prompt.split(CATALOG_HEADING)[1] == "당근; 쌀"
 
 
 async def test_invalid_result_is_retried_with_feedback():
@@ -142,12 +145,11 @@ async def test_prompt_carries_the_foods_the_child_eats_well():
     assert "- 감자, cooking: 푹 삶기, note: 작게 잘라 제공" in prompt
     # 조리·제공 형태를 적지 않은 safe food 는 이름만 나온다.
     assert "\n- 쌀밥\n" in prompt
-    assert "과거 식사에서 아이가 먹은 음식 (outcome: EATEN):" in prompt
-    assert "- 계란찜, cooking_method: STEAMED, ingredients: 달걀, 물" in prompt
+    assert "과거 식사에서 아이가 잘 먹은 음식 (식후 리뷰에 '잘 먹었다'로 기록):" in prompt
+    assert "- 계란찜, cooking_method: 찌기, ingredients: 달걀, 물" in prompt
     assert "\n- 바나나\n" in prompt
     # 쓸 수 있는 재료 목록은 여전히 마지막 구역이다.
-    listed = prompt.split("쓸 수 있는 재료 (한 줄에 하나):\n")[1].splitlines()
-    assert listed == ["Tofu", "당근", "쌀"]
+    assert prompt.split(CATALOG_HEADING)[1] == "Tofu; 당근; 쌀"
 
 
 async def test_prompt_has_no_familiar_sections_without_records():
@@ -178,9 +180,10 @@ async def test_prompt_separates_reasons_for_the_food_and_for_its_ingredients():
     await generate_suggestions(foods, CATALOG, llm=llm)
 
     assert (
-        "difficulty_reasons: TEXTURE.HARDNESS.HARD, ingredient_results: "
-        "당근 (outcome: UNTOUCHED, difficulty_reasons: SMELL.SULFUR / COLOR.GREEN); "
-        "감자 (outcome: EATEN)"
+        "difficulty_reasons: 식감이 딱딱하고 단단해서, ingredient_results: "
+        "당근 (outcome: 입에 대지 않았다, difficulty_reasons: "
+        "달걀·양배추류 같은 유황 냄새가 나서 / 색이 초록색이어서); "
+        "감자 (outcome: 잘 먹었다)"
     ) in prompt_of(llm)
 
 
@@ -190,6 +193,14 @@ async def test_system_prompt_tells_the_model_how_to_use_reasons_and_familiar_foo
     await generate_suggestions(FOODS, CATALOG, familiar=FAMILIAR, llm=llm)
 
     system = next(m.content for m in llm.compose_inputs[0] if isinstance(m, SystemMessage))
+    # 입력은 아이가 잘 먹지 못한 음식이고, 방향은 잘 먹는 음식 쪽으로 다가가는 것이다.
+    assert "아이가 잘 먹지 못한 음식" in system
+    # 쓸 수 있는 재료로 만들 수 있는 음식만 제안하고, 들어가는 재료는 빠짐없이 쓴다.
+    assert "목록에 있는 재료로 만들 수 있는 음식만 제안합니다" in system
+    assert "빠짐없이 모두 씁니다" in system
+    assert "못 먹은 음식에서 아이가 잘 먹는 음식 쪽으로" in system
+    assert "어느 정도 먹었는지를 문장으로 적은 것" in system
+    assert "UNTOUCHED" not in system and "UNCLEAR" not in system
     # 어려워한 이유를 출발점으로 삼고, 기록에 없는 이유를 지어내지 않는다.
     assert "어려워한 이유는 제안의 출발점" in system
     assert "지어내지 않습니다" in system

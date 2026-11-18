@@ -3,6 +3,8 @@
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: Android 진입 버튼 문구가 잘리지 않도록 너비 확보
+// AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo
+// Changed: 진입 화면 텍스트 크기 제한
 
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../util/colors';
@@ -12,12 +14,12 @@ export const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.onboardingBackground, paddingHorizontal: 24, paddingBottom: 25 },
   body: { flex: 1, justifyContent: 'center', gap: 14 },
   brand: { color: colors.onboardingPrimary, fontSize: 16, fontFamily: fonts.interExtraBold },
-  title: { color: colors.onboardingText, fontSize: 28, fontFamily: fonts.interExtraBold },
+  title: { width: '100%', color: colors.onboardingText, fontSize: 28, lineHeight: 36, fontFamily: fonts.interExtraBold },
   subtitle: { color: colors.onboardingMuted, fontSize: 14, fontFamily: fonts.interRegular, marginTop: -6 },
   error: { color: colors.error, fontSize: 13, fontFamily: fonts.interRegular },
   loading: { color: colors.onboardingMuted, marginTop: 12 },
   actions: { gap: 10 },
-  actionLabel: { fontSize: 18, flex: 1 },
+  actionLabel: { width: '100%', fontSize: 18, lineHeight: 26 },
   linkWrap: { alignItems: 'center', paddingVertical: 12 },
   link: { color: colors.onboardingPrimary, fontSize: 13, fontFamily: fonts.interBold },
 });

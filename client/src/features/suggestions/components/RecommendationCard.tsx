@@ -5,6 +5,9 @@
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: 진행 중인 카드 스와이프의 제스처 소유권 유지
 
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 앞쪽 텍스트 카드는 수평으로 두고 배경 카드 기울기 유지
+
 import { ProgressBar } from '../../../components/ProgressBar';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Pressable, ScrollView, Text, View } from 'react-native';
@@ -100,7 +103,7 @@ export function RecommendationCard(p: Props) {
       <View style={[s.stackLayer, s.stackMiddle]} />
       <Animated.View
         {...pan.panHandlers}
-        style={{ flex: 1, transform: [{ translateX: x }, { rotate: '2deg' }] }}
+        style={{ flex: 1, transform: [{ translateX: x }] }}
       >
         {/* Only the empty surface rotates; text never enters a 3D-transformed layer. */}
         <Animated.View

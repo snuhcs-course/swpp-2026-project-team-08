@@ -2,6 +2,8 @@
 # Changed: 추천 생성 입력에 safe food, 과거 EATEN 음식, 재료별 리뷰가 실리는지 검증 추가
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
+# AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
+# Changed: 이유·결과·조리법이 설명으로 풀려 프롬프트에 실리는지 검증
 
 """추천 생성이 LLM에 넘기는 맥락 검증. 실제 API·서비스·SQLite를 거치고 LLM만 가짜로 바꾼다."""
 

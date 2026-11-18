@@ -8,6 +8,9 @@
 <!-- AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung -->
 <!-- Changed: 첫 거절 후 추가 생성 및 개인화 추천 정책 통합 -->
 
+<!-- AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim -->
+<!-- Changed: 가드레일 판정 설명 추가 -->
+
 # 추천 정책
 
 목차: [범위](#범위) · [생성 입력과 검증](#생성-입력과-검증) · [입력](#r1--진입과-입력-데이터)
@@ -25,6 +28,10 @@
 
 [`validation.py`](../app/features/suggestions/validation.py)는 요청 음식의 누락·중복,
 필수 문구, 재료 목록, 알 수 없는 재료와 제한 충돌을 검사한다.
+검증을 통과한 제안은 가드레일([`guardrail.py`](../app/features/suggestions/workflow/guardrail.py))이
+판정 모델에 보내, 제안의 재료마다와 제안 문장 전체가 아이의 알레르기·식이 제한에 어긋날 확률을 확인한다.
+확률이 임계값 이상이면 다시 쓰게 하고, 재시도를 다 쓰거나 판정 호출이 실패하면 제안을 만들지 않는다.
+판정은 확률적이므로 재료 카탈로그 검사를 대체하지 않고 더한다.
 [`workflow/prompts.py`](../app/features/suggestions/workflow/prompts.py)는 음식별 제안 하나 생성을
 지시한다. 사용자 프롬프트는 다음을 전달한다.
 

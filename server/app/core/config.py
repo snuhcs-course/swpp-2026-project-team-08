@@ -2,6 +2,8 @@
 # Changed: server bootstraping
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 # Changed: LangChain LLM 설정
+# AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
+# Changed: 가드레일 판정 모델과 위험 임계값 설정 추가
 
 """애플리케이션 설정.
 
@@ -11,7 +13,7 @@ pydantic-settings 로 .env / 환경변수에서 설정을 읽는다.
 
 from functools import lru_cache
 
-from pydantic import model_validator
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _DEV_JWT_SECRET = "dev-only-secret-change-me-in-production"
@@ -47,6 +49,9 @@ class Settings(BaseSettings):
     # 비어 있으면 앱은 기동하지만 제안 생성은 실패한다.
     OPENROUTER_API_KEY: str = ""
     SUGGESTION_MODEL: str = "openai/gpt-6-luna"
+    # 가드레일 판정 모델(OpenRouter Decisions API)과, 이 확률 이상이면 제안을 거부하는 임계값.
+    GUARDRAIL_MODEL: str = "typesafe/jev-1.14"
+    GUARDRAIL_RISK_THRESHOLD: float = Field(default=0.3, ge=0.0, le=1.0)
 
     @model_validator(mode="after")
     def _forbid_dev_secret_outside_local(self) -> "Settings":

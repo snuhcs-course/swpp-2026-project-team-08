@@ -1,5 +1,7 @@
 # AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung
 # Changed: 백엔드 레이어별 테스트 작성 예시
+# AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
+# Changed: 검증을 통과하면 가드레일로 가는 분기 반영
 
 import pytest
 
@@ -10,8 +12,8 @@ from app.features.suggestions.workflow.state import ValidationProblem
 @pytest.mark.parametrize(
     ("invalid", "attempts", "expected"),
     [
-        pytest.param(False, 1, "__end__", id="검증_성공시_종료"),
-        pytest.param(False, MAX_ATTEMPTS, "__end__", id="마지막_시도_성공도_종료"),
+        pytest.param(False, 1, "guardrail", id="검증_성공시_가드레일로"),
+        pytest.param(False, MAX_ATTEMPTS, "guardrail", id="마지막_시도_성공도_가드레일로"),
         pytest.param(True, 1, "compose", id="검증_실패시_재작성"),
         pytest.param(True, MAX_ATTEMPTS - 1, "compose", id="마지막_재시도_허용"),
         pytest.param(True, MAX_ATTEMPTS, "__end__", id="횟수_소진시_종료"),

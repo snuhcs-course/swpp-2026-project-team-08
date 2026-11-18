@@ -7,11 +7,14 @@
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 거절한 추천과 보호자 제외 이유 입력
+# AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
+# Changed: 가드레일 입력(restrictions)·판정기(RiskJudge)·restriction_risk 문제 추가
 
 """워크플로의 입출력 값과 그래프 상태. ORM 객체가 아니라 평범한 값만 담는다."""
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Annotated, Literal, TypedDict
+from typing import Annotated, Any, Literal, Protocol, TypedDict
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AnyMessage
@@ -109,7 +112,11 @@ class GeneratedSuggestion:
 
 @dataclass(frozen=True)
 class ValidationProblem:
-    """검증에서 발견한 문제 하나. 자연어 문구는 갖지 않는다."""
+    """검증에서 발견한 문제 하나. 자연어 문구는 갖지 않는다.
+
+    `restriction_risk` 는 가드레일이 아이의 제한에 어긋날 가능성이 높다고 판정한 것이다.
+    `ingredient` 가 있으면 그 재료가, 없으면 제안 문장이 대상이고 `risk` 는 그 확률(0~1)이다.
+    """
 
     kind: Literal[
         "missing_food",
@@ -118,10 +125,12 @@ class ValidationProblem:
         "blank_field",
         "empty_ingredients",
         "unavailable_ingredient",
+        "restriction_risk",
     ]
     food_id: str = ""
     field: str | None = None
     ingredient: str | None = None
+    risk: float | None = None
 
 
 class InputState(TypedDict):
@@ -130,6 +139,8 @@ class InputState(TypedDict):
     foods: list[FoodInput]
     catalog: Catalog
     familiar: FamiliarFoods
+    # 가드레일 판정 모델에 보낼 아이의 제한 설명. 비어 있으면 가드레일은 판정하지 않는다.
+    restrictions: tuple[str, ...]
 
 
 class OutputState(TypedDict):
@@ -145,12 +156,21 @@ class OutputState(TypedDict):
 class GraphState(InputState, OutputState):
     """노드들이 주고받는 전체 상태 (입력 + 출력 + 내부 값).
 
-    `messages`는 agent와 tools가 주고받은 대화이고, `attempts`는 compose를 실행한 횟수다.
-    내부 값은 `prepare` 노드가 초기화한다.
+    `messages`는 compose가 쓰는 첫 대화(시스템·사용자 메시지)이고, `attempts`는 compose를
+    실행한 횟수다. 내부 값은 `prepare` 노드가 초기화한다.
     """
 
     messages: Annotated[list[AnyMessage], add_messages]
     attempts: int
+
+
+class RiskJudge(Protocol):
+    """가드레일이 쓰는 판정 모델. 질문마다 '예'일 확률(0~1)을 돌려준다.
+
+    `questions` 는 질문 이름 → 질문 문장이고, 결과는 같은 이름으로 묶는다.
+    """
+
+    async def ask(self, state: Any, questions: Mapping[str, str]) -> dict[str, float]: ...
 
 
 @dataclass(frozen=True)
@@ -158,6 +178,9 @@ class SuggestionContext:
     """실행마다 주입하는 의존성. 데이터(상태)가 아니라 실행에 필요한 도구다.
 
     노드는 `runtime: Runtime[SuggestionContext]` 인자로 받는다. 테스트는 가짜 모델을 넣는다.
+    `risk_threshold` 이상의 위험 확률이면 가드레일이 그 제안을 거부한다.
     """
 
     llm: BaseChatModel
+    judge: RiskJudge
+    risk_threshold: float

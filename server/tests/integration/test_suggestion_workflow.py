@@ -5,6 +5,8 @@
 # Changed: 도구 없이 프롬프트의 재료 목록으로 검증하는 워크플로 기준으로 재작성
 # AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
 # Changed: 재료별 리뷰 결과와 아이가 잘 먹는 음식이 프롬프트에 담기는지 검증 추가
+# AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
+# Changed: 코드 대신 설명으로 푼 프롬프트와 재료 목록 구분자 검증
 """제안 생성 워크플로 테스트. 가짜 모델로 그래프 전체를 실행하고 LLM은 호출하지 않는다."""
 
 import pytest

@@ -5,7 +5,7 @@
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
 // Changed: 음식 편집의 저장 추천 연결 필드와 칩 크기
 // AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo
-// Changed: 재료 선택 사항 표시
+// Changed: 재료 선택 사항 및 수용 정도 눈금 표시
 
 import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -158,7 +158,7 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
     <View style={styles.acceptance}>
       <View style={styles.fieldHeading}><Text style={styles.label}>{labels.acceptance}</Text><Text style={styles.optional}>{m.optional}</Text></View>
       {labels.acceptanceHint && <Text style={styles.label}>{labels.acceptanceHint}</Text>}
-      <AcceptanceSlider value={food.acceptance ?? null} label={labels.acceptance}
+      <AcceptanceSlider showTicks value={food.acceptance ?? null} label={labels.acceptance}
         options={labels.acceptanceOptions} unsetLabel={labels.acceptanceUnset}
         onChange={(acceptance) => onChange({ acceptance })} />
     </View>

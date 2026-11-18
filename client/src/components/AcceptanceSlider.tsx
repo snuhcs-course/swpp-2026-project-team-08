@@ -3,6 +3,9 @@
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: 중간 라벨은 선택 위치에 정렬하고 양 끝 라벨만 안쪽 배치
 
+// AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo
+// Changed: Add optional breakpoint markers
+
 import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type GestureResponderEvent } from 'react-native';
 import { colors } from '../util/colors';
@@ -11,8 +14,9 @@ import { fonts } from '../util/fonts';
 const TRACK_INSET = 16;
 const REVIEW_TRACK_INSET = 12;
 
-export function AcceptanceSlider<T extends string | number = number>({ value, label, options, optionValues, unsetLabel, onChange, review = false, clearable = true }: {
+export function AcceptanceSlider<T extends string | number = number>({ value, label, options, optionValues, unsetLabel, onChange, review = false, clearable = true, showTicks = false }: {
   review?: boolean;
+  showTicks?: boolean;
   clearable?: boolean;
   value: T | null;
   label: string;
@@ -85,10 +89,9 @@ export function AcceptanceSlider<T extends string | number = number>({ value, la
       style={styles.touchArea}
     >
       <View pointerEvents="none" style={[styles.track, { marginHorizontal: inset }]}>
-        {(position != null || review) && <>
-          <View style={[styles.fill, { width: `${(position ?? 0) * 100}%` }]} />
-          <View style={[styles.thumb, { left: `${(position ?? 0) * 100}%` }, review && position == null && styles.unsetThumb]} />
-        </>}
+        {(position != null || review) && <View style={[styles.fill, { width: `${(position ?? 0) * 100}%` }]} />}
+        {showTicks && options.map((_, index) => <View key={index} style={[styles.tick, { left: `${lastIndex ? index / lastIndex * 100 : 0}%` }]} />)}
+        {(position != null || review) && <View style={[styles.thumb, { left: `${(position ?? 0) * 100}%` }, review && position == null && styles.unsetThumb]} />}
       </View>
     </View>
     <View accessibilityRole="radiogroup" style={styles.labels}>
@@ -112,6 +115,7 @@ const styles = StyleSheet.create({
   unsetThumb: { backgroundColor: colors.homeCalendarMuted },
   touchArea: { height: 44, justifyContent: 'center' },
   track: { marginHorizontal: TRACK_INSET, height: 6, borderRadius: 3, backgroundColor: colors.editorDisabled },
+  tick: { position: 'absolute', top: -3, width: 2, height: 12, marginLeft: -1, backgroundColor: colors.editorMuted },
   fill: { height: '100%', borderRadius: 3, backgroundColor: colors.homePrimary },
   thumb: {
     position: 'absolute', top: -8, width: 22, height: 22, borderRadius: 11,

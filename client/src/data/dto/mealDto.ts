@@ -2,7 +2,7 @@
 // Changed: 대문자 enum·서버 발급 id·음식 안 리뷰와 추천 시도 기준으로 변환 재작성
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
-// Changed: 기존 기타 조리법을 식사·리뷰에서 미입력으로 처리
+// Changed: 조리법 OTHER 저장·조회 의미 보존
 
 import type { Meal, MealDetail, MealDraft, FoodItem } from '../../types/mealRecord';
 import type { SuggestionMealLink } from '../../types/suggestionRecord';
@@ -10,7 +10,7 @@ import type { IngredientInputDto } from './ingredientDto';
 import { toIngredient, toIngredientInput } from './ingredientDto';
 import { toMealReview } from './reviewDto';
 import {
-  acceptance, array, cookingMethods, mealCookingMethod, date, fromApiEnum, id, mealLocations,
+  acceptance, array, cookingMethods, date, fromApiEnum, id, mealLocations,
   mealTypes, nullable, object, text, timestamp, toApiEnum,
 } from './values';
 
@@ -52,7 +52,7 @@ export function toFoodItem(value: unknown): FoodItem {
     mealId: id(dto.meal_id),
     name: text(dto.name),
     ingredients: array(dto.ingredients, toIngredient),
-    cookingMethod: mealCookingMethod(dto.cooking_method),
+    cookingMethod: nullable(dto.cooking_method, (method) => fromApiEnum(method, cookingMethods)),
     servingNote: nullable(dto.serving_note, text),
     acceptance: acceptance(dto.acceptance),
   };
@@ -120,7 +120,7 @@ export function toMealFoodWrite(food: MealDraft['foods'][number]): MealFoodWrite
   return {
     name: text(food.name),
     ingredients: food.ingredients.map(toIngredientInput),
-    cooking_method: nullable(food.cookingMethod, (method) => method === 'other' ? null : toApiEnum(method, cookingMethods)),
+    cooking_method: nullable(food.cookingMethod, (method) => toApiEnum(method, cookingMethods)),
     serving_note: nullable(food.servingNote, text),
     acceptance: acceptance(food.acceptance),
   };

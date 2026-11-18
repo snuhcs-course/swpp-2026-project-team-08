@@ -46,7 +46,7 @@ export function FoodResponseCard({
   const fill = acceptanceFill(card.outcome);
   const meta = card.kind === 'ingredient' && card.parentName
     ? m.inDish(card.parentName)
-    : [cookingMethodLabel(card.preparation, a), card.servingNote].filter((value) => value.trim()).join(' · ');
+    : [cookingMethodLabel(card.preparation, a.cookingOptions), card.servingNote].filter((value) => value.trim()).join(' · ');
   const badgeLabel = card.outcome ? review.outcomes[card.outcome] : m.noRecord;
   const eaten = card.outcome === 'eaten';
   const [open, setOpen] = useState(defaultOpen);

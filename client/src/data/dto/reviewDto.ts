@@ -2,7 +2,7 @@
 // Changed: 음식·재료 안의 리뷰 결과와 난이도 사유 문자열 목록 변환으로 재작성
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
-// Changed: 기존 기타 조리법을 식사·리뷰에서 미입력으로 처리
+// Changed: 조리법 OTHER 저장·조회 의미 보존
 
 import type {
   MealReview,
@@ -13,7 +13,7 @@ import type {
 import { fromDifficultyReason, toDifficultyReason } from './difficultyReasons';
 import { toIngredient } from './ingredientDto';
 import {
-  acceptance, array, mealCookingMethod, fromApiEnum, id, nullable, object, text, toApiEnum,
+  acceptance, array, cookingMethods, fromApiEnum, id, nullable, object, text, toApiEnum,
 } from './values';
 
 export type MealReviewWriteDto = {
@@ -44,7 +44,7 @@ export function toMealReview(mealId: string, foods: unknown[]): MealReview | nul
     foodSnapshot: {
       name: text(food.name),
       ingredients: array(food.ingredients, toIngredient),
-      cookingMethod: mealCookingMethod(food.cooking_method),
+      cookingMethod: nullable(food.cooking_method, (method) => fromApiEnum(method, cookingMethods)),
       servingNote: nullable(food.serving_note, text),
       acceptance: acceptance(food.acceptance),
     },

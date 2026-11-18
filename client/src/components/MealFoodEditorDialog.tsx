@@ -6,7 +6,7 @@
 // Changed: 음식 편집의 저장 추천 연결 필드와 칩 크기
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
-// Changed: 조리법 7개 선택지 및 미입력 상태 표시
+// Changed: Wiki 조리법 선택값 및 저장 후 표시 일치
 
 import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -147,7 +147,7 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
             {m.optional}
           </Text>
         </View>
-        <DropdownChoice variant="editor" value={normalizeCookingMethod(food.preparation) ?? ''} placeholder={labels.selectCooking} displayFallback={cookingMethodLabel(food.preparation, labels) || undefined} options={cookingMethodIds.map((id, index) => ({ id, label: labels.cookingOptions[index] }))} onChange={(preparation) => onChange({ preparation })} />
+        <DropdownChoice variant="editor" value={normalizeCookingMethod(food.preparation) ?? food.preparation} placeholder={labels.selectCooking} displayFallback={cookingMethodLabel(food.preparation, labels.cookingOptions) || undefined} options={labels.cookingOptions.map((label, index) => ({ id: cookingMethodIds[index], label }))} onChange={(preparation) => onChange({ preparation })} />
       </View>
       <View style={styles.column}>
         <View style={styles.fieldHeading}>

@@ -2,7 +2,7 @@
 // Changed: 서버 발급 id 기준으로 저장 요청·응답 변환 재작성
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
-// Changed: 조리법 선택값 변환 및 기타 입력을 미입력으로 저장
+// Changed: Wiki 조리법 선택값 및 저장 후 표시 일치
 
 import type { Meal as CheckinMeal } from '../../types/meal';
 import { normalizeCookingMethod } from '../../util/cookingMethods';
@@ -40,7 +40,7 @@ export function prepareMealWrite(meal: CheckinMeal) {
 export function cookingMethodFor(value: string): CookingMethod | null {
   if (!value) return null;
   const method = normalizeCookingMethod(value);
-  if (method === undefined) throw new Error('Unknown cooking method');
+  if (!method) throw new Error('Unknown cooking method');
   return method;
 }
 

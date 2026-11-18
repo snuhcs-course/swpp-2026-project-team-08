@@ -20,7 +20,7 @@
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 // Changed: 온보딩 행동별 테스트 분리 및 경로 수정
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
-// Changed: 저장된 조리법 ID의 편집 화면 표시 검증
+// Changed: 음식 편집 조리법 선택·저장값 및 미입력 표시 검증
 
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
@@ -855,5 +855,41 @@ test('saved cooking method IDs render readable labels in the food editor', () =>
     const html = editor({ ...newFood(), name: 'Apple', preparation }, 'edit');
     assert.match(html, />Baked\/roasted</);
     assert.doesNotMatch(html, />baked_roasted</);
+  }
+});
+
+
+test('음식 편집기는 일곱 조리법을 제공하고 선택한 조리법 ID를 전달한다', async t => {
+  const { DropdownChoice } = require('../../src/components/DropdownChoice.tsx');
+  const expected = [
+    ['raw', 'Raw/unheated', '생식·비가열'],
+    ['boiled', 'Boiled', '삶기'],
+    ['steamed', 'Steamed', '찜'],
+    ['pan_fried', 'Pan-fried', '팬에 굽기'],
+    ['stir_fried', 'Stir-fried', '볶기'],
+    ['baked_roasted', 'Baked/roasted', '오븐에 굽기·로스팅'],
+    ['mashed_blended', 'Mashed/blended', '으깨기·갈기'],
+  ];
+  function descendants(node) {
+    if (Array.isArray(node)) return node.flatMap(descendants);
+    if (!node || typeof node !== 'object') return [];
+    return [node, ...descendants(node.props?.children)];
+  }
+  for (const [language, labelIndex] of [['en', 1], ['ko', 2]]) {
+    const onChange = t.mock.fn();
+    const copy = copyFor(language);
+    const h = await renderHook(t, () => MealFoodEditorDialog({
+      food: { ...newFood(), preparation: 'other' }, mode: 'edit',
+      meal: copy.mealCheckin, common: copy.common, labels: abcCopyFor(language),
+      ingredient: '', onIngredientChange: noop, onAddIngredient: noop,
+      onRemoveIngredient: noop, onChange, onSave: noop, onCancel: noop,
+    }));
+    const dropdown = descendants(h.current).find(node => node.type === DropdownChoice).props;
+    assert.deepEqual(dropdown.options, expected.map(row => ({ id: row[0], label: row[labelIndex] })));
+    assert.equal(dropdown.value, '');
+    assert.equal(dropdown.displayFallback, undefined);
+    for (const option of dropdown.options) dropdown.onChange(option.id);
+    assert.deepEqual(onChange.mock.calls.map(call => call.arguments),
+      expected.map(row => [{ preparation: row[0] }]));
   }
 });

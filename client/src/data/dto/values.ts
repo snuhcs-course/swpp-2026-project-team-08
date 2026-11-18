@@ -1,6 +1,9 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 서버 대문자 enum 과 앱 소문자 값을 변환하는 함수 추가
 
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 식사 조리법 OTHER 응답을 미입력으로 정규화
+
 import type {
   CookingMethod,
   MealLocation,
@@ -81,4 +84,10 @@ export function acceptance(value: unknown): number | null {
     throw new Error('Invalid API acceptance');
   }
   return value as number;
+}
+
+
+export function mealCookingMethod(value: unknown): CookingMethod | null {
+  const method = nullable(value, item => fromApiEnum(item, cookingMethods));
+  return method === 'other' ? null : method;
 }

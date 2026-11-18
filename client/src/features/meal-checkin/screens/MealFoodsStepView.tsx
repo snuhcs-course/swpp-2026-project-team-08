@@ -110,7 +110,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
               <View style={styles.column}>
                 <Text style={styles.sectionLabel}>{a.cooking}</Text>
                 <Text style={styles.fieldValue}>
-                  {cookingMethodLabel(food.preparation, a.cookingOptions) || s.common.notEntered}
+                  {cookingMethodLabel(food.preparation, a) || s.common.notEntered}
                 </Text>
               </View>
               <View style={styles.column}>

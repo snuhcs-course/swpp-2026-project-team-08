@@ -7,10 +7,14 @@
 // AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo
 // Changed: 재료 선택 사항 및 수용 정도 눈금 표시
 
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 조리법 열 가지를 고정 ID와 공통 표시명으로 선택
+
 import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { FoodItem } from '../types/meal';
 import type { copyFor } from '../util/strings';
+import { cookingMethodIds, type CookingMethod } from '../types/recordValues';
 import { colors } from '../util/colors';
 import { fonts } from '../util/fonts';
 import { AppButton } from './AppButton';
@@ -27,7 +31,7 @@ type Labels = {
   acceptanceOptions: readonly [string, string, string, string];
   acceptanceUnset: string;
   selectCooking: string; 
-  cookingOptions: readonly string[] 
+  cookingMethods: Record<CookingMethod, string>;
 };
 
 type SuggestionLink = {
@@ -145,7 +149,13 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
             {m.optional}
           </Text>
         </View>
-        <DropdownChoice variant="editor" value={food.preparation} placeholder={labels.selectCooking} displayFallback={food.preparation || undefined} options={labels.cookingOptions.map((label) => ({ id: label, label }))} onChange={(preparation) => onChange({ preparation })} />
+        <DropdownChoice
+          variant="editor"
+          value={food.preparation}
+          placeholder={labels.selectCooking}
+          options={cookingMethodIds.map((id) => ({ id, label: labels.cookingMethods[id] }))}
+          onChange={(preparation) => onChange({ preparation: preparation as CookingMethod })}
+        />
       </View>
       <View style={styles.column}>
         <View style={styles.fieldHeading}>

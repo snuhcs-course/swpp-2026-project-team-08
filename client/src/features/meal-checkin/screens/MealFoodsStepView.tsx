@@ -11,6 +11,9 @@
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
 // Changed: 식전 사진 배치·높이 및 음식별 저장 추천 연결
 
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 식사 조리법을 공통 표시명으로 표시
+
 import { useState } from "react";
 import { Image } from "expo-image";
 import {
@@ -106,7 +109,7 @@ export function MealFoodsStepView({ p }: { p: Props }) {
               <View style={styles.column}>
                 <Text style={styles.sectionLabel}>{a.cooking}</Text>
                 <Text style={styles.fieldValue}>
-                  {food.preparation || s.common.notEntered}
+                  {food.preparation ? a.cookingMethods[food.preparation] : s.common.notEntered}
                 </Text>
               </View>
               <View style={styles.column}>

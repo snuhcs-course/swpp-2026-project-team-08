@@ -5,6 +5,9 @@
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 편집 중인 음식의 추천 연결 검증
 
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 초안 조리법 고정 ID와 미입력 검증
+
 import {
   mealSettings,
   mealTypes,
@@ -14,6 +17,7 @@ import {
   type Meal,
   type MealSuggestionLink,
 } from '../../types/meal';
+import { cookingMethodIds } from '../../types/recordValues';
 import { validDate } from '../../util/date';
 const record = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === 'object' && !Array.isArray(v);
@@ -31,7 +35,7 @@ export function isFood(v: unknown): v is FoodItem {
     typeof v.id !== 'string' ||
     typeof v.name !== 'string' ||
     !list(v.ingredients) ||
-    typeof v.preparation !== 'string' ||
+    !(v.preparation === '' || cookingMethodIds.some(method => method === v.preparation)) ||
     typeof v.servingNote !== 'string' ||
     typeof v.confirmed !== 'boolean' ||
     !(v.acceptance === undefined || v.acceptance === null || (typeof v.acceptance === 'number' && Number.isInteger(v.acceptance) && v.acceptance >= 0 && v.acceptance <= 3)) ||

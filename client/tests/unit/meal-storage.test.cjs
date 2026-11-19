@@ -1,6 +1,8 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 편집 추천 초안 검증 및 이전 초안 복원
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 기존 초안의 조리법 미입력 복원과 나머지 입력 보존 검증
 const { test } = require('node:test');
 
 const assert = require('node:assert/strict');
@@ -24,6 +26,39 @@ const { newFood } = require('../../src/rules/foodDraft.ts');
 const { isDraft } = require('../../src/data/storage/mealValidation.ts');
 
 const { readMealDraft, saveMealDraft, readMeals } = require('../../src/data/storage/mealStorage.ts');
+
+test('기존 초안은 지원하는 조리법을 유지하고 오래된 조리법만 미입력으로 복원한다', async () => {
+  const draft = completeDraft('cooking-method-draft');
+  const cases = [
+    ['raw', 'raw'], ['boiled', 'boiled'], ['steamed', 'steamed'],
+    ['pan_fried', 'pan_fried'], ['stir_fried', 'stir_fried'],
+    ['baked', 'baked'], ['roasted', 'roasted'], ['mashed', 'mashed'],
+    ['blended', 'blended'], ['other', 'other'], ['', ''],
+    ['baked_roasted', ''], ['mashed_blended', ''], ['Baked', ''], ['삶기', ''],
+  ];
+  for (const [preparation, restoredMethod] of cases) {
+    const food = { ...draft.foods[0], preparation, ingredients: ['Rice'], servingNote: 'Small pieces', acceptance: 2 };
+    const editingFood = { ...food, name: 'Editing rice' };
+    values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({ ...draft, foods: [food], editingFood }));
+
+    const restored = await readMealDraft(draft.childId);
+
+    assert.deepEqual(restored.foods, [{ ...food, preparation: restoredMethod }]);
+    assert.deepEqual(restored.editingFood, { ...editingFood, preparation: restoredMethod });
+    await saveMealDraft(restored);
+    assert.deepEqual(await readMealDraft(draft.childId), restored);
+  }
+});
+
+test('초안 복원은 문자열이 아닌 손상된 조리법을 거절한다', async () => {
+  const draft = completeDraft('invalid-cooking-method');
+  for (const preparation of [null, 1, {}]) {
+    values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({
+      ...draft, foods: [{ ...draft.foods[0], preparation }],
+    }));
+    await assert.rejects(readMealDraft(draft.childId), /Invalid meal draft/);
+  }
+});
 
 test('autosaves are ordered, recover edits and migrate interrupted legacy analysis safely', async () => {
   const draft = completeDraft('autosave');

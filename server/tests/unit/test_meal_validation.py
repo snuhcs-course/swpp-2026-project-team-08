@@ -1,6 +1,8 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 대문자 enum, 서버 발급 id, 난이도 사유 문자열 기준으로 DTO 검증 테스트 재작성
+# AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+# Changed: 식사 생성·수정의 조리법 열 가지 입력 계약 검증
 """Unit: meal DTO ranges and normalization. No DB or HTTP mocks needed."""
 
 import pytest
@@ -35,15 +37,42 @@ def test_acceptance_rejects_out_of_range_and_wrong_types(value):
         MealFoodCreateRequest(**_food(acceptance=value))
 
 
-@pytest.mark.parametrize("method", [item.value for item in MealCookingMethod])
-def test_cooking_method_accepts_every_uppercase_value(method):
-    assert MealFoodCreateRequest(**_food(cooking_method=method)).cooking_method == method
+@pytest.mark.parametrize(
+    "request_type", [MealFoodCreateRequest, MealFoodUpdateRequest], ids=["생성", "수정"]
+)
+@pytest.mark.parametrize(
+    "method",
+    [
+        "RAW",
+        "BOILED",
+        "STEAMED",
+        "PAN_FRIED",
+        "STIR_FRIED",
+        "BAKED",
+        "ROASTED",
+        "MASHED",
+        "BLENDED",
+        "OTHER",
+    ],
+    ids=["생식", "삶기", "찜", "팬에_굽기", "볶기", "베이킹", "로스팅", "으깨기", "갈기", "기타"],
+)
+def test_식사_입력은_열_가지_조리법을_enum으로_변환한다(request_type, method):
+    parsed = request_type(**_food(cooking_method=method))
+    assert parsed.cooking_method is MealCookingMethod(method)
+    assert parsed.model_dump(mode="json")["cooking_method"] == method
 
 
-@pytest.mark.parametrize("method", ["stir_fried", "Boiled", "FRYING", ""])
-def test_cooking_method_rejects_other_values(method):
+@pytest.mark.parametrize(
+    "request_type", [MealFoodCreateRequest, MealFoodUpdateRequest], ids=["생성", "수정"]
+)
+@pytest.mark.parametrize(
+    "method",
+    ["stir_fried", "Boiled", "FRYING", "", "BAKED_ROASTED", "MASHED_BLENDED"],
+    ids=["소문자", "표시명", "미지원값", "빈_문자열", "굽기_통합값", "으깨기_통합값"],
+)
+def test_식사_입력은_허용_목록과_맞지_않는_조리법을_거절한다(request_type, method):
     with pytest.raises(ValidationError):
-        MealFoodCreateRequest(**_food(cooking_method=method))
+        request_type(**_food(cooking_method=method))
 
 
 @pytest.mark.parametrize(

@@ -23,7 +23,7 @@ NurtureBites is a meal tracker and planning app for caregivers of autistic child
 
 ## Iteration 4 Progress
 
-Iteration 4 is the work merged from 10 November through 19 November 2026, after `iteration-3-demo`. The visible changes follow heuristic-evaluation feedback: the suggestion step should offer another idea on purpose, and meal photos should be large enough that the saved record does not feel cramped.
+Iteration 4 changes follow heuristic-evaluation feedback as well as internal group evaluation and feedback. The main changes made stem from HE feedback +  logic recommendation prompting better + internal feedback.
 
 - **Regenerate suggestion ([#31](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/31), [#35](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/35)):** Dismissing the first suggestion for a food shows the food name, the selected reasons, and a **Regenerate** button next to **Continue**. Regenerate asks for one different small change and includes the rejected card and reasons. The server allows that extra generation once per food and returns the saved card if it is requested again. **Skip** is no longer on the recommendation card. Cooking methods are shown with readable labels.
 - **Larger meal photos ([#36](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/36)):** The check-in and after-meal save screens use a wider photo on the saved-meal card (about 148px tall, or 112px when before and after sit side by side), with a before/after label, the meal summary, and a short saved-versus-next step path. The previous thumbnails were about 95×79px, or 52×48px in the compact state.
@@ -35,9 +35,9 @@ Iteration 4 is the work merged from 10 November through 19 November 2026, after 
 
 ### Current demo limitations
 
-- Email-change code generation and confirmation exist, but delivery by email is not connected.
-- My Page's tutorial/help entry is visible and disabled because that guide is not implemented.
+- My Page's tutorial/help entry is visible and disabled because the app is not finished so the guide is not implemented.
 - Native photo files remain on the device. This demo does not sync photo files across devices.
+- suggestion logic is still being refined. The refining process will use the 2 interview professors' feedback
 
 ## Demo Video
 

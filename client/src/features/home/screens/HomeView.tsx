@@ -1,8 +1,11 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 홈 이동 카드를 HomeActionCard 공통 컴포넌트로 분리
 
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
+import { HomeActionCard } from '../../../components/HomeActionCard';
 import { HomeAssetIcon } from '../../../components/HomeAssetIcon';
 import type { Meal, MealDraft } from '../../../types/meal';
 import type { ChildProfile, Language } from '../../../types/profile';
@@ -69,13 +72,14 @@ export function HomeView(p: HomeViewProps) {
         {p.error && <View style={styles.state}><Text accessibilityRole="alert" style={styles.stateText}>{h.refreshFailed}</Text><AppButton secondary label={s.common.retry} onPress={p.onRefresh} /></View>}
         {p.pendingMeals.length > 0 && <View style={[styles.section, { marginBottom: -6 }]}>
           <Text style={styles.sectionTitle}>{h.afterMealTitle}</Text>
-          {p.pendingMeals.map(meal => <Pressable key={meal.id} accessibilityRole="button" accessibilityLabel={`${name} · ${s.mealCheckin.types[meal.mealType]} · ${displayDate(meal.mealDate, p.language, true)} · ${h.awaitingReview}`} onPress={() => p.onReviewMeal(meal.id)} style={styles.reviewCard}>
-            <View style={styles.mealCopy}>
-              <Text style={styles.mealTitle}>{name} · {s.mealCheckin.types[meal.mealType]}</Text>
-              <Text style={styles.mealMeta}>{displayDate(meal.mealDate, p.language, true)} · {s.mealCheckin.draftFoodCount(meal.foods.length)}</Text>
-            </View>
-            <View style={styles.reviewAction}><Text style={styles.reviewStatus}>{h.awaitingReview}</Text><HomeAssetIcon name="review" /></View>
-          </Pressable>)}
+          {p.pendingMeals.map(meal => <HomeActionCard key={meal.id}
+            title={`${name} · ${s.mealCheckin.types[meal.mealType]}`}
+            description={`${displayDate(meal.mealDate, p.language, true)} · ${s.mealCheckin.draftFoodCount(meal.foods.length)}`}
+            actionLabel={h.awaitingReview}
+            actionIcon={<HomeAssetIcon name="review" />}
+            accessibilityLabel={`${name} · ${s.mealCheckin.types[meal.mealType]} · ${displayDate(meal.mealDate, p.language, true)} · ${h.awaitingReview}`}
+            onPress={() => p.onReviewMeal(meal.id)}
+          />)}
         </View>}
         {fresh && <>
           <HomeCalendarView language={p.language} now={p.now} meals={p.meals} onDate={p.onMealHistory} />

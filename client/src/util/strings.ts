@@ -26,6 +26,8 @@
 
 // AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
 // Changed: 개인정보처리방침 링크 및 열기 실패 문구
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 홈 추천 진입 문구
 
 // AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
 // Changed: 개인정보처리방침 링크 및 열기 실패 문구
@@ -196,6 +198,7 @@ const en = {
     logMeal: 'Log this meal', noRecommendations: 'No saved suggestions yet', calendar: 'Meal Log Calendar', profileTitle: 'Profile',
     caregiver: 'Caregiver', child: 'Child', editProfile: 'Edit profile',
     refreshFailed: 'Could not load your records.',
+    viewSuggestion: 'View Suggestion', suggestionsLoadFailed: 'Could not load meal suggestions.',
   },
   mealLog: {
     title: 'Meal History',
@@ -465,6 +468,7 @@ const ko = {
     logMeal: '식사 기록하기', noRecommendations: '아직 저장된 추천이 없어요.', calendar: '식사 기록 달력', profileTitle: '프로필',
     caregiver: '보호자', child: '아이', editProfile: '프로필 수정',
     refreshFailed: '기록을 불러오지 못했어요.',
+    viewSuggestion: '추천 보기', suggestionsLoadFailed: '식사 추천을 불러오지 못했어요.',
   },
   mealLog: {
     title: '식사 기록',

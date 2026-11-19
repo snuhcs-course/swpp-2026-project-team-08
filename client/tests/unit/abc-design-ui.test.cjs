@@ -19,6 +19,9 @@
 // Changed: 음식 편집에서 저장 추천 연결 검증
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 // Changed: 온보딩 행동별 테스트 분리 및 경로 수정
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 홈 추천 테스트 입력 현행화
+
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -164,6 +167,10 @@ function homeProps() {
     draftLoading: false,
     draftError: false,
     pendingMeals: [],
+    suggestionMeals: [],
+    suggestionMealsLoading: false,
+    suggestionMealsError: false,
+    onViewSuggestions: noop,
     meals: [],
     data: { loggedDates: new Set(), suggestions: [] },
     loading: false,

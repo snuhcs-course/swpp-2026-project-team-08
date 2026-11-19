@@ -1,13 +1,14 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
-// Changed: 홈 이동 카드를 HomeActionCard 공통 컴포넌트로 분리
+// Changed: 홈 공통 카드 분리 및 식후 리뷰 대기 목록에 MealDetail 직접 사용
 
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
 import { HomeActionCard } from '../../../components/HomeActionCard';
 import { HomeAssetIcon } from '../../../components/HomeAssetIcon';
 import type { Meal, MealDraft } from '../../../types/meal';
+import type { MealDetail } from '../../../types/mealRecord';
 import type { ChildProfile, Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
@@ -25,7 +26,7 @@ export type HomeViewProps = {
   now: Date;
   data: { loggedDates: Set<string>; suggestions: { id: string; title: string; description: string }[] } | null;
   meals: Meal[];
-  pendingMeals: Meal[];
+  pendingMeals: MealDetail[];
   loading: boolean;
   error: boolean;
   refreshing: boolean;

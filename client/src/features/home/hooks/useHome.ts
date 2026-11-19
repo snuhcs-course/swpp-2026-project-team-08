@@ -4,6 +4,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 추천의 근거 음식 이름을 원본 식사에서 찾음
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 식후 리뷰 대기 목록에 MealDetail 직접 사용
 
 import { useCallback, useEffect, useState } from 'react';
 import { useSavedSuggestionsForCheckin } from '../../../data/queries/checkinReferenceQueries';
@@ -37,7 +39,7 @@ export function useHome(profile: ChildProfile) {
   }));
   return {
     now,
-    pendingMeals: details.filter((item) => item.review === null).map(toLegacyMeal),
+    pendingMeals: details.filter((item) => item.review === null),
     storedMeals,
     draft: draft.data?.step !== 'complete' ? (draft.data ?? null) : null,
     lastSavedMealId: draft.data?.savedMealId ?? undefined,

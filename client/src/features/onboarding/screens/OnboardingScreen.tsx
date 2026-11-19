@@ -13,6 +13,9 @@
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 // Changed: 익숙한 음식 없음·완료 재시도 및 연속 제출 잠금
 
+// AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo
+// Changed: 중복 익숙한 음식 추가 버튼 비활성화
+
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { View } from 'react-native';
@@ -156,7 +159,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         noSafeFoods={model.draft.noSafeFoods}
         onToggleNone={() => model.setNoSafeFoods(!model.draft.noSafeFoods)}
         input={model.draft.safeFoodInput}
-        canAdd={canAddSafeFood(model.draft.safeFoodInput)}
+        canAdd={canAddSafeFood(model.draft.safeFoodInput, model.draft.safeFoods)}
         onRemove={model.removeSafeFood}
         onInputChange={model.setSafeFoodInput}
         onAdd={() => model.addSafeFood(model.draft.safeFoodInput)}

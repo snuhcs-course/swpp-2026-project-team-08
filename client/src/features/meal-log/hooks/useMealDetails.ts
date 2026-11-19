@@ -3,17 +3,27 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
 
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 식사 상세의 추천 조회와 진입 조건 연결
+
 import { useMemo } from 'react';
 import { useDeleteMeal, useMealDetail } from '../../../data/queries/mealLogQueries';
+import { useMealSuggestions } from '../../../data/queries/mealSuggestionQueries';
+import { shouldShowSuggestionMeal } from '../../../rules/mealSuggestionEntry';
 import { foodResponseCardsFromDetail } from '../rules';
 
 export function useMealDetails(userId: string, mealId: string) {
   const detail = useMealDetail(userId, mealId);
+  const suggestions = useMealSuggestions(userId, mealId);
   const del = useDeleteMeal();
   const cards = useMemo(() => detail.data ? foodResponseCardsFromDetail(detail.data) : [], [detail.data]);
   return {
     meal: detail.data ?? null,
     cards,
+    canViewSuggestions: !!detail.data && suggestions.data !== undefined
+      && shouldShowSuggestionMeal(detail.data, suggestions.data),
+    suggestionsLoading: suggestions.isLoading,
+    suggestionsError: suggestions.isError,
     loading: !!mealId && detail.isPending && !detail.data,
     error: !mealId || detail.isError,
     retry: detail.refetch,

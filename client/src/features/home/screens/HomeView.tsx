@@ -1,10 +1,14 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 홈 공통 카드와 MealDetail 기반 식후 리뷰·추천 대기 목록 표시
 
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
+import { HomeActionCard } from '../../../components/HomeActionCard';
 import { HomeAssetIcon } from '../../../components/HomeAssetIcon';
 import type { Meal, MealDraft } from '../../../types/meal';
+import type { MealDetail } from '../../../types/mealRecord';
 import type { ChildProfile, Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { copyFor } from '../../../util/strings';
@@ -22,7 +26,11 @@ export type HomeViewProps = {
   now: Date;
   data: { loggedDates: Set<string>; suggestions: { id: string; title: string; description: string }[] } | null;
   meals: Meal[];
-  pendingMeals: Meal[];
+  pendingMeals: MealDetail[];
+  suggestionMeals: MealDetail[];
+  suggestionMealsLoading: boolean;
+  suggestionMealsError: boolean;
+  onViewSuggestions: (mealId: string) => void;
   loading: boolean;
   error: boolean;
   refreshing: boolean;
@@ -43,7 +51,9 @@ export function HomeView(p: HomeViewProps) {
   const day = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(p.now);
   const date = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(p.now);
   const greeting = (p.now.getHours() < 12 ? h.greetingMorning : p.now.getHours() < 18 ? h.greetingAfternoon : h.greetingEvening)(caregiverName);
-  const fresh = !p.loading && !p.error && !p.meals.length && !p.draft;
+  const fresh = !p.loading && !p.error && !p.meals.length && !p.draft
+    && !p.suggestionMealsLoading && !p.suggestionMealsError
+    && !p.suggestionMeals.length && !p.data?.suggestions.length;
   const idea = p.data?.suggestions[0];
   return <View style={styles.root}>
     <ScrollView contentContainerStyle={styles.scroll} refreshControl={<RefreshControl refreshing={p.refreshing} onRefresh={p.onRefresh} tintColor={colors.homePrimary} />}>
@@ -69,13 +79,32 @@ export function HomeView(p: HomeViewProps) {
         {p.error && <View style={styles.state}><Text accessibilityRole="alert" style={styles.stateText}>{h.refreshFailed}</Text><AppButton secondary label={s.common.retry} onPress={p.onRefresh} /></View>}
         {p.pendingMeals.length > 0 && <View style={[styles.section, { marginBottom: -6 }]}>
           <Text style={styles.sectionTitle}>{h.afterMealTitle}</Text>
-          {p.pendingMeals.map(meal => <Pressable key={meal.id} accessibilityRole="button" accessibilityLabel={`${name} · ${s.mealCheckin.types[meal.mealType]} · ${displayDate(meal.mealDate, p.language, true)} · ${h.awaitingReview}`} onPress={() => p.onReviewMeal(meal.id)} style={styles.reviewCard}>
-            <View style={styles.mealCopy}>
-              <Text style={styles.mealTitle}>{name} · {s.mealCheckin.types[meal.mealType]}</Text>
-              <Text style={styles.mealMeta}>{displayDate(meal.mealDate, p.language, true)} · {s.mealCheckin.draftFoodCount(meal.foods.length)}</Text>
-            </View>
-            <View style={styles.reviewAction}><Text style={styles.reviewStatus}>{h.awaitingReview}</Text><HomeAssetIcon name="review" /></View>
-          </Pressable>)}
+          {p.pendingMeals.map(meal => <HomeActionCard key={meal.id}
+            title={`${name} · ${s.mealCheckin.types[meal.mealType]}`}
+            description={`${displayDate(meal.mealDate, p.language, true)} · ${s.mealCheckin.draftFoodCount(meal.foods.length)}`}
+            actionLabel={h.awaitingReview}
+            actionIcon={<HomeAssetIcon name="review" />}
+            accessibilityLabel={`${name} · ${s.mealCheckin.types[meal.mealType]} · ${displayDate(meal.mealDate, p.language, true)} · ${h.awaitingReview}`}
+            onPress={() => p.onReviewMeal(meal.id)}
+          />)}
+        </View>}
+        {(p.suggestionMeals.length > 0 || (!p.loading && p.suggestionMealsLoading)
+          || (!p.error && p.suggestionMealsError)) && <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{h.viewSuggestion}</Text>
+          {!p.loading && p.suggestionMealsLoading && <View style={styles.state}>
+            <ActivityIndicator color={colors.homePrimary} /><Text style={styles.stateText}>{s.common.loading}</Text>
+          </View>}
+          {!p.error && p.suggestionMealsError && <View style={styles.state}>
+            <Text accessibilityRole="alert" style={styles.stateText}>{h.suggestionsLoadFailed}</Text>
+            <AppButton secondary label={s.common.retry} onPress={p.onRefresh} />
+          </View>}
+          {p.suggestionMeals.map(meal => <HomeActionCard key={meal.id}
+            title={`${name} · ${s.mealCheckin.types[meal.mealType]}`}
+            description={`${displayDate(meal.mealDate, p.language, true)} · ${s.mealCheckin.draftFoodCount(meal.foods.length)}`}
+            actionLabel={h.viewSuggestion}
+            actionIcon={<HomeAssetIcon name="review" />}
+            onPress={() => p.onViewSuggestions(meal.id)}
+          />)}
         </View>}
         {fresh && <>
           <HomeCalendarView language={p.language} now={p.now} meals={p.meals} onDate={p.onMealHistory} />

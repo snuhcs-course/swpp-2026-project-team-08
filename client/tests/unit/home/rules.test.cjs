@@ -10,7 +10,7 @@ const { toMealDetail } = require('../../../src/data/dto/mealDto.ts');
 const { toSuggestion } = require('../../../src/data/dto/suggestionDto.ts');
 const {
   getSuggestionTargetFoodIds, shouldShowSuggestionMeal,
-} = require('../../../src/features/home/rules.ts');
+} = require('../../../src/rules/mealSuggestionEntry.ts');
 
 // 결과 배열의 순서대로 음식 ID를 1, 2, 3, ...으로 지정한다.
 function mealWithOutcomes(outcomes) {

@@ -1,8 +1,8 @@
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
-// Changed: Eaten을 포함한 홈 추천 대상과 카드 표시 조건 정의
+// Changed: Eaten을 포함한 Home·식사 상세의 공통 추천 진입 조건 정의
 
-import type { MealDetail } from '../../types/mealRecord';
-import type { Suggestion } from '../../types/suggestionRecord';
+import type { MealDetail } from '../types/mealRecord';
+import type { Suggestion } from '../types/suggestionRecord';
 
 export function getSuggestionTargetFoodIds(meal: MealDetail): Set<string> {
   return new Set(

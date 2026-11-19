@@ -5,7 +5,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 추천의 근거 음식 이름을 원본 식사에서 찾음
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
-// Changed: 식후 리뷰 대기 목록의 모델 변환 제거 및 홈 추천 조회 연결
+// Changed: 식후 리뷰 목록의 모델 변환 제거 및 공통 추천 진입 규칙·조회 연결
 
 import { useCallback, useEffect, useState } from 'react';
 import { useSavedSuggestionsForCheckin } from '../../../data/queries/checkinReferenceQueries';
@@ -15,7 +15,7 @@ import { useHomeMealSuggestions } from '../../../data/queries/homeQueries';
 import { toLegacyMeal } from '../../../data/dto/mealLegacyDto';
 import type { ChildProfile } from '../../../types/profile';
 import { suggestionTargetName } from '../../suggestions/components/GeneratedSuggestionBody';
-import { getSuggestionTargetFoodIds, shouldShowSuggestionMeal } from '../rules';
+import { getSuggestionTargetFoodIds, shouldShowSuggestionMeal } from '../../../rules/mealSuggestionEntry';
 
 export function useHome(profile: ChildProfile) {
   const meals = useMealList(profile.id, null);

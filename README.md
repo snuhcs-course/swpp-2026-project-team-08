@@ -5,7 +5,7 @@
 <!-- AI-generated with Cursor Grok 4.6, 2026-10-23, reviewed by moonmoonboop -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 <!-- AI-generated with Grok 4.7, 2026-11-19, reviewed by Doyeon Kim -->
-<!-- Changed: Iteration 4 demo setup and progress from 10–19 Nov -->
+<!-- Changed: Iteration 4 demo setup, progress, and video -->
 
 # NurtureBites
 
@@ -41,7 +41,7 @@ Iteration 4 is the work merged from 10 November through 19 November 2026, after 
 
 ## Demo Video
 
-The short iteration 4 demo video will be added to the root of this branch.
+[Watch the Iteration 4 demo](professor_interview_demo.MP4)
 
 ## Setup and Execution
 

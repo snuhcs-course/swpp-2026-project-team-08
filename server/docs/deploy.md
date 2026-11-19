@@ -10,8 +10,8 @@
 
 <!-- AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung -->
 <!-- Changed: 전용 API 검사 제거에 맞춘 Client CI 안내 -->
-<!-- AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung -->
-<!-- Changed: 서버 교체 후 적재와 실패 시 서비스 유지 절차 정의 -->
+<!-- AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung -->
+<!-- Changed: 커밋된 재료 assets 배포·자동 적재·실패 시 서비스 유지 절차 -->
 
 # 서버 배포 가이드
 
@@ -66,7 +66,7 @@ PR이 열리거나 갱신될 때 아래 검사를 순서대로 실행한다. 실
 3. `python -m unittest discover -s data/ingredient_db/tests` — 가짜 Gemini로 생성 과정 검사. 저장소 루트에서 실행한다.
 4. `python -m data.ingredient_db check` — 검토 기록과 최종 JSONL 검사. 저장소 루트에서 실행한다.
 5. `pytest` — 서버 테스트. 인메모리 SQLite를 사용하며 운영 DB에는 접속하지 않는다.
-6. 저장소 루트에서 최종 JSONL 두 파일을 `server/assets/`에 복사하고 `docker build -t server-check server`로 빌드한다. 이미지의 적재기는 `assets/`의 파일을 `--check`로 검사한다.
+6. 저장소에 커밋된 `server/assets/`의 JSONL 두 파일을 포함해 `docker build -t server-check server`로 빌드한다. 저장소 루트에서 실행하며, 이미지의 적재기는 `assets/`의 파일을 `--check`로 검사한다.
 
 PR을 올리기 전에 각 명령의 실행 위치에서 같은 검사를 수행한다.
 
@@ -75,11 +75,11 @@ Client CI는 `client/` 또는 해당 워크플로 파일이 바뀐 PR에서 실�
 
 ### 2.2 배포 (main 머지)
 
-CI와 CD는 빌드 직전에 `data/ingredient_db/result/`의 JSONL 두 파일을 `server/assets/`에 복사한다.
-배포 이미지는 서버 코드, 적재기와 이 두 파일을 함께 담는다. 복사본은 Git에 넣지 않는다.
+배포 이미지는 서버 코드, 적재기와 Git에 커밋된 `server/assets/`의 JSONL 두 파일을 함께 담는다.
+재료 파일 변경과 복사본 관리 규칙은 [루트 AGENTS.md](../../AGENTS.md#재료-카탈로그-파일-관리)를 따른다.
+로컬·CI·CD 빌드는 커밋된 복사본을 사용하며, 빌드 중에 원본을 복사하지 않는다.
 재료 생성 코드·원본 다운로드·Gemini 응답·검토 기록·비밀 파일은 이미지에 넣지 않는다.
-빌드 컨텍스트는 `server/`, 이미지의 작업 디렉터리는 `/app`이다. 로컬 복사·빌드 명령은
-[서버 README](../README.md#의존성과-빌드)를 따른다. 이미지 안의 적재 명령은
+빌드 컨텍스트는 `server/`, 이미지의 작업 디렉터리는 `/app`이다. 이미지 안의 적재 명령은
 `--ingredients assets/ingredients.jsonl --restrictions assets/ingredients_restrictions.jsonl`로 입력을 지정한다.
 
 공용 재료는 Git의 JSONL을 기준으로 관리하며 운영 API는 읽기만 한다.

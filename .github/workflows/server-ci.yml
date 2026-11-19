@@ -1,6 +1,6 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
-# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
-# Changed: 영어 재료 생성 코드·결과 데이터와 배포 이미지 검증
+# AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung
+# Changed: 영어 재료 데이터와 커밋된 assets 기반 배포 이미지 검증
 # 서버 또는 재료 데이터가 바뀐 PR에서 검사한다.
 name: Server CI
 
@@ -56,9 +56,6 @@ jobs:
       - name: 배포 이미지와 재료 파일 검사
         working-directory: .
         run: |
-          mkdir -p server/assets
-          cp data/ingredient_db/result/ingredients.jsonl \
-            data/ingredient_db/result/ingredients_restrictions.jsonl server/assets/
           docker build -t server-check server
           docker run --rm server-check python scripts/load_ingredients.py --check \
             --ingredients assets/ingredients.jsonl \

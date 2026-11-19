@@ -8,7 +8,7 @@
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
-// Changed: 사진 아래 추천 진입 버튼과 조회 상태 표시
+// Changed: 리뷰 재개와 같은 위치·디자인의 추천 진입 버튼 및 조회 상태 표시
 
 import { AppHeader } from '../../../components/AppHeader';
 import { Feather } from '@expo/vector-icons';
@@ -94,6 +94,17 @@ export function MealDetailsView(p: Props) {
               <Pressable accessibilityRole="button" onPress={p.onContinueReview} style={styles.continueReview}>
                 <Text style={styles.continueReviewLabel}>{m.continueReview}</Text>
               </Pressable>
+            ) : p.canViewSuggestions ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={s.home.viewSuggestion}
+                accessibilityState={{ disabled: p.deleting }}
+                disabled={p.deleting}
+                onPress={p.onViewSuggestions}
+                style={styles.continueReview}
+              >
+                <Text style={styles.continueReviewLabel}>{s.home.viewSuggestion}</Text>
+              </Pressable>
             ) : null}
           </View>
           <View style={styles.photos}>
@@ -107,8 +118,6 @@ export function MealDetailsView(p: Props) {
           {p.suggestionsError && <View>
             <Text accessibilityRole="alert" style={styles.stateText}>{s.home.suggestionsLoadFailed}</Text>
           </View>}
-          {p.canViewSuggestions && <AppButton variant="meal" label={s.home.viewSuggestion}
-            disabled={p.deleting} onPress={p.onViewSuggestions} />}
           <Text style={styles.foodsLabel}>{m.foodsAndResponses}</Text>
           {p.cards.map((card, index) => (
             <FoodResponseCard

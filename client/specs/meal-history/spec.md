@@ -1,5 +1,5 @@
 <!-- AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung -->
-<!-- Changed: Meal History 동작 명세와 핵심 인수 기준 정리 -->
+<!-- Changed: Meal History 동작 명세와 추천 버튼 위치·디자인 및 핵심 인수 기준 정의 -->
 
 # Meal History
 
@@ -149,8 +149,8 @@
 
 ### R8 — View Suggestion 위치와 표시 조건
 
-1. Meal Detail의 식전·식후 사진 영역 아래, Foods and Responses 제목 위에 버튼을 배치한다.
-   표시 순서는 사진 → View Suggestion 버튼 → Foods and Responses다. 식사 목록에는 별도 버튼을 추가하지 않는다.
+1. Meal Detail의 사진 위 리뷰 상태 행 오른쪽에 Continue Review와 같은 디자인으로 버튼을 표시한다.
+   Continue Review와 View Suggestion은 같은 위치를 사용한다. 식사 목록에는 별도 버튼을 추가하지 않는다.
 2. 표시 조건은 [Home의 View Suggestion 기준](../home/spec.md#r7--view-suggestion)과 동일하다.
 3. 식후 리뷰가 없거나 추천 대상 음식이 없으면 버튼을 표시하지 않는다.
 4. 버튼을 누르면 현재 상세 화면의 Meal ID로 `/recommendation/[mealId]`를 연다.
@@ -224,5 +224,5 @@ Then Eaten을 포함한 추천 대상이 있고 생성된 추천이 없거나 pe
 ### AC8 — 추천 버튼 위치와 이동 (R8)
 
 Given View Suggestion 표시 조건을 만족하고<br>
-When 사진 아래, Foods and Responses 위의 버튼을 연속 클릭하면<br>
+When 사진 위 리뷰 상태 행 오른쪽의 Continue Review와 같은 디자인의 버튼을 연속 클릭하면<br>
 Then 해당 Meal ID의 추천 화면을 한 번만 연다. 돌아온 뒤에도 표시 조건을 만족하면 다시 진입할 수 있다.

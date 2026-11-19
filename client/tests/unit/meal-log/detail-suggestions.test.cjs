@@ -61,7 +61,7 @@ function props(overrides = {}) {
 }
 
 for (const { title, input, button, error, loading } of [
-  { title: '조회 완료: 사진과 음식 결과 사이에 추천 버튼 표시', input: {}, button: true },
+  { title: '조회 완료: 사진 위 리뷰 상태 옆에 추천 버튼 표시', input: {}, button: true },
   { title: '대상 없음 또는 처리 완료: 추천 버튼 숨김', input: { canViewSuggestions: false }, button: false },
   { title: '최초 조회 중: 버튼 대신 준비 상태 표시',
     input: { canViewSuggestions: false, suggestionsLoading: true }, button: false, loading: true },
@@ -78,8 +78,8 @@ for (const { title, input, button, error, loading } of [
     assert.ok(html.includes(labels.mealLog.beforeImage));
     assert.ok(html.includes(labels.mealLog.foodsAndResponses));
     if (button) {
-      assert.ok(html.indexOf(labels.mealLog.afterImage) < html.indexOf('View Suggestion'));
-      assert.ok(html.indexOf('View Suggestion') < html.indexOf(labels.mealLog.foodsAndResponses));
+      assert.ok(html.indexOf(labels.mealLog.reviewed) < html.indexOf('View Suggestion'));
+      assert.ok(html.indexOf('View Suggestion') < html.indexOf(labels.mealLog.beforeImage));
     }
     if (error) assert.ok(!html.includes('Retry'));
   });

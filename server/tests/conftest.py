@@ -3,6 +3,8 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung
 # Changed: 공통 테스트 환경 통합 및 DB 세션 fixture 분리
+# AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
+# Changed: 가드레일의 실제 판정 호출을 막는 기본 가짜 판정기 fixture 추가
 
 """테스트 픽스처: 인메모리 SQLite + get_session 오버라이드.
 
@@ -22,6 +24,7 @@ from sqlalchemy.pool import StaticPool
 import app.models  # noqa: F401
 from app.core.database import Base, get_session
 from app.main import app
+from tests.helpers.fake_judge import ScriptedJudge
 
 
 @pytest_asyncio.fixture
@@ -68,3 +71,9 @@ def forbid_live_llm(monkeypatch):
         raise AssertionError("Install ScriptedChatModel; live LLM calls are not allowed")
 
     monkeypatch.setattr("app.features.suggestions.generator.build_chat_model", forbidden)
+
+
+@pytest.fixture(autouse=True)
+def default_scripted_judge(monkeypatch):
+    """가드레일의 실제 판정 호출을 막는다. 기본 판정기는 모든 제안을 안전하다고 답한다."""
+    monkeypatch.setattr("app.features.suggestions.generator.build_judge", lambda: ScriptedJudge())

@@ -9,6 +9,8 @@
 <!-- Changed: 아키텍처 현행화 및 문서 역할 정리 -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim -->
 <!-- Changed: 추천 워크플로 파일 구조에 아이가 잘 먹는 음식 로더 추가 -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim -->
+<!-- Changed: 가드레일 노드와 판정 클라이언트, 코드 설명 사전, LangSmith 추적 설명 추가 -->
 
 <!-- AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo -->
 <!-- Changed: 식사 재료와 공용 카탈로그의 저장 경계 -->
@@ -152,6 +154,7 @@ DB 테이블의 구조(어떤 테이블에 어떤 컬럼이 있는가)를 정의
 | `config.py` | pydantic-settings 설정 (싱글턴). `.env`/환경변수 타입 안전 로딩 |
 | `database.py` | async 엔진/세션, `DeclarativeBase`, `get_session`(요청 단위 트랜잭션 경계) |
 | `timezone.py` | KST 현재 시각 `now_kst` |
+| `tracing.py` | 서버 시작 시 `.env`의 LangSmith 변수를 환경변수로 내보내기 (§2.5) |
 | `errors.py` | `AppError`(에러 베이스), `RequestInvalidError` — FastAPI import 없는 순수 파이썬 |
 | `llm.py` (필요 시) | 둘 이상의 기능이 LLM을 쓰게 되면 두는 LLM 클라이언트 생성 코드. 비즈니스 지식 없이 설정에서 키를 읽는다. LLM을 쓰는 기능이 하나뿐인 동안은 그 기능의 `workflow/llm.py`에 둔다 (§2.5) |
 
@@ -178,8 +181,14 @@ features/suggestions/
     ├── nodes.py          # 노드 (얇게)
     ├── graph.py          # 그래프 조립 (한 번 컴파일해 재사용)
     ├── prompts.py        # 프롬프트
+    ├── reasons.py        # 어려워한 이유(DifficultyReason) 코드를 프롬프트용 설명으로 바꾸는 사전
+    ├── outcomes.py       # 식후 먹은 정도(EatingOutcome) 코드의 프롬프트용 설명
+    ├── cooking_methods.py  # 조리 방법(MealCookingMethod) 코드의 프롬프트용 설명
     ├── schemas.py        # LLM 구조화 출력 스키마 (Pydantic)
-    ├── llm.py            # 이 기능의 LLM 클라이언트 생성
+    ├── llm.py            # 이 기능의 LLM 클라이언트와 가드레일 판정 클라이언트 생성
+    ├── guardrail.py      # 가드레일 질문 만들기와 판정 해석 — 순수 함수
+    ├── restrictions.py   # 아이의 제한을 판정 모델이 읽을 설명으로 바꾸는 사전
+    ├── jev.py            # 판정 모델(Jev) 호출 클라이언트 (OpenRouter Decisions API)
     └── tools.py          # LLM이 호출하는 도구 (필요할 때만)
 ```
 
@@ -201,6 +210,15 @@ features/suggestions/
 - **결과 검증은 순수 함수가 한다.** 문제를 예외로 던지지 않고 문제 목록(자연어 없는 데이터)으로 반환해 `validate`
   노드가 재시도 여부를 정한다. 문구는 `prompts.py` 한 곳에서 만든다. 재시도를 다 쓰고도 통과하지 못한 결과는
   저장하지 않고 예외로 끝낸다.
+- **코드로 잡지 못하는 위험은 판정 모델(가드레일)이 한 번 더 본다.** `validate`를 통과한 결과를 `guardrail` 노드가
+  판정 모델(Jev)에게 보내, 제안의 재료마다와 제안 문장 전체가 아이의 제한에 어긋날 확률을 묻는다. 임계값 이상이면
+  `compose`로 돌아가 다시 쓰고, 재시도 횟수는 `validate`와 함께 쓴다. 아이의 제한이 없으면 판정하지 않고, 판정
+  호출이 실패하면 제안을 만들지 않고 끝낸다. 판정 모델은 확률만 돌려주므로 질문을 재료별로 나누어 어디가 위험한지
+  알 수 있게 한다. 확률적 판정이라 `validate`의 결정적 검사를 대체하지 않는다. 판정기는 컨텍스트에 넣어 주입하고,
+  테스트는 가짜 판정기(`tests/helpers/fake_judge.py`)를 쓴다.
+- **LLM에는 코드 대신 설명을 보낸다.** 이유·먹은 정도·조리 방법·제한 같은 enum 값은 `reasons.py` ·
+  `outcomes.py` · `cooking_methods.py` · `restrictions.py`의 설명으로 바꿔 프롬프트에 싣는다. enum에 값이
+  추가되면 설명이 빠지지 않도록 테스트가 모든 값의 설명을 확인한다.
 - LLM 클라이언트는 그 기능의 `workflow/llm.py`에서 만들고, 프롬프트는 `prompts.py`에 모은다. 둘 이상의 기능이
   LLM을 쓰게 되면 `core/llm.py`로 올린다 (§2.4).
 - **도구(`tools.py`)는 LLM이 상황에 따라 직접 조회해야 할 때만 둔다.** 항상 필요한 데이터는 도구가 아니라 서비스가
@@ -208,8 +226,13 @@ features/suggestions/
   인자로 받지 않고 `InjectedState`로 상태에서 주입한다 (LLM이 다른 값을 지어내지 못하도록).
 - 테스트에서는 LLM 클라이언트만 가짜로 바꿔 그래프 전체를 실행한다 (`tests/helpers/fake_chat_model.py`). 테스트에서 실제 LLM을
   호출하지 않는다.
-- LangSmith 추적은 코드를 바꾸지 않고 환경변수로 켤 수 있다. 프롬프트에 아이의 식사 정보가 들어가므로, 운영에서
-  켜기 전에 외부 서비스로 보내도 되는지 팀이 정한다.
+- LangSmith 추적은 코드를 바꾸지 않고 환경변수로 켤 수 있다. 그래프와 LangChain 모델 호출은 자동으로 추적되고,
+  LangChain을 거치지 않는 판정 모델 호출(`jev.py`)은 `@traceable`로 감싸 같은 트레이스에 자식 실행으로 붙는다.
+  호출 함수 인자에는 API 키를 넣지 않는다 (트레이스 입력에 남지 않도록). `Settings`는 `.env`를 읽어도
+  `os.environ`에는 넣지 않고 LangSmith SDK는 `os.environ`만 읽으므로, 서버가 시작할 때(`lifespan`)
+  `core/tracing.py`가 `.env`의 `LANGSMITH_*` · `LANGCHAIN_*`만 환경변수로 내보낸다 (이미 있는 값은
+  덮어쓰지 않고, 테스트는 lifespan을 실행하지 않아 영향이 없다). 운영은 컨테이너에 환경변수를 직접 주입한다.
+  프롬프트에 아이의 식사 정보가 들어가므로, 운영에서 켜기 전에 외부 서비스로 보내도 되는지 팀이 정한다.
 
 ### 2.6 로그인한 사용자 받기
 

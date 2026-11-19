@@ -7,6 +7,8 @@
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 추가 추천 생성 시 기존 거절 제안과 사유 반영
+# AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
+# Changed: 시스템 프롬프트 구역 재구성, 이유·결과·조리법 코드를 설명으로 풀고 가드레일 피드백 추가
 
 """워크플로가 LLM에 보내는 프롬프트 모음.
 
@@ -197,6 +199,19 @@ def describe_problem(problem: ValidationProblem) -> str:
             return (
                 f"food_id {problem.food_id}의 재료 '{problem.ingredient}'은(는) "
                 "쓸 수 있는 재료 목록에 없습니다. 목록에 있는 다른 재료로 바꾸세요."
+            )
+        case "restriction_risk" if problem.ingredient:
+            return (
+                f"food_id {problem.food_id}의 재료 '{problem.ingredient}'은(는) "
+                "이 아이의 식이 제한에 어긋날 가능성이 높다고 판정되었습니다. "
+                "이 재료를 빼거나 다른 재료로 바꾸세요."
+            )
+        case "restriction_risk":
+            return (
+                f"food_id {problem.food_id}의 제안 문장"
+                "(what_to_try, why_this_may_help, serving_tip)에 "
+                "이 아이가 먹을 수 없는 재료나 음식이 들어 있을 가능성이 높다고 판정되었습니다. "
+                "문장에서 그런 재료나 음식을 빼고 다시 쓰세요."
             )
 
 

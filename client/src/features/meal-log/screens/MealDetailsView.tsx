@@ -7,6 +7,9 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 사진 아래 추천 진입 버튼과 조회 상태 표시
+
 import { AppHeader } from '../../../components/AppHeader';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -29,6 +32,10 @@ type Props = {
   afterUri: string | null;
   awaitingReview: boolean;
   cards: Card[];
+  canViewSuggestions: boolean;
+  suggestionsLoading: boolean;
+  suggestionsError: boolean;
+  onViewSuggestions: () => void;
   loading: boolean;
   error: boolean;
   deleting: boolean;
@@ -93,6 +100,15 @@ export function MealDetailsView(p: Props) {
             <PhotoTile uri={p.beforeUri} label={m.beforeImage} />
             <PhotoTile uri={p.afterUri} label={m.afterImage} />
           </View>
+          {p.suggestionsLoading && <View accessibilityRole="progressbar">
+            <ActivityIndicator color={colors.homePrimary} />
+            <Text style={styles.stateText}>{s.common.loading}</Text>
+          </View>}
+          {p.suggestionsError && <View>
+            <Text accessibilityRole="alert" style={styles.stateText}>{s.home.suggestionsLoadFailed}</Text>
+          </View>}
+          {p.canViewSuggestions && <AppButton variant="meal" label={s.home.viewSuggestion}
+            disabled={p.deleting} onPress={p.onViewSuggestions} />}
           <Text style={styles.foodsLabel}>{m.foodsAndResponses}</Text>
           {p.cards.map((card, index) => (
             <FoodResponseCard

@@ -3,6 +3,8 @@
 
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 음식별 추가 추천 요청과 결과 검증
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 추천 결정 취소와 저장 목록 제거 API 분리
 
 import type { DismissReason, Suggestion, SuggestionTarget } from '../../types/suggestionRecord';
 import { toSuggestion, toSuggestionDecision, toSuggestionGenerate } from '../dto/suggestionDto';
@@ -73,4 +75,10 @@ export async function undoMealSuggestion(
     throw new Error('Mismatched suggestion undo');
   }
   return item;
+}
+
+export async function removeSavedSuggestion(suggestionId: string): Promise<void> {
+  await apiRequest<void>(
+    `/api/v1/suggestions/${encodeURIComponent(suggestionId)}/saved`, { method: 'DELETE' },
+  );
 }

@@ -1,6 +1,9 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 음식·재료 안의 리뷰 결과와 난이도 사유 문자열 목록 변환으로 재작성
 
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 기존 리뷰 조리법 통합값을 미입력으로 변환
+
 import type {
   MealReview,
   MealReviewDraft,
@@ -10,7 +13,7 @@ import type {
 import { fromDifficultyReason, toDifficultyReason } from './difficultyReasons';
 import { toIngredient } from './ingredientDto';
 import {
-  acceptance, array, cookingMethods, fromApiEnum, id, nullable, object, text, toApiEnum,
+  acceptance, array, fromApiCookingMethod, fromApiEnum, id, nullable, object, text, toApiEnum,
 } from './values';
 
 export type MealReviewWriteDto = {
@@ -41,7 +44,7 @@ export function toMealReview(mealId: string, foods: unknown[]): MealReview | nul
     foodSnapshot: {
       name: text(food.name),
       ingredients: array(food.ingredients, toIngredient),
-      cookingMethod: nullable(food.cooking_method, (method) => fromApiEnum(method, cookingMethods)),
+      cookingMethod: nullable(food.cooking_method, fromApiCookingMethod),
       servingNote: nullable(food.serving_note, text),
       acceptance: acceptance(food.acceptance),
     },

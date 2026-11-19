@@ -3,14 +3,19 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 쓸 수 있는 재료 목록, causes·cooking_method 필드 기준으로 재작성
+# AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+# Changed: 추천 생성 조리법 열 가지와 출력 스키마 검증
 """생성 결과 검증 (`validation.py`) 단위 테스트. 그래프 없이 값만으로 확인한다."""
 
 import pytest
+from pydantic import ValidationError
 
 from app.features.suggestions.ingredients import build_catalog
 from app.features.suggestions.validation import ValidationProblem, find_problems
+from app.features.suggestions.workflow.schemas import SuggestionDraft, SuggestionsDraft
 from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
 from app.models.meal_enums import MealCookingMethod
+from tests.helpers.suggestions import suggestion_draft
 
 FOODS = [FoodInput(id="f1", name="Broccoli"), FoodInput(id="f2", name="Egg")]
 CATALOG = build_catalog(["당근", "쌀", "Tofu"])
@@ -36,6 +41,40 @@ def kinds(problems: list[ValidationProblem]) -> list[str]:
 def test_valid_results_have_no_problems():
     results = [suggestion("f1"), suggestion("f2")]
     assert find_problems(FOODS, results, CATALOG) == []
+
+
+def test_추천_출력_스키마는_현재_조리법_열_가지를_제시한다():
+    expected = [
+        "RAW",
+        "BOILED",
+        "STEAMED",
+        "PAN_FRIED",
+        "STIR_FRIED",
+        "BAKED",
+        "ROASTED",
+        "MASHED",
+        "BLENDED",
+        "OTHER",
+    ]
+    schema = SuggestionDraft.model_json_schema()
+    assert schema["properties"]["cooking_method"]["enum"] == expected
+    drafts = SuggestionsDraft(
+        suggestions=[
+            suggestion_draft(str(index), cooking_method=method)
+            for index, method in enumerate(expected)
+        ]
+    )
+    assert [item.cooking_method.value for item in drafts.to_generated()] == expected
+
+
+@pytest.mark.parametrize(
+    "method",
+    [None, "BAKED_ROASTED", "MASHED_BLENDED", "steamed", "UNKNOWN", 1],
+    ids=["미입력", "굽기_통합값", "으깨기_통합값", "소문자", "미지원값", "숫자"],
+)
+def test_추천_생성은_허용_목록과_맞지_않는_조리법을_거절한다(method):
+    with pytest.raises(ValidationError):
+        suggestion_draft(cooking_method=method)
 
 
 def test_ingredient_names_match_ignoring_case_and_spaces():

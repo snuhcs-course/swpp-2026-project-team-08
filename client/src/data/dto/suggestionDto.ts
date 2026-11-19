@@ -4,13 +4,16 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 추가 추천 응답 검증과 이전 서버 호환
 
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 기존 추천 조리법 통합값을 미입력으로 변환
+
 import type {
   DismissReason,
   Suggestion,
   SuggestionTarget,
 } from '../../types/suggestionRecord';
 import {
-  array, cookingMethods, fromApiEnum, id, nullable, object, text, timestamp, toApiEnum,
+  array, fromApiCookingMethod, fromApiEnum, id, nullable, object, text, timestamp, toApiEnum,
 } from './values';
 
 export type SuggestionGenerateDto = {
@@ -43,7 +46,7 @@ export function toSuggestion(value: unknown): Suggestion {
     whyThisMayHelp: text(dto.why_this_may_help),
     servingTip: nullable(dto.serving_tip, text),
     ingredients: array(dto.ingredients, text),
-    cookingMethod: fromApiEnum(dto.cooking_method, cookingMethods),
+    cookingMethod: fromApiCookingMethod(dto.cooking_method),
     causes: text(dto.causes),
     status: fromApiEnum(dto.status, statuses),
     dismissReasons: array(dto.dismiss_reasons, (reason) => fromApiEnum(reason, dismissReasons)),

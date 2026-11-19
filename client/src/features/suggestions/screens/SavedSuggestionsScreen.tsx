@@ -2,6 +2,8 @@
 // Changed: 추천 카드·저장된 추천 기능 추가
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: 저장한 추천 탭 헤더의 뒤로가기 제거
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 저장 목록 제거 대기·실패 화면 유지와 성공 안내
 
 import { AppHeader } from '../../../components/AppHeader';
 import { BottomSheet } from '../../../components/BottomSheet';
@@ -36,14 +38,14 @@ function SavedContent({ userId, initialId = '' }: { userId: string; initialId?: 
     }
   }, [selectedId]);
   const navigateFromSheet = (kind: 'try' | 'meal', id: string) => {
+    if (!model.close()) return;
     pendingNavigation.current = { kind, id };
-    model.close();
   };
   const mealLabel = (meal: { mealDate: string; mealType: keyof ReturnType<typeof copyFor>['mealCheckin']['types'] }) =>
     `${new Date(`${meal.mealDate}T12:00:00`).toLocaleDateString(language === 'ko' ? 'ko-KR' : 'en-US',
       { month: 'short', day: 'numeric', year: 'numeric' })} · ${copyFor(language).mealCheckin.types[meal.mealType]}`;
   const close = () => {
-    model.close();
+    if (!model.close()) return;
     if (initialId) router.replace({ pathname: '/section/[name]', params: { name: 'ideas' } });
   };
   const remove = async () => {
@@ -52,13 +54,16 @@ function SavedContent({ userId, initialId = '' }: { userId: string; initialId?: 
   return <SafeAreaView style={s.root} edges={[]}>
     <AppHeader title={c.savedTitle} />
     <ScrollView style={s.root} contentContainerStyle={s.savedListContent}>
+      {model.removeSucceeded && <Text accessibilityRole="alert" style={s.muted}>{c.removedNotice}</Text>}
       {(saved.isPending || saved.isError || !!saved.data?.length) && <Text style={s.savedIntro}>{c.savedIntro}</Text>}
-      {saved.isPending ? <ActivityIndicator /> : saved.isError ? <>
+      {saved.isError && <>
         <Text accessibilityRole="alert" style={s.error}>{c.loadFailed}</Text>
         <AppButton label={c.retry} onPress={() => { void saved.refetch(); }} />
-      </> : saved.data?.length ? saved.data.map((item) => {
+      </>}
+      {saved.isPending ? <ActivityIndicator /> : saved.data?.length ? saved.data.map((item) => {
         const meal = sourceMeal(item.mealId);
-        return <Pressable key={item.id} accessibilityRole="button" onPress={() => model.setSelectedId(item.id)} style={s.savedCard}>
+        return <Pressable key={item.id} accessibilityRole="button" disabled={model.removing}
+          onPress={() => model.setSelectedId(item.id)} style={s.savedCard}>
           <View style={s.savedCardHeading}><Text style={s.savedFoodName}>{suggestionTargetName(item, meal)}</Text>
             {!!(meals.data ?? []).find((value) => value.suggestionLinks.some((link) => link.suggestionId === item.id))
               && <View style={s.trialChip}><Text style={s.savedTriedLabel}>{c.tried}</Text></View>}
@@ -69,7 +74,7 @@ function SavedContent({ userId, initialId = '' }: { userId: string; initialId?: 
             <UiAssetIcon name="suggestion-open" />
           </View>
         </Pressable>;
-      }) : <View style={s.emptyState}>
+      }) : saved.data && <View style={s.emptyState}>
         <UiAssetIcon name="suggestion-empty" />
         <Text style={[s.heading, s.centeredText]}>{c.empty}</Text>
         <Text style={[s.savedIntro, s.centeredText]}>{c.emptyDetail}</Text>
@@ -77,14 +82,14 @@ function SavedContent({ userId, initialId = '' }: { userId: string; initialId?: 
           onPress={() => router.push({ pathname: '/section/[name]', params: { name: 'mealLog' } })} />
       </View>}
     </ScrollView>
-    {!!selectedId && <BottomSheet appearance="suggestion" height={544}
+    {!!selectedId && <BottomSheet appearance="suggestion" height={544} dismissDisabled={model.removing}
       title={selected ? suggestionTargetName(selected, sourceMeal(selected.mealId)) : c.savedTitle} closeLabel={c.close} onClose={close}
       headerContent={selected && <View style={s.detailHeader}>
         <Text style={s.muted}>{sourceMeal(selected.mealId) ? mealLabel(sourceMeal(selected.mealId)!) : selected.createdAt.slice(0, 10)}</Text>
         {linkedMeals.length > 0 && <ScrollView horizontal showsHorizontalScrollIndicator={false}
           style={s.trialScroll} contentContainerStyle={s.trialRow}>
           {linkedMeals.map((meal) => <Pressable key={meal.id} accessibilityRole="button"
-            style={s.trialChip} onPress={() => navigateFromSheet('meal', meal.id)}>
+            disabled={model.removing} style={s.trialChip} onPress={() => navigateFromSheet('meal', meal.id)}>
             <UiAssetIcon name="suggestion-link" /><Text style={s.trialLabel}>{mealLabel(meal)}</Text>
           </Pressable>)}
         </ScrollView>}
@@ -94,7 +99,7 @@ function SavedContent({ userId, initialId = '' }: { userId: string; initialId?: 
         <View style={s.row}>
           <AppButton variant="suggestion" secondary label={c.remove} disabled={model.removing}
             onPress={() => { void remove(); }} />
-          <AppButton variant="suggestion" style={s.grow} label={c.recordTry}
+          <AppButton variant="suggestion" style={s.grow} label={c.recordTry} disabled={model.removing}
             onPress={() => navigateFromSheet('try', selected.id)} />
         </View>
       </View>}>

@@ -3,6 +3,9 @@
 // Changed: 마이페이지 채식 제한 prop 이름 변경
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: 날짜 상한·네이티브 메뉴 및 과거 연도의 월 이름 검증
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 웹 편집 드롭다운 오버레이 위치·닫기·선택 검증
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -29,7 +32,7 @@ Module._load = function (name, ...args) {
       return [slots[index], value => { slots[index] = typeof value === 'function' ? value(slots[index]) : value; }];
     },
   };
-  if (name === 'react-native') return { Platform: platform, StyleSheet: { create: value => value },
+  if (name === 'react-native') return { Platform: platform, Modal: 'Modal', Dimensions: { get: () => ({ width: 393, height: 852 }) }, StyleSheet: { create: value => value },
     View: 'View', Text: 'Text', Pressable: 'Pressable', TextInput: 'TextInput', ScrollView: 'ScrollView' };
   if (name === '@react-native-safe-area-context' || name === 'react-native-safe-area-context') return { SafeAreaView: 'SafeAreaView' };
   if (name === '@expo/ui/community/menu') return { MenuView: 'SystemMenu' };
@@ -229,5 +232,39 @@ test('historical year menus keep month labels paired with their numeric values',
         locale === 'ko-KR' ? Array.from({ length: 12 }, (_, i) => `${i + 1}월`) : english);
       assert.equal(month.props.actions[2].state, 'on');
     }
+  }
+});
+
+
+test('web editor options overlay the dialog, select once, dismiss, and open upwards near the bottom', () => {
+  for (const y of [300, 700]) {
+    reset('web');
+    const changes = [];
+    const props = { variant: 'editor', value: 'a', placeholder: 'Method',
+      options: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }], onChange: v => changes.push(v) };
+    let nodes = render(DropdownChoice, props);
+    nodes.find(n => n.props.ref).props.ref.current = {
+      measureInWindow: callback => callback(26, y, 166, 38),
+    };
+    nodes.find(n => n.type === 'Pressable').props.onPress();
+    nodes = render(DropdownChoice, props);
+    const modal = nodes.find(n => n.type === 'Modal');
+    assert.ok(modal.props.transparent);
+    const list = nodes.find(n => n.type === 'ScrollView');
+    const style = Object.assign({}, ...list.props.style);
+    assert.equal(style.position, 'absolute');
+    assert.equal(style.width, 166);
+    assert.equal(style.top, y + 43);
+    assert.equal(style.maxHeight, 74);
+    modal.props.onRequestClose();
+    assert.equal(render(DropdownChoice, props).some(n => n.type === 'Modal'), false);
+    nodes = render(DropdownChoice, props);
+    nodes.find(n => n.props.ref).props.ref.current = { measureInWindow: cb => cb(26, 810, 166, 38) };
+    nodes.find(n => n.type === 'Pressable').props.onPress();
+    nodes = render(DropdownChoice, props);
+    assert.equal(Object.assign({}, ...nodes.find(n => n.type === 'ScrollView').props.style).top, 731);
+    nodes.find(n => n.type === 'Pressable' && n.props.accessibilityState?.selected === false).props.onPress();
+    assert.deepEqual(changes, ['b']);
+    assert.equal(render(DropdownChoice, props).some(n => n.type === 'Modal'), false);
   }
 });

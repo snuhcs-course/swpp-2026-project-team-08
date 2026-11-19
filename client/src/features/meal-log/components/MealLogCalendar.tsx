@@ -88,7 +88,7 @@ export function MealLogCalendar({
             <View style={styles.selectedValueRow}>
               <Text style={styles.selectedValue}>{selectedParts.monthDay}</Text>
               <Pressable accessibilityRole="button" accessibilityLabel={clearLabel} onPress={onClear} hitSlop={8}>
-                <Feather name="rotate-ccw" size={14} color={colors.homePrimary} />
+                <Feather name="x" size={14} color={colors.homePrimary} />
               </Pressable>
             </View>
           )}

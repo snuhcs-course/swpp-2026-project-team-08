@@ -1,8 +1,18 @@
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: Android 번들 및 네이티브 모듈의 한글 경로 통일
+// AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo
+// Changed: 스플래시 아이콘 설정
 const { withAppBuildGradle, withSettingsGradle } = require('expo/config-plugins');
 
 module.exports = ({ config }) => {
+  config.plugins = [
+    ...(config.plugins ?? []),
+    ['expo-splash-screen', {
+      image: './assets/icon.png',
+      imageWidth: 200,
+      backgroundColor: '#F0F7FF',
+    }],
+  ];
   config = withSettingsGradle(config, (androidConfig) => {
     const marker = "// Normalize macOS project paths for AGP prefab mappings.";
     if (!androidConfig.modResults.contents.includes(marker)) {

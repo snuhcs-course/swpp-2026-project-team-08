@@ -10,8 +10,11 @@
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 // Changed: 익숙한 음식 응답 필수 조건과 없음 초안 복원
 
+// AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo
+// Changed: 익숙한 음식 중복 검증
+
 import { emptyDraft, isStep, type OnboardingDraft, type OnboardingStep } from './types';
-import type { Language } from '../../types/profile';
+import type { Language, SafeFood } from '../../types/profile';
 import { isDietaryPattern } from '../../util/dietaryPattern';
 import { labelFor } from '../../util/strings';
 
@@ -23,8 +26,11 @@ export function validPassword(value: string): boolean {
   return value.length >= 8;
 }
 
-export function canAddSafeFood(input: OnboardingDraft['safeFoodInput']): boolean {
-  return !!input.name.trim();
+export function canAddSafeFood(input: OnboardingDraft['safeFoodInput'], foods: SafeFood[] = []): boolean {
+  return !!input.name.trim() && !foods.some((food) =>
+    food.name === input.name.trim()
+    && food.preparation === input.preparation.trim()
+    && food.presentationNote === input.presentationNote.trim());
 }
 
 export function toggleExclusive(values: string[], value: string, noneValue = 'none'): string[] {

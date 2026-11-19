@@ -3,6 +3,9 @@
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: 중간 라벨의 선택 위치 정렬과 양 끝 라벨 경계 검증
 
+// AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo
+// Changed: 슬라이더 채움 요소 탐색 경로 수정
+
 // Runs the slider with real React state; only React Native primitives are mocked.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -50,7 +53,7 @@ test('dragging updates every acceptance level, clamps outside the track, and sna
   await act(async () => h.control().onResponderRelease(event(0, 230)));
   assert.equal(h.control().accessibilityValue.now, 1);
   const track = rail(h.rendered.current).props.children;
-  const fill = track.props.children.props.children[0];
+  const fill = track.props.children[0];
   assert.ok(Math.abs(parseFloat(fill.props.style[1].width) - 33.33333333333333) < 1e-10);
   assert.equal(h.control().onResponderTerminationRequest(), false);
 });

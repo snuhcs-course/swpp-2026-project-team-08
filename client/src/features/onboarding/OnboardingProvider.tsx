@@ -15,6 +15,9 @@
 // AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
 // Changed: 없음 선택 중 입력 보존·제출 목록 분리 및 최신 초안 저장 상태 유지
 
+// AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo
+// Changed: 익숙한 음식 중복 추가 방지
+
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
 import { useAuth } from '../../providers/AuthProvider';
@@ -120,7 +123,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const addSafeFood = useCallback((food: Omit<SafeFood, 'id'>) => {
     if (!canAddSafeFood(food)) return;
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    setDraft((current) => current.noSafeFoods ? current : ({
+    setDraft((current) => current.noSafeFoods || !canAddSafeFood(food, current.safeFoods) ? current : ({
       ...current,
       safeFoods: [...current.safeFoods, {
         id,

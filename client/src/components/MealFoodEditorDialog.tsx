@@ -4,6 +4,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
 // Changed: 음식 편집의 저장 추천 연결 필드와 칩 크기
+// AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo
+// Changed: 재료 선택 사항 및 수용 정도 눈금 표시
 
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 조리법 열 가지를 고정 ID와 공통 표시명으로 선택
@@ -93,7 +95,7 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
     </View>
       
     <View style={styles.ingredients}>
-      <Text style={styles.label}>{m.ingredients}</Text>
+      <View style={styles.fieldHeading}><Text style={styles.label}>{m.ingredients}</Text><Text style={styles.optional}>{m.optional}</Text></View>
       <View style={styles.tags}>
         {food.ingredients.map((name) => 
         <View key={name} style={[styles.tag, styles.finishedTag]}>
@@ -166,7 +168,7 @@ export function MealFoodEditorDialog({ food, mode, meal: m, common, labels, ingr
     <View style={styles.acceptance}>
       <View style={styles.fieldHeading}><Text style={styles.label}>{labels.acceptance}</Text><Text style={styles.optional}>{m.optional}</Text></View>
       {labels.acceptanceHint && <Text style={styles.label}>{labels.acceptanceHint}</Text>}
-      <AcceptanceSlider value={food.acceptance ?? null} label={labels.acceptance}
+      <AcceptanceSlider showTicks value={food.acceptance ?? null} label={labels.acceptance}
         options={labels.acceptanceOptions} unsetLabel={labels.acceptanceUnset}
         onChange={(acceptance) => onChange({ acceptance })} />
     </View>

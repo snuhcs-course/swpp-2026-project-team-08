@@ -1,61 +1,65 @@
 <!-- AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo -->
 <!-- AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung -->
 <!-- Changed: 삭제한 실제 서버 테스트 실행 안내 제거 -->
+<!-- AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo -->
+<!-- AI-generated with Cursor Grok 4.6, 2026-10-23, reviewed by moonmoonboop -->
+<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+<!-- AI-generated with Grok 4.7, 2026-11-19, reviewed by Doyeon Kim -->
+<!-- Changed: Iteration 4 demo setup and progress from 10–19 Nov -->
+
 # NurtureBites
 
 NurtureBites is a meal tracker and planning app for caregivers of autistic children with sensory-selective eating. Caregivers record what was served and what happened after the meal, then get small, restriction-aware ideas for what to try next.
 
 ## Features
 
-- **Caregiver accounts:** Sign up, log in, and keep access/refresh tokens in Expo SecureStore.
-- **Child profile onboarding:** Consent, child basics, allergies, dietary restrictions, family food groups, and Safe Foods. Progress auto-saves.
-- **Meal check-in:** Log date, meal type, and place; optionally add a before-meal photo; enter served foods, ingredients, and preparation by hand. Unfinished drafts can be resumed.
-- **After-meal review:** Record each food as Eaten, Tasted, Untouched, or Unclear; optionally track ingredient outcomes and difficulty reasons; optionally add an after-meal photo.
-- **Home (Today):** Start a new meal, continue a draft, and pick up meals that still need an after-meal review.
-- **Meal History:** Calendar, search, and meal details with before/after photos, food responses, and linked suggestions.
-- **Personalized suggestions:** After a review, generate meal ideas with a LangGraph/OpenRouter workflow, then save, dismiss, skip, or undo. Saved ideas can be linked to a meal and marked as tried.
-- **My Page:** Caregiver account (name, email, delete account) and child profile editing.
-- **Korean and English** UI copy.
+- **Caregiver accounts:** Sign up, log in, securely store access/refresh tokens, edit the caregiver name, log out, and delete the account.
+- **Child profile onboarding:** Record consent, child basics, allergies, dietary restrictions, the family's dietary pattern, and Safe Foods with preparation notes. Resume saved onboarding progress and edit the child profile later.
+- **Meal check-in:** Record the date, meal type, and place; manually add foods, ingredients, and cooking methods; optionally attach a camera, gallery, or file photo. A previously saved suggestion can be linked to a food in the meal. Resume drafts that contain user input.
+- **After-meal review:** Record food and selected ingredient outcomes, optional difficulty reasons, and an optional after-meal photo. Foods marked Eaten are excluded from difficulty questions and recommendation targets.
+- **Home and Meal History:** Continue unfinished meals, find records by calendar or search, and open meal details with recorded outcomes and photos.
+- **Personalized suggestions:** Generate one small next step per reviewed food through LangGraph/OpenRouter. Save, dismiss, or undo. After the first dismissal, ask for one new suggestion with **Regenerate**, or continue without one. Suggestions use recorded difficulties, Safe Foods, previously eaten foods, and the ingredient catalog filtered by the child's restrictions.
+- **My Page:** View and edit the child profile and caregiver account, and open the privacy policy. The demo UI is English. The unfinished tutorial entry stays disabled.
 
-## Iteration 2 Progress
+## Iteration 4 Progress
 
-Iteration 2 moved NurtureBites from a local prototype to a client–server app aligned with the newly edited version of Figma and product requirement document. A lot of medical research has been done to change the guideline of "what made the child not eat this food" to fulfill the autistic caregiver's needs. Out of the 3 AI implementation ideas, 2 of them were dropped (with TA's confirmation). Merged work on [the team repository](https://github.com/snuhcs-course/swpp-2026-project-team-08):
+Iteration 4 is the work merged from 10 November through 19 November 2026, after `iteration-3-demo`. The visible changes follow heuristic-evaluation feedback: the suggestion step should offer another idea on purpose, and meal photos should be large enough that the saved record does not feel cramped.
 
-- **Backend foundation ([#5](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/5), [#6](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/6)):** FastAPI + Postgres, auth, meal APIs, and meal history/details screens.
-- **CI/CD ([#8](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/8)):** GitHub Actions lint/test, Docker image build, and deploy to AWS (ECR, EC2, CloudFront).
-- **Core product flows ([#7](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/7), [#9](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/9), [#13](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/13), [#14](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/14)):** Suggestion cards and saved-trial workflows; Meal History restyle; My Page and child profile; onboarding, meal check-in, after-meal review, and Home synced to the final ABC Figma (manual food entry; photos are optional references, not AI analysis).
-- **LLM suggestions ([#16](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/16)):** LangGraph suggestion workflow, ingredient catalog, and OpenRouter model wiring.
-- **Client–server contract ([#17](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/17)):** Shared models, DTOs, and DB schema so the app and API use the same meal, profile, and suggestion shapes.
+- **Regenerate suggestion ([#31](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/31), [#35](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/35)):** Dismissing the first suggestion for a food shows the food name, the selected reasons, and a **Regenerate** button next to **Continue**. Regenerate asks for one different small change and includes the rejected card and reasons. The server allows that extra generation once per food and returns the saved card if it is requested again. **Skip** is no longer on the recommendation card. Cooking methods are shown with readable labels.
+- **Larger meal photos ([#36](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/36)):** The check-in and after-meal save screens use a wider photo on the saved-meal card (about 148px tall, or 112px when before and after sit side by side), with a before/after label, the meal summary, and a short saved-versus-next step path. The previous thumbnails were about 95×79px, or 52×48px in the compact state.
+- **Saved suggestion linked from check-in ([#34](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/34)):** While logging a later meal, a caregiver can mark a food as trying a suggestion saved earlier and pick that suggestion in the food editor.
+- **Clearer recommendation input ([#38](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/38)):** The model prompt describes outcomes, difficulty reasons, and cooking methods in plain language. A suggestion starts from a food the child struggled with and takes one small step toward a familiar food, without inventing a reaction that was not recorded.
+- **Privacy policy and client release setup ([#33](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/33), [#39](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/39)):** Consent, the meal privacy sheet, and My Page open the privacy policy. Client deployment uses EAS and a GitHub Actions workflow. The iOS build enables scene support, and the app icon was updated.
+- **Onboarding completion and draft behavior ([#37](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/37)):** Completing onboarding shows a waiting state, blocks a second submit, and retries by sending the profile again. Safe Foods match the product rules, and Review keeps "not answered" separate from "none."
+- **Suggestion checks ([#30](https://github.com/snuhcs-course/swpp-2026-project-team-08/pull/30)):** Evaluation tests compare generated suggestions with ground-truth cases. Tests use a fake model and do not call OpenRouter.
 
-### Known demo bugs
-(the bugs listed below will be fixed for iteration 3)
-- After you take the before meal picture, when you try to 'review food item' by adding food, when trying to type the food's ingredient name, the add button might not work
+### Current demo limitations
 
-### Small things to implement for iteration 3(that has not been implemented yet)
-- sending emails for the verification code (if one wants to change the caregiver's email in the profile)
-- uploading photos from gallery / file (only can take photos for now in the demo)
-- profile's tutorial guide
-- the login screen design is not aesthetically appealing so the design will be modified
-- profile's data policy and privacy guideline
+- Email-change code generation and confirmation exist, but delivery by email is not connected.
+- My Page's tutorial/help entry is visible and disabled because that guide is not implemented.
+- Native photo files remain on the device. This demo does not sync photo files across devices.
+
+## Demo Video
+
+The short iteration 4 demo video will be added to the root of this branch.
 
 ## Setup and Execution
 
-This repository has two parts: a FastAPI backend in `server/` and an Expo / React Native app in `client/`. Start the server first, then the app.
+The repository has a FastAPI backend in `server/` and an Expo / React Native app in `client/`. Start the server first, then the app. Commands below are for a fresh local demo database and a bash/zsh terminal. They follow the iteration 3 demo setup.
 
 ### Prerequisites
 
 - Git
-- [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python package manager; do not use `pip`)
-- Python 3.12 or later (`uv` can install it)
-- Docker (local PostgreSQL)
-<!-- AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo -->
-- Node.js 22.13+ (22.x), 24.3+ (24.x), or 26+ and npm (required by Expo SDK 58)
-- [Expo Go](https://expo.dev/go) on a phone, or an iOS Simulator / Android emulator
+- Node.js matching `client/package.json`: 22.13+ on 22.x, 24.3+ on 24.x, or 26+; npm
+- Python 3.12 or later and `uv`
+- Docker with Docker Compose for local PostgreSQL
+- An Expo Go client compatible with Expo SDK 58, or a local native build with Android Studio/JDK/Android SDK (Android) or macOS/Xcode/CocoaPods (iOS)
+- An OpenRouter API key for the personalized-suggestion portion of the demo
 
-### 1. Clone the repository
+### 1. Clone the demo branch
 
 ```bash
-git clone https://github.com/snuhcs-course/swpp-2026-project-team-08.git
+git clone --branch iteration-4-demo --single-branch https://github.com/snuhcs-course/swpp-2026-project-team-08.git
 cd swpp-2026-project-team-08
 ```
 
@@ -63,73 +67,88 @@ cd swpp-2026-project-team-08
 
 ```bash
 cd server
-uv sync                                  # install dependencies (.venv is created automatically)
-cp .env.example .env                     # local defaults are fine; replace JWT_SECRET_KEY outside local
-docker compose up -d                     # start local Postgres
-uv run alembic upgrade head              # apply database migrations
-uv run uvicorn app.main:app --reload     # API at http://localhost:8000
+uv sync --frozen
+# First setup only: preserve an existing .env.
+if [ ! -f .env ]; then cp .env.example .env; fi
 ```
 
-- Interactive API docs: http://localhost:8000/docs
-- Health check: http://localhost:8000/health
-- Meal suggestions call an LLM. The server still starts if `OPENROUTER_API_KEY` in `.env` is empty, but suggestion generation will fail until you set a key.
+Edit the local `.env` and set `OPENROUTER_API_KEY` before trying suggestions. Keep the file private. The supplied local database defaults work with the Compose configuration. Use a separate `JWT_SECRET_KEY` outside local development.
 
-Useful server commands (from `server/`):
+```bash
+docker compose up -d --wait
+uv run alembic upgrade head
+uv run python scripts/load_ingredients.py --check
+uv run python scripts/load_ingredients.py
+uv run uvicorn app.main:app --reload --host 0.0.0.0
+```
 
-| Task | Command |
-|---|---|
-| Tests (in-memory SQLite; Postgres not required) | `uv run pytest` |
-| Lint / format | `uv run ruff check .` / `uv run ruff format .` |
+The migration and catalog import commands write to the database configured in `.env`. Use the local demo database. The catalog import is required for a fresh database and loads 1,613 ingredients and 18,711 restriction judgments. The `--check` command only validates the bundled data.
 
-More detail is in [`server/README.md`](server/README.md).
+- API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+- Health check: [http://localhost:8000/health](http://localhost:8000/health)
+- The server can start without an OpenRouter key, but recommendation generation will fail.
 
 ### 3. Run the mobile app
 
-In a second terminal:
+In a second terminal, start from the repository root:
 
 ```bash
 cd client
-npm install
+npm ci
+```
+
+Set the API address for the device. Replace the example LAN address with the computer's address. The phone and computer must be able to reach each other.
+
+| Runtime | Example `EXPO_PUBLIC_API_URL` |
+|---|---|
+| Physical phone on the same network | `http://192.168.0.10:8000` |
+| Android Studio emulator | `http://10.0.2.2:8000` |
+| iOS Simulator on the server's Mac | `http://localhost:8000` |
+
+```bash
+export EXPO_PUBLIC_API_URL=http://192.168.0.10:8000
 npx expo start
 ```
 
-Then:
+Scan the QR code with an Expo SDK 58-compatible Expo Go client. If the installed Expo Go client cannot run this SDK or a required native module, stop Metro and build the app locally from `client/` after installing the relevant platform tools:
 
-- Scan the QR code with Expo Go, or
-- Press `i` for iOS Simulator / `a` for Android emulator / `w` for web
+```bash
+# Choose one platform; retain the API address set above.
+npx expo run:android
+# Or, on macOS:
+npx expo run:ios
+```
 
-The app talks to `http://<dev-machine>:8000` by default (Metro’s host on a physical device, otherwise `localhost`). To point at another API, set `EXPO_PUBLIC_API_URL` before `npx expo start`.
+For an Android emulator, change the exported API address to `http://10.0.2.2:8000` before starting or building the app. For a standalone release APK or iOS build, follow [client/docs/deploy.md](client/docs/deploy.md).
 
-Useful client commands (from `client/`):
+The demo uses npm and the committed `client/package-lock.json`.
 
-| Task | Command |
-|---|---|
-| Lint | `npm run lint` |
-| Typecheck | `npx tsc --noEmit` |
-| Tests | `npm test` |
-
-<!-- AI-generated with GPT-6, 2026-10-26, reviewed by Seoyeon Heo -->
-<!-- AI-generated with Cursor Grok 4.6, 2026-10-23, reviewed by moonmoonboop -->
 ## Development Environment
 
-The client targets Expo SDK 58. Upgrade validation used Node.js 24.12.0 and npm 11.6.2; the other entries describe the existing development environment.
+The development and execution environment is the one recorded for the iteration 3 demo on 6 November 2026. Dependencies were reused from that local installation. This iteration 4 branch keeps the same toolchain: Expo SDK 58, React Native 0.88.0, React 19.3.0, FastAPI on port 8000, and PostgreSQL 16.
 
 | Item | Version / notes |
 |---|---|
-| OS | macOS 26.5.1 (Apple silicon) |
-| Node.js | 24.12.0 (SDK 58 requires 22.13+ on 22.x, 24.3+ on 24.x, or 26+) |
-| npm | 11.6.2 |
-| Expo SDK | 58 (`expo` `~58.0.19`) |
-| React Native | 0.88.0 |
-| React | 19.3.0 |
-| Client package manager | npm (`client/package-lock.json`) |
-| Python | 3.14.7 via `uv` (project requires `>=3.12`; production image is `python:3.12-slim`) |
-| uv | 0.13.1 |
-| Backend | FastAPI + Uvicorn on port 8000 |
-| Database | PostgreSQL 16 (`postgres:16-alpine` via Docker Compose) |
-| Mobile runtime | Expo Go / `npx expo start` |
+| OS | macOS 14.7.1, Apple silicon (`arm64`) |
+| Node.js / npm | 26.0.0 / 12.0.2 |
+| Python / uv | 3.12.3 / 0.11.17 |
+| Docker CLI | 28.4.0 |
+| Expo SDK | 58 (`expo` `~58.0.19` in `client/package.json`) |
+| React Native / React | 0.88.0 / 19.3.0 |
+| Backend | FastAPI + Uvicorn, port 8000 |
+| Database target | PostgreSQL 16 (`postgres:16-alpine`); automated API tests use in-memory SQLite |
+| Mobile runtime | Expo SDK 58-compatible client or local native build |
 
-<!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
+### Automated checks
+
+Run these from the directory named in the table. Tests use a fake LLM and do not verify live model responses.
+
+| Area | Commands (run inside that directory) |
+|---|---|
+| `client/` | `npm run lint`, `npx tsc --noEmit`, `npm test` |
+| `server/` | `uv run pytest`, `uv run ruff check .`, `uv run ruff format --check .` |
+| Ingredient data (`server/`) | `uv run python scripts/load_ingredients.py --check` |
+
 ## Docs
 
-- [Food ingredient · restriction ids](docs/food-ingredient-restriction-ids.md): 클라이언트 · 서버 · 재료 데이터가 공유하는 알러지 · 채식 · 식이 제한 값(`RestrictionType`)과 재료 판정 규칙
+- [Food ingredient and restriction ids](docs/food-ingredient-restriction-ids.md): shared allergy, dietary-pattern, and restriction values, and how the ingredient catalog is judged

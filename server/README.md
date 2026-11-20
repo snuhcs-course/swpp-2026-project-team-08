@@ -10,8 +10,8 @@
 <!-- Changed: suggestion 관련 문서 업데이트 -->
 <!-- AI-generated with GPT-6, 2026-10-26, reviewed by Haechan Jung -->
 <!-- Changed: 문서 역할 정리 -->
-<!-- AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung -->
-<!-- Changed: 재료 파일을 복사한 뒤 서버 이미지 빌드 안내 -->
+<!-- AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung -->
+<!-- Changed: 커밋된 재료 assets로 이미지 빌드와 서버 적용 안내 -->
 
 # 서버
 
@@ -84,16 +84,14 @@ uv remove <package>
 ```
 
 개발용 의존성은 `--dev`를 붙여 추가하거나 제거한다.
-배포용 Docker 이미지는 `server/`를 빌드 컨텍스트로 사용한다. 저장소 루트에서 최종 재료 파일을 복사한 뒤 빌드한다.
-`server/assets/`의 두 복사본은 Git에 넣지 않는다.
+배포용 Docker 이미지는 `server/`를 빌드 컨텍스트로 사용하며, 커밋된 `server/assets/`의 재료 파일을 포함한다.
+저장소 루트에서 실행한다.
 
 ```bash
-mkdir -p server/assets
-cp data/ingredient_db/result/ingredients.jsonl \
-  data/ingredient_db/result/ingredients_restrictions.jsonl server/assets/
 docker build -t nurturebites-server server
 ```
 
+재료 데이터 변경과 DB 적재는 [재료 데이터의 서버 적용](../data/ingredient_db/README.md#서버-적용)을 따른다.
 실행 환경변수는 이미지에 포함하지 않고 컨테이너 실행 시 주입한다.
 배포 절차와 운영 설정은 [배포 문서](docs/deploy.md)를 따른다.
 

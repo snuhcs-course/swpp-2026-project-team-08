@@ -1,18 +1,15 @@
-# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
-# Changed: 배포 시 재료 변경 감지·적재·검증 명령
+# AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung
+# Changed: 재료 변경 감지·적재·DB 검증 로직과 CLI 분리
 
 """배포 이미지의 재료 목록을 DB와 동기화하고 검증한다."""
 
-import argparse
-import asyncio
 from dataclasses import dataclass
-from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Ingredient, IngredientCatalogState, IngredientRestriction
-from scripts.ingredient_catalog.load import RESULT, CatalogInput, read_catalog, replace_catalog_data
+from scripts.ingredient_catalog.load import CatalogInput, replace_catalog_data
 from scripts.ingredient_catalog.lock import lock_catalog
 
 
@@ -63,37 +60,3 @@ async def verify_catalog(session: AsyncSession, catalog: CatalogInput) -> None:
         or sorted(judgements) != sorted(catalog.judgements)
     ):
         raise ValueError("DB catalog does not match the deployment JSONL")
-
-
-async def run(args: argparse.Namespace) -> None:
-    # 파일 검증 실패는 DB 연결 전에 처리한다.
-    catalog = read_catalog(args.ingredients, args.restrictions)
-    from app.core.database import AsyncSessionLocal
-
-    async with AsyncSessionLocal() as session, session.begin():
-        if args.command == "apply":
-            result = await apply_catalog(session, catalog)
-        elif args.command == "verify":
-            await verify_catalog(session, catalog)
-    # commit이 끝난 뒤에만 성공을 출력한다.
-    if args.command == "apply":
-        action = "교체 완료" if result.changed else "동일 파일: 교체 생략"
-        print(f"{action} (재료 {result.ingredients}개, 제한 판정 {result.restrictions}개)")
-    else:
-        print(f"재료 {args.command} 완료")
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    commands = parser.add_subparsers(dest="command", required=True)
-    for command in ("apply", "verify"):
-        child = commands.add_parser(command)
-        child.add_argument("--ingredients", type=Path, default=RESULT / "ingredients.jsonl")
-        child.add_argument(
-            "--restrictions", type=Path, default=RESULT / "ingredients_restrictions.jsonl"
-        )
-    asyncio.run(run(parser.parse_args()))
-
-
-if __name__ == "__main__":
-    main()

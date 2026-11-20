@@ -1,15 +1,14 @@
-# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
-# Changed: 재료 적재 패키지의 입력·실행 모드 검증
+# AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung
+# Changed: 재료 입력 검증과 통합 CLI의 파일 검사·명령 선택 검증
 
 """JSONL 검증과 CLI 모드 선택은 DB 연결 없이 확인한다."""
 
 import json
-import sys
 
 import pytest
 
-from scripts.ingredient_catalog import load as load_ingredients
-from scripts.ingredient_catalog.load import validate
+from scripts.ingredient_catalog import cli
+from scripts.ingredient_catalog.load import read_catalog, validate
 
 RICE = {"id": 1, "korean_name": None, "english_name": "Rice"}
 SAFE = {"ingredient_id": 1, "restriction_type": "ALLERGY.EGGS", "degree": "NEVER"}
@@ -89,18 +88,22 @@ def test_악센트와_숫자_및_구두점이_있는_영어_이름을_허용한�
 
 
 @pytest.mark.parametrize(
-    "row",
+    "filename,row",
     [
-        '{"id":1,"id":2,"korean_name":null,"english_name":"Rice"}',
-        '{"ingredient_id":1,"restriction_type":"ALLERGY.EGGS","degree":"ALWAYS","degree":"NEVER"}',
+        ("ingredients.jsonl", '{"id":1,"id":2,"korean_name":null,"english_name":"Rice"}'),
+        (
+            "ingredients_restrictions.jsonl",
+            '{"ingredient_id":1,"restriction_type":"ALLERGY.EGGS",'
+            '"degree":"ALWAYS","degree":"NEVER"}',
+        ),
     ],
     ids=["재료_ID_덮어쓰기", "제한_판정_덮어쓰기"],
 )
-def test_중복_JSON_키로_앞의_값을_덮어쓸_수_없다(tmp_path, row):
-    path = tmp_path / "input.jsonl"
-    path.write_text(row + "\n", encoding="utf-8")
+def test_중복_JSON_키로_앞의_값을_덮어쓸_수_없다(tmp_path, filename, row):
+    ingredients, restrictions = write_files(tmp_path)
+    (tmp_path / filename).write_text(row + "\n", encoding="utf-8")
     with pytest.raises(ValueError, match="duplicate JSON key"):
-        load_ingredients.read_jsonl(path)
+        read_catalog(ingredients, restrictions)
 
 
 def test_ID_상한과_제품별_판정을_허용한다():
@@ -114,36 +117,76 @@ def test_ID_상한과_제품별_판정을_허용한다():
 
 
 @pytest.mark.parametrize(
-    "modes", [[], ["--check", "--replace-catalog"]], ids=["미선택", "중복선택"]
+    "commands",
+    [[], ["unknown"], ["check", "replace"]],
+    ids=["미선택", "없는_명령", "중복선택"],
 )
-def test_실행_모드를_하나만_선택해야_한다(monkeypatch, modes):
-    monkeypatch.setattr(sys, "argv", ["load_ingredients.py", *modes])
+def test_실행_명령을_하나만_선택해야_한다(commands):
     with pytest.raises(SystemExit) as raised:
-        load_ingredients.main()
+        cli.main(commands)
     assert raised.value.code == 2
 
 
-def test_check는_DB_접속_없이_파일만_검증한다(tmp_path, monkeypatch, capsys):
+def write_files(tmp_path):
     ingredients = tmp_path / "ingredients.jsonl"
     restrictions = tmp_path / "ingredients_restrictions.jsonl"
     ingredients.write_text(json.dumps(RICE) + "\n", encoding="utf-8")
     restrictions.write_text(json.dumps(SAFE) + "\n", encoding="utf-8")
+    return ingredients, restrictions
 
-    def forbidden(*args):
-        raise AssertionError("check must not open a DB connection")
 
-    monkeypatch.setattr(load_ingredients, "run", forbidden)
-    monkeypatch.setattr(
-        sys,
-        "argv",
+@pytest.fixture
+def forbid_cli_database(monkeypatch):
+    def forbidden(*args, **kwargs):
+        raise AssertionError("file validation must not open a DB session")
+
+    monkeypatch.setattr(cli, "run", forbidden)
+    monkeypatch.setattr("app.core.database.AsyncSessionLocal", forbidden)
+
+
+def test_check는_DB_접속_없이_파일만_검증한다(tmp_path, forbid_cli_database, capsys):
+    ingredients, restrictions = write_files(tmp_path)
+    cli.main(
         [
-            "load_ingredients.py",
-            "--check",
+            "check",
             "--ingredients",
             str(ingredients),
             "--restrictions",
             str(restrictions),
         ],
     )
-    load_ingredients.main()
     assert "재료 1개, 제한 판정 1개" in capsys.readouterr().out
+
+
+def test_기본_assets_경로는_실행_위치와_무관하다(
+    tmp_path, monkeypatch, forbid_cli_database, capsys
+):
+    monkeypatch.chdir(tmp_path)
+    cli.main(["check"])
+    assert "OK: 재료 " in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("command", ["check", "replace", "apply", "verify"])
+@pytest.mark.parametrize("failure", ["missing", "invalid_json", "unknown_ingredient"])
+def test_입력_오류는_DB_접속과_성공_출력_전에_실패한다(
+    tmp_path, forbid_cli_database, capsys, command, failure
+):
+    ingredients, restrictions = write_files(tmp_path)
+    if failure == "missing":
+        ingredients.unlink()
+    elif failure == "invalid_json":
+        ingredients.write_text("{broken\n", encoding="utf-8")
+    else:
+        restrictions.write_text(json.dumps({**SAFE, "ingredient_id": 2}) + "\n", encoding="utf-8")
+
+    with pytest.raises((FileNotFoundError, ValueError)):
+        cli.main(
+            [
+                command,
+                "--ingredients",
+                str(ingredients),
+                "--restrictions",
+                str(restrictions),
+            ]
+        )
+    assert capsys.readouterr().out == ""

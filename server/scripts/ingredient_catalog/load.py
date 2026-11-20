@@ -1,41 +1,29 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 재료·제한 판정 raw JSONL 을 DB 에 한 번 적재하는 스크립트 추가
-# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
-# Changed: 영어 카탈로그 검증·전체 교체와 적재 해시 기록
+# AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung
+# Changed: 영어 카탈로그 검증·교체·해시 기록과 CLI 분리
 
 """영어 재료 카탈로그와 제한 판정 JSONL을 검증하거나 DB 카탈로그 전체를 교체한다.
-
-기본 입력은 저장소의 data/ingredient_db/result/에 있는 JSONL 두 파일이다.
-
-    uv run python scripts/load_ingredients.py --check
-    uv run python scripts/load_ingredients.py --replace-catalog
 
 교체는 파일 검증 후 한 트랜잭션에서 수행한다. 파일에 없는 기존 재료와 판정도 제거한다.
 사용자가 기록한 식사 재료와 저장된 추천은 변경하지 않는다.
 """
 
-import argparse
-import asyncio
 import hashlib
 import json
-import sys
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
+from sqlalchemy import delete, func, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from sqlalchemy import delete, func, select, text  # noqa: E402
-from sqlalchemy.ext.asyncio import AsyncSession  # noqa: E402
+from app.features.suggestions.ingredients import normalize_name
+from app.models import Ingredient, IngredientCatalogState, IngredientRestriction
+from app.models.ingredient_enums import RestrictionDegree
+from app.models.restriction_enums import RestrictionType
+from scripts.ingredient_catalog.lock import lock_catalog
 
-from app.features.suggestions.ingredients import normalize_name  # noqa: E402
-from app.models import Ingredient, IngredientCatalogState, IngredientRestriction  # noqa: E402
-from app.models.ingredient_enums import RestrictionDegree  # noqa: E402
-from app.models.restriction_enums import RestrictionType  # noqa: E402
-from scripts.ingredient_catalog.lock import lock_catalog  # noqa: E402
-
-RESULT = ROOT.parent / "data" / "ingredient_db" / "result"
 CHUNK = 1000
 
 
@@ -59,11 +47,6 @@ def _unique_object(pairs: list[tuple[str, object]]) -> dict:
             raise ValueError(f"duplicate JSON key: {key}")
         result[key] = value
     return result
-
-
-def read_jsonl(path: Path) -> list[dict]:
-    with path.open(encoding="utf-8") as file:
-        return [json.loads(line, object_pairs_hook=_unique_object) for line in file if line.strip()]
 
 
 def read_catalog(ingredients_path: Path, restrictions_path: Path) -> CatalogInput:
@@ -143,19 +126,6 @@ def validate(
     return names, judged
 
 
-async def import_catalog(
-    session: AsyncSession,
-    ingredients_path: Path,
-    restrictions_path: Path,
-    *,
-    replace_catalog: bool,
-) -> ImportResult:
-    if not replace_catalog:
-        raise ValueError("catalog replacement must be explicit")
-    catalog = read_catalog(ingredients_path, restrictions_path)
-    return await replace_catalog_data(session, catalog)
-
-
 async def replace_catalog_data(session: AsyncSession, catalog: CatalogInput) -> ImportResult:
     names, judged = catalog.names, catalog.judgements
     await lock_catalog(session)
@@ -199,36 +169,3 @@ async def sync_ingredient_sequence(session: AsyncSession) -> None:
             ),
             {"highest": highest},
         )
-
-
-async def run(ingredients_path: Path, restrictions_path: Path) -> ImportResult:
-    from app.core.database import AsyncSessionLocal
-
-    async with AsyncSessionLocal() as session, session.begin():
-        return await import_catalog(
-            session, ingredients_path, restrictions_path, replace_catalog=True
-        )
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--ingredients", type=Path, default=RESULT / "ingredients.jsonl")
-    parser.add_argument(
-        "--restrictions", type=Path, default=RESULT / "ingredients_restrictions.jsonl"
-    )
-    mode = parser.add_mutually_exclusive_group(required=True)
-    mode.add_argument("--check", action="store_true", help="파일만 검증하고 DB는 바꾸지 않는다")
-    mode.add_argument(
-        "--replace-catalog", action="store_true", help="기존 공용 재료와 판정을 모두 교체한다"
-    )
-    args = parser.parse_args()
-    if args.check:
-        names, judged = validate(read_jsonl(args.ingredients), read_jsonl(args.restrictions))
-        print(f"OK: 재료 {len(names)}개, 제한 판정 {len(judged)}개 (DB 는 바꾸지 않았다)")
-        return
-    result = asyncio.run(run(args.ingredients, args.restrictions))
-    print(f"적재 완료: 재료 {result.ingredients}개, 제한 판정 {result.restrictions}개")
-
-
-if __name__ == "__main__":
-    main()

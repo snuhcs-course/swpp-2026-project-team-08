@@ -1,7 +1,7 @@
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim -->
 <!-- Changed: 서버 RestrictionType 기준 id 규칙과 DB 카탈로그 판정 규칙으로 재작성 -->
-<!-- AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung -->
+<!-- AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung -->
 <!-- Changed: 영어 JSONL과 배포 자동 적재 절차 연결 -->
 
 # 제한 id (알러지 · 채식 · 식이 제한)
@@ -41,10 +41,8 @@
 서버는 영어 이름을 조회한다. 판정 대상은 알레르기 9개·원료군 7개·식이 제한 3개다.
 
 적재기는 JSONL을 읽어 DB에 저장하고, 추천 요청은 DB의 재료와 판정을 조회한다.
-검사·교체 명령과 적용 순서는 [서버 적용 절차](../data/ingredient_db/README.md#서버-적용)를 따른다.
+검사·교체 명령과 배포 절차는 [서버 배포 문서](../server/docs/deploy.md#22-배포-main-머지)를 따른다.
 
 - 교체는 파일 밖의 기존 공용 재료·판정을 포함해 한 트랜잭션에서 수행한다. 같은 파일을 다시 적재해도 목록은 같다.
 - 사용자의 식사 기록과 저장된 추천은 공용 재료 테이블을 참조하지 않으므로 그대로 유지한다.
 - 파일의 값이 현재 enum과 맞지 않거나 재료 id가 어긋나면 아무것도 쓰지 않고 오류로 끝난다.
-- CD는 JSONL 변경 시 공용 데이터를 교체하고 영어 조회 코드를 함께 배포한다. 새 서버를 먼저 배포하고 서비스 중 적재한다. 적재·검증 실패 시 서버를 유지한다.
-- 마지막 적재 해시는 공용 데이터와 같은 트랜잭션에서 저장한다. 같은 파일의 재배포는 교체를 건너뛴다.

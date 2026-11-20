@@ -1,5 +1,5 @@
-# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
-# Changed: 재료 선정 보존과 전체 기본 재료군의 이름·구성원 다수결
+# AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung
+# Changed: 재료 선정·묶음 다수결과 CLI의 선정 결과 저장 분리
 
 """원본 전체의 세 판단을 비교하고 같은 재료를 묶는다."""
 
@@ -862,5 +862,4 @@ def run(
     if snapshot is not None:
         result["selection_origin"] = snapshot.get("selection_origin", snapshot["metadata"])
     validate_selected(result)
-    write_json(work_dir / "selected.json", result)
     return result

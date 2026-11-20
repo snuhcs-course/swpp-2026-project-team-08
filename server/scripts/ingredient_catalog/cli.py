@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung
-# Changed: 재료 카탈로그 검사·교체·배포 명령 통합
+# Changed: 재료 명령과 DB 트랜잭션·잠금 통합
 
 """서버 assets의 재료 카탈로그를 검사하거나 DB에 적용한다."""
 
@@ -9,15 +9,17 @@ from pathlib import Path
 
 from scripts.ingredient_catalog.deploy import apply_catalog, verify_catalog
 from scripts.ingredient_catalog.load import CatalogInput, read_catalog, replace_catalog_data
+from scripts.ingredient_catalog.lock import lock_catalog
 
 ASSETS = Path(__file__).resolve().parents[2] / "assets"
 
 
 async def run(command: str, catalog: CatalogInput) -> str:
-    """DB 작업을 한 트랜잭션으로 실행하고 커밋 후 성공 메시지를 반환한다."""
+    """같은 잠금과 트랜잭션 안에서 DB 작업을 실행하고 커밋 후 성공 메시지를 반환한다."""
     from app.core.database import AsyncSessionLocal
 
     async with AsyncSessionLocal() as session, session.begin():
+        await lock_catalog(session)
         if command == "replace":
             imported = await replace_catalog_data(session, catalog)
             message = (

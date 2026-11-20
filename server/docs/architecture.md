@@ -259,8 +259,8 @@ async def list_meal_logs(
 추천(`FoodRecommendation`)의 `ingredients`는 LLM이 반환한 재료 이름을 그대로 저장한 문자열 목록이며, 어느 테이블도 참조하지 않는다.
 LLM의 제한 검증은 DB에서 아이의 제한에 맞춰 읽은 영어 재료 카탈로그를 사용한다.
 공용 재료의 데이터 흐름은 `assets/ JSONL → scripts/ingredient_catalog/cli.py → DB → suggestions/catalog.py`다.
-`cli.py`는 명령·입력 경로·트랜잭션·출력을 담당한다. 파일 검증과 교체는 `load.py`,
-변경 감지와 DB 비교는 `deploy.py`, 동시 실행 잠금은 `lock.py`가 맡는다.
+`cli.py`는 명령·입력 경로·트랜잭션·출력을 담당하며, DB 작업 전에 `lock.py`의 잠금을 한 번 획득한다.
+파일 검증과 교체는 `load.py`, 변경 감지와 DB 비교는 `deploy.py`가 맡는다.
 JSONL은 적재기를 실행할 때 읽는다. 서버 시작과 추천 요청은 파일을 다시 읽거나 DB에 자동 적재하지 않는다.
 
 ## 3. 의존성 방향과 기능 간 규칙

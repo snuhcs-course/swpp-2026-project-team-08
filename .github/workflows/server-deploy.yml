@@ -1,7 +1,5 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
-# AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung
-# Changed: 커밋된 재료 assets를 포함한 이미지 배포와 자동 적재
-# main 에 서버 또는 최종 재료 변경이 머지되면 이미지를 ECR 에 올리고 EC2 에 배포한다.
+# main 에 server/ 변경이 머지되면 이미지를 ECR 에 올리고 EC2 에 배포한다.
 # AWS 인증은 OIDC 로 하며, 비밀 값은 GitHub 에 두지 않는다 (DB/JWT 값은 EC2 가 SSM 에서 읽는다).
 name: Server Deploy
 
@@ -10,7 +8,6 @@ on:
     branches: [main]
     paths:
       - "server/**"
-      - "data/ingredient_db/result/*.jsonl"
       - ".github/workflows/server-deploy.yml"
   workflow_dispatch:
 

@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung
-# Changed: 통합 재료 CLI의 변경 감지·검증·커밋 실패 검사
+# Changed: 통합 재료 CLI의 변경 감지·검증·단일 트랜잭션 롤백 검사
 
 """통합 명령의 DB 작업과 트랜잭션 경계를 실제 SQLite로 검증한다."""
 
@@ -127,38 +127,27 @@ async def test_verify는_행_수가_같아도_이름과_판정과_해시의_불�
 async def test_최종_커밋_실패는_원래_데이터와_해시를_보존하고_성공을_출력하지_않는다(
     tmp_path, cli_database, capsys, command
 ):
-    engine = cli_database.kw["bind"].sync_engine
-
-    def begin_transaction(connection):
-        # SQLite의 기본 지연 BEGIN에서도 SAVEPOINT가 최상위 커밋이 되지 않게 한다.
-        connection.exec_driver_sql("BEGIN")
-
     def fail_commit(session):
-        if not session.in_nested_transaction():
-            raise RuntimeError("injected final commit failure")
+        raise RuntimeError("injected final commit failure")
 
-    event.listen(engine, "begin", begin_transaction)
+    original = write_catalog(tmp_path)
+    await cli.run("replace", original)
+    before = await snapshot(cli_database)
+    write_catalog(tmp_path, name="Milk", degree="ALWAYS")
+    event.listen(Session, "before_commit", fail_commit)
     try:
-        original = write_catalog(tmp_path)
-        await cli.run("replace", original)
-        before = await snapshot(cli_database)
-        write_catalog(tmp_path, name="Milk", degree="ALWAYS")
-        event.listen(Session, "before_commit", fail_commit)
-        try:
-            with pytest.raises(RuntimeError, match="injected final commit failure"):
-                await asyncio.to_thread(
-                    cli.main,
-                    [
-                        command,
-                        "--ingredients",
-                        str(tmp_path / "ingredients.jsonl"),
-                        "--restrictions",
-                        str(tmp_path / "ingredients_restrictions.jsonl"),
-                    ],
-                )
-        finally:
-            event.remove(Session, "before_commit", fail_commit)
-        assert capsys.readouterr().out == ""
-        assert await snapshot(cli_database) == before
+        with pytest.raises(RuntimeError, match="injected final commit failure"):
+            await asyncio.to_thread(
+                cli.main,
+                [
+                    command,
+                    "--ingredients",
+                    str(tmp_path / "ingredients.jsonl"),
+                    "--restrictions",
+                    str(tmp_path / "ingredients_restrictions.jsonl"),
+                ],
+            )
     finally:
-        event.remove(engine, "begin", begin_transaction)
+        event.remove(Session, "before_commit", fail_commit)
+    assert capsys.readouterr().out == ""
+    assert await snapshot(cli_database) == before

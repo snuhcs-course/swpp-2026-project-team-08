@@ -1,4 +1,4 @@
-<!-- AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung -->
+<!-- AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung -->
 <!-- Changed: 재료 검색·제한 판정·보류 근거 확인 화면 -->
 <!doctype html>
 <html lang="ko">
@@ -333,7 +333,7 @@ function el(tag,text,cls) {
 function badge(d) {
   return el('span',degrees[d]||d,'badge '+d)
 }
-let page=0,sequence=0,detailSequence=0,selected=null,timer;
+let page=0,sequence=0,detailSequence=0,timer;
 async function api(path) {
   const r=await fetch(path);
   if(!r.ok)throw Error('자료를 불러오지 못했습니다.');
@@ -382,7 +382,6 @@ function display(d) {
 }
 async function choose(id,button) {
   const token=++detailSequence;
-  selected=id;
   document.querySelectorAll('.entry').forEach(e=>e.classList.remove('active'));
   button.classList.add('active');
   $('detail').replaceChildren(el('p','판정 근거를 불러오는 중…','muted'));
@@ -400,7 +399,6 @@ async function choose(id,button) {
 async function search() {
   const token=++sequence;
   ++detailSequence;
-  selected=null;
   $('error').textContent='';
   $('detail').replaceChildren(el('div','왼쪽 목록에서 재료를 선택하세요.','empty'));
   const pending=$('mode').value==='pending';

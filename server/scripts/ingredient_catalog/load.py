@@ -1,7 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 재료·제한 판정 raw JSONL 을 DB 에 한 번 적재하는 스크립트 추가
 # AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung
-# Changed: 영어 카탈로그 검증·교체·해시 기록과 CLI 분리
+# Changed: 영어 카탈로그 검증·교체·해시 기록과 CLI 트랜잭션 사용
 
 """영어 재료 카탈로그와 제한 판정 JSONL을 검증하거나 DB 카탈로그 전체를 교체한다.
 
@@ -22,7 +22,6 @@ from app.features.suggestions.ingredients import normalize_name
 from app.models import Ingredient, IngredientCatalogState, IngredientRestriction
 from app.models.ingredient_enums import RestrictionDegree
 from app.models.restriction_enums import RestrictionType
-from scripts.ingredient_catalog.lock import lock_catalog
 
 CHUNK = 1000
 
@@ -128,31 +127,26 @@ def validate(
 
 async def replace_catalog_data(session: AsyncSession, catalog: CatalogInput) -> ImportResult:
     names, judged = catalog.names, catalog.judgements
-    await lock_catalog(session)
-
-    async with session.begin_nested():
-        await session.execute(delete(IngredientRestriction))
-        await session.execute(delete(Ingredient))
+    await session.execute(delete(IngredientRestriction))
+    await session.execute(delete(Ingredient))
+    session.add_all(
+        Ingredient(id=ingredient_id, korean_name=None, english_name=name)
+        for ingredient_id, name in names.items()
+    )
+    await session.flush()
+    for start in range(0, len(judged), CHUNK):
         session.add_all(
-            Ingredient(id=ingredient_id, korean_name=None, english_name=name)
-            for ingredient_id, name in names.items()
+            IngredientRestriction(ingredient_id=ingredient_id, restriction_type=kind, degree=degree)
+            for ingredient_id, kind, degree in judged[start : start + CHUNK]
         )
         await session.flush()
-        for start in range(0, len(judged), CHUNK):
-            session.add_all(
-                IngredientRestriction(
-                    ingredient_id=ingredient_id, restriction_type=kind, degree=degree
-                )
-                for ingredient_id, kind, degree in judged[start : start + CHUNK]
-            )
-            await session.flush()
-        await sync_ingredient_sequence(session)
-        state = await session.get(IngredientCatalogState, 1)
-        if state is None:
-            session.add(IngredientCatalogState(id=1, content_hash=catalog.content_hash))
-        else:
-            state.content_hash = catalog.content_hash
-        await session.flush()
+    await sync_ingredient_sequence(session)
+    state = await session.get(IngredientCatalogState, 1)
+    if state is None:
+        session.add(IngredientCatalogState(id=1, content_hash=catalog.content_hash))
+    else:
+        state.content_hash = catalog.content_hash
+    await session.flush()
     return ImportResult(ingredients=len(names), restrictions=len(judged))
 
 

@@ -11,7 +11,7 @@
 <!-- AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung -->
 <!-- Changed: 전용 API 검사 제거에 맞춘 Client CI 안내 -->
 <!-- AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung -->
-<!-- Changed: 커밋된 재료 assets와 통합 CLI의 배포 순서·실패 처리 범위 -->
+<!-- Changed: 커밋된 재료 assets와 통합 CLI의 배포 조건·순서·실패 처리 범위 -->
 
 # 서버 배포 가이드
 
@@ -19,7 +19,7 @@
 
 ## 1. 개요
 
-`main` 브랜치에 서버 코드 또는 최종 재료 JSONL 변경이 머지되면 GitHub Actions가 Docker 이미지를 만들어 AWS ECR에 올리고, EC2에서 새 이미지를 실행합니다. 데이터베이스는 RDS의 PostgreSQL입니다.
+`main` 브랜치에 `server/` 또는 배포 워크플로 변경이 머지되면 GitHub Actions가 Docker 이미지를 만들어 AWS ECR에 올리고, EC2에서 새 이미지를 실행합니다. `server/assets/`의 재료 파일 변경도 포함합니다. 데이터베이스는 RDS의 PostgreSQL입니다.
 새 서버가 헬스체크를 통과하면 재료를 적재하고 DB와 파일이 같은지 검사합니다. 이 검사까지 통과해야 배포 성공으로 처리합니다.
 
 ```mermaid
@@ -55,7 +55,7 @@ EC2의 8000번 포트는 CloudFront에서 오는 요청만 받도록 보안그�
 | 워크플로 | 파일 | 실행 시점 | 하는 일 |
 | --- | --- | --- | --- |
 | Server CI | `.github/workflows/server-ci.yml` | 서버·재료 데이터·공통 제한 규칙이 바뀐 PR | 코드·데이터 검사와 테스트 |
-| Server Deploy | `.github/workflows/server-deploy.yml` | `main`에 서버·최종 재료 JSONL 변경 머지 (수동 실행도 가능) | 이미지 빌드·재료 적재·EC2 배포 |
+| Server Deploy | `.github/workflows/server-deploy.yml` | `main`에 `server/` 또는 배포 워크플로 변경 머지 (수동 실행도 가능) | 이미지 빌드·재료 적재·EC2 배포 |
 
 ### 2.1 CI (PR)
 

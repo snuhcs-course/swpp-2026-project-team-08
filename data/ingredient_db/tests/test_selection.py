@@ -1,14 +1,19 @@
-# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
-# Changed: 재료 선정과 구성원 묶음의 다수결 검증
+# AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung
+# Changed: 재료 선정·묶음 다수결과 완전한 선정 결과의 저장 검증
 
+import contextlib
 import copy
+import io
 import json
+import sys
 import tempfile
 import threading
 import unittest
 from collections import Counter
 from pathlib import Path
+from unittest.mock import patch
 
+from data.ingredient_db import __main__ as cli
 from data.ingredient_db.runner import AgentRunner
 from data.ingredient_db.selection import (
     AGENTS,
@@ -36,6 +41,32 @@ def vote(source_id=1, decision="INCLUDE", name="Rice"):
 
 
 class SelectionTests(unittest.TestCase):
+    def test_cli_preserves_previous_selection_when_final_save_fails(self):
+        source = {"metadata": {"row_count": 1}, "rows": [{"source_id": 1}]}
+        response = {"rows": [{"i": "1", "d": "EXCLUDE", "n": "", "r": "Prepared meal"}]}
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            (work / "source.json").write_text(json.dumps(source))
+            policy = work / "policy.md"
+            policy.write_text("Fixture policy")
+            argv = ["ingredient_db", "select", "--work-dir", str(work), "--policy", str(policy)]
+            with (
+                patch.object(sys, "argv", argv),
+                patch.object(AgentRunner, "call", return_value=response),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                cli.main()
+                saved = (work / "selected.json").read_bytes()
+                selected = json.loads(saved)
+                self.assertEqual(
+                    selected["metadata"], json.loads((work / "manifest.json").read_text())
+                )
+                validate_selected(selected)
+                with patch.object(cli, "write_json", side_effect=OSError("Final save failed")):
+                    with self.assertRaisesRegex(OSError, "Final save failed"):
+                        cli.main()
+                self.assertEqual((work / "selected.json").read_bytes(), saved)
+
     def test_out_of_order_batches_keep_three_requests_busy_and_same_result(self):
         source = {"metadata": {}, "rows": [{"source_id": index} for index in range(1, 4)]}
         second_batch_finished = threading.Event()

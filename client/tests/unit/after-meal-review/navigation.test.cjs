@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 재개 직후 진입 화면 복귀와 진행 후 이전 단계·새 재개 상태 검증
+// Changed: 재개 직후 복귀·사진별 이전 단계·새 재개·최초 진입 경계 검증
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -23,9 +23,9 @@ async function mount(t, beforePhoto = true) {
   await waitFor(() => h.current.draft !== null);
   return h;
 }
-async function start(t, step, beforePhoto = true) {
+async function start(t, step, beforePhoto = true, afterPhoto = step !== 'photo') {
   const draft = { ...unfinishedReview(), step };
-  if (step === 'photo') draft.afterPhoto = null;
+  if (!afterPhoto) draft.afterPhoto = null;
   await saveAfterMealDraft(draft);
   return mount(t, beforePhoto);
 }
@@ -35,7 +35,7 @@ async function back(h) {
   return handled;
 }
 
-test('재개 후 다음 단계로 진행하지 않은 초안의 뒤로가기 처리 결과는 false이고 입력과 단계는 같다', async t => {
+test('재개 후 다음 단계로 진행하지 않았으면 뒤로가기 대상은 리뷰를 연 화면이고 입력과 단계는 유지된다', async t => {
   for (const step of ['photo', 'preview', 'compare', 'outcomes', 'difficulties']) {
     const h = await start(t, step);
     await act(async () => h.current.chooseOutcome('1', 'eaten'));
@@ -49,18 +49,26 @@ test('재개 후 다음 단계로 진행하지 않은 초안의 뒤로가기 처
   }
 });
 
-test('재개 후 다음 단계로 진행한 초안은 처음 재개한 단계까지 돌아와도 뒤로가기 결과가 기존 이전 단계이다', async t => {
-  for (const beforePhoto of [true, false]) {
-    const h = await start(t, 'preview', beforePhoto);
-    await act(async () => h.current.go('outcomes'));
+test('재개 후 한 번이라도 앞으로 진행했으면 처음 재개한 단계까지 돌아와도 뒤로가기 대상은 현재 단계의 이전 단계이다', async t => {
+  for (const [beforePhoto, afterPhoto, previous] of [
+    [true, true, 'compare'], [false, true, 'preview'], [true, false, 'photo'],
+  ]) {
+    const h = await start(t, 'outcomes', beforePhoto, afterPhoto);
+    await act(async () => h.current.go('difficulties'));
     const before = structuredClone(h.current.draft);
     assert.equal(await back(h), true);
-    assert.equal(h.current.draft.step, beforePhoto ? 'compare' : 'preview');
-    if (beforePhoto) {
-      assert.equal(await back(h), true);
-      assert.equal(h.current.draft.step, 'preview');
-    }
+    assert.deepEqual(h.current.draft, { ...before, step: 'outcomes' });
     assert.equal(await back(h), true);
+    assert.deepEqual(h.current.draft, { ...before, step: previous });
+    if (previous === 'compare') {
+      assert.equal(await back(h), true);
+      assert.deepEqual(h.current.draft, { ...before, step: 'preview' });
+    }
+    if (afterPhoto) {
+      assert.equal(await back(h), true);
+      assert.deepEqual(h.current.draft, { ...before, step: 'photo' });
+    }
+    assert.equal(await back(h), false);
     assert.deepEqual(h.current.draft, { ...before, step: 'photo' });
   }
   const h = await start(t, 'photo');
@@ -70,7 +78,7 @@ test('재개 후 다음 단계로 진행한 초안은 처음 재개한 단계까
   assert.equal(h.current.draft.step, 'photo');
 });
 
-test('이전 재개에서 다음 단계로 진행했어도 리뷰를 다시 연 직후 뒤로가기 처리 결과는 false이다', async t => {
+test('이전 재개에서 진행한 적이 있어도 다시 재개한 직후 뒤로가기 대상은 리뷰를 연 화면이다', async t => {
   const h = await start(t, 'outcomes');
   await act(async () => h.current.go('difficulties'));
   assert.equal(await back(h), true);
@@ -81,4 +89,12 @@ test('이전 재개에서 다음 단계로 진행했어도 리뷰를 다시 연 
   assert.deepEqual(reopened.current.draft, stored);
   assert.equal(await back(reopened), false);
   assert.deepEqual(reopened.current.draft, stored);
+});
+
+test('초안 없이 시작한 사진 선택 화면의 뒤로가기 대상은 리뷰를 연 화면이고 입력은 유지된다', async t => {
+  const h = await mount(t);
+  const initial = structuredClone(h.current.draft);
+  assert.equal(initial.step, 'photo');
+  assert.equal(await back(h), false);
+  assert.deepEqual(h.current.draft, initial);
 });

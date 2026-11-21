@@ -1,9 +1,11 @@
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 홈에서 기존 식사 열기와 조회 실패 후 Retry의 실제 화면 이동 검증
+// Changed: 기존 식사 진입·조회 Retry와 완료 리뷰의 서버 저장값 재열기 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, waitFor, act, deferred } = require('../../helpers/meal-checkin-screen.cjs');
 const { colors } = require('../../../src/util/colors.ts');
+const { completionFixture, expectedReview } = require('../../fixtures/after-meal-completion.cjs');
+const { reviewResponse } = require('../../fixtures/server-meal.cjs');
 const { entryMeal, unfinishedReview } = require('../../fixtures/after-meal-entry.cjs');
 const { saveAfterMealDraft, readAfterMealDraft } = require('../../../src/data/storage/afterMealReviewStorage.ts');
 
@@ -31,6 +33,23 @@ async function startHome(t, respond) {
   await waitFor(() => pendingCard(app));
   assert.equal(app.pathname, '/home');
   return app;
+}
+
+async function openHistoryMeal(app) {
+  await waitFor(() => control(app, 'button', 'View meal history'));
+  await click(control(app, 'button', 'View meal history'));
+  await waitFor(() => app.pathname === '/section/mealLog' && control(app, 'heading', 'Meal History'));
+  await click(control(app, 'button', 'clear'));
+  const card = () => [...app.container.querySelectorAll('[role="button"]')]
+    .find(node => node.textContent.includes('Rice') && node.textContent.includes('Soup'));
+  await waitFor(() => card());
+  await click(card());
+  await waitFor(() => app.pathname === '/meal/10' && control(app, 'heading', 'Meal Details'));
+}
+function responseCard(app, name, outcome) {
+  const heading = control(app, 'button', `${name}${outcome}`);
+  assert.ok(heading, `${name}의 결과가 ${outcome}로 표시되어야 한다`);
+  return { heading, container: heading.parentElement };
 }
 
 test('홈에서 미검토 식사를 열면 해당 식사의 식후 사진 선택 화면이 열린다', async t => {
@@ -85,4 +104,35 @@ test('홈에서 연 식사의 조회가 실패해도 Retry에 성공하면 같�
   assert.equal(control(app, 'button', 'Continue').getAttribute('aria-disabled'), 'true');
   assert.equal(withoutPhoto(app), undefined);
   assert.deepEqual(await readAfterMealDraft('1', '10'), stored);
+});
+
+
+test('History에서 완료한 식사를 열면 로컬 초안 없이도 서버에 저장된 사진·음식과 재료의 결과·사유가 표시된다', async t => {
+  const { response } = completionFixture();
+  const saved = reviewResponse(response, expectedReview());
+  const requests = [];
+  assert.equal(await readAfterMealDraft('1', '10'), null);
+  const app = await mountMeal(t, { initialPath: '/home', meals: [saved], respond: (path, method) => {
+    requests.push({ method, path });
+    if (method === 'GET' && path === '/api/v1/meals/10') return Response.json(saved);
+    if (method === 'GET' && path === '/api/v1/meals/10/suggestions') return Response.json([]);
+  } });
+  await openHistoryMeal(app);
+  await waitFor(() => app.container.textContent.includes('Reviewed'));
+  assert.equal(app.container.textContent.includes('Awaiting review'), false);
+  assert.ok(![...app.container.querySelectorAll('[role="button"]')].some(node => node.textContent === 'Continue Review'));
+  assert.deepEqual([...app.container.querySelectorAll('img')].map(image => image.getAttribute('src')),
+    ['file:///before.png', 'file:///after.png']);
+  const rice = responseCard(app, 'Rice', 'Eaten');
+  assert.ok(rice.container.textContent.includes('Colors: Yellow'));
+  assert.ok(rice.container.textContent.includes('Food Smells: Cool mint-like smell'));
+  const carrot = responseCard(app, 'Carrot', 'Tasted');
+  await click(carrot.heading);
+  assert.ok(carrot.container.textContent.includes('Texture · How hard it feels: Firm'));
+  assert.ok(carrot.container.textContent.includes('in Rice'));
+  responseCard(app, 'Soup', 'Unclear');
+  assert.ok(![...app.container.querySelectorAll('[role="button"]')].some(node => node.textContent === 'EggNo record'));
+  assert.ok(requests.some(request => request.method === 'GET' && request.path === '/api/v1/meals/10'));
+  assert.ok(requests.every(request => request.method === 'GET'));
+  assert.equal(await readAfterMealDraft('1', '10'), null);
 });

@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 리뷰 완료·홈 갱신·서버 Retry와 초안 실패 후 제출의 실제 화면 흐름 검증
+// Changed: 리뷰 완료·홈 갱신·Retry·실패 후 편집과 초안 실패 후 제출 흐름 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, waitFor, act, deferred, storage } = require('../../helpers/meal-checkin-screen.cjs');
@@ -162,4 +162,46 @@ test('초안 자동 저장에 실패한 상태에서 Continue를 눌러도 현�
   await expectComplete(app);
   assert.deepEqual(server.requests, [expectedReview()]);
   assert.equal(app.container.textContent.includes('Could not save the review. Your answers are preserved.'), false);
+});
+
+
+test('리뷰 저장 실패 후 편집으로 돌아가 답변과 사유를 바꾸면 사진과 다른 답변은 유지되고, 다시 제출한 수정 내용으로 완료한다', async t => {
+  const { app, server } = await start(t);
+  await enterReview(app);
+  server.next = deferred();
+  server.next.resolve('failure');
+  await click(control(app, 'button', 'Continue'));
+  await waitFor(() => control(app, 'button', 'Retry'));
+  assert.deepEqual(server.requests, [expectedReview()]);
+  assert.equal(server.meal.foods[0].outcome, null);
+  await click(control(app, 'button', 'Go back'));
+  await waitFor(() => control(app, 'heading', 'What made this food difficult?'));
+  assert.ok(control(editor(app, 'Rice'), 'button', 'Remove: Colors: Yellow'));
+  assert.ok(control(editor(app, 'Rice'), 'button', 'value').textContent.includes('Cool mint-like smell'));
+  assert.ok(control(editor(app, 'Carrot in Rice'), 'button', 'value').textContent.includes('Firm'));
+  await click(control(editor(app, 'Rice'), 'button', 'Remove: Colors: Yellow'));
+  await choose(app, 'Rice', 'Select category', 'Colors');
+  await choose(app, 'Rice', 'value', 'Red');
+  await click(control(editor(app, 'Rice'), 'button', '+ Add'));
+  await click(control(app, 'button', 'Go back'));
+  await waitFor(() => control(app, 'heading', 'What happened with each food item?'));
+  await click(control(app, 'button', 'Expand or collapse Rice'));
+  await click(radio(app, 'Rice', 'Tasted'));
+  await click(control(app, 'button', 'Continue'));
+  await waitFor(() => control(app, 'heading', 'What made this food difficult?'));
+  assert.ok(control(editor(app, 'Rice'), 'button', 'Remove: Colors: Red'));
+  assert.equal(editor(app, 'Rice').container.textContent.includes('Yellow'), false);
+  assert.equal(server.requests.length, 1);
+  const draft = await readAfterMealDraft('1', '10');
+  assert.equal(draft.outcomes[0].decision.confirmed, 'tasted');
+  assert.equal(draft.outcomes[0].ingredients[0].decision.confirmed, 'tasted');
+  assert.equal(draft.outcomes[1].decision.confirmed, 'unclear');
+  assert.equal(draft.afterPhoto.uri, 'file:///after.png');
+  await click(control(app, 'button', 'Continue'));
+  await expectComplete(app);
+  const expected = expectedReview();
+  expected.food_results[0].outcome = 'TASTED';
+  expected.food_results[0].difficulty_reasons = ['COLOR.RED'];
+  assert.deepEqual(server.requests, [expectedReview(), expected]);
+  assert.equal(server.meal.foods[0].outcome, 'TASTED');
 });

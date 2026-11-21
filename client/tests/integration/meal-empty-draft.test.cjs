@@ -1,5 +1,8 @@
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 빈 식사 초안의 종료·재진입·기존 기록 및 사용자 입력 보존 검증
+// AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+// Changed: 자동 유형과 다른 사용자 선택의 초안 보존 기대
+
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -30,6 +33,7 @@ test('date, meal type, place and later steps survive exit and restore', async t 
     const id = JSON.stringify(patch);
     const h = await renderHook(t, () => useMealCheckin(id));
     await waitFor(() => !!h.current.draft);
+    if ('mealType' in patch) patch.mealType = h.current.draft.mealType === 'lunch' ? 'dinner' : 'lunch';
     await act(async () => { h.current.update(patch); await h.current.flush(); });
     const reopened = await renderHook(t, () => useMealCheckin(id));
     await waitFor(() => !!reopened.current.draft);

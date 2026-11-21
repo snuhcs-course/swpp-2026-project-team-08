@@ -1,4 +1,7 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+// Changed: 선택 장소 요구에 따라 필수 장소 거절 기대 제거
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -20,7 +23,8 @@ test('unconfirmed AI and incomplete/empty meals cannot be saved', () => {
   assert.equal(mealFromDraft({ ...draft, foods }).foods[0].source, 'ai');
   assert.equal(foods[0].confirmed, true);
   assert.equal(draft.foods[0].confirmed, false);
-  for (const patch of [{ foods: [] }, { mealType: null }, { setting: null }, { mealDate: '2026-13-01' }]) assert.throws(() => mealFromDraft({ ...draft, foods, ...patch }));
+  assert.equal(mealFromDraft({ ...draft, foods, setting: null }).setting, null);
+  for (const patch of [{ foods: [] }, { mealType: null }, { mealDate: '2026-13-01' }]) assert.throws(() => mealFromDraft({ ...draft, foods, ...patch }));
 });
 
 test('stored input is validated, including child ownership and duplicate foods', () => {

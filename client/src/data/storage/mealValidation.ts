@@ -7,6 +7,8 @@
 
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 초안 조리법 고정 ID와 미입력 검증
+// AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+// Changed: 장소 미응답과 초기 유형 저장 검증
 
 import {
   mealSettings,
@@ -51,6 +53,7 @@ export function isDraft(v: unknown, childId: string): v is MealDraft {
     v.childId === childId &&
     validDate(v.mealDate) &&
     (v.initialMealDate === undefined || validDate(v.initialMealDate)) &&
+    (v.initialMealType === undefined || mealTypes.includes(v.initialMealType as never)) &&
     (v.mealType === null || mealTypes.includes(v.mealType as never)) &&
     (v.setting === null || mealSettings.includes(v.setting as never)) &&
     mealSteps.includes(v.step as never) &&
@@ -80,7 +83,6 @@ export function isMeal(v: unknown, childId: string): v is Meal {
       childId,
     ) &&
     !!v.mealType &&
-    !!v.setting &&
     Array.isArray(v.foods) &&
     v.foods.length > 0 &&
     v.foods.every(

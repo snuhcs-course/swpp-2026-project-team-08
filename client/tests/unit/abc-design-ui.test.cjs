@@ -24,6 +24,9 @@
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 홈 추천 테스트 입력 현행화
 
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 빈 초안 안내의 식사 유형 기대값을 자동 기본값에 맞춤
+
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -490,13 +493,13 @@ test("ongoing meal entry shows real draft metadata and only an explicit continue
   assert.equal(JSON.stringify(draft), before);
 });
 
-test("ongoing meal entry handles a photo-free empty draft without fake meal information", () => {
+test("사진과 음식이 없는 초안 안내는 자동 선택된 점심과 빈 상태를 표시한다", () => {
   const {
     MealDraftResumeView,
   } = require("../../src/features/meal-checkin/screens/MealDraftResumeView.tsx");
   const html = renderToStaticMarkup(
     React.createElement(MealDraftResumeView, {
-      draft: newDraft("child"),
+      draft: newDraft("child", new Date(2026, 10, 21, 11)),
       childName: "Alex",
       language: "en",
       onContinue: noop,
@@ -505,7 +508,8 @@ test("ongoing meal entry handles a photo-free empty draft without fake meal info
   );
   assert.match(html, /No photo/);
   assert.match(html, /0 foods/);
-  assert.doesNotMatch(html, /Lunch|Photo saved|Rolled omelet/);
+  assert.match(html, /Alex · Lunch/);
+  assert.doesNotMatch(html, /Photo saved|Rolled omelet/);
 });
 
 test("saved-meal home renders real pending-review metadata and current Figma sections", () => {

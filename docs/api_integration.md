@@ -3,6 +3,9 @@
 <!-- AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung -->
 <!-- Changed: 익숙한 음식 명시적 없음과 미응답 API 계약 -->
 
+<!-- AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung -->
+<!-- Changed: 식사 장소 미응답 null 저장 계약 -->
+
 # API 연동 변경 사항 (클라이언트)
 
 > DB 스키마 개편([`db-overhaul.md`](db-overhaul.md))으로 서버 API가 바뀌는 부분 중 클라이언트가 맞춰야 하는 것을 모았다.
@@ -34,6 +37,9 @@
   에러(`INGREDIENT_NOT_FOUND`)도 더 이상 나오지 않는다(`meals` 단계에서 서버 코드 정리).
 
 ## 2. enum 값 변환표
+
+식사 `setting`은 선택 입력이다. 미응답은 요청·응답·저장 모두 `null`이며 임의 장소로 대체하지 않는다.
+DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용한다.
 
 | 위치 | 이전 | 이후 |
 |---|---|---|

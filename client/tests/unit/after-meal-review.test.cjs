@@ -1,8 +1,8 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 미추가 어려움 입력의 저장·중복·미완성·대상 제외 검증
-// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 중복 사진 테스트의 식후 사진 보존 검증 통합
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 식후 사진 중복 검증 통합 및 Eaten 어려움 저장 기대값 수정
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -89,15 +89,16 @@ test('final review includes complete inputs using the existing duplicate and sin
   }
 });
 
-test('pending reasons for eaten foods and deselected ingredients are excluded', () => {
+test('Eaten 음식의 사유는 저장하며 선택하지 않은 재료의 사유는 제외한다', () => {
   const meal = savedMeal('excluded-inputs');
   const draft = newReviewDraft(meal);
   draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'eaten');
   const ingredient = draft.outcomes[0].ingredients[0].id;
   draft.difficultyInputs['food-1'] = { category: 'smell', value: 'mint', note: '' };
   draft.difficultyInputs[ingredient] = { category: 'color', value: 'red', note: '' };
-  assert.deepEqual(reviewFromDraft(draft, meal).difficulties, {});
+  assert.deepEqual(Object.keys(reviewFromDraft(draft, meal).difficulties), ['food-1']);
+  assert.equal(reviewFromDraft(draft, meal).difficulties['food-1'][0].value, 'mint');
   draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'untouched', ingredient);
-  assert.deepEqual(Object.keys(reviewFromDraft(draft, meal).difficulties), [ingredient]);
+  assert.deepEqual(Object.keys(reviewFromDraft(draft, meal).difficulties), ['food-1', ingredient]);
   assert.equal(reviewFromDraft(draft, meal).difficulties[ingredient][0].value, 'red');
 });

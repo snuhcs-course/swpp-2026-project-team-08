@@ -27,7 +27,7 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 빈 초안 기본값 검증·사진 중복 제거 및 음식 편집기·추천 연결 테스트 분리
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 식후 사진 선택의 중복 정적 검증을 사용자 흐름 테스트로 통합
+// Changed: 식후 사진 선택·확인 중복 정리와 버튼·초안 재시도 검증을 행동별 폴더로 이동
 
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
@@ -516,60 +516,6 @@ test("difficulty Continue and Skip save directly without a suggestion confirmati
   }
   assert.equal(saves, 2);
   assert.deepEqual(transitions, []);
-});
-
-test("after-meal photo footer preserves navigation, photo validation, and draft retry", async (t) => {
-  const { AfterMealReviewView } = require("../../src/features/after-meal-review/screens/AfterMealReviewView.tsx");
-  const { MealFlowButton } = require("../../src/components/MealFlowButton.tsx");
-  const { MealTextButton } = require("../../src/components/MealTextButton.tsx");
-  const calls = [];
-  const before = { uri: "before-photo" }, after = { uri: "after-photo" };
-  const base = {
-    language: "en",
-    meal: { photo: before, foods: [], mealDate: "2026-10-27", mealType: "lunch", setting: "home" },
-    draft: { step: "preview", afterPhoto: after },
-    saveStatus: "saved",
-    onGo: (step) => calls.push(step),
-    onManual: () => calls.push("manual"),
-    onSaveExit: () => calls.push("exit"),
-    onRetrySave: () => calls.push("retry"),
-  };
-  const harness = await renderHook(t, (props) => AfterMealReviewView(props), { props: base });
-  function buttons() {
-    const result = [];
-    function visit(node) {
-      if (!node || typeof node !== "object") return;
-      if (node.type === MealFlowButton || node.type === MealTextButton) result.push(node);
-      React.Children.forEach(node.props?.children, visit);
-    }
-    visit(harness.current);
-    return result;
-  }
-  function primary() { return buttons().find((node) => node.type === MealFlowButton); }
-  assert.deepEqual(calls, []);
-  assert.equal(primary().props.label, s.afterMealReview.usePhoto);
-  assert.equal(primary().props.disabled, false);
-  await act(async () => primary().props.onPress());
-  assert.deepEqual(calls, ["compare"]);
-
-  for (const invalid of [{ photoError: "image" }, { draft: { step: "preview", afterPhoto: null } }]) {
-    await harness.rerender({ ...base, ...invalid });
-    assert.equal(primary().props.disabled, true);
-  }
-  await harness.rerender({ ...base, meal: { ...base.meal, photo: null } });
-  await act(async () => primary().props.onPress());
-  assert.deepEqual(calls, ["compare", "manual"]);
-
-  await harness.rerender({ ...base, draft: { ...base.draft, step: "compare" }, saveStatus: "error" });
-  assert.equal(primary().props.label, s.afterMealReview.manual);
-  assert.equal(buttons().filter((node) => node.props.label === s.common.retry).length, 1);
-  for (const label of [a.saveExit, s.common.retry]) {
-    const button = buttons().find((node) => node.props.label === label);
-    assert.ok(button, label);
-    await act(async () => button.props.onPress());
-  }
-  await act(async () => primary().props.onPress());
-  assert.deepEqual(calls, ["compare", "manual", "exit", "retry", "manual"]);
 });
 
  test('MyPage header hides the language toggle in both languages', () => {

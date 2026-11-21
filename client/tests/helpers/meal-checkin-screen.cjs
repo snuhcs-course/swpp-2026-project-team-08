@@ -1,7 +1,7 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 실제 식사·홈·사진 라우터와 기기·모달 환경 및 원본 식사·추천 조회와 완료 후 실제 화면 이동 지원
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 홈에서 기존 식후 검토로 진입하는 실제 라우터 테스트 지원
+// Changed: 홈에서 기존 식후 검토 진입과 식후 사진 확대 라우터 테스트 지원
 const assert = require('node:assert/strict');
 const { after, beforeEach } = require('node:test');
 const base = require('./onboarding-screen.cjs');
@@ -95,6 +95,7 @@ async function mountMeal(t, { suggestions = [], meals = [], respond, initialPath
     './meal-checkin.tsx': require('../../src/app/meal-checkin.tsx'),
     './meal-photo.tsx': require('../../src/app/meal-photo.tsx'),
     './after-meal-review.tsx': require('../../src/app/after-meal-review.tsx'),
+    './after-meal-photo.tsx': require('../../src/app/after-meal-photo.tsx'),
     './(main)/section/[name].tsx': require('../../src/app/(main)/section/[name].tsx'),
     './meal/[mealId].tsx': require('../../src/app/meal/[mealId].tsx'),
     './(main)/home.tsx': require('../../src/app/(main)/home.tsx'),

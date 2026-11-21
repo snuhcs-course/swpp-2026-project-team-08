@@ -1,33 +1,23 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 어려움 규칙 중복 검증을 분리하고 초안 저장·조회 검증 유지
+// Changed: 초안·완료 저장 연계 검증 이동 및 결과 규칙 중복 제거
 const { test } = require('node:test');
-
 const assert = require('node:assert/strict');
-
-require('../helpers/register.cjs');
-
-const { savedMeal } = require('../fixtures/after-meal-review.cjs');
-
-const { createMemoryStorage } = require('../helpers/memory-storage.cjs');
-
+require('../../helpers/register.cjs');
+const { savedMeal } = require('../../fixtures/after-meal-review.cjs');
+const { createMemoryStorage } = require('../../helpers/memory-storage.cjs');
 const { values, storage, failNextWrite } = createMemoryStorage();
-
-const { mockModules } = require('../helpers/mock-modules.cjs');
-
+const { mockModules } = require('../../helpers/mock-modules.cjs');
 mockModules((name) => {
   return name === '@react-native-async-storage/async-storage' ? storage : undefined;
 });
-
-const { saveMeal, readMeal, updateMealFoods } = require('../../src/data/storage/mealStorage.ts');
-
+const { saveMeal, readMeal, updateMealFoods } = require('../../../src/data/storage/mealStorage.ts');
 const { readAfterMealDraft, readAfterMealReview, saveAfterMealDraft, saveAfterMealReview } =
-  require('../../src/data/storage/afterMealReviewStorage.ts');
+  require('../../../src/data/storage/afterMealReviewStorage.ts');
+const { newReviewDraft, reconcileOutcomes, setOutcome, addDifficulty, reviewFromDraft, toggleIngredient } =
+  require('../../../src/features/after-meal-review/rules.ts');
 
-const { newReviewDraft, reconcileOutcomes, setOutcome, allOutcomesConfirmed, addDifficulty, reviewFromDraft, toggleIngredient } =
-  require('../../src/features/after-meal-review/rules.ts');
-
-test('stored after-meal draft and result are tied to one meal and preserve the before photo', async () => {
+test('식후 리뷰 저장에 실패하면 초안과 식전 사진을 유지하고 재시도 성공 후 같은 식사의 완료 결과를 조회할 수 있다', async () => {
   values.clear();
   const meal = savedMeal('storage');
   await saveMeal(meal);
@@ -55,18 +45,15 @@ test('stored after-meal draft and result are tied to one meal and preserve the b
   assert.equal((await readAfterMealDraft(meal.childId, meal.id)).step, 'complete');
 });
 
-test('photo-free review saves only opted-in ingredients and preserves answers when toggled', async () => {
+test('사진 없는 리뷰를 저장하고 조회하면 별도 기록한 재료의 답변만 포함되고 식후 사진은 없다', async () => {
   const meal = savedMeal('photo-free');
   const draft = newReviewDraft(meal);
   draft.comparisonMethod = 'manual';
   draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'unclear');
-  assert.equal(allOutcomesConfirmed(draft.outcomes), true);
   const id = draft.outcomes[0].ingredients[0].id;
   draft.outcomes = toggleIngredient(draft.outcomes, 'food-1', id);
-  assert.equal(allOutcomesConfirmed(draft.outcomes), false);
   draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'tasted', id);
   draft.outcomes = toggleIngredient(draft.outcomes, 'food-1', id);
-  assert.equal(draft.outcomes[0].ingredients[0].decision.confirmed, 'tasted');
   assert.equal(reviewFromDraft(draft, meal).outcomes[0].ingredients.length, 0);
   draft.outcomes = toggleIngredient(draft.outcomes, 'food-1', id);
   const result = reviewFromDraft(draft, meal);

@@ -2,16 +2,17 @@
 // Only fetch and native storage are replaced; responses use the current v1 API contract.
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 대문자 상태·조회 필터와 음식 단위 추천 응답 기준으로 수정
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 추천 저장 결정·취소·목록 갱신 검증을 기능 폴더로 이동
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
-require('../helpers/register.cjs');
-const { suggestionResponse } = require('../fixtures/server-suggestion.cjs');
-const { act, renderHook, waitFor, deferred } = require('../helpers/react-harness.cjs');
-const { values } = require('../helpers/native-boundaries.cjs').nativeBoundaries();
-const { clearSession } = require('../../src/data/storage/authStorage.ts');
-const { useMealSuggestionActions, useMealSuggestions } = require('../../src/data/queries/mealSuggestionQueries.ts');
-const { useSavedSuggestionsForCheckin } = require('../../src/data/queries/checkinReferenceQueries.ts');
-
+require('../../helpers/register.cjs');
+const { suggestionResponse } = require('../../fixtures/server-suggestion.cjs');
+const { act, renderHook, waitFor, deferred } = require('../../helpers/react-harness.cjs');
+const { values } = require('../../helpers/native-boundaries.cjs').nativeBoundaries();
+const { clearSession } = require('../../../src/data/storage/authStorage.ts');
+const { useMealSuggestionActions, useMealSuggestions } = require('../../../src/data/queries/mealSuggestionQueries.ts');
+const { useSavedSuggestionsForCheckin } = require('../../../src/data/queries/checkinReferenceQueries.ts');
 beforeEach(async () => { values.clear(); await clearSession(); });
 const json = value => new Response(JSON.stringify(value));
 const unavailable = () => new Response('{"error_code":"UNAVAILABLE"}', { status: 503 });
@@ -68,7 +69,7 @@ async function mount(t) {
 const ids = query => query.data.map(item => item.id);
 const save = hook => hook.current.actions.decide.mutateAsync({ id: '31', status: 'saved' });
 
-test('saving updates the meal observer and refetches the saved list without losing another card', async t => {
+test('추천을 저장하면 식사별 추천과 저장 목록이 갱신되고 다른 추천도 유지된다', async t => {
   const server = setup(t);
   const hook = await mount(t);
   assert.deepEqual(ids(hook.current.list), ['32']);
@@ -82,7 +83,7 @@ test('saving updates the meal observer and refetches the saved list without losi
   assert.deepEqual(server.writes, ['PUT']);
 });
 
-test('failed save preserves both observed lists and an explicit retry adds the card once', async t => {
+test('추천 저장에 실패하면 두 목록을 유지하고 재시도에 성공하면 해당 추천이 한 번만 추가된다', async t => {
   const server = setup(t);
   const hook = await mount(t);
   const before = { meal: hook.current.meal.data, saved: hook.current.list.data };
@@ -101,7 +102,7 @@ test('failed save preserves both observed lists and an explicit retry adds the c
   assert.deepEqual(server.writes, ['PUT', 'PUT']);
 });
 
-test('removal hides only the selected card while pending and commits the pending meal status', async t => {
+test('추천 저장 결정을 취소하면 응답 대기 중 저장 목록에서 해당 카드만 숨기고 성공 후 추천 상태는 pending이다', async t => {
   const server = setup(t, 'saved');
   const hook = await mount(t);
   const response = deferred();
@@ -119,7 +120,7 @@ test('removal hides only the selected card while pending and commits the pending
   assert.deepEqual(server.writes, ['DELETE']);
 });
 
-test('failed removal restores the exact list before refetch completes; retry removes only that card', async t => {
+test('추천 저장 결정 취소에 실패하면 재조회 전 기존 목록을 복원하고 재시도에 성공하면 해당 카드만 제거한다', async t => {
   const server = setup(t, 'saved');
   const hook = await mount(t);
   const before = { meal: hook.current.meal.data, saved: hook.current.list.data };
@@ -151,7 +152,7 @@ test('failed removal restores the exact list before refetch completes; retry rem
   assert.deepEqual(server.writes, ['DELETE', 'DELETE']);
 });
 
-test('failed saved-list refresh keeps existing data and retry reflects the successful save', async t => {
+test('추천 저장 후 목록 재조회가 실패하면 기존 목록을 유지하고 조회 재시도 후 저장 결과를 표시한다', async t => {
   const server = setup(t);
   const hook = await mount(t);
   const previous = hook.current.list.data;

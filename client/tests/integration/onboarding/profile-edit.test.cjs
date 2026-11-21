@@ -11,11 +11,13 @@
 // Only HTTP and native storage boundaries are mocked.
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 // Changed: 온보딩 행동별 테스트 분리와 실행 환경 추출
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 식생활 유형의 완료 후 프로필 수정 저장 검증 분리
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { act, waitFor, saveDraft, readDraft, profileResponse, completeDraft, mount } = require('../helpers/onboarding-flow.cjs');
+const { act, waitFor, saveDraft, readDraft, profileResponse, completeDraft, mount } = require('../../helpers/onboarding-flow.cjs');
 
-test('pattern replacement, draft recovery, server save and profile editing retain exact selection', async t => {
+test('식생활 유형을 바꿔 온보딩을 완료하고 프로필에서 다시 수정하면 마지막 선택값이 저장된다', async t => {
   await saveDraft({ ...completeDraft(), dietaryPattern: 'vegan' });
   const hook = await mount(t, body => {
     const response = profileResponse();

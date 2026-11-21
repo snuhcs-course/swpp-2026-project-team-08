@@ -3,30 +3,21 @@
 // Changed: 대문자 enum·음식 id 없는 저장 요청·식사 상세 저장 응답 기준으로 수정
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 서버·기기 저장 분리 반영 및 완료 화면 흐름으로 중복 검증 이동
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 식사 저장 후 목록 재조회 실패·재시도 검증 분리
 const { test, beforeEach } = require('node:test');
-
 const assert = require('node:assert/strict');
-
-require('../helpers/register.cjs');
-
-const { completeDraft } = require('../fixtures/meal-checkin.cjs');
-
-const { act, renderHook, waitFor } = require('../helpers/react-harness.cjs');
-const { values } = require('../helpers/native-boundaries.cjs').nativeBoundaries();
-const { mealResponse } = require('../fixtures/server-meal.cjs');
-const { clearSession } = require('../../src/data/storage/authStorage.ts');
-const { useSaveMeal } = require('../../src/data/queries/mealQueries.ts');
-const { useMealList } = require('../../src/data/queries/mealLogQueries.ts');
+require('../../helpers/register.cjs');
+const { completeDraft } = require('../../fixtures/meal-checkin.cjs');
+const { act, renderHook, waitFor } = require('../../helpers/react-harness.cjs');
+const { values } = require('../../helpers/native-boundaries.cjs').nativeBoundaries();
+const { mealResponse } = require('../../fixtures/server-meal.cjs');
+const { clearSession } = require('../../../src/data/storage/authStorage.ts');
+const { useSaveMeal } = require('../../../src/data/queries/mealQueries.ts');
+const { useMealList } = require('../../../src/data/queries/mealLogQueries.ts');
 beforeEach(async () => { values.clear(); await clearSession(); });
-
-const { newDraft, mealFromDraft } = require('../../src/features/meal-checkin/rules.ts');
-
-const { newFood } = require('../../src/rules/foodDraft.ts');
-
-const { isDraft } = require('../../src/data/storage/mealValidation.ts');
-
-const { readMealDraft, saveMealDraft, readMeals, readMeal, saveMeal } = require('../../src/data/storage/mealStorage.ts');
-
+const { mealFromDraft } = require('../../../src/features/meal-checkin/rules.ts');
+const { readMealDraft, saveMealDraft, readMeals, readMeal } = require('../../../src/data/storage/mealStorage.ts');
 const json = value => new Response(JSON.stringify(value));
 const unavailable = () => new Response('{"error_code":"UNAVAILABLE"}', { status: 503 });
 async function mountSaving(t) {
@@ -70,7 +61,7 @@ async function expectSaved(hook) {
   assert.equal((await readMeal('1', '10')).savedAt, '2026-10-23T00:00:00Z');
 }
 
-test('failed list refresh retains existing meals and retry displays the successful save', async t => {
+test('식사 저장 후 목록 재조회가 실패하면 기존 목록을 유지하고 조회 재시도 후 저장한 식사가 표시된다', async t => {
   const { hook, server, save } = await mountSaving(t);
   const before = hook.current.list.data;
   server.failList = true;
@@ -82,28 +73,4 @@ test('failed list refresh retains existing meals and retry displays the successf
   await act(async () => { await hook.current.list.refetch(); });
   await expectSaved(hook);
   assert.equal(server.writes, 1);
-});
-
-test('final save is queued after pending drafts, never overwritten by an earlier autosave', async () => {
-  const draft = completeDraft('ordering');
-  await Promise.all([saveMealDraft({ ...draft, step: 'foods' }), saveMeal(mealFromDraft(draft))]);
-  assert.equal((await readMealDraft('ordering')).step, 'complete');
-});
-
-test('acceptance and pending suggestion links survive draft/final writes without recording a try', async () => {
-  const draft = newDraft('abc-links');
-  draft.mealType = 'lunch'; draft.setting = 'home';
-  draft.foods = [{ ...newFood(), id: 'served', name: 'Rice', acceptance: 0, confirmed: true, source: 'ai' }];
-  draft.suggestionLinks = [{ suggestionId: 'saved-idea', foodId: 'served', title: 'Rice', description: 'Offer a small portion' }];
-  assert.equal(isDraft(draft, draft.childId), true);
-  assert.equal(isDraft({ ...draft, foods: [{ ...draft.foods[0], acceptance: 4 }] }, draft.childId), false);
-  assert.equal(isDraft({ ...draft, suggestionLinks: [{ ...draft.suggestionLinks[0], foodId: 'missing' }] }, draft.childId), false);
-  await saveMealDraft(draft);
-  assert.deepEqual((await readMealDraft(draft.childId)).suggestionLinks, draft.suggestionLinks);
-  const saved = await saveMeal(mealFromDraft(draft));
-  assert.equal(saved.foods[0].acceptance, 0);
-  assert.equal(saved.foods[0].source, 'ai');
-  assert.equal(saved.foods[0].confirmed, true);
-  assert.deepEqual(saved.suggestionLinks, draft.suggestionLinks);
-  assert.equal(saved.suggestionFeedback, undefined);
 });

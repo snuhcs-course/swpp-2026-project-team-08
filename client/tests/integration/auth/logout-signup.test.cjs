@@ -1,13 +1,17 @@
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 편집 후 로그아웃·재가입과 늦은 초안 저장의 계정 간 분리 검증
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 정상 온보딩 준비 데이터에 음식 없음 응답 반영
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 로그아웃·재가입 흐름을 auth 폴더로 이동
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
-require('../helpers/register.cjs');
-const { React, act, renderHook, waitFor, deferred } = require('../helpers/react-harness.cjs');
+require('../../helpers/register.cjs');
+const { React, act, renderHook, waitFor, deferred } = require('../../helpers/react-harness.cjs');
 const navigations = [];
 const uiNames = ['AccountStepView', 'ChoiceStepView', 'ConsentStepView', 'SafeFoodsStepView',
   'ReviewStepView', 'OnboardingFlowView', 'OnboardingReadyView'];
-const { values, storage } = require('../helpers/native-boundaries.cjs').nativeBoundaries(name => {
+const { values, storage } = require('../../helpers/native-boundaries.cjs').nativeBoundaries(name => {
   if (name === 'expo-router') return { router: {
     replace: route => navigations.push(route), back: () => {},
   } };
@@ -16,21 +20,17 @@ const { values, storage } = require('../helpers/native-boundaries.cjs').nativeBo
   const ui = uiNames.find(component => name === `./${component}`);
   if (ui) return { [ui]: () => null };
 });
-const { AuthProvider, useAuth } = require('../../src/providers/AuthProvider.tsx');
-const { ProfileProvider, useProfile } = require('../../src/providers/ProfileProvider.tsx');
-const { OnboardingProvider } = require('../../src/features/onboarding/OnboardingProvider.tsx');
-const { useOnboarding } = require('../../src/features/onboarding/hooks/useOnboarding.ts');
-const { useAccountSession } = require('../../src/features/my-page/hooks/useAccountSession.ts');
-const { OnboardingScreen } = require('../../src/features/onboarding/screens/OnboardingScreen.tsx');
-const { emptyDraft } = require('../../src/features/onboarding/types.ts');
-const { clearSession, saveSession, readSession } = require('../../src/data/storage/authStorage.ts');
-const { readDraft, saveDraft } = require('../../src/data/storage/onboardingDraftStorage.ts');
-const { profileResponse } = require('../fixtures/account-profile.cjs');
-// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
-// Changed: 정상 온보딩 준비 데이터에 음식 없음 응답 반영
-
+const { AuthProvider, useAuth } = require('../../../src/providers/AuthProvider.tsx');
+const { ProfileProvider, useProfile } = require('../../../src/providers/ProfileProvider.tsx');
+const { OnboardingProvider } = require('../../../src/features/onboarding/OnboardingProvider.tsx');
+const { useOnboarding } = require('../../../src/features/onboarding/hooks/useOnboarding.ts');
+const { useAccountSession } = require('../../../src/features/my-page/hooks/useAccountSession.ts');
+const { OnboardingScreen } = require('../../../src/features/onboarding/screens/OnboardingScreen.tsx');
+const { emptyDraft } = require('../../../src/features/onboarding/types.ts');
+const { clearSession, saveSession, readSession } = require('../../../src/data/storage/authStorage.ts');
+const { readDraft, saveDraft } = require('../../../src/data/storage/onboardingDraftStorage.ts');
+const { profileResponse } = require('../../fixtures/account-profile.cjs');
 beforeEach(async () => { await clearSession(); values.clear(); navigations.length = 0; });
-
 async function mount(t, { restoredEdit = false, failFirstWrite = false } = {}) {
   const signups = [], writes = [];
   const oldProfile = profileResponse('1');
@@ -94,7 +94,7 @@ async function confirmLogout(hook) {
 }
 
 for (const priorState of ['abandoned edit', 'restored edit', 'no edit', 'save failure with retry']) {
-  test(`logout after ${priorState} allows real signup and saves only the new profile`, async t => {
+  test(`${{ 'abandoned edit': '편집 중 이탈', 'restored edit': '편집 초안 복원', 'no edit': '편집 없음', 'save failure with retry': '재가입 후 저장 실패·재시도' }[priorState]} 상태에서 로그아웃하고 재가입하면 새 계정의 프로필만 저장된다`, async t => {
     const retry = priorState === 'save failure with retry';
     const app = await mount(t, { restoredEdit: priorState === 'restored edit', failFirstWrite: retry });
     const { hook } = app;
@@ -164,7 +164,7 @@ for (const priorState of ['abandoned edit', 'restored edit', 'no edit', 'save fa
   });
 }
 
-test('logout waits for an in-flight old draft write before clearing it', async t => {
+test('로그아웃은 이전 초안의 저장이 끝난 뒤 초안과 인증 세션을 삭제한다', async t => {
   const { hook } = await mount(t);
   await act(async () => hook.current.onboarding.startProfileEdit());
   await waitFor(() => hook.current.onboarding.saveStatus === 'saved');
@@ -187,7 +187,7 @@ test('logout waits for an in-flight old draft write before clearing it', async t
   assert.deepEqual(hook.current.onboarding.draft, emptyDraft());
 });
 
-test('cancelling logout preserves the current edit and account', async t => {
+test('로그아웃을 취소하면 현재 계정과 프로필 수정 초안을 유지한다', async t => {
   const { hook } = await mount(t);
   await act(async () => hook.current.onboarding.startProfileEdit());
   await act(async () => hook.current.onboarding.setField('childName', 'Keep this edit'));

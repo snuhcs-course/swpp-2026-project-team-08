@@ -1,14 +1,14 @@
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 실제 체크인 화면의 Trying 해제·취소 및 저장 요청 검증
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: Trying 상태와 음식 연결·해제·Undo 흐름 분리
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
-require('../helpers/register.cjs');
-const { act, renderHook, waitFor, deferred } = require('../helpers/react-harness.cjs');
-const { mealResponse } = require('../fixtures/server-meal.cjs');
-const { suggestionResponse } = require('../fixtures/server-suggestion.cjs');
-
-// Exercise Screen callbacks and real hooks/API/storage; omit native rendering and navigation.
-const { values } = require('../helpers/native-boundaries.cjs').nativeBoundaries(name => {
+require('../../helpers/register.cjs');
+const { act, renderHook, waitFor, deferred } = require('../../helpers/react-harness.cjs');
+const { mealResponse } = require('../../fixtures/server-meal.cjs');
+const { suggestionResponse } = require('../../fixtures/server-suggestion.cjs');
+const { values } = require('../../helpers/native-boundaries.cjs').nativeBoundaries(name => {
   if (name === 'react-native') return {
     ActivityIndicator: 'activity-indicator', Text: 'text',
     BackHandler: { addEventListener: () => ({ remove() {} }) },
@@ -21,10 +21,9 @@ const { values } = require('../helpers/native-boundaries.cjs').nativeBoundaries(
   if (name === './MealCheckinView') return { MealCheckinView: 'meal-checkin-view' };
   if (name === './MealDraftResumeView') return { MealDraftResumeView: 'meal-draft-resume-view' };
 });
-const { MealCheckinScreen } = require('../../src/features/meal-checkin/screens/MealCheckinScreen.tsx');
-const { readMealDraft } = require('../../src/data/storage/mealStorage.ts');
+const { MealCheckinScreen } = require('../../../src/features/meal-checkin/screens/MealCheckinScreen.tsx');
+const { readMealDraft } = require('../../../src/data/storage/mealStorage.ts');
 beforeEach(() => values.clear());
-
 async function mountCheckin(t, { delaySuggestions = false } = {}) {
   const suggestions = [suggestionResponse({ status: 'SAVED', meal_id: '10', origin_food_id: '1' })];
   const suggestionsGate = deferred();
@@ -58,18 +57,16 @@ async function mountCheckin(t, { delaySuggestions = false } = {}) {
   if (!delaySuggestions) await waitFor(() => harness.current.props.suggestions[0]?.title === 'Rice');
   return { harness, requests, resolveSuggestions: () => suggestionsGate.resolve(suggestions) };
 }
-
 async function addFood(harness) {
   await act(async () => harness.current.props.onEdit());
   await act(async () => harness.current.props.onChangeFood({ name: 'Soup' }));
 }
-
 async function saveCheckin(harness) {
   await act(async () => harness.current.props.onConfirm());
   await waitFor(() => harness.current.props.draft.step === 'complete');
 }
 
-test('unchecking Trying clears the committed link and excludes it from a successful HTTP save', async t => {
+test('Trying을 해제하고 식사를 저장하면 기존 음식의 추천 연결이 삭제되고 서버 요청에서도 제외된다', async t => {
   const { harness, requests } = await mountCheckin(t);
   await addFood(harness);
   assert.equal(harness.current.props.draft.editingSuggestionLink.suggestionId, '31');
@@ -84,7 +81,7 @@ test('unchecking Trying clears the committed link and excludes it from a success
   assert.equal((await readMealDraft('1')).step, 'complete');
 });
 
-test('unchecking Trying clears the editor link and prevents a late response from refilling it', async t => {
+test('Trying을 해제하면 편집 중 연결이 지워지고 늦은 추천 응답에도 복원되지 않으며 다시 선택하면 연결할 수 있다', async t => {
   const { harness, resolveSuggestions } = await mountCheckin(t, { delaySuggestions: true });
   await addFood(harness);
   await act(async () => harness.current.props.tryingSuggestion.onToggle());
@@ -99,7 +96,7 @@ test('unchecking Trying clears the editor link and prevents a late response from
   assert.equal((await readMealDraft('1')).editingSuggestionLink, null);
 });
 
-test('editor unlink can be cancelled; saving the unlink stops Trying and prevents fallback relinking', async t => {
+test('편집창의 추천 해제를 취소하면 연결을 유지하고 저장하면 Trying도 해제되어 식사 저장 요청에서 제외된다', async t => {
   const { harness, requests } = await mountCheckin(t);
   await addFood(harness);
   await act(async () => harness.current.props.onSaveFood());
@@ -118,7 +115,7 @@ test('editor unlink can be cancelled; saving the unlink stops Trying and prevent
   assert.deepEqual(requests[0].foods[0].food_recommendation_ids, []);
 });
 
-test('food-card unlink stops Trying, and explicitly rechecking permits linking again', async t => {
+test('음식 카드에서 추천을 해제하면 Trying도 해제되고 다시 선택한 뒤 식사를 저장하면 추천이 연결된다', async t => {
   const { harness, requests } = await mountCheckin(t);
   await addFood(harness);
   await act(async () => harness.current.props.onSaveFood());
@@ -131,7 +128,7 @@ test('food-card unlink stops Trying, and explicitly rechecking permits linking a
   assert.deepEqual(requests[0].foods[0].food_recommendation_ids, ['31']);
 });
 
-test('Undo after unchecking Trying restores the removed food without its recommendation', async t => {
+test('음식 삭제 후 Trying을 해제하고 Undo를 누르면 음식만 복원되고 추천 연결은 없다', async t => {
   const { harness } = await mountCheckin(t);
   await addFood(harness);
   await act(async () => harness.current.props.onSaveFood());

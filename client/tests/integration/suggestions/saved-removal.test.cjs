@@ -1,27 +1,26 @@
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 저장 추천 삭제·중복 클릭·실패 재시도·늦은 조회 응답 검증
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 저장 목록 삭제와 추천 시도·피드백 보존 검증 이동
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
-require('../helpers/register.cjs');
-const { React, act, renderHook, waitFor, deferred } = require('../helpers/react-harness.cjs');
-const { values } = require('../helpers/native-boundaries.cjs').nativeBoundaries(name =>
+require('../../helpers/register.cjs');
+const { React, act, renderHook, waitFor, deferred } = require('../../helpers/react-harness.cjs');
+const { values } = require('../../helpers/native-boundaries.cjs').nativeBoundaries(name =>
   name === 'expo-router'
     ? { useFocusEffect: callback => React.useEffect(callback, [callback]) }
     : undefined);
-const { clearSession } = require('../../src/data/storage/authStorage.ts');
-const { useSavedSuggestionsScreen } = require('../../src/features/suggestions/hooks/useSavedSuggestionsScreen.ts');
-const { useMealSuggestions } = require('../../src/data/queries/mealSuggestionQueries.ts');
-const { suggestionResponse } = require('../fixtures/server-suggestion.cjs');
-const { mealResponse } = require('../fixtures/server-meal.cjs');
-
+const { clearSession } = require('../../../src/data/storage/authStorage.ts');
+const { useSavedSuggestionsScreen } = require('../../../src/features/suggestions/hooks/useSavedSuggestionsScreen.ts');
+const { useMealSuggestions } = require('../../../src/data/queries/mealSuggestionQueries.ts');
+const { suggestionResponse } = require('../../fixtures/server-suggestion.cjs');
+const { mealResponse } = require('../../fixtures/server-meal.cjs');
 beforeEach(async () => { values.clear(); await clearSession(); });
 const json = value => Response.json(value);
 const noContent = () => new Response(null, { status: 204 });
 const unavailable = () => jsonError('UNAVAILABLE', 503);
 const jsonError = (error_code, status) => Response.json({ error_code }, { status });
 const ids = model => model.saved.data.map(item => item.id);
-
-// 화면 Hook·Query·API·DTO는 실제로 연결하고 HTTP와 기기 저장소만 대체한다.
 function setup(t, status = 'TRIED') {
   const tried = suggestionResponse({ id: '31', status, saved_at: '2026-11-18T00:00:00Z' });
   const another = suggestionResponse({ id: '32', origin_food_id: '3', status: 'SAVED',

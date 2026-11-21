@@ -25,7 +25,7 @@
 // Changed: 홈 추천 테스트 입력 현행화
 
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 빈 초안 기본값 검증 및 사진 목록·교체 안내의 중복 검증 제거
+// Changed: 빈 초안 기본값 검증·사진 중복 검사 제거 및 공통 음식 편집기 테스트 분리
 
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
@@ -190,33 +190,6 @@ function homeProps() {
     suggestionText: {},
   };
 }
-
-test("new food dialog has empty inputs, disabled save, and no inferred food name", () => {
-  const html = editor();
-  assert.match(html, /placeholder="Enter food name"/);
-  assert.doesNotMatch(html, /Rolled omelet/);
-  assert.match(html, /aria-label="Save food" aria-disabled="true"/);
-  assert.match(html, /value=""/);
-  assert.match(html, /flex-direction:row;align-items:flex-start;gap:8px/);
-  assert.ok(html.indexOf("Cooking method") < html.indexOf("Additional detail"));
-  assert.equal((html.match(/aria-checked="false"/g) || []).length, 4);
-});
-
-test("editing keeps caregiver food and optional details; adding does not change title after typing", () => {
-  const food = {
-    ...newFood(),
-    name: "My soup",
-    preparation: "steamed",
-    servingNote: "Small pieces",
-    acceptance: 0,
-  };
-  const edit = editor(food, "edit");
-  assert.match(edit, />Edit My soup</);
-  assert.match(edit, /value="My soup"/);
-  assert.match(edit, /value="Small pieces"/);
-  assert.match(edit, /aria-checked="true"/);
-  assert.match(editor(food), />Add food item</);
-});
 
 test("after-meal photo choice has no example photo, analysis action, or inferred results", () => {
   const html = renderToStaticMarkup(

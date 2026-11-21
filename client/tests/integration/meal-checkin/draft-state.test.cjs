@@ -1,7 +1,7 @@
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 빈 식사 초안의 종료·재진입·기존 기록 및 사용자 입력 보존 검증
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 초안 저장 후 홈의 식사 시작·이어하기, 편집 중 앱 재시작, 저장 실패 흐름 검증
+// Changed: 초안 저장·이어하기·편집 복원·실패 검증 및 재개 직후 뒤로가기 기대 반영
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, input, click, enter, waitFor, act, deferred,
@@ -87,10 +87,11 @@ test('Save as Draft & Exit으로 홈에 돌아간 뒤 Log new meal을 누르면 
   assert.equal(input(modal(), 'Additional detail').value, 'Small pieces');
   await click(control(modal(), 'button', 'Cancel'));
   await waitFor(() => !document.querySelector('[role="dialog"]'));
-  await click(control(app, 'button', 'Go back'));
-  await waitFor(() => control(app, 'heading', 'Check your photo'));
   assert.equal(app.container.querySelector('img').getAttribute('src'), photoUri);
-  assert.equal((await readMealDraft('1')).id, original.id);
+  await click(control(app, 'button', 'Go back'));
+  await waitFor(() => control(app, 'button', 'Continue draft'));
+  assert.ok(app.container.textContent.includes('Ongoing Meal'));
+  assert.deepEqual(await readMealDraft('1'), original);
 });
 
 test('기존 음식의 이름과 추천 연결을 수정하다 자동 저장 후 앱을 다시 열면 이어하기로 편집을 계속할 수 있고, Save food를 누르면 수정한 이름과 추천 연결이 음식 카드에 표시된다', async t => {

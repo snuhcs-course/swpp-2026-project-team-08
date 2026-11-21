@@ -1,6 +1,8 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 미추가 어려움 입력의 저장·중복·미완성·대상 제외 검증
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 중복 사진 테스트의 식후 사진 보존 검증 통합
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -9,7 +11,7 @@ const { savedMeal } = require('../fixtures/after-meal-review.cjs');
 const { newReviewDraft, reconcileOutcomes, setOutcome, applySuggestions, allOutcomesConfirmed, addDifficulty, reviewFromDraft, toggleIngredient } =
   require('../../src/features/after-meal-review/rules.ts');
 
-test('AI suggestions remain separate from independently confirmed food and ingredient outcomes', () => {
+test('자동 제안과 음식·재료별 확정 결과는 서로 독립적이며 저장 시 식후 사진 유무를 유지한다', () => {
   const meal = savedMeal('outcomes');
   let draft = newReviewDraft(meal);
   const ingredient = draft.outcomes[0].ingredients[0].id;
@@ -27,6 +29,8 @@ test('AI suggestions remain separate from independently confirmed food and ingre
   assert.equal(allOutcomesConfirmed(draft.outcomes), true);
   assert.equal(reviewFromDraft(draft, meal).afterPhoto, null);
   draft.afterPhoto = { id: 'after', uri: 'file:///after.png', mimeType: 'image/png' };
+  assert.equal(reviewFromDraft(draft, meal).afterPhoto.id, 'after');
+  assert.equal(reviewFromDraft(draft, meal).afterPhoto.uri, 'file:///after.png');
   assert.equal(reviewFromDraft(draft, meal).outcomes[0].ingredients[1].decision.confirmed, 'unclear');
 });
 

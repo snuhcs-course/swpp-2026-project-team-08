@@ -25,7 +25,7 @@
 // Changed: 홈 추천 테스트 입력 현행화
 
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 빈 초안 안내의 식사 유형 기대값을 자동 기본값에 맞춤
+// Changed: 빈 초안 유형 기본값 검증 및 사진 없는 목록의 중복 검증 제거
 
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
@@ -241,27 +241,6 @@ test("replacement dialog is centered and exposes body and small gray hint separa
   assert.match(html, /max-width:342px/);
   assert.match(html, /font-size:11px;color:#65758B/);
   assert.doesNotMatch(html, /×/);
-});
-
-test("photo-free empty list skips the photo and shows the food count with a boxed add action", () => {
-  const html = renderToStaticMarkup(
-    React.createElement(MealFoodsStepView, {
-      p: {
-        draft: { ...newDraft("test"), step: "foods" },
-        language: "en",
-        suggestions: [],
-        suggestionLinking: closedLinking,
-        onEdit: noop,
-      },
-    }),
-  );
-  assert.match(html, /0 food items/);
-  assert.match(html, /\+ Add/);
-  assert.match(html, /No foods added yet/);
-  assert.doesNotMatch(
-    html,
-    /Before meal|No Before-meal photo|previous suggestion|Add the foods you served, with or without a photo/,
-  );
 });
 
 test("photo empty list shows the before-meal photo and hides the old suggestion entry", () => {

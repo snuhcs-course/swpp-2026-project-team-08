@@ -1,9 +1,14 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 실제 식사·홈 화면과 라우터 연결, HTTP·기기 경계 대체
+// Changed: 실제 식사·홈 화면과 라우터 연결, HTTP·날짜·사진 기기 경계 대체
 const assert = require('node:assert/strict');
-const { after } = require('node:test');
+const { after, beforeEach } = require('node:test');
 const base = require('./onboarding-screen.cjs');
 const React = require('react');
+const photoDevice = require('./photo-device.cjs').createPhotoDevice();
+beforeEach(t => {
+  photoDevice.reset();
+  t.mock.method(require('react-native-web').Image, 'getSize', photoDevice.getSize);
+});
 const { mockModules } = require('./mock-modules.cjs');
 
 // jsdom은 기기 레이아웃과 OS 날짜 위젯을 제공하지 않는다.
@@ -22,6 +27,12 @@ mockModules(name => {
   if (name.startsWith('@expo/vector-icons/')) return () => null;
   if (name === 'expo/dom') return { IS_DOM: false };
   if (name === 'expo-status-bar') return { useVerticalBarEdgeIOS: () => undefined };
+  if (name === 'expo-image-picker') return photoDevice.imagePicker;
+  if (name === 'expo-document-picker') return photoDevice.documentPicker;
+  if (name === 'expo-file-system') return photoDevice.fileSystem;
+  if (name === 'expo-image') return { Image: ({ source, accessibilityLabel, onError }) =>
+    React.createElement('img', { src: typeof source === 'string' ? source : source?.uri,
+      alt: accessibilityLabel ?? '', onError }) };
   if (name === './NativeDatePicker') {
     return require('../../src/components/NativeDatePicker.native.tsx');
   }
@@ -114,4 +125,4 @@ async function mountMeal(t) {
   return { get container() { return visibleScreen(); }, modal: { container: document.body },
     unmount, get pathname() { return pathname; } };
 }
-module.exports = { ...base, mountMeal, nativeDatePicker };
+module.exports = { ...base, mountMeal, nativeDatePicker, photoDevice };

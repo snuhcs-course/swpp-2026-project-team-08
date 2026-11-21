@@ -1,14 +1,24 @@
+// AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
+// Changed: Photo persistence coverage and API runner instructions
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 삭제된 mealLogApi 대신 prepareMealWrite 로 사진 저장 요청 검증
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: 실제 서버 사진 저장 테스트 제거
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 저장 조건과 장소 미응답 요청·응답 검증을 완료 행동으로 분리
+// Changed: 저장 조건·장소 미응답·식전 사진 요청 검증을 완료 행동으로 분리
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
+require('../../helpers/native-boundaries.cjs').nativeBoundaries();
 const { completeDraft } = require('../../fixtures/meal-checkin.cjs');
 
 const { confirmFoods, mealFromDraft } = require('../../../src/features/meal-checkin/rules.ts');
 
+const { prepareMealWrite } = require('../../../src/data/api/mealWriteApi.ts');
 const { toMealWrite, toMealDetail } = require('../../../src/data/dto/mealDto.ts');
 const { toLegacyMeal } = require('../../../src/data/dto/mealLegacyDto.ts');
 const { mealResponse } = require('../../fixtures/server-meal.cjs');
@@ -38,4 +48,13 @@ test('서버에서 받은 장소 미응답은 식사 기록과 화면에서도 �
   const detail = toMealDetail({ ...mealResponse(), setting: null });
   assert.equal(detail.setting, null);
   assert.equal(toLegacyMeal(detail).setting, null);
+});
+
+test('식사를 저장하면 선택한 식전 사진을 요청에 포함하고 사진이 없으면 미첨부로 보낸다', () => {
+  const uri = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  const draft = { ...completeDraft('photo'), photo: { id: 'before', uri, mimeType: 'image/png' } };
+  const meal = mealFromDraft(draft);
+  assert.equal(meal.photo.uri, uri);
+  assert.equal(prepareMealWrite(meal).body.before_photo_uri, uri);
+  assert.equal(prepareMealWrite({ ...meal, photo: null }).body.before_photo_uri, null);
 });

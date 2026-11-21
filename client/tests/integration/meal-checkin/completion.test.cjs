@@ -1,24 +1,26 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 식사 저장·실패 재시도·Tried 표시·기기 저장 실패의 실제 화면 흐름 검증
+// Changed: 식사 저장·재시도·Tried·기기 저장 실패 및 새 식사 시작·사진 첨부 완료 흐름 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, input, click, enter, waitFor, act, deferred, modal, waitForModal,
-  failNextWrite, storage } = require('../../helpers/meal-checkin-screen.cjs');
-const { completionDraft, expectedWrite, completionResponse } = require('../../fixtures/meal-completion.cjs');
+  failNextWrite, storage, photoDevice } = require('../../helpers/meal-checkin-screen.cjs');
+const { completionDraft, expectedWrite, completionResponse, completionPhoto } = require('../../fixtures/meal-completion.cjs');
+const { pickedImage } = require('../../helpers/photo-device.cjs');
+const { button, sourceLabels } = require('../../helpers/meal-photo-screen.cjs');
 const { sourceResponses, link } = require('../../fixtures/meal-suggestion-linking.cjs');
 const { saveMealDraft, readMealDraft, readMeal } = require('../../../src/data/storage/mealStorage.ts');
 
-async function start(t, { empty = false, linked = false, single = false } = {}) {
-  const original = completionDraft({ empty });
+async function start(t, { empty = false, linked = false, single = false, photo = null } = {}) {
+  const original = completionDraft({ empty, photo });
   await saveMealDraft(original);
   const sources = linked ? sourceResponses() : { suggestions: [], meals: [] };
-  const response = completionResponse({ linked, single });
+  const response = completionResponse({ linked, single, photo });
   const server = { requests: [], details: [], next: null, saved: false };
   const app = await mountMeal(t, { ...sources, respond: async (path, method, init) => {
     if (method === 'PUT' && path === '/api/v1/meals') {
       const body = JSON.parse(init.body);
       server.requests.push(body);
-      assert.deepEqual(body, expectedWrite({ linked, single }));
+      assert.deepEqual(body, expectedWrite({ linked, single, photo }));
       // 서버 경계만 대체한다. 시도 기록 생성 자체는 서버 테스트의 책임이다.
       const result = server.next ? await server.next.promise : 'success';
       server.next = null;
@@ -183,5 +185,81 @@ test('서버 저장 후 기기 저장이 실패해도 완료 화면이 표시되
   assert.ok(pendingMeal);
   await click(pendingMeal);
   await waitFor(() => app.pathname === '/after-meal-review' && app.container.textContent.includes('Continue without photo'));
+  assert.equal(new URL(window.location.href).searchParams.get('mealId'), '900');
+});
+
+test('식사 저장 후 홈에서 Log new meal을 누르면 초안 안내 없이 오늘의 새 식사가 열리고 이전 음식·사진·추천 연결은 남지 않는다', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date(2026, 10, 21, 11).getTime() });
+  const { app, original } = await start(t, { linked: true, photo: completionPhoto });
+  await chooseLink(app);
+  await click(control(app, 'button', 'Save check-in'));
+  await expectComplete(app, ['Carrot rice', 'Tofu soup']);
+  const receipt = await readMealDraft('1');
+  assert.equal(receipt.step, 'complete');
+  assert.equal(receipt.savedMealId, '900');
+  const savedMeal = await readMeal('1', '900');
+  assert.equal(savedMeal.photo.uri, completionPhoto.uri);
+  assert.deepEqual(savedMeal.suggestionLinks, [link(0, '901')]);
+  await goHome(app);
+  await click(control(app, 'button', 'Log new meal'));
+  await waitFor(() => app.pathname === '/meal-checkin' && control(app, 'heading', 'Meal details'));
+  assert.ok(!app.container.textContent.includes('Ongoing Meal'));
+  assert.ok(!app.container.textContent.includes('Continue draft'));
+  assert.ok(!app.container.textContent.includes('Check-in saved'));
+  assert.ok(control(app, 'button', 'Today · 21 November'));
+  assert.equal(window.getComputedStyle(control(app, 'button', 'Lunch')).borderWidth, '2px');
+  for (const label of ['Home', 'Restaurant', 'School', 'Others']) {
+    assert.notEqual(window.getComputedStyle(control(app, 'button', label)).borderWidth, '2px');
+  }
+  await click(control(app, 'button', 'Continue to photo'));
+  await waitFor(() => control(app, 'heading', 'Before-meal photo'));
+  await click(button(app, 'Skip photo'));
+  await waitFor(() => control(app, 'heading', 'Review food items'));
+  assert.ok(app.container.textContent.includes('0 food items'));
+  assert.ok(app.container.textContent.includes('No foods added yet'));
+  assert.equal(control(app, 'button', 'Save check-in').getAttribute('aria-disabled'), 'true');
+  assert.equal(app.container.querySelector('img'), null);
+  assert.ok(!app.container.textContent.includes('Carrot rice'));
+  assert.ok(!app.container.textContent.includes('Potato mash'));
+  const fresh = await readMealDraft('1');
+  assert.notEqual(fresh.id, receipt.id);
+  assert.notEqual(fresh.id, original.id);
+  assert.equal(fresh.mealDate, '2026-11-21');
+  assert.equal(fresh.mealType, 'lunch');
+  assert.equal(fresh.setting, null);
+  assert.deepEqual(fresh.foods, []);
+  assert.equal(fresh.photo, null);
+  assert.deepEqual(fresh.suggestionLinks ?? [], []);
+  assert.equal(fresh.editingFood, null);
+  assert.equal(fresh.editingSuggestionLink, null);
+  assert.equal(fresh.savedMealId, null);
+  assert.deepEqual(await readMeal('1', '900'), savedMeal);
+});
+
+test('식전 사진을 첨부해 저장하면 완료 화면에 사진이 표시되고, 식후 검토에서 식후 사진을 추가하면 사진 비교 화면에 같은 식전 사진이 표시된다', async t => {
+  const { app, server } = await start(t, { photo: completionPhoto });
+  assert.equal(app.container.querySelector('img').getAttribute('src'), completionPhoto.uri);
+  await click(control(app, 'button', 'Save check-in'));
+  await expectComplete(app, ['Carrot rice', 'Tofu soup']);
+  assert.equal(server.requests[0].before_photo_uri, completionPhoto.uri);
+  assert.equal(app.container.querySelector('img').getAttribute('src'), completionPhoto.uri);
+  assert.ok(app.container.textContent.includes('Before meal'));
+  assert.equal((await readMeal('1', '900')).photo.uri, completionPhoto.uri);
+  await click(control(app, 'button', 'Add after-meal review'));
+  await waitFor(() => app.pathname === '/after-meal-review' && app.container.textContent.includes('Continue without photo'));
+  assert.equal(new URL(window.location.href).searchParams.get('mealId'), '900');
+  assert.deepEqual(server.details, ['/api/v1/meals/900']);
+  photoDevice.result = pickedImage({ uri: 'file:///cache/after-meal.png' });
+  await click(button(app, sourceLabels.gallery));
+  await waitFor(() => control(app, 'heading', 'Check your photo'));
+  const afterUri = app.container.querySelector('img').getAttribute('src');
+  assert.notEqual(afterUri, completionPhoto.uri);
+  await click(control(app, 'button', 'Use this photo'));
+  await waitFor(() => control(app, 'heading', 'Review meal photos'));
+  const before = control(app, 'button', 'BEFORE: Tap to enlarge');
+  const after = control(app, 'button', 'AFTER: Tap to enlarge');
+  assert.equal(before.querySelector('img').getAttribute('src'), completionPhoto.uri);
+  assert.equal(after.querySelector('img').getAttribute('src'), afterUri);
+  assert.equal(app.pathname, '/after-meal-review');
   assert.equal(new URL(window.location.href).searchParams.get('mealId'), '900');
 });

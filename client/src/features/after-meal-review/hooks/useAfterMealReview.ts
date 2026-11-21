@@ -8,6 +8,8 @@
 // Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 저장 완료 상태에 자동 반영한 어려움 사유 동기화
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 리뷰 서버 제출과 로컬 초안 저장의 실패 처리 분리
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -106,7 +108,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     if (skipFirstSave.current) { skipFirstSave.current = false; return; }
     void Promise.resolve().then(() => {
       if (!finishing.current && current.current?.step !== 'complete') return persist(draft);
-    });
+    }).catch(() => undefined);
   }, [draft, ready, persist]);
 
   const update = (patch: Partial<AfterMealReviewDraft>) => {
@@ -258,17 +260,16 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     finishing.current = true;
     setFinalSaveState('saving');
     try {
-      await persist(value);
-      await saveChain.current;
       const review = reviewFromDraft(value, meal);
       await saveMutation.mutateAsync({ review, detail });
       if (mounted.current && current.current?.mealId === value.mealId) {
         update({ step: 'complete', difficulties: review.difficulties, difficultyInputs: {} });
+        setSaveStatus('saved');
         setFinalSaveState('idle');
       }
       return true;
     } catch {
-      if (mounted.current && current.current?.mealId === value.mealId) { setSaveStatus('error'); setFinalSaveState('error'); }
+      if (mounted.current && current.current?.mealId === value.mealId) setFinalSaveState('error');
       return false;
     }
     finally { finishing.current = false; }

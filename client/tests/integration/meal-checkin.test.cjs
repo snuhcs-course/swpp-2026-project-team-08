@@ -1,6 +1,8 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 대문자 enum·음식 id 없는 저장 요청·식사 상세 저장 응답 기준으로 수정
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 서버·기기 저장 분리 반영 및 완료 화면 흐름으로 중복 검증 이동
 const { test, beforeEach } = require('node:test');
 
 const assert = require('node:assert/strict');
@@ -10,7 +12,7 @@ require('../helpers/register.cjs');
 const { completeDraft } = require('../fixtures/meal-checkin.cjs');
 
 const { act, renderHook, waitFor } = require('../helpers/react-harness.cjs');
-const { values, failNextWrite } = require('../helpers/native-boundaries.cjs').nativeBoundaries();
+const { values } = require('../helpers/native-boundaries.cjs').nativeBoundaries();
 const { mealResponse } = require('../fixtures/server-meal.cjs');
 const { clearSession } = require('../../src/data/storage/authStorage.ts');
 const { useSaveMeal } = require('../../src/data/queries/mealQueries.ts');
@@ -66,36 +68,6 @@ async function expectSaved(hook) {
   assert.equal(receipt.foods[0].id, '1');
   assert.deepEqual((await readMeals('1')).map(meal => meal.id), ['10']);
   assert.equal((await readMeal('1', '10')).savedAt, '2026-10-23T00:00:00Z');
-}
-
-test('server save refreshes the active list and stores the server ID in the completion receipt', async t => {
-  const { hook, server, save } = await mountSaving(t);
-  assert.deepEqual(hook.current.list.data.map(meal => meal.id), ['11']);
-  await act(async () => { await save(); });
-  await expectSaved(hook);
-  assert.equal(server.writes, 1);
-  assert.equal(server.reads, 2);
-});
-
-for (const failure of ['server', 'local storage']) {
-  test(`${failure} save failure preserves the list and draft; retry completes without duplicates`, async t => {
-    const { hook, server, save } = await mountSaving(t);
-    const before = { list: hook.current.list.data, draft: await readMealDraft('1') };
-    if (failure === 'server') server.failWrite = true;
-    else failNextWrite('nurturebites.home.1.v1');
-    await act(async () => { await assert.rejects(save(), failure === 'server' ? /UNAVAILABLE/ : /Disk full/); });
-    await waitFor(() => hook.current.save.isError);
-    assert.deepEqual(hook.current.list.data, before.list);
-    assert.deepEqual(await readMealDraft('1'), before.draft);
-    if (failure === 'server') assert.deepEqual(await readMeals('1'), []);
-    assert.equal(server.reads, 1);
-    server.failWrite = false;
-    await act(async () => { await save(); });
-    await expectSaved(hook);
-    assert.equal(JSON.parse(values.get('nurturebites.home.1.v1')).meals.length, 1);
-    assert.equal(server.writes, 2);
-    assert.equal(server.reads, 2);
-  });
 }
 
 test('failed list refresh retains existing meals and retry displays the successful save', async t => {

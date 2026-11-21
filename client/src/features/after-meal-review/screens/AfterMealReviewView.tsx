@@ -9,6 +9,9 @@
 // AI-generated with Grok 4.7, 2026-11-14, reviewed by Doyeon Kim
 // Changed: 식후 저장 화면에 사진 라벨과 저장 배경 적용
 
+// AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+// Changed: 선택하지 않은 식사 장소를 미입력으로 표시
+
 import { OutcomesHeader } from '../components/OutcomesHeader';
 import { Ionicons } from '@expo/vector-icons';
 import { topBarStyles } from '../../../components/AppHeader';
@@ -85,11 +88,11 @@ export function AfterMealReviewView(
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         {p.draft.step === 'outcomes' ? <OutcomesHeader language={p.language} saveStatus={p.saveStatus} onBack={p.onBack} disabled={p.saving}
-          caption={`${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${s.mealCheckin.settings[p.meal.setting]}`} /> : <ReviewProgressHeader
+          caption={`${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${(p.meal.setting ? s.mealCheckin.settings[p.meal.setting] : s.common.notEntered)}`} /> : <ReviewProgressHeader
           title={p.draft.step === "complete" ? a.reviewSavedHeader : m.titles[p.draft.step]}
           headerStyle={saved ? { backgroundColor: colors.saveSavedBackground } : undefined}
           stacked={["outcomes", "difficulties"].includes(p.draft.step)}
-          caption={p.draft.step === "preview" && !p.meal.photo ? a.draftFor(p.childName) : !["outcomes", "preview"].includes(p.draft.step) ? undefined : `${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${s.mealCheckin.settings[p.meal.setting]}`}
+          caption={p.draft.step === "preview" && !p.meal.photo ? a.draftFor(p.childName) : !["outcomes", "preview"].includes(p.draft.step) ? undefined : `${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${(p.meal.setting ? s.mealCheckin.settings[p.meal.setting] : s.common.notEntered)}`}
           backLabel={s.common.back}
           progress={phase}
           onBack={p.onBack}

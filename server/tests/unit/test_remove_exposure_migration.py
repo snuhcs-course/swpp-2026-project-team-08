@@ -12,6 +12,8 @@
 # Changed: 익숙한 음식 응답 마이그레이션 이력 연결 확인
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 추천 보관 해제 마이그레이션 이력 연결 확인
+# AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+# Changed: 선택 장소 마이그레이션 head와 이전 이력 연결 확인
 
 """Unit: 마이그레이션의 이력·SQL 생성 계약. DB 적용이나 Postgres 동작은 검사하지 않는다."""
 
@@ -28,7 +30,11 @@ MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0028_saved_suggestion_removal"]
+    assert scripts.get_heads() == ["0029_optional_meal_setting"]
+    assert (
+        scripts.get_revision("0029_optional_meal_setting").down_revision
+        == "0028_saved_suggestion_removal"
+    )
     assert (
         scripts.get_revision("0028_saved_suggestion_removal").down_revision
         == "0027_safe_foods_answer"

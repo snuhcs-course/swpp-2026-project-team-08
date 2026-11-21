@@ -3,6 +3,8 @@
 // Changed: 편집 추천 초안 검증 및 이전 초안 복원
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 기존 초안의 조리법 미입력 복원과 나머지 입력 보존 검증
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 초안 저장 중복 검증 이동 및 과거 사진 분석 단계 복원 테스트 제거
 const { test } = require('node:test');
 
 const assert = require('node:assert/strict');
@@ -13,7 +15,7 @@ const { completeDraft } = require('../fixtures/meal-checkin.cjs');
 
 const { createMemoryStorage } = require('../helpers/memory-storage.cjs');
 
-const { values, storage, failNextWrite } = createMemoryStorage();
+const { values, storage } = createMemoryStorage();
 
 const { mockModules } = require('../helpers/mock-modules.cjs');
 
@@ -58,16 +60,6 @@ test('초안 복원은 문자열이 아닌 손상된 조리법을 거절한다',
     }));
     await assert.rejects(readMealDraft(draft.childId), /Invalid meal draft/);
   }
-});
-
-test('autosaves are ordered, recover edits and migrate interrupted legacy analysis safely', async () => {
-  const draft = completeDraft('autosave');
-  await Promise.all([saveMealDraft({ ...draft, step: 'details' }), saveMealDraft({ ...draft, step: 'foods', editingFood: { ...newFood(), name: 'Typing' } })]);
-  assert.equal((await readMealDraft('autosave')).editingFood.name, 'Typing');
-  await saveMealDraft({ ...draft, photo: { id: 'photo', uri: 'file:///photo.png', mimeType: 'image/png' }, step: 'analyzing' });
-  assert.equal((await readMealDraft('autosave')).step, 'foods');
-  failNextWrite('nurturebites.meal-draft.autosave.v1'); await assert.rejects(saveMealDraft(draft)); await saveMealDraft(draft);
-  assert.equal((await readMealDraft('autosave')).id, draft.id);
 });
 
 test('new food is blank and unconfirmed legacy photo fixtures cannot become caregiver foods', async () => {

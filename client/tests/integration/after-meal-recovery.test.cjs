@@ -11,6 +11,8 @@
 // Changed: 음식 편집에서 저장 추천 연결 및 Record a Try 미리 채움 검증
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 편집 추천의 저장·취소·복원과 자동 연결 검증
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 일반 추천 연결·취소·저장 검증을 행동별 테스트로 이동
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -41,6 +43,17 @@ beforeEach(t => {
   values.clear();
   t.mock.method(global, 'fetch', async () => { throw new Error('Unexpected HTTP request'); });
 });
+
+async function linkingHarness(t) {
+  const firstFood = { ...newFood(), confirmed: true, id: 'rice', name: 'Rice' };
+  const secondFood = { ...newFood(), confirmed: true, id: 'soup', name: 'Soup' };
+  const draft = { ...newDraft('1'), step: 'foods', mealType: 'lunch', setting: 'home', foods: [firstFood, secondFood] };
+  await saveMealDraft(draft);
+  const suggestion = { id: '31', title: 'Try less', description: 'Keep it separate', servingTip: 'No pressure' };
+  const harness = await renderHook(t, suggestions => useMealCheckin('1', undefined, false, suggestions), { props: [suggestion] });
+  await waitFor(() => harness.current.draft !== null);
+  return { harness };
+}
 
 test('complete difficulty inputs save without Add and survive a failed request and retry', async t => {
   let serverMeal = mealResponse();
@@ -167,88 +180,6 @@ test('skipping a delayed photo preserves answers and ignores the stale selection
   assert.equal(harness.current.picking, false);
 });
 
-async function linkingHarness(t) {
-  const firstFood = { ...newFood(), confirmed: true, id: 'rice', name: 'Rice' };
-  const secondFood = { ...newFood(), confirmed: true, id: 'soup', name: 'Soup' };
-  const draft = { ...newDraft('1'), step: 'foods', mealType: 'lunch', setting: 'home', foods: [firstFood, secondFood] };
-  await saveMealDraft(draft);
-  const suggestion = { id: '31', title: 'Try less', description: 'Keep it separate', servingTip: 'No pressure' };
-  const harness = await renderHook(t, suggestions => useMealCheckin('1', undefined, false, suggestions), { props: [suggestion] });
-  await waitFor(() => harness.current.draft !== null);
-  const link = async (foodId) => {
-    const food = harness.current.draft.foods.find((item) => item.id === foodId);
-    await act(async () => harness.current.edit(food));
-    await act(async () => harness.current.suggestionLinking.onOpenPicker());
-    await act(async () => harness.current.suggestionLinking.onSelectSuggestion('31'));
-    await act(async () => harness.current.suggestionLinking.onLink(foodId));
-  };
-  return { harness, link, firstFood };
-}
-
-test('cancelling suggestion linking leaves the saved draft unchanged', async (t) => {
-  const { harness } = await linkingHarness(t);
-  await act(async () => harness.current.edit(harness.current.draft.foods[0]));
-  await act(async () => harness.current.suggestionLinking.onOpenPicker());
-  await act(async () => harness.current.suggestionLinking.onSelectSuggestion('31'));
-  await act(async () => harness.current.suggestionLinking.onClosePicker());
-  assert.equal(harness.current.suggestionLinking.pickerOpen, false);
-  await act(async () => harness.current.cancelEdit());
-  assert.deepEqual((await readMealDraft('1')).suggestionLinks ?? [], []);
-  await act(async () => harness.current.edit());
-  assert.equal(harness.current.draft.editingSuggestionLink, null);
-});
-
-test('linking from the food editor persists the edited food and snapshot', async (t) => {
-  const { harness, firstFood } = await linkingHarness(t);
-  await act(async () => harness.current.edit(firstFood));
-  await act(async () => harness.current.changeFood({ name: 'Edited rice' }));
-  await act(async () => harness.current.suggestionLinking.onOpenPicker());
-  await act(async () => harness.current.suggestionLinking.onSelectSuggestion('31'));
-  await act(async () => harness.current.suggestionLinking.onLink('rice'));
-  const pending = await readMealDraft('1');
-  assert.equal(pending.foods[0].name, 'Rice');
-  assert.deepEqual(pending.suggestionLinks ?? [], []);
-  assert.equal(pending.editingSuggestionLink.foodId, 'rice');
-  await act(async () => harness.current.saveFood());
-  await act(async () => { await harness.current.flush(); });
-  const restored = await readMealDraft('1');
-  assert.equal(restored.foods[0].name, 'Edited rice');
-  assert.deepEqual(restored.suggestionLinks, [{ suggestionId: '31', foodId: 'rice',
-    title: 'Try less', description: 'Keep it separate', servingTip: 'No pressure' }]);
-  assert.deepEqual(harness.client.getQueryData(mealKeys.draft('1')).suggestionLinks,
-    restored.suggestionLinks);
-});
-
-test('relinking replaces the previous target only on Save food; card unlink persists removal', async (t) => {
-  const { harness, link } = await linkingHarness(t);
-  await link('rice');
-  await act(async () => harness.current.saveFood());
-  await link('soup');
-  assert.equal(harness.current.draft.suggestionLinks[0].foodId, 'rice');
-  assert.equal((await readMealDraft('1')).editingSuggestionLink.foodId, 'soup');
-  await act(async () => harness.current.saveFood());
-  assert.equal(harness.current.draft.suggestionLinks.length, 1);
-  assert.equal(harness.current.draft.suggestionLinks[0].foodId, 'soup');
-  await act(async () => harness.current.suggestionLinking.onUnlink('31'));
-  await act(async () => { await harness.current.flush(); });
-  assert.deepEqual((await readMealDraft('1')).suggestionLinks, []);
-});
-
-test('cancelling a new food drops its pending suggestion link', async (t) => {
-  const { harness } = await linkingHarness(t);
-  await act(async () => harness.current.edit());
-  const foodId = harness.current.draft.editingFood.id;
-  await act(async () => harness.current.suggestionLinking.onOpenPicker());
-  await act(async () => harness.current.suggestionLinking.onSelectSuggestion('31'));
-  await act(async () => harness.current.suggestionLinking.onLink(foodId));
-  assert.equal(harness.current.draft.editingSuggestionLink.foodId, foodId);
-  assert.deepEqual(harness.current.draft.suggestionLinks ?? [], []);
-  await act(async () => harness.current.cancelEdit());
-  await act(async () => { await harness.current.flush(); });
-  assert.deepEqual((await readMealDraft('1')).suggestionLinks ?? [], []);
-  assert.equal((await readMealDraft('1')).editingSuggestionLink, null);
-});
-
 test('recording a try prefills the new food editor with that suggestion', async (t) => {
   const draft = { ...newDraft('1'), step: 'foods', mealType: 'lunch', setting: 'home', foods: [] };
   await saveMealDraft(draft);
@@ -297,19 +228,6 @@ test('a second new food does not take a recorded try already linked', async (t) 
   assert.equal(harness.current.draft.suggestionLinks[0].foodId, firstId);
 });
 
-test('removed food or empty saved list cannot create a stale link', async (t) => {
-  const { harness, link } = await linkingHarness(t);
-  await link('soup');
-  await act(async () => harness.current.saveFood());
-  await act(async () => harness.current.removeFood('soup'));
-  assert.deepEqual(harness.current.draft.suggestionLinks ?? [], []);
-  await harness.rerender([]);
-  assert.equal(harness.current.suggestionLinking.canOpenPicker, false);
-  await act(async () => harness.current.suggestionLinking.onLink('rice'));
-  await act(async () => { await harness.current.flush(); });
-  assert.deepEqual((await readMealDraft('1')).suggestionLinks ?? [], []);
-});
-
 test('new-food suggestion and later input survive a failed autosave, retry, and remount', async t => {
   const { harness } = await linkingHarness(t);
   await act(async () => harness.current.edit());
@@ -334,38 +252,6 @@ test('new-food suggestion and later input survive a failed autosave, retry, and 
   assert.equal(saved.suggestionLinks[0].foodId, foodId);
   assert.equal(saved.editingSuggestionLink, null);
 });
-
-for (const close of ['cancelEdit', 'back']) {
-  test(`${close} discards a newly linked existing-food edit`, async t => {
-    const { harness, link } = await linkingHarness(t);
-    await link('rice');
-    await act(async () => harness.current.changeFood({ name: 'Cancelled name' }));
-    await act(async () => harness.current[close]());
-    const stored = await readMealDraft('1');
-    assert.equal(stored.foods[0].name, 'Rice');
-    assert.deepEqual(stored.suggestionLinks ?? [], []);
-    assert.equal(stored.editingFood, null);
-    assert.equal(stored.editingSuggestionLink, null);
-  });
-
-  test(`${close} preserves the original link after unlinking or moving it to a new food`, async t => {
-    const { harness, link, firstFood } = await linkingHarness(t);
-    await link('rice');
-    await act(async () => harness.current.saveFood());
-    const original = structuredClone(harness.current.draft.suggestionLinks);
-    await act(async () => harness.current.edit(firstFood));
-    await act(async () => harness.current.suggestionLinking.onUnlink('31'));
-    assert.equal((await readMealDraft('1')).editingSuggestionLink, null);
-    await act(async () => harness.current[close]());
-    assert.deepEqual((await readMealDraft('1')).suggestionLinks, original);
-    await act(async () => harness.current.edit());
-    await act(async () => harness.current.suggestionLinking.onOpenPicker());
-    await act(async () => harness.current.suggestionLinking.onSelectSuggestion('31'));
-    await act(async () => harness.current.suggestionLinking.onLink(harness.current.draft.editingFood.id));
-    await act(async () => harness.current[close]());
-    assert.deepEqual((await readMealDraft('1')).suggestionLinks, original);
-  });
-}
 
 test('a manual recommendation choice survives the delayed Record a Try response', async t => {
   const draft = { ...newDraft('1'), step: 'foods', mealType: 'lunch', setting: 'home', foods: [] };

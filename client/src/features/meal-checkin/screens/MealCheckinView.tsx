@@ -17,6 +17,9 @@
 // AI-generated with Grok 4.7, 2026-11-14, reviewed by Doyeon Kim
 // Changed: 식전 저장 화면에 사진 라벨과 저장 배경 적용
 
+// AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+// Changed: 장소 없이 사진 단계 진행 허용
+
 import { ProgressBar } from '../../../components/ProgressBar';
 import { AppHeader } from '../../../components/AppHeader';
 import { useState } from "react";
@@ -132,7 +135,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                   variant="meal"
                   label={m.toPhoto}
                   icon={<UiAssetIcon name="meal-arrow-right" />}
-                  disabled={!d.mealType || !d.setting}
+                  disabled={!d.mealType}
                   onPress={() => p.onGo("photo")}
                 />
               </View>

@@ -24,6 +24,9 @@
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 홈 추천 테스트 입력 현행화
 
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 빈 초안 기본값 검증·사진 중복 제거 및 음식 편집기·추천 연결 테스트 분리
+
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../helpers/register.cjs");
@@ -111,16 +114,6 @@ const { newFood } = require("../../src/rules/foodDraft.ts");
 const { newDraft } = require("../../src/features/meal-checkin/rules.ts");
 
 const {
-  MealFoodEditorDialog,
-} = require("../../src/components/MealFoodEditorDialog.tsx");
-
-const {
-  MealFoodsStepView,
-} = require("../../src/features/meal-checkin/screens/MealFoodsStepView.tsx");
-
-const { Dialog } = require("../../src/components/Dialog.tsx");
-
-const {
   AfterMealPhotoStepsView,
 } = require("../../src/features/after-meal-review/screens/AfterMealPhotoStepsView.tsx");
 
@@ -129,36 +122,6 @@ const { HeightFitPhoto } = require("../../src/components/HeightFitPhoto.tsx");
 const s = copyFor("en"),
   a = abcCopyFor("en"),
   noop = () => {};
-
-const closedLinking = {
-  pickerOpen: false,
-  selectedSuggestionId: "",
-  canOpenPicker: false,
-  onOpenPicker: noop,
-  onClosePicker: noop,
-  onSelectSuggestion: noop,
-  onLink: noop,
-  onUnlink: noop,
-};
-
-function editor(food = newFood(), mode = "add") {
-  return renderToStaticMarkup(
-    React.createElement(MealFoodEditorDialog, {
-      food,
-      mode,
-      meal: s.mealCheckin,
-      common: s.common,
-      labels: a,
-      ingredient: "",
-      onIngredientChange: noop,
-      onAddIngredient: noop,
-      onRemoveIngredient: noop,
-      onChange: noop,
-      onSave: noop,
-      onCancel: noop,
-    }),
-  );
-}
 
 function homeProps() {
   return {
@@ -188,101 +151,6 @@ function homeProps() {
     suggestionText: {},
   };
 }
-
-test("new food dialog has empty inputs, disabled save, and no inferred food name", () => {
-  const html = editor();
-  assert.match(html, /placeholder="Enter food name"/);
-  assert.doesNotMatch(html, /Rolled omelet/);
-  assert.match(html, /aria-label="Save food" aria-disabled="true"/);
-  assert.match(html, /value=""/);
-  assert.match(html, /flex-direction:row;align-items:flex-start;gap:8px/);
-  assert.ok(html.indexOf("Cooking method") < html.indexOf("Additional detail"));
-  assert.equal((html.match(/aria-checked="false"/g) || []).length, 4);
-});
-
-test("editing keeps caregiver food and optional details; adding does not change title after typing", () => {
-  const food = {
-    ...newFood(),
-    name: "My soup",
-    preparation: "steamed",
-    servingNote: "Small pieces",
-    acceptance: 0,
-  };
-  const edit = editor(food, "edit");
-  assert.match(edit, />Edit My soup</);
-  assert.match(edit, /value="My soup"/);
-  assert.match(edit, /value="Small pieces"/);
-  assert.match(edit, /aria-checked="true"/);
-  assert.match(editor(food), />Add food item</);
-});
-
-test("replacement dialog is centered and exposes body and small gray hint separately", () => {
-  const html = renderToStaticMarkup(
-    React.createElement(
-      Dialog,
-      {
-        compact: true,
-        title: a.replaceTitle,
-        closeLabel: s.common.close,
-        onClose: noop,
-      },
-      React.createElement("p", { style: { fontSize: 12 } }, a.replaceBody),
-      React.createElement(
-        "p",
-        { style: { fontSize: 11, color: "#65758B" } },
-        a.replaceHint,
-      ),
-    ),
-  );
-  assert.match(html, /justify-content:center;align-items:center/);
-  assert.match(html, /max-width:342px/);
-  assert.match(html, /font-size:11px;color:#65758B/);
-  assert.doesNotMatch(html, /×/);
-});
-
-test("photo-free empty list skips the photo and shows the food count with a boxed add action", () => {
-  const html = renderToStaticMarkup(
-    React.createElement(MealFoodsStepView, {
-      p: {
-        draft: { ...newDraft("test"), step: "foods" },
-        language: "en",
-        suggestions: [],
-        suggestionLinking: closedLinking,
-        onEdit: noop,
-      },
-    }),
-  );
-  assert.match(html, /0 food items/);
-  assert.match(html, /\+ Add/);
-  assert.match(html, /No foods added yet/);
-  assert.doesNotMatch(
-    html,
-    /Before meal|No Before-meal photo|previous suggestion|Add the foods you served, with or without a photo/,
-  );
-});
-
-test("photo empty list shows the before-meal photo and hides the old suggestion entry", () => {
-  const html = renderToStaticMarkup(
-    React.createElement(MealFoodsStepView, {
-      p: {
-        draft: {
-          ...newDraft("test"),
-          step: "foods",
-          photo: { uri: "test-photo" },
-        },
-        language: "en",
-        childName: "Max",
-        suggestions: [],
-        suggestionLinking: closedLinking,
-        onEdit: noop,
-      },
-    }),
-  );
-  assert.match(html, /Before meal/);
-  assert.match(html, /0 food items/);
-  assert.match(html, /No foods added yet/);
-  assert.doesNotMatch(html, /Are you trying a previous suggestion/);
-});
 
 test("after-meal photo choice has no example photo, analysis action, or inferred results", () => {
   const html = renderToStaticMarkup(
@@ -347,87 +215,6 @@ test("save failure has a dedicated retry screen with the same meal and no extra 
   assert.doesNotMatch(html, /Rolled omelet/);
 });
 
-test("food editor exposes saved suggestion linking and the picker shows source meal metadata", () => {
-  const suggestion = {
-    id: "real-id",
-    title: "Actual idea",
-    description: "Try it small",
-    mealDate: "2026-10-11",
-    mealType: "lunch",
-  };
-  const closed = renderToStaticMarkup(
-    React.createElement(MealFoodsStepView, {
-      p: {
-        draft: {
-          ...newDraft("test"),
-          step: "foods",
-          foods: [{ ...newFood(), name: "Soup" }],
-        },
-        language: "en",
-        suggestionLinking: closedLinking,
-        onEdit: noop,
-      },
-    }),
-  );
-  assert.doesNotMatch(closed, /Are you trying a previous suggestion|Step 1 of 2|Actual idea/);
-  const emptyField = renderToStaticMarkup(
-    React.createElement(MealFoodEditorDialog, {
-      food: newFood(),
-      mode: "add",
-      meal: s.mealCheckin,
-      common: s.common,
-      labels: a,
-      ingredient: "",
-      onIngredientChange: noop,
-      onAddIngredient: noop,
-      onRemoveIngredient: noop,
-      onChange: noop,
-      onSave: noop,
-      onCancel: noop,
-      suggestion: { title: null, canOpen: false, onOpen: noop, onUnlink: noop },
-    }),
-  );
-  assert.match(emptyField, /Saved suggestion/);
-  assert.match(emptyField, /aria-label="Link a saved suggestion" aria-disabled="true"/);
-  const linkedField = renderToStaticMarkup(
-    React.createElement(MealFoodEditorDialog, {
-      food: { ...newFood(), name: "Sushi" },
-      mode: "add",
-      meal: s.mealCheckin,
-      common: s.common,
-      labels: a,
-      ingredient: "",
-      onIngredientChange: noop,
-      onAddIngredient: noop,
-      onRemoveIngredient: noop,
-      onChange: noop,
-      onSave: noop,
-      onCancel: noop,
-      suggestion: { title: "Veggie quesadilla", canOpen: true, onOpen: noop, onUnlink: noop },
-    }),
-  );
-  assert.match(linkedField, /Veggie quesadilla/);
-  assert.match(linkedField, /Change/);
-  const {
-    MealSavedSuggestionPicker,
-  } = require("../../src/features/meal-checkin/components/MealSavedSuggestionPicker.tsx");
-  const html = renderToStaticMarkup(
-    React.createElement(MealSavedSuggestionPicker, {
-      language: "en",
-      suggestions: [suggestion],
-      selectedId: "real-id",
-      onSelect: noop,
-      onLink: noop,
-      onClose: noop,
-    }),
-  );
-  assert.match(html, /Saved suggestions/);
-  assert.match(html, /Choose the suggestion you tried/);
-  assert.match(html, /Oct 11, 2026/);
-  assert.match(html, /Lunch/);
-  assert.match(html, /Actual idea/);
-});
-
 test("account keeps the small password helper separate from the error", () => {
   const {
     AccountStepView,
@@ -490,13 +277,13 @@ test("ongoing meal entry shows real draft metadata and only an explicit continue
   assert.equal(JSON.stringify(draft), before);
 });
 
-test("ongoing meal entry handles a photo-free empty draft without fake meal information", () => {
+test("사진과 음식이 없는 초안 안내는 자동 선택된 점심과 빈 상태를 표시한다", () => {
   const {
     MealDraftResumeView,
   } = require("../../src/features/meal-checkin/screens/MealDraftResumeView.tsx");
   const html = renderToStaticMarkup(
     React.createElement(MealDraftResumeView, {
-      draft: newDraft("child"),
+      draft: newDraft("child", new Date(2026, 10, 21, 11)),
       childName: "Alex",
       language: "en",
       onContinue: noop,
@@ -505,7 +292,8 @@ test("ongoing meal entry handles a photo-free empty draft without fake meal info
   );
   assert.match(html, /No photo/);
   assert.match(html, /0 foods/);
-  assert.doesNotMatch(html, /Lunch|Photo saved|Rolled omelet/);
+  assert.match(html, /Alex · Lunch/);
+  assert.doesNotMatch(html, /Photo saved|Rolled omelet/);
 });
 
 test("saved-meal home renders real pending-review metadata and current Figma sections", () => {
@@ -853,23 +641,4 @@ test('all-eaten review completion offers Home without a suggestion action', () =
   assert.equal(!!findElement(AfterMealFollowUpView({ p }).props.actions, n => n.type === MealFlowButton), false);
   p.draft.outcomes[0].decision.confirmed = 'tasted';
   assert.ok(findElement(AfterMealFollowUpView({ p }).props.actions, n => n.type === MealFlowButton));
-});
-
-
-test('saved cooking method IDs render readable labels in the food editor', () => {
-  for (const [preparation, label] of [
-    ['raw', 'Raw'],
-    ['boiled', 'Boiled'],
-    ['steamed', 'Steamed'],
-    ['pan_fried', 'Pan-fried'],
-    ['stir_fried', 'Stir-fried'],
-    ['baked', 'Baked'],
-    ['roasted', 'Roasted'],
-    ['mashed', 'Mashed'],
-    ['blended', 'Blended'],
-    ['other', 'Other'],
-  ]) {
-    const html = editor({ ...newFood(), name: 'Apple', preparation }, 'edit');
-    assert.match(html, new RegExp(`>${label}<`));
-  }
 });

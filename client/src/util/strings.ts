@@ -34,6 +34,9 @@
 // AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
 // Changed: 개인정보처리방침 링크 및 열기 실패 문구
 
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 사진 교체 시 음식·상세·연결 초기화 안내
+
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
 
@@ -707,7 +710,7 @@ const abcCopy = {
     selectFood: 'Which food does this apply to?', link: 'Link suggestion', linked: 'Linked · pending after-meal review',
     linkHint: 'Choose a suggestion, then select its actual served target. Nothing is added to the food list. The suggestion stays untried until a saved after-meal review confirms use.',
     noSuggestions: 'No saved suggestions available.', suggestionsFailed: 'Could not load saved suggestions.',
-    replaceTitle: 'Replace this photo?', replaceBody: 'Only the photo will change. Your foods, food details, meal details, and suggestion links stay.', replaceHint: 'Cancel or an invalid image keeps everything.',
+    replaceTitle: 'Replace this photo?', replaceBody: 'Choosing a valid replacement photo will clear your food list, food details, and suggestion links. Your meal date, type, and setting will stay.', replaceHint: 'Cancel or an invalid image keeps everything.',
     savingMeal: 'Saving check-in…', savingReview: 'Saving this review…', draftKept: 'Your draft stays until saving is confirmed.',
     checkInStep: 'Check-in', afterMealStep: 'After-meal review', stepSaved: 'Saved', stepAwaiting: 'Awaiting',
     selectIngredients: 'Select Ingredients to log outcome', ingredientIn: (ingredient: string, food: string) => `${ingredient} in ${food}`,
@@ -732,7 +735,7 @@ const abcCopy = {
     selectFood: '어느 음식에 적용하나요?', link: '추천 연결', linked: '연결됨 · 식후 기록 전',
     linkHint: '추천을 고른 뒤 실제 제공한 음식을 선택해 주세요. 음식은 직접 추가해야 해요. 식후 기록을 저장하면 추천 사용 여부를 확인해요.',
     noSuggestions: '연결할 수 있는 추천이 없어요.', suggestionsFailed: '저장한 추천을 불러오지 못했어요.',
-    replaceTitle: '사진을 교체할까요?', replaceBody: '사진을 교체해도 입력한 음식과 식사 정보, 연결한 추천은 유지돼요.', replaceHint: '사진 선택을 취소하면 기존 사진을 유지해요.',
+    replaceTitle: '사진을 교체할까요?', replaceBody: '새 사진으로 교체하면 입력한 음식과 음식 상세, 연결한 추천이 삭제돼요. 식사 날짜와 유형, 장소는 유지돼요.', replaceHint: '취소하거나 사용할 수 없는 사진을 고르면 기존 사진과 입력을 모두 유지해요.',
     savingMeal: '식사를 저장하고 있어요…', savingReview: '식후 기록을 저장하고 있어요…', draftKept: '저장을 마칠 때까지 초안을 유지해요.',
     checkInStep: '식사 기록', afterMealStep: '식후 기록', stepSaved: '저장됨', stepAwaiting: '대기',
     selectIngredients: '먹은 결과를 기록할 재료를 선택해 주세요', ingredientIn: (ingredient: string, food: string) => `${food}의 ${ingredient}`,

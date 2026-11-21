@@ -6,6 +6,9 @@
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 식사 상세 추천 진입과 중복 이동 방지
 
+// AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+// Changed: 식사 상세에서 장소 미응답 표시
+
 import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
@@ -46,7 +49,7 @@ export function MealDetailsScreen({ mealId }: { mealId?: string }) {
       parts.monthDay,
       parts.weekday,
       mealType,
-      s.mealCheckin.settings[meal.setting],
+      meal.setting ? s.mealCheckin.settings[meal.setting] : s.common.notEntered,
     )
     : '';
 

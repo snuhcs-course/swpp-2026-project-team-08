@@ -1,6 +1,8 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: 오늘 상한 및 네이티브 UTC 날짜 전달·복원 검증
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 날짜 입력의 플랫폼 동작·경계 검증을 Unit으로 분리
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -35,9 +37,9 @@ Module._load = function (name, ...args) {
   if (name === './Dialog') return { Dialog: 'Dialog' };
   return load.call(this, name, ...args);
 };
-const { useMealCheckinInputs } = require('../src/features/meal-checkin/hooks/useMealCheckinInputs.ts');
-const { NativeDatePicker } = require('../src/components/NativeDatePicker.native.tsx');
-const { DateField } = require('../src/components/DateField.tsx');
+const { useMealCheckinInputs } = require('../../../src/features/meal-checkin/hooks/useMealCheckinInputs.ts');
+const { NativeDatePicker } = require('../../../src/components/NativeDatePicker.native.tsx');
+const { DateField } = require('../../../src/components/DateField.tsx');
 Module._load = load;
 
 const labels = { select: 'Select date', close: 'Close', confirm: 'Confirm date', locale: 'ko-KR' };
@@ -65,7 +67,7 @@ function harness(os) {
   return h.render();
 }
 
-test('Android confirmation commits the selected local date immediately and closes', () => {
+test('안드로이드에서 날짜를 확정하면 선택한 날짜를 저장하고 선택기를 닫는다', () => {
   const h = harness('android'), picker = h.picker();
   assert.equal(picker.type, 'SystemDatePicker');
   assert.equal(picker.props.display, 'default');
@@ -79,7 +81,7 @@ test('Android confirmation commits the selected local date immediately and close
   assert.deepEqual(h.input.parts, [2024, 2, 29]);
 });
 
-test('Android cancellation or system back closes without saving', () => {
+test('안드로이드에서 날짜 선택을 취소하거나 뒤로가면 기존 날짜를 유지한다', () => {
   const h = harness('android');
   h.picker().props.onDismiss(); h.render();
   assert.equal(h.input.open, false);
@@ -87,7 +89,7 @@ test('Android cancellation or system back closes without saving', () => {
   assert.equal(h.updates, 0);
 });
 
-test('iOS wheel edits wait for confirmation and closing discards pending changes', () => {
+test('아이폰에서 날짜는 확정할 때만 저장하고 닫으면 변경 중인 날짜를 버린다', () => {
   const h = harness('ios');
   let dialog = h.picker();
   assert.equal(dialog.type, 'Dialog');
@@ -107,7 +109,7 @@ test('iOS wheel edits wait for confirmation and closing discards pending changes
   assert.equal(h.input.open, false);
 });
 
-test('web dropdown confirmation still uses selected parts and clamps the day', () => {
+test('웹에서 월을 바꾸고 확정하면 선택한 날짜를 해당 월의 마지막 날 이내로 저장한다', () => {
   const h = harness('web');
   h.input.onFieldChange(2); h.render();
   h.input.onNumberSelect(31); h.render();
@@ -125,7 +127,7 @@ function elements(element) {
   return [element, ...elements(element.props.children)];
 }
 
-test('Meal Details opens one native picker on mobile and keeps web date parts', () => {
+test('모바일은 날짜 선택기 하나를 열고 웹은 연·월·일 선택을 제공한다', () => {
   for (const os of ['ios', 'android', 'web']) {
     const h = harness(os);
     const nodes = elements(DateField({ ...h.input, label: h.date, labels: { ...labels, date: 'Date',
@@ -136,7 +138,7 @@ test('Meal Details opens one native picker on mobile and keeps web date parts', 
   }
 });
 
-test('native pickers cap selection at now and future confirmations cannot be saved', t => {
+test('모바일 날짜 선택은 오늘까지만 허용하며 미래 날짜를 확정해도 오늘을 넘지 않는다', t => {
   const now = new Date(2026, 10, 3, 12);
   t.mock.timers.enable({ apis: ['Date'], now: now.getTime() });
   for (const os of ['android', 'ios']) {
@@ -150,7 +152,7 @@ test('native pickers cap selection at now and future confirmations cannot be sav
   }
 });
 
-test('new date inputs start today and opening an old draft preserves its date', t => {
+test('새 날짜 입력은 오늘로 시작하고 기존 초안은 저장된 날짜로 연다', t => {
   t.mock.timers.enable({ apis: ['Date'], now: new Date(2026, 10, 3, 12).getTime() });
   slots = []; cursor = 0;
   const input = useMealCheckinInputs({ draft: null, onUpdate() {} }).date;
@@ -158,7 +160,7 @@ test('new date inputs start today and opening an old draft preserves its date', 
   assert.deepEqual(harness('web').input.parts, [2026, 10, 27]);
 });
 
-test('web date options end at today and switching from a past December clamps the month', t => {
+test('웹 날짜 선택지는 오늘 이후의 연·월·일을 제공하지 않는다', t => {
   t.mock.timers.enable({ apis: ['Date'], now: new Date(2026, 10, 3, 12).getTime() });
   platform.OS = 'web';
   const fullLabels = { ...labels, date: 'Date', year: 'Year', month: 'Month', day: 'Day', hint: '' };
@@ -171,20 +173,10 @@ test('web date options end at today and switching from a past December clamps th
     const text = elements(options).filter(node => node.type === 'Text').map(node => node.props.children);
     assert.equal(text.at(-1), last);
   }
-  slots = []; cursor = 0;
-  let selected;
-  const props = { variant: 'month-year', year: 2025, month: 12,
-    labels: { ...fullLabels, locale: 'en-US' }, onChange: (...value) => { selected = value; } };
-  let nodes = elements(DateField(props));
-  nodes.find(node => node.props.testID === 'date-part-0').props.onPress();
-  cursor = 0;
-  nodes = elements(DateField(props));
-  const options = nodes.find(node => node.props.testID === 'date-options-0');
-  elements(options).filter(node => node.type === 'Pressable').at(-1).props.onPress();
-  assert.deepEqual(selected, [2026, 11]);
+
 });
 
-test('native UTC selection preserves historical dates without changing stored date strings', () => {
+test('모바일에서 과거 날짜를 선택해도 시차로 날짜가 달라지지 않는다', () => {
   for (const os of ['ios', 'android']) {
     const h = harness(os);
     const view = h.picker();

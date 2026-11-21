@@ -6,6 +6,8 @@
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 웹 편집 드롭다운 오버레이 위치·닫기·선택 검증
 
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 식사 날짜 테스트에서 공통 월·연도 선택 검증 이동
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -190,6 +192,21 @@ test('past calendar years expose December in native month menus', t => {
     choose(month, '12');
     assert.deepEqual(changes, [[2024, 12]]);
   }
+});
+
+test('달력의 지난 12월에서 올해로 바꾸면 현재 월까지로 선택을 제한한다', t => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date(2026, 10, 3, 12).getTime() });
+  reset('web');
+  let selected;
+  const props = { variant: 'month-year', year: 2025, month: 12,
+    labels: { year: 'Year', month: 'Month', locale: 'en-US' },
+    onChange: (...value) => { selected = value; } };
+  let nodes = render(DateField, props);
+  nodes.find(node => node.props.testID === 'date-part-0').props.onPress();
+  nodes = render(DateField, props);
+  const options = nodes.find(node => node.props.testID === 'date-options-0');
+  elements(options).filter(node => node.type === 'Pressable').at(-1).props.onPress();
+  assert.deepEqual(selected, [2026, 11]);
 });
 
 test('difficulty category, texture question, and value menus preserve dependent selection rules', () => {

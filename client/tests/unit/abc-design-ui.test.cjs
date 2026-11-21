@@ -25,7 +25,7 @@
 // Changed: 홈 추천 테스트 입력 현행화
 
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 빈 초안 기본값 검증·사진 중복 검사 제거 및 공통 음식 편집기 테스트 분리
+// Changed: 빈 초안 기본값 검증·사진 중복 제거 및 음식 편집기·조리법 표시 테스트 분리
 
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
@@ -142,25 +142,6 @@ const closedLinking = {
   onLink: noop,
   onUnlink: noop,
 };
-
-function editor(food = newFood(), mode = "add") {
-  return renderToStaticMarkup(
-    React.createElement(MealFoodEditorDialog, {
-      food,
-      mode,
-      meal: s.mealCheckin,
-      common: s.common,
-      labels: a,
-      ingredient: "",
-      onIngredientChange: noop,
-      onAddIngredient: noop,
-      onRemoveIngredient: noop,
-      onChange: noop,
-      onSave: noop,
-      onCancel: noop,
-    }),
-  );
-}
 
 function homeProps() {
   return {
@@ -761,23 +742,4 @@ test('all-eaten review completion offers Home without a suggestion action', () =
   assert.equal(!!findElement(AfterMealFollowUpView({ p }).props.actions, n => n.type === MealFlowButton), false);
   p.draft.outcomes[0].decision.confirmed = 'tasted';
   assert.ok(findElement(AfterMealFollowUpView({ p }).props.actions, n => n.type === MealFlowButton));
-});
-
-
-test('saved cooking method IDs render readable labels in the food editor', () => {
-  for (const [preparation, label] of [
-    ['raw', 'Raw'],
-    ['boiled', 'Boiled'],
-    ['steamed', 'Steamed'],
-    ['pan_fried', 'Pan-fried'],
-    ['stir_fried', 'Stir-fried'],
-    ['baked', 'Baked'],
-    ['roasted', 'Roasted'],
-    ['mashed', 'Mashed'],
-    ['blended', 'Blended'],
-    ['other', 'Other'],
-  ]) {
-    const html = editor({ ...newFood(), name: 'Apple', preparation }, 'edit');
-    assert.match(html, new RegExp(`>${label}<`));
-  }
 });

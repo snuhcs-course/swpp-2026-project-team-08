@@ -10,7 +10,7 @@
 <!-- Changed: 음식 편집에서 저장 추천 연결 및 Record a Try 미리 채움 -->
 
 <!-- AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung -->
-<!-- Changed: 식사 기본값·장소 선택 및 사진 교체 초기화·삭제 응답 규칙 -->
+<!-- Changed: 식사 기본값·사진 교체 규칙 및 서버·기기 저장 결과 분리 -->
 
 # Meal Check-in
 
@@ -87,10 +87,10 @@
 
 ### R6 — 최종 저장과 식후 검토
 
-- Save check-in 후 Meal을 바로 저장한다. 이전 버전의 중단된 초안은 음식 검토로 복원한다.
-- 저장 중 진행·식사 요약·초안 유지 안내를 표시한다. 저장 실패에는 Retry와 Save & exit를 제공하고 같은 Meal로 재시도한다.
+- Save check-in은 서버 저장 성공을 완료 기준으로 삼는다. 기기 사본은 별도로 저장하며, 실패해도 완료를 취소하거나 이동을 막지 않는다. 이전 버전의 중단된 초안은 음식 검토로 복원한다.
+- 서버 저장 중 진행·식사 요약·초안 유지 안내를 표시한다. 서버 저장 실패에는 입력을 유지하고 Retry와 Save & exit를 제공한다. 기기 사본 저장 실패에는 별도 오류 화면이나 재시도 버튼을 제공하지 않는다.
 - 성공 화면에는 Check-in saved, Awaiting after-meal review, 실제 식사 정보와 음식, Add after-meal review, Back to Home을 표시한다.
-- 저장 성공 후에만 Meal ID로 식후 검토에 진입한다. 앱 재시작 뒤에도 완료 영수증으로 ID를 복원한다.
+- 서버 저장 성공 후 받은 Meal ID로 식후 검토에 진입한다. 기기에 완료 영수증이 저장된 경우 앱 재시작 뒤에도 ID를 복원한다.
 
 ## Acceptance Criteria
 

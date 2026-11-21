@@ -1,6 +1,8 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 대문자 enum·음식 id 없는 저장 요청·식사 상세 저장 응답 기준으로 수정
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 서버 실패 재시도와 기기 저장 실패 시 서버 성공 유지로 기대값 수정
 const { test, beforeEach } = require('node:test');
 
 const assert = require('node:assert/strict');
@@ -77,26 +79,35 @@ test('server save refreshes the active list and stores the server ID in the comp
   assert.equal(server.reads, 2);
 });
 
-for (const failure of ['server', 'local storage']) {
-  test(`${failure} save failure preserves the list and draft; retry completes without duplicates`, async t => {
-    const { hook, server, save } = await mountSaving(t);
-    const before = { list: hook.current.list.data, draft: await readMealDraft('1') };
-    if (failure === 'server') server.failWrite = true;
-    else failNextWrite('nurturebites.home.1.v1');
-    await act(async () => { await assert.rejects(save(), failure === 'server' ? /UNAVAILABLE/ : /Disk full/); });
-    await waitFor(() => hook.current.save.isError);
-    assert.deepEqual(hook.current.list.data, before.list);
-    assert.deepEqual(await readMealDraft('1'), before.draft);
-    if (failure === 'server') assert.deepEqual(await readMeals('1'), []);
-    assert.equal(server.reads, 1);
-    server.failWrite = false;
-    await act(async () => { await save(); });
-    await expectSaved(hook);
-    assert.equal(JSON.parse(values.get('nurturebites.home.1.v1')).meals.length, 1);
-    assert.equal(server.writes, 2);
-    assert.equal(server.reads, 2);
-  });
-}
+test('서버 저장이 실패하면 목록과 초안을 유지하고 Retry 성공 후 완료한다', async t => {
+  const { hook, server, save } = await mountSaving(t);
+  const before = { list: hook.current.list.data, draft: await readMealDraft('1') };
+  server.failWrite = true;
+  await act(async () => { await assert.rejects(save(), /UNAVAILABLE/); });
+  await waitFor(() => hook.current.save.isError);
+  assert.deepEqual(hook.current.list.data, before.list);
+  assert.deepEqual(await readMealDraft('1'), before.draft);
+  assert.deepEqual(await readMeals('1'), []);
+  assert.equal(server.reads, 1);
+  server.failWrite = false;
+  await act(async () => { await save(); });
+  await expectSaved(hook);
+  assert.equal(JSON.parse(values.get('nurturebites.home.1.v1')).meals.length, 1);
+  assert.equal(server.writes, 2);
+  assert.equal(server.reads, 2);
+});
+
+test('서버 저장 후 기기 저장이 실패해도 서버 성공 결과를 반환하고 식사 목록을 갱신한다', async t => {
+  const { hook, save } = await mountSaving(t);
+  failNextWrite('nurturebites.home.1.v1');
+  let saved;
+  await act(async () => { saved = await save(); });
+  await waitFor(() => hook.current.save.isSuccess && !hook.current.list.isFetching
+    && hook.current.list.data?.map(meal => meal.id).join() === '10,11');
+  assert.equal(saved.id, '10');
+  assert.equal(saved.foods[0].id, '1');
+  assert.equal(hook.current.save.error, null);
+});
 
 test('failed list refresh retains existing meals and retry displays the successful save', async t => {
   const { hook, server, save } = await mountSaving(t);

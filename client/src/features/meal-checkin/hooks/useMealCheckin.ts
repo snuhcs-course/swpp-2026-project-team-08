@@ -13,6 +13,9 @@
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 편집 추천 연결 초안·취소 및 Record a Try 자동 연결과 해제
 
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 사진 교체 성공 시 음식·연결 초기화 및 삭제 후 늦은 응답 무시
+
 import { hasMealDraftInput } from '../../../rules/mealDraft';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -187,15 +190,27 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     if (busy.current || pickBusy.current) return;
     pickBusy.current = true;
     const request = ++photoRequest.current;
+    const replacing = !!current.current?.photo;
     setPicking(true);
     setError(null);
     try {
       const photo = await pickMealPhoto(source);
       if (photo && mounted.current && request === photoRequest.current) {
-          setRemoved(null);
+        setRemoved(null);
+        if (replacing) {
+          pendingTryLink.current = false;
+          setPickerOpen(false);
+          setPickerSuggestionId('');
+        }
         update({
           photo,
           step: 'preview',
+          ...(replacing ? {
+            foods: [],
+            suggestionLinks: [],
+            editingFood: null,
+            editingSuggestionLink: null,
+          } : {}),
         });
       }
     } catch (err) {
@@ -427,11 +442,14 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     },
     removePhoto: () => {
       const value = current.current;
-      if (!value) return;
+      if (!value || busy.current) return;
+      photoRequest.current += 1;
+      pickBusy.current = false;
+      setPicking(false);
+      setError(null);
       update({
         photo: null,
         step: 'photo',
-        foods: value.foods,
       });
     },
     confirm: () => {

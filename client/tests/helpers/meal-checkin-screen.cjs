@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 실제 식사·홈·전체 사진 라우터 연결 및 HTTP·기기·모달 실행 환경
+// Changed: 실제 식사·홈·사진 라우터와 기기·모달 환경 및 저장 추천 조회 지원
 const assert = require('node:assert/strict');
 const { after, beforeEach } = require('node:test');
 const base = require('./onboarding-screen.cjs');
@@ -56,7 +56,7 @@ const { FontReadyContext } = require('../../src/components/FontReadyContext.tsx'
 const { saveSession } = require('../../src/data/storage/authStorage.ts');
 const { profileResponse } = require('../fixtures/account-profile.cjs');
 
-async function mountMeal(t) {
+async function mountMeal(t, { suggestions = [] } = {}) {
   await saveSession({ accessToken: 'test-access', refreshToken: 'test-refresh',
     user: { id: '1', email: 'parent@example.com', fullName: 'Parent' } });
   const unexpectedRequests = [];
@@ -64,7 +64,8 @@ async function mountMeal(t) {
     const path = new URL(url).pathname, method = init.method ?? 'GET';
     if (method === 'GET') {
       if (path === '/api/v1/onboarding') return Response.json(profileResponse());
-      if (['/api/v1/meals', '/api/v1/suggestions'].includes(path)) return Response.json([]);
+      if (path === '/api/v1/meals') return Response.json([]);
+      if (path === '/api/v1/suggestions') return Response.json(suggestions);
     }
     unexpectedRequests.push({ method, path });
     throw new Error(`예상 밖 요청: ${method} ${path}`);
@@ -127,7 +128,7 @@ async function mountMeal(t) {
     return [...container.querySelectorAll('[data-meal-test-screen]')]
       .find(element => !element.closest('[aria-hidden="true"]')) ?? container;
   }
-  return { get container() { return visibleScreen(); }, modal: { container: document.body },
+  return { client, get container() { return visibleScreen(); }, modal: { container: document.body },
     unmount, get pathname() { return pathname; } };
 }
 function modal() {

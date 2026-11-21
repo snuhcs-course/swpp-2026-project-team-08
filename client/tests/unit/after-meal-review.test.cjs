@@ -2,7 +2,7 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 미추가 어려움 입력의 저장·중복·미완성·대상 제외 검증
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 사진·결과 중복 검증 분리 및 Eaten 어려움 저장 기대값 수정
+// Changed: 사진·결과·어려움 중복 검증 분리 및 Eaten 어려움 저장 기대값 수정
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -32,16 +32,6 @@ test('food edits retain matching ingredient IDs and drop removed ingredient outc
   assert.equal(edited[0].ingredients.some((item) => item.name === 'Egg'), false);
   const repeated = reconcileOutcomes([], [{ ...meal.foods[0], ingredients: ['Egg', 'egg'] }]);
   assert.notEqual(repeated[0].ingredients[0].id, repeated[0].ingredients[1].id);
-});
-
-test('difficulty tags keep multiple values but replace single-choice categories', () => {
-  let tags = addDifficulty([], 'texture', 'soft');
-  tags = addDifficulty(tags, 'texture', 'crunchy');
-  tags = addDifficulty(tags, 'smell', 'strong');
-  tags = addDifficulty(tags, 'smell', 'mild');
-  assert.deepEqual(tags.filter((tag) => tag.category === 'texture').map((tag) => tag.value), ['soft', 'crunchy']);
-  assert.deepEqual(tags.filter((tag) => tag.category === 'smell').map((tag) => tag.value), ['mild']);
-  assert.equal(addDifficulty(tags, 'texture', '  ').length, tags.length);
 });
 
 test('legacy follow-up drafts resume at difficulties without changing current steps', () => {

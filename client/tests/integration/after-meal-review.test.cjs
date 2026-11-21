@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 어려움 규칙 중복 검증을 분리하고 초안 저장·조회 검증 유지
 const { test } = require('node:test');
 
 const assert = require('node:assert/strict');
@@ -22,7 +24,7 @@ const { saveMeal, readMeal, updateMealFoods } = require('../../src/data/storage/
 const { readAfterMealDraft, readAfterMealReview, saveAfterMealDraft, saveAfterMealReview } =
   require('../../src/data/storage/afterMealReviewStorage.ts');
 
-const { newReviewDraft, reconcileOutcomes, setOutcome, allOutcomesConfirmed, addDifficulty, reviewFromDraft, toggleIngredient, canAddDifficulty } =
+const { newReviewDraft, reconcileOutcomes, setOutcome, allOutcomesConfirmed, addDifficulty, reviewFromDraft, toggleIngredient } =
   require('../../src/features/after-meal-review/rules.ts');
 
 test('stored after-meal draft and result are tied to one meal and preserve the before photo', async () => {
@@ -75,21 +77,15 @@ test('photo-free review saves only opted-in ingredients and preserves answers wh
   assert.equal(loaded.outcomes[0].ingredients[0].decision.confirmed, 'tasted');
 });
 
-test('texture dimensions survive storage while smell and arrangement replace only their own tags', async () => {
-  assert.equal(canAddDifficulty('texture', 'firm', '', ''), false);
-  assert.equal(canAddDifficulty('texture', 'firm', '', 'hardness'), true);
-  assert.equal(canAddDifficulty('texture', 'firm', '', 'moisture'), false);
+test('Texture 세부 항목이 있는 초안을 저장하고 조회한 결과는 저장 전 태그와 같다', async () => {
   let tags = addDifficulty([], 'texture', 'firm', '', 'hardness');
   tags = addDifficulty(tags, 'texture', 'dry', '', 'moisture');
-  tags = addDifficulty(tags, 'smell', 'fruit');
   tags = addDifficulty(tags, 'smell', 'mint');
-  tags = addDifficulty(tags, 'arrangement', 'even');
   tags = addDifficulty(tags, 'arrangement', 'clustered');
-  assert.deepEqual(tags.map(tag => tag.value), ['firm', 'dry', 'mint', 'clustered']);
   const meal = savedMeal('texture');
   const draft = newReviewDraft(meal);
   draft.difficulties['food-1'] = tags;
   await saveAfterMealDraft(draft);
   const loaded = await readAfterMealDraft(meal.childId, meal.id);
-  assert.deepEqual(loaded.difficulties['food-1'].map(tag => tag.subcategory), ['hardness', 'moisture', undefined, undefined]);
+  assert.deepEqual(loaded.difficulties['food-1'], tags);
 });

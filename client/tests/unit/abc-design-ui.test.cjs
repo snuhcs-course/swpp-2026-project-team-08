@@ -26,6 +26,8 @@
 
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 빈 초안 기본값 검증·사진 중복 제거 및 음식 편집기·추천 연결 테스트 분리
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 식후 사진 선택의 중복 정적 검증을 사용자 흐름 테스트로 통합
 
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
@@ -113,10 +115,6 @@ const { newFood } = require("../../src/rules/foodDraft.ts");
 
 const { newDraft } = require("../../src/features/meal-checkin/rules.ts");
 
-const {
-  AfterMealPhotoStepsView,
-} = require("../../src/features/after-meal-review/screens/AfterMealPhotoStepsView.tsx");
-
 const { HeightFitPhoto } = require("../../src/components/HeightFitPhoto.tsx");
 
 const s = copyFor("en"),
@@ -151,23 +149,6 @@ function homeProps() {
     suggestionText: {},
   };
 }
-
-test("after-meal photo choice has no example photo, analysis action, or inferred results", () => {
-  const html = renderToStaticMarkup(
-    React.createElement(AfterMealPhotoStepsView, {
-      p: {
-        draft: { step: "photo" },
-        language: "en",
-        onPick: noop,
-        onManual: noop,
-        onSaveExit: noop,
-      },
-    }),
-  );
-  assert.match(html, /Continue without photo/);
-  assert.match(html, /Enter food outcomes yourself/);
-  assert.doesNotMatch(html, /Use good light|Compare with AI|Preview/);
-});
 
 test("height-fit photo reserves the full frame height and clips horizontal overflow", () => {
   const html = renderToStaticMarkup(

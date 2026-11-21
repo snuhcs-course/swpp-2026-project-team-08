@@ -13,15 +13,14 @@
 // Changed: 편집 추천의 저장·취소·복원과 자동 연결 검증
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 일반 추천 연결·취소·저장 검증을 행동별 테스트로 이동
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 늦은 식후 사진 응답 검증을 행동별 Unit 테스트로 이동
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
-const { act, renderHook, waitFor, deferred } = require('../helpers/react-harness.cjs');
-let pickPhoto;
+const { act, renderHook, waitFor } = require('../helpers/react-harness.cjs');
 const { values, failNextWrite } = require('../helpers/native-boundaries.cjs').nativeBoundaries(name => {
-  if (name.endsWith('/mealPhotoPicker')) return {
-    pickMealPhoto: (...args) => pickPhoto(...args), PhotoError: class PhotoError extends Error {},
-  };
+  if (name.endsWith('/mealPhotoPicker')) return {};
 });
 const { mealResponse, reviewResponse } = require('../fixtures/server-meal.cjs');
 const { toMealDetail } = require('../../src/data/dto/mealDto.ts');
@@ -152,32 +151,6 @@ test('failed review preserves the draft; retry updates storage, detail cache, an
   assert.equal(harness.client.getQueryData(mealKeys.detail('1', '10')).review.foodResults[0].outcome, 'tasted');
   for (const key of staleKeys) assert.equal(harness.client.getQueryState(key).isInvalidated, true);
   assert.equal(harness.client.getQueryState(mealLogKeys.list('1', null)).isInvalidated, false);
-});
-
-test('skipping a delayed photo preserves answers and ignores the stale selection', async (t) => {
-  const response = mealResponse();
-  t.mock.method(global, 'fetch', async url => {
-    assert.equal(new URL(url).pathname, '/api/v1/meals/10');
-    return new Response(JSON.stringify(response));
-  });
-  const profile = { id: '1' };
-  const harness = await renderHook(t, () => useAfterMealReview(profile, '10'));
-  await waitFor(() => harness.current.draft !== null);
-  const old = deferred(), next = deferred();
-  pickPhoto = () => old.promise;
-  let oldPick, newPick;
-  await act(async () => { oldPick = harness.current.pick('gallery'); });
-  await act(async () => { harness.current.manual(); harness.current.chooseOutcome('1', 'eaten'); });
-  assert.equal(harness.current.draft.step, 'outcomes');
-  pickPhoto = () => next.promise;
-  await act(async () => { newPick = harness.current.pick('gallery'); });
-  await act(async () => { old.resolve({ id: 'old', uri: 'file:///old.png', mimeType: 'image/png' }); await oldPick; });
-  assert.equal(harness.current.draft.afterPhoto, null);
-  assert.equal(harness.current.draft.outcomes[0].decision.confirmed, 'eaten');
-  assert.equal(harness.current.picking, true);
-  await act(async () => { next.resolve({ id: 'new', uri: 'file:///new.png', mimeType: 'image/png' }); await newPick; });
-  assert.equal(harness.current.draft.afterPhoto.id, 'new');
-  assert.equal(harness.current.picking, false);
 });
 
 test('recording a try prefills the new food editor with that suggestion', async (t) => {

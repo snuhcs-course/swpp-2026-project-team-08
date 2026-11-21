@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 실제 식사·홈·사진 라우터와 기기·모달 환경 및 원본 식사·저장 추천 조회 지원
+// Changed: 실제 식사·홈·사진 라우터와 기기·모달 환경 및 원본 식사·추천 조회와 완료 후 실제 화면 이동 지원
 const assert = require('node:assert/strict');
 const { after, beforeEach } = require('node:test');
 const base = require('./onboarding-screen.cjs');
@@ -56,12 +56,14 @@ const { FontReadyContext } = require('../../src/components/FontReadyContext.tsx'
 const { saveSession } = require('../../src/data/storage/authStorage.ts');
 const { profileResponse } = require('../fixtures/account-profile.cjs');
 
-async function mountMeal(t, { suggestions = [], meals = [] } = {}) {
+async function mountMeal(t, { suggestions = [], meals = [], respond } = {}) {
   await saveSession({ accessToken: 'test-access', refreshToken: 'test-refresh',
     user: { id: '1', email: 'parent@example.com', fullName: 'Parent' } });
   const unexpectedRequests = [];
   t.mock.method(globalThis, 'fetch', async (url, init = {}) => {
     const path = new URL(url).pathname, method = init.method ?? 'GET';
+    const response = await respond?.(path, method, init);
+    if (response !== undefined) return response;
     if (method === 'GET') {
       if (path === '/api/v1/onboarding') return Response.json(profileResponse());
       if (path === '/api/v1/meals') return Response.json(meals);
@@ -90,6 +92,9 @@ async function mountMeal(t, { suggestions = [], meals = [] } = {}) {
     './_layout.tsx': { default: Layout },
     './meal-checkin.tsx': require('../../src/app/meal-checkin.tsx'),
     './meal-photo.tsx': require('../../src/app/meal-photo.tsx'),
+    './after-meal-review.tsx': require('../../src/app/after-meal-review.tsx'),
+    './(main)/section/[name].tsx': require('../../src/app/(main)/section/[name].tsx'),
+    './meal/[mealId].tsx': require('../../src/app/meal/[mealId].tsx'),
     './(main)/home.tsx': require('../../src/app/(main)/home.tsx'),
   };
   for (const [path, route] of Object.entries(routes)) {

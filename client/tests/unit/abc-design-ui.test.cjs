@@ -25,7 +25,7 @@
 // Changed: 홈 추천 테스트 입력 현행화
 
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 빈 초안 기본값 검증·사진 중복 제거 및 음식 편집기·조리법 표시 테스트 분리
+// Changed: 빈 초안 기본값 검증·사진 중복 제거 및 음식 편집기·추천 연결 테스트 분리
 
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
@@ -114,15 +114,6 @@ const { newFood } = require("../../src/rules/foodDraft.ts");
 const { newDraft } = require("../../src/features/meal-checkin/rules.ts");
 
 const {
-  MealFoodEditorDialog,
-} = require("../../src/components/MealFoodEditorDialog.tsx");
-
-const {
-  MealFoodsStepView,
-} = require("../../src/features/meal-checkin/screens/MealFoodsStepView.tsx");
-
-
-const {
   AfterMealPhotoStepsView,
 } = require("../../src/features/after-meal-review/screens/AfterMealPhotoStepsView.tsx");
 
@@ -131,17 +122,6 @@ const { HeightFitPhoto } = require("../../src/components/HeightFitPhoto.tsx");
 const s = copyFor("en"),
   a = abcCopyFor("en"),
   noop = () => {};
-
-const closedLinking = {
-  pickerOpen: false,
-  selectedSuggestionId: "",
-  canOpenPicker: false,
-  onOpenPicker: noop,
-  onClosePicker: noop,
-  onSelectSuggestion: noop,
-  onLink: noop,
-  onUnlink: noop,
-};
 
 function homeProps() {
   return {
@@ -233,87 +213,6 @@ test("save failure has a dedicated retry screen with the same meal and no extra 
   assert.match(html, /Retry/);
   assert.match(html, /same meal, not a new record/);
   assert.doesNotMatch(html, /Rolled omelet/);
-});
-
-test("food editor exposes saved suggestion linking and the picker shows source meal metadata", () => {
-  const suggestion = {
-    id: "real-id",
-    title: "Actual idea",
-    description: "Try it small",
-    mealDate: "2026-10-11",
-    mealType: "lunch",
-  };
-  const closed = renderToStaticMarkup(
-    React.createElement(MealFoodsStepView, {
-      p: {
-        draft: {
-          ...newDraft("test"),
-          step: "foods",
-          foods: [{ ...newFood(), name: "Soup" }],
-        },
-        language: "en",
-        suggestionLinking: closedLinking,
-        onEdit: noop,
-      },
-    }),
-  );
-  assert.doesNotMatch(closed, /Are you trying a previous suggestion|Step 1 of 2|Actual idea/);
-  const emptyField = renderToStaticMarkup(
-    React.createElement(MealFoodEditorDialog, {
-      food: newFood(),
-      mode: "add",
-      meal: s.mealCheckin,
-      common: s.common,
-      labels: a,
-      ingredient: "",
-      onIngredientChange: noop,
-      onAddIngredient: noop,
-      onRemoveIngredient: noop,
-      onChange: noop,
-      onSave: noop,
-      onCancel: noop,
-      suggestion: { title: null, canOpen: false, onOpen: noop, onUnlink: noop },
-    }),
-  );
-  assert.match(emptyField, /Saved suggestion/);
-  assert.match(emptyField, /aria-label="Link a saved suggestion" aria-disabled="true"/);
-  const linkedField = renderToStaticMarkup(
-    React.createElement(MealFoodEditorDialog, {
-      food: { ...newFood(), name: "Sushi" },
-      mode: "add",
-      meal: s.mealCheckin,
-      common: s.common,
-      labels: a,
-      ingredient: "",
-      onIngredientChange: noop,
-      onAddIngredient: noop,
-      onRemoveIngredient: noop,
-      onChange: noop,
-      onSave: noop,
-      onCancel: noop,
-      suggestion: { title: "Veggie quesadilla", canOpen: true, onOpen: noop, onUnlink: noop },
-    }),
-  );
-  assert.match(linkedField, /Veggie quesadilla/);
-  assert.match(linkedField, /Change/);
-  const {
-    MealSavedSuggestionPicker,
-  } = require("../../src/features/meal-checkin/components/MealSavedSuggestionPicker.tsx");
-  const html = renderToStaticMarkup(
-    React.createElement(MealSavedSuggestionPicker, {
-      language: "en",
-      suggestions: [suggestion],
-      selectedId: "real-id",
-      onSelect: noop,
-      onLink: noop,
-      onClose: noop,
-    }),
-  );
-  assert.match(html, /Saved suggestions/);
-  assert.match(html, /Choose the suggestion you tried/);
-  assert.match(html, /Oct 11, 2026/);
-  assert.match(html, /Lunch/);
-  assert.match(html, /Actual idea/);
 });
 
 test("account keeps the small password helper separate from the error", () => {

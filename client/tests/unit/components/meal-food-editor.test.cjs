@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 음식 편집기의 필수 이름·단일 조리법 선택·선택 설명 입력 특성 검증
+// Changed: 음식 편집기의 필수 이름·단일 조리법 선택·선택 설명·추천 연결 버튼 검증
 const { test, after } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -59,17 +59,19 @@ function findElement(node, type) {
   return null;
 }
 
-async function mountEditor(t, { food = newFood(), mode = 'add' } = {}) {
+async function mountEditor(t, { food = newFood(), mode = 'add', suggestion } = {}) {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
   const saved = t.mock.fn(), changed = t.mock.fn(), cancelled = t.mock.fn();
-  let tree, showFood;
+  let tree, showFood, showSuggestion;
   // 호출자가 내려주는 controlled 값만 갱신한다. 식사 Hook·목록·저장소는 연결하지 않는다.
   function Editor() {
     const [value, setValue] = React.useState(food);
     showFood = setValue;
-    tree = MealFoodEditorDialog({ food: value, mode,
+    const [link, setLink] = React.useState(suggestion);
+    showSuggestion = setLink;
+    tree = MealFoodEditorDialog({ food: value, mode, suggestion: link,
       meal: s.mealCheckin, common: s.common, labels, ingredient: '',
       onIngredientChange() {}, onAddIngredient() {}, onRemoveIngredient() {}, onCancel: cancelled,
       onChange: patch => { changed(patch); setValue(current => ({ ...current, ...patch })); },
@@ -114,6 +116,7 @@ async function mountEditor(t, { food = newFood(), mode = 'add' } = {}) {
     get acceptance() { return findElement(tree, AcceptanceSlider).props.value; },
     typeName: value => typeField(s.mealCheckin.name, value),
     typeDetail: value => typeField(labels.detail, value),
+    async showSuggestion(value) { await act(async () => showSuggestion(value)); },
     async showFood(value) { await act(async () => showFood(value)); },
     async chooseCooking(current, next) {
       await openCooking(current);
@@ -280,4 +283,22 @@ test('추가 설명을 입력해도 음식 이름이 비어 있거나 공백뿐�
     await h.clickSave();
     assert.equal(h.saved.mock.callCount(), 0);
   }
+});
+
+
+test('저장된 추천이 없으면 연결·변경 버튼이 비활성화되지만 기존 연결의 표시와 해제는 유지된다', async t => {
+  const opened = t.mock.fn(), unlinked = t.mock.fn();
+  const suggestion = { title: null, canOpen: false, onOpen: opened, onUnlink: unlinked };
+  const h = await mountEditor(t, { suggestion });
+  const add = button(h.dialog, 'Link a saved suggestion');
+  assert.equal(add.getAttribute('aria-disabled'), 'true');
+  await act(async () => add.click());
+  assert.equal(opened.mock.callCount(), 0);
+  await h.showSuggestion({ ...suggestion, title: 'Potato mash' });
+  const change = button(h.dialog, 'Change');
+  assert.equal(change.getAttribute('aria-disabled'), 'true');
+  await act(async () => change.click());
+  assert.equal(opened.mock.callCount(), 0);
+  await act(async () => button(h.dialog, 'Remove: Potato mash').click());
+  assert.equal(unlinked.mock.callCount(), 1);
 });

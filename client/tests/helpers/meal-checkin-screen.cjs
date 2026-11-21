@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 실제 식사·홈·사진 라우터와 기기·모달 환경 및 저장 추천 조회 지원
+// Changed: 실제 식사·홈·사진 라우터와 기기·모달 환경 및 원본 식사·저장 추천 조회 지원
 const assert = require('node:assert/strict');
 const { after, beforeEach } = require('node:test');
 const base = require('./onboarding-screen.cjs');
@@ -56,7 +56,7 @@ const { FontReadyContext } = require('../../src/components/FontReadyContext.tsx'
 const { saveSession } = require('../../src/data/storage/authStorage.ts');
 const { profileResponse } = require('../fixtures/account-profile.cjs');
 
-async function mountMeal(t, { suggestions = [] } = {}) {
+async function mountMeal(t, { suggestions = [], meals = [] } = {}) {
   await saveSession({ accessToken: 'test-access', refreshToken: 'test-refresh',
     user: { id: '1', email: 'parent@example.com', fullName: 'Parent' } });
   const unexpectedRequests = [];
@@ -64,7 +64,7 @@ async function mountMeal(t, { suggestions = [] } = {}) {
     const path = new URL(url).pathname, method = init.method ?? 'GET';
     if (method === 'GET') {
       if (path === '/api/v1/onboarding') return Response.json(profileResponse());
-      if (path === '/api/v1/meals') return Response.json([]);
+      if (path === '/api/v1/meals') return Response.json(meals);
       if (path === '/api/v1/suggestions') return Response.json(suggestions);
     }
     unexpectedRequests.push({ method, path });

@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 실제 식사·홈·사진 라우터와 기기·모달 환경 및 원본 식사·추천 조회와 완료 후 실제 화면 이동 지원
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 홈에서 기존 식후 검토로 진입하는 실제 라우터 테스트 지원
 const assert = require('node:assert/strict');
 const { after, beforeEach } = require('node:test');
 const base = require('./onboarding-screen.cjs');
@@ -56,7 +58,7 @@ const { FontReadyContext } = require('../../src/components/FontReadyContext.tsx'
 const { saveSession } = require('../../src/data/storage/authStorage.ts');
 const { profileResponse } = require('../fixtures/account-profile.cjs');
 
-async function mountMeal(t, { suggestions = [], meals = [], respond } = {}) {
+async function mountMeal(t, { suggestions = [], meals = [], respond, initialPath = '/meal-checkin' } = {}) {
   await saveSession({ accessToken: 'test-access', refreshToken: 'test-refresh',
     user: { id: '1', email: 'parent@example.com', fullName: 'Parent' } });
   const unexpectedRequests = [];
@@ -123,11 +125,12 @@ async function mountMeal(t, { suggestions = [], meals = [], respond } = {}) {
     client.clear(); container.remove();
   }
   t.after(unmount);
-  window.history.replaceState({}, '', '/meal-checkin');
+  window.history.replaceState({}, '', initialPath);
   await base.act(async () => root.render(React.createElement(ExpoRoot, {
-    context, location: '/meal-checkin', wrapper: Providers,
+    context, location: initialPath, wrapper: Providers,
   })));
-  await base.waitFor(() => pathname === '/meal-checkin' && container.querySelector('[role="heading"]'));
+  await base.waitFor(() => pathname === initialPath && container.querySelector(
+    initialPath === '/meal-checkin' ? '[role="heading"]' : '[data-meal-test-screen]'));
   // Stack이 숨긴 이전 화면을 조작하거나 검증하지 않는다.
   function visibleScreen() {
     return [...container.querySelectorAll('[data-meal-test-screen]')]

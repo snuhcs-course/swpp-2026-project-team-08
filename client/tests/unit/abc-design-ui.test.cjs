@@ -27,7 +27,7 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 빈 초안 기본값 검증·사진 중복 제거 및 음식 편집기·추천 연결 테스트 분리
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 식후 사진 선택·확인 중복 정리와 버튼·초안 재시도 검증을 행동별 폴더로 이동
+// Changed: 식후 사진·결과 이동 중복 정리와 버튼·초안 재시도 검증 분리
 
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
@@ -542,22 +542,6 @@ test('Outcome uses the shared header and preserves progress, caption and save er
   assert.ok(html.includes(copyFor('en').afterMealReview.titles.outcomes));
   assert.ok(html.includes(copyFor('en').afterMealReview.saveFailed));
   assert.ok(html.includes('Sam · Lunch'));
-});
-
-test('outcome Continue saves directly with no difficulty targets; mixed meals still open difficulties', async t => {
-  const { AfterMealReviewView } = require('../../src/features/after-meal-review/screens/AfterMealReviewView.tsx');
-  const { MealFlowButton } = require('../../src/components/MealFlowButton.tsx');
-  const calls = [];
-  const base = { language: 'en', draft: { step: 'outcomes' },
-    meal: { photo: null, foods: [], mealDate: '2026-11-04', mealType: 'lunch', setting: 'home' },
-    saveStatus: 'saved', difficultyTargets: [], canContinueOutcomes: true,
-    onSave: () => calls.push('save'), onGo: step => calls.push(step) };
-  const h = await renderHook(t, props => AfterMealReviewView(props), { props: base });
-  await act(async () => findElement(h.current, n => n.type === MealFlowButton).props.onPress());
-  assert.deepEqual(calls, ['save']);
-  await h.rerender({ ...base, difficultyTargets: [{ id: 'remaining' }] });
-  await act(async () => findElement(h.current, n => n.type === MealFlowButton).props.onPress());
-  assert.deepEqual(calls, ['save', 'difficulties']);
 });
 
 test('all-eaten review completion offers Home without a suggestion action', () => {

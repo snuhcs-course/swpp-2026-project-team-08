@@ -2,36 +2,22 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 미추가 어려움 입력의 저장·중복·미완성·대상 제외 검증
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 식후 사진 중복 검증 통합 및 Eaten 어려움 저장 기대값 수정
+// Changed: 사진·결과 중복 검증 분리 및 Eaten 어려움 저장 기대값 수정
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
 const { savedMeal } = require('../fixtures/after-meal-review.cjs');
 
-const { newReviewDraft, reconcileOutcomes, setOutcome, applySuggestions, allOutcomesConfirmed, addDifficulty, reviewFromDraft, toggleIngredient } =
+const { newReviewDraft, reconcileOutcomes, setOutcome, addDifficulty, reviewFromDraft } =
   require('../../src/features/after-meal-review/rules.ts');
 
-test('자동 제안과 음식·재료별 확정 결과는 서로 독립적이며 저장 시 식후 사진 유무를 유지한다', () => {
-  const meal = savedMeal('outcomes');
-  let draft = newReviewDraft(meal);
-  const ingredient = draft.outcomes[0].ingredients[0].id;
-  draft.outcomes = applySuggestions(draft.outcomes, [{ foodId: 'food-1', outcome: 'eaten' }, { foodId: 'food-1', ingredientId: ingredient, outcome: 'eaten' }]);
-  assert.equal(allOutcomesConfirmed(draft.outcomes), false);
+test('식후 사진이 없으면 최종 리뷰의 사진은 null이고 사진이 있으면 같은 사진을 포함한다', () => {
+  const meal = savedMeal('review-photo');
+  const draft = newReviewDraft(meal);
   draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'tasted');
-  draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'untouched', ingredient);
-  assert.equal(draft.outcomes[0].decision.confirmed, 'tasted');
-  assert.equal(draft.outcomes[0].ingredients[0].decision.confirmed, 'untouched');
-  assert.equal(draft.outcomes[0].ingredients[1].decision.confirmed, null);
-  assert.equal(allOutcomesConfirmed(draft.outcomes), true);
-  draft.outcomes = toggleIngredient(draft.outcomes, 'food-1', draft.outcomes[0].ingredients[1].id);
-  assert.equal(allOutcomesConfirmed(draft.outcomes), false);
-  draft.outcomes = setOutcome(draft.outcomes, 'food-1', 'unclear', draft.outcomes[0].ingredients[1].id);
-  assert.equal(allOutcomesConfirmed(draft.outcomes), true);
   assert.equal(reviewFromDraft(draft, meal).afterPhoto, null);
   draft.afterPhoto = { id: 'after', uri: 'file:///after.png', mimeType: 'image/png' };
-  assert.equal(reviewFromDraft(draft, meal).afterPhoto.id, 'after');
-  assert.equal(reviewFromDraft(draft, meal).afterPhoto.uri, 'file:///after.png');
-  assert.equal(reviewFromDraft(draft, meal).outcomes[0].ingredients[1].decision.confirmed, 'unclear');
+  assert.deepEqual(reviewFromDraft(draft, meal).afterPhoto, draft.afterPhoto);
 });
 
 test('food edits retain matching ingredient IDs and drop removed ingredient outcomes', () => {

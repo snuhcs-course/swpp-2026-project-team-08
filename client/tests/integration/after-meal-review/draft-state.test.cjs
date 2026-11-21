@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 초안 저장 후 홈 왕복·재시작 후 재개·실패 후 Retry의 실제 화면 흐름 검증
+// Changed: 초안 저장·재개·Retry 및 재개 직후 진입 화면 복귀 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, waitFor, act, deferred, storage, photoDevice } = require('../../helpers/meal-checkin-screen.cjs');
@@ -188,17 +188,12 @@ test('어려움 태그와 작성 중 사유가 자동 저장된 뒤 앱을 다�
   assert.equal(control(editor(reopened, 'Carrot in Rice'), 'button', 'value').textContent, 'value');
   assert.deepEqual(await readAfterMealDraft('1', '10'), before);
   await click(control(reopened, 'button', 'Go back'));
-  await expectStep(reopened, 'What happened with each food item?');
-  await expand(reopened, 'Rice');
-  await expand(reopened, 'Soup');
-  expectSelected(reopened, 'Rice', 'Eaten');
-  expectSelected(reopened, 'Carrot', 'Tasted');
-  expectSelected(reopened, 'Soup', 'Unclear');
-  assert.equal(reopened.container.querySelector('[role="slider"][aria-label="Egg"]'), null);
-  await click(control(reopened, 'button', 'Go back'));
-  await expectStep(reopened, 'Review meal photos');
-  assert.equal(control(reopened, 'button', 'AFTER: Tap to enlarge').querySelector('img').getAttribute('src'), photo);
-  assert.equal(control(reopened, 'button', 'BEFORE: Tap to enlarge').querySelector('img').getAttribute('src'), 'file:///before.png');
+  await waitFor(() => reopened.pathname === '/meal/10' && control(reopened, 'button', 'Continue Review'));
+  assert.deepEqual(await readAfterMealDraft('1', '10'), before);
+  assert.equal(before.afterPhoto.uri, photo);
+  await click(control(reopened, 'button', 'Continue Review'));
+  await expectStep(reopened, 'What made this food difficult?');
+  assert.deepEqual(await readAfterMealDraft('1', '10'), before);
 });
 
 test('Save as Draft & Exit의 저장이 실패하면 현재 화면과 입력을 유지하고, Retry 성공 후 다시 저장하고 나갔다 돌아오면 같은 입력이 표시된다', async t => {

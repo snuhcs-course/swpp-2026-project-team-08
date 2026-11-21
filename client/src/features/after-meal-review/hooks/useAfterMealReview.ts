@@ -9,7 +9,7 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 저장 완료 상태에 자동 반영한 어려움 사유 동기화
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 리뷰 서버 제출과 로컬 초안 저장의 실패 처리 분리
+// Changed: 서버·로컬 저장 실패 분리 및 재개 후 진행 전 뒤로가기 처리
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,6 +24,7 @@ import type { ChildProfile } from '../../../types/profile';
 import { difficultyTargets, addDifficulty, allOutcomesConfirmed, clearOutcomeSuggestions, canAddDifficulty, newReviewDraft, normalizeReviewStep, reconcileDifficultyEntries, reconcileOutcomes, reviewDraftFromServer, reviewFromDraft, setOutcome, toggleIngredient } from '../rules';
 
 type SaveStatus = 'saving' | 'saved' | 'error';
+const stepOrder: ReviewStep[] = ['photo', 'preview', 'compare', 'outcomes', 'difficulties', 'complete'];
 
 export function useAfterMealReview(profile: ChildProfile | null, mealId: string) {
   const childId = profile?.id ?? '';
@@ -47,6 +48,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const saveVersion = useRef(0);
   const skipFirstSave = useRef(true);
   const finishing = useRef(false);
+  const resumedWithoutProgress = useRef(false);
   const pickBusy = useRef(false);
   const pickVersion = useRef(0);
   const editorBusy = useRef(false);
@@ -78,6 +80,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
         };
         if (next.step === 'difficulties' && !difficultyTargets(meal.foods, next.outcomes).length) next.step = 'outcomes';
         skipFirstSave.current = true;
+        resumedWithoutProgress.current = !!stored && stored.step !== 'complete' && !detail.review;
         current.current = next;
         setDraft(next);
         setLoadedKey(key);
@@ -114,6 +117,9 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const update = (patch: Partial<AfterMealReviewDraft>) => {
     const value = current.current;
     if (!value) return;
+    if (patch.step && stepOrder.indexOf(patch.step) > stepOrder.indexOf(value.step)) {
+      resumedWithoutProgress.current = false;
+    }
     const next = { ...value, ...patch };
     current.current = next;
     setDraft(next);
@@ -130,6 +136,10 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const back = (): boolean => {
     const step = current.current?.step;
     if (!step || step === 'photo' || step === 'complete') return false;
+    if (resumedWithoutProgress.current) {
+      cancelPhotoPick();
+      return false;
+    }
     const previous: Partial<Record<ReviewStep, ReviewStep>> = {
       preview: 'photo', compare: 'preview', 'comparison-error': 'compare',
       outcomes: current.current?.afterPhoto ? (meal?.photo ? 'compare' : 'preview') : 'photo',

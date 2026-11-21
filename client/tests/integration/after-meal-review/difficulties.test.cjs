@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 실제 어려움 화면의 대상별 태그 편집·입력 변경·Other 검증과 빈 사유 Skip 저장
+// Changed: 어려움 대상·태그·입력·Skip 검증 및 결과에서 진행 후 왕복
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, waitFor, act } = require('../../helpers/meal-checkin-screen.cjs');
@@ -11,7 +11,7 @@ const { colors } = require('../../../src/util/colors.ts');
 const selectedColor = `rgb(${colors.homePrimary.slice(1).match(/../g).map(part => parseInt(part, 16)).join(', ')})`;
 async function start(t) {
   const { response, draft } = difficultyFixture();
-  await saveAfterMealDraft(draft);
+  await saveAfterMealDraft({ ...draft, step: 'outcomes' });
   const writes = [];
   let serverMeal = response;
   const app = await mountMeal(t, { initialPath: '/home', meals: [response], respond: (path, method, init) => {
@@ -27,6 +27,8 @@ async function start(t) {
     .find(node => node.textContent.includes('Lunch') && node.textContent.includes('Awaiting review'));
   await waitFor(() => card());
   await click(card());
+  await waitFor(() => control(app, 'heading', 'What happened with each food item?'));
+  await click(control(app, 'button', 'Continue'));
   await expectDifficulties(app);
   return { app, writes };
 }

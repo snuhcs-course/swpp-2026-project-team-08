@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 실제 식사·홈 화면과 라우터 연결, HTTP·날짜·사진 기기 경계 대체
+// Changed: 실제 식사·홈·전체 사진 라우터 연결 및 HTTP·기기·모달 실행 환경
 const assert = require('node:assert/strict');
 const { after, beforeEach } = require('node:test');
 const base = require('./onboarding-screen.cjs');
@@ -12,10 +12,14 @@ beforeEach(t => {
 const { mockModules } = require('./mock-modules.cjs');
 
 // jsdom은 기기 레이아웃과 OS 날짜 위젯을 제공하지 않는다.
+const nodeDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'Node');
+Reflect.defineProperty(globalThis, 'Node', { configurable: true, writable: true, value: window.Node });
 const resizeObserver = Object.getOwnPropertyDescriptor(globalThis, 'ResizeObserver');
 Reflect.defineProperty(globalThis, 'ResizeObserver', { configurable: true, writable: true,
   value: class { observe() {} unobserve() {} disconnect() {} } });
 after(() => {
+  if (nodeDescriptor) Reflect.defineProperty(globalThis, 'Node', nodeDescriptor);
+  else delete globalThis.Node;
   if (resizeObserver) Reflect.defineProperty(globalThis, 'ResizeObserver', resizeObserver);
   else delete globalThis.ResizeObserver;
 });
@@ -84,6 +88,7 @@ async function mountMeal(t) {
   const routes = {
     './_layout.tsx': { default: Layout },
     './meal-checkin.tsx': require('../../src/app/meal-checkin.tsx'),
+    './meal-photo.tsx': require('../../src/app/meal-photo.tsx'),
     './(main)/home.tsx': require('../../src/app/(main)/home.tsx'),
   };
   for (const [path, route] of Object.entries(routes)) {
@@ -125,4 +130,20 @@ async function mountMeal(t) {
   return { get container() { return visibleScreen(); }, modal: { container: document.body },
     unmount, get pathname() { return pathname; } };
 }
-module.exports = { ...base, mountMeal, nativeDatePicker, photoDevice };
+function modal() {
+  const dialogs = document.querySelectorAll('[role="dialog"]');
+  assert.equal(dialogs.length, 1);
+  return { container: dialogs[0] };
+}
+
+async function waitForModal(title) {
+  await base.waitFor(() => base.control({ container: document.body }, 'heading', title));
+  // jsdom이 실행하지 않는 CSS 애니메이션의 종료만 전달한다. 모달은 실제 RN Web 구현이다.
+  let animation = document.querySelector('[aria-modal="true"]');
+  while (animation && !window.getComputedStyle(animation).animationDuration) animation = animation.parentElement;
+  assert.ok(animation, '모달의 애니메이션 영역이 있어야 한다');
+  await base.act(async () => animation.dispatchEvent(new window.Event('animationend', { bubbles: true })));
+  await base.waitFor(() => base.control(modal(), 'heading', title));
+}
+
+module.exports = { ...base, mountMeal, nativeDatePicker, photoDevice, modal, waitForModal };

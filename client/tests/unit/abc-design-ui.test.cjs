@@ -25,7 +25,7 @@
 // Changed: 홈 추천 테스트 입력 현행화
 
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 빈 초안 유형 기본값 검증 및 사진 없는 목록의 중복 검증 제거
+// Changed: 빈 초안 기본값 검증 및 사진 목록·교체 안내의 중복 검증 제거
 
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
@@ -121,7 +121,6 @@ const {
   MealFoodsStepView,
 } = require("../../src/features/meal-checkin/screens/MealFoodsStepView.tsx");
 
-const { Dialog } = require("../../src/components/Dialog.tsx");
 
 const {
   AfterMealPhotoStepsView,
@@ -217,53 +216,6 @@ test("editing keeps caregiver food and optional details; adding does not change 
   assert.match(edit, /value="Small pieces"/);
   assert.match(edit, /aria-checked="true"/);
   assert.match(editor(food), />Add food item</);
-});
-
-test("replacement dialog is centered and exposes body and small gray hint separately", () => {
-  const html = renderToStaticMarkup(
-    React.createElement(
-      Dialog,
-      {
-        compact: true,
-        title: a.replaceTitle,
-        closeLabel: s.common.close,
-        onClose: noop,
-      },
-      React.createElement("p", { style: { fontSize: 12 } }, a.replaceBody),
-      React.createElement(
-        "p",
-        { style: { fontSize: 11, color: "#65758B" } },
-        a.replaceHint,
-      ),
-    ),
-  );
-  assert.match(html, /justify-content:center;align-items:center/);
-  assert.match(html, /max-width:342px/);
-  assert.match(html, /font-size:11px;color:#65758B/);
-  assert.doesNotMatch(html, /×/);
-});
-
-test("photo empty list shows the before-meal photo and hides the old suggestion entry", () => {
-  const html = renderToStaticMarkup(
-    React.createElement(MealFoodsStepView, {
-      p: {
-        draft: {
-          ...newDraft("test"),
-          step: "foods",
-          photo: { uri: "test-photo" },
-        },
-        language: "en",
-        childName: "Max",
-        suggestions: [],
-        suggestionLinking: closedLinking,
-        onEdit: noop,
-      },
-    }),
-  );
-  assert.match(html, /Before meal/);
-  assert.match(html, /0 food items/);
-  assert.match(html, /No foods added yet/);
-  assert.doesNotMatch(html, /Are you trying a previous suggestion/);
 });
 
 test("after-meal photo choice has no example photo, analysis action, or inferred results", () => {

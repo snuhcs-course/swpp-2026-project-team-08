@@ -1,0 +1,94 @@
+// AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
+// Changed: Verify meal flow actions and shared three-step after-meal progress
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 선택지 id·채식 단계 기준으로 테스트 수정, 카탈로그 검색 테스트 교체
+// AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
+// Changed: 추천 모달 안전 여백 및 추천 연결·언어 버튼 및 공통 Outcome 헤더 검증
+// AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
+// Changed: Eaten 단계 생략 및 언어 버튼 숨김 검증
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 애니메이션 바텀시트의 네이티브 컴포넌트 대체 지원
+// AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
+// Changed: 개인정보 링크의 네이티브 모듈 테스트 경계 추가
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 음식 편집에서 저장 추천 연결 검증
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 온보딩 행동별 테스트 분리 및 경로 수정
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 조리법 열 가지의 편집 화면 표시 검증
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 홈 추천 테스트 입력 현행화
+
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 빈 초안 기본값 검증·사진 중복 제거 및 음식 편집기·추천 연결 테스트 분리
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 종합 UI 검증을 담당 기능·컴포넌트별 파일로 분리
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const { React, renderToStaticMarkup } = require('../../helpers/static-view.cjs');
+const { copyFor, abcCopyFor } = require("../../../src/util/strings.ts");
+
+const { newFood } = require("../../../src/rules/foodDraft.ts");
+
+const { newDraft } = require("../../../src/features/meal-checkin/rules.ts");
+
+const s = copyFor("en"),
+  a = abcCopyFor("en"),
+  noop = () => {};
+
+test("ongoing meal entry shows real draft metadata and only an explicit continue action", () => {
+  const {
+    MealDraftResumeView,
+  } = require("../../../src/features/meal-checkin/screens/MealDraftResumeView.tsx");
+  const draft = {
+    ...newDraft("child"),
+    mealDate: "2026-10-11",
+    mealType: "dinner",
+    step: "foods",
+    foods: [{ ...newFood(), name: "Soup" }],
+    photo: { id: "photo", uri: "saved-photo" },
+  };
+  const before = JSON.stringify(draft);
+  const html = renderToStaticMarkup(
+    React.createElement(MealDraftResumeView, {
+      draft,
+      childName: "Alex",
+      language: "en",
+      onContinue: noop,
+      onBack: noop,
+    }),
+  );
+  assert.match(html, /Ongoing Meal/);
+  assert.match(html, /Finish your draft before starting a new check-in/);
+  assert.match(html, /Alex · Dinner/);
+  assert.match(html, /11 October 2026/);
+  assert.match(html, /Photo saved/);
+  assert.match(html, /1 food/);
+  assert.match(html, /Continue draft/);
+  assert.doesNotMatch(html, /Add food item|Food name|Replace photo/);
+  assert.equal(JSON.stringify(draft), before);
+});
+
+test("사진과 음식이 없는 초안 안내는 자동 선택된 점심과 빈 상태를 표시한다", () => {
+  const {
+    MealDraftResumeView,
+  } = require("../../../src/features/meal-checkin/screens/MealDraftResumeView.tsx");
+  const html = renderToStaticMarkup(
+    React.createElement(MealDraftResumeView, {
+      draft: newDraft("child", new Date(2026, 10, 21, 11)),
+      childName: "Alex",
+      language: "en",
+      onContinue: noop,
+      onBack: noop,
+    }),
+  );
+  assert.match(html, /No photo/);
+  assert.match(html, /0 foods/);
+  assert.match(html, /Alex · Lunch/);
+  assert.doesNotMatch(html, /Photo saved|Rolled omelet/);
+});

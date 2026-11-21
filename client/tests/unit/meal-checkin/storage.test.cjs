@@ -1,0 +1,203 @@
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 편집 추천 초안 검증 및 이전 초안 복원
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 기존 초안의 조리법 미입력 복원과 나머지 입력 보존 검증
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 초안 저장 중복 검증 이동 및 과거 사진 분석 단계 복원 테스트 제거
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: Unit 테스트를 담당 기능·공통 컴포넌트 폴더로 이동
+const { test } = require('node:test');
+
+const assert = require('node:assert/strict');
+
+require('../../helpers/register.cjs');
+
+const { completeDraft } = require('../../fixtures/meal-checkin.cjs');
+
+const { createMemoryStorage } = require('../../helpers/memory-storage.cjs');
+
+const { values, storage } = createMemoryStorage();
+
+const { mockModules } = require('../../helpers/mock-modules.cjs');
+
+mockModules((name) => { return name === '@react-native-async-storage/async-storage' ? storage : undefined; });
+
+const { mealFromDraft } = require('../../../src/features/meal-checkin/rules.ts');
+
+const { newFood } = require('../../../src/rules/foodDraft.ts');
+
+const { isDraft } = require('../../../src/data/storage/mealValidation.ts');
+
+const { readMealDraft, saveMealDraft, readMeals } = require('../../../src/data/storage/mealStorage.ts');
+
+test('기존 초안은 지원하는 조리법을 유지하고 오래된 조리법만 미입력으로 복원한다', async () => {
+  const draft = completeDraft('cooking-method-draft');
+  const cases = [
+    ['raw', 'raw'], ['boiled', 'boiled'], ['steamed', 'steamed'],
+    ['pan_fried', 'pan_fried'], ['stir_fried', 'stir_fried'],
+    ['baked', 'baked'], ['roasted', 'roasted'], ['mashed', 'mashed'],
+    ['blended', 'blended'], ['other', 'other'], ['', ''],
+    ['baked_roasted', ''], ['mashed_blended', ''], ['Baked', ''], ['삶기', ''],
+  ];
+  for (const [preparation, restoredMethod] of cases) {
+    const food = { ...draft.foods[0], preparation, ingredients: ['Rice'], servingNote: 'Small pieces', acceptance: 2 };
+    const editingFood = { ...food, name: 'Editing rice' };
+    values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({ ...draft, foods: [food], editingFood }));
+
+    const restored = await readMealDraft(draft.childId);
+
+    assert.deepEqual(restored.foods, [{ ...food, preparation: restoredMethod }]);
+    assert.deepEqual(restored.editingFood, { ...editingFood, preparation: restoredMethod });
+    await saveMealDraft(restored);
+    assert.deepEqual(await readMealDraft(draft.childId), restored);
+  }
+});
+
+test('초안 복원은 문자열이 아닌 손상된 조리법을 거절한다', async () => {
+  const draft = completeDraft('invalid-cooking-method');
+  for (const preparation of [null, 1, {}]) {
+    values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({
+      ...draft, foods: [{ ...draft.foods[0], preparation }],
+    }));
+    await assert.rejects(readMealDraft(draft.childId), /Invalid meal draft/);
+  }
+});
+
+test('new food is blank and unconfirmed legacy photo fixtures cannot become caregiver foods', async () => {
+  const fresh = newFood();
+  assert.equal(fresh.name, ''); assert.deepEqual(fresh.ingredients, []);
+  assert.equal(fresh.preparation, ''); assert.equal(fresh.servingNote, '');
+  assert.equal(fresh.acceptance ?? null, null); assert.equal(fresh.source, 'parent');
+  assert.equal(fresh.confirmed, false);
+  assert.throws(() => mealFromDraft({ ...completeDraft('unconfirmed-parent'), foods: [{ ...fresh, name: 'Rice' }] }));
+  const draft = completeDraft('legacy-manual');
+  const ai = { ...newFood(), id: 'legacy-ai', name: 'Rolled omelet', source: 'ai' };
+  const confirmedAI = { ...ai, id: 'confirmed-ai', confirmed: true };
+  draft.foods.push(ai, confirmedAI); draft.editingFood = ai;
+  draft.suggestionLinks = [{ suggestionId: 'old', foodId: ai.id, title: 'Old', description: 'Old link' }];
+  await saveMealDraft(draft);
+  const restored = await readMealDraft(draft.childId);
+  assert.deepEqual(restored.foods.map((food) => food.id), [draft.foods[0].id, confirmedAI.id]);
+  assert.equal(restored.editingFood, null); assert.deepEqual(restored.suggestionLinks, []);
+});
+
+test('legacy origin becomes provenance while explicit confirmation is preserved', async () => {
+  const draft = completeDraft('legacy-provenance');
+  const { confirmed, ...legacy } = draft.foods[0];
+  const legacyFood = { ...legacy, source: 'parent', origin: 'ai' };
+  values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({ ...draft, foods: [legacyFood] }));
+  const expected = { ...draft.foods[0], source: 'ai', confirmed: true };
+  assert.deepEqual((await readMealDraft(draft.childId)).foods, [expected]);
+  const meal = mealFromDraft({ ...draft, foods: [expected] });
+  values.set(`nurturebites.meals.${draft.childId}.v1`, JSON.stringify([{ ...meal, foods: [legacyFood] }]));
+  assert.deepEqual(await readMeals(draft.childId), [meal]);
+  const unconfirmed = { ...legacyFood, confirmed: false };
+  values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({ ...draft, foods: [unconfirmed] }));
+  assert.deepEqual((await readMealDraft(draft.childId)).foods, []);
+});
+
+test('legacy completed receipts preserve confirmed records even when their source was AI', async () => {
+  const draft=completeDraft('legacy-receipt');
+  draft.step='complete'; draft.savedMealId=draft.id;
+  draft.foods=[{...draft.foods[0],source:'ai'}];
+  await saveMealDraft(draft);
+  assert.deepEqual((await readMealDraft(draft.childId)).foods,draft.foods);
+});
+
+test('legacy goal drafts and receipts retain meals while discarding retired data', async () => {
+  const child = 'retired-goal';
+  const draft = completeDraft(child);
+  values.set(`nurturebites.meal-draft.${child}.v1`, JSON.stringify({
+    ...draft, step: 'goal', exposureFoodId: draft.foods[0].id,
+  }));
+  const restored = await readMealDraft(child);
+  assert.equal(restored.step, 'foods');
+  assert.deepEqual(restored.foods, draft.foods);
+  assert.equal(Object.hasOwn(restored, 'exposureFoodId'), false);
+  const meal = mealFromDraft(restored);
+  values.set(`nurturebites.meals.${child}.v1`, JSON.stringify([{ ...meal, exposureFoodId: draft.foods[0].id }]));
+  assert.deepEqual(await readMeals(child), [meal]);
+  values.set(`nurturebites.meal-draft.${child}.v1`, JSON.stringify({
+    ...draft, step: 'complete', savedMealId: meal.id, exposureFoodId: draft.foods[0].id,
+  }));
+  const receipt = await readMealDraft(child);
+  assert.equal(receipt.savedMealId, meal.id);
+  assert.equal(Object.hasOwn(receipt, 'exposureFoodId'), false);
+  const { readHomeRecords } = require('../../../src/data/storage/homeStorage.ts');
+  values.set(`nurturebites.home.${child}.v1`, JSON.stringify({ meals: [], suggestions: [], exposures: [{ stage: 'touched' }] }));
+  assert.deepEqual(await readHomeRecords(child), { meals: [], suggestions: [] });
+});
+
+test('retired food history is removed from legacy drafts, editors, receipts and meals', async () => {
+  const draft = completeDraft('retired-food-history');
+  const food = { ...draft.foods[0], history: 'usually' };
+  const editor = { ...food, name: 'Editing rice', history: 'sometimes' };
+  values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({ ...draft, foods: [food], editingFood: editor }));
+  const loaded = await readMealDraft(draft.childId);
+  assert.deepEqual(loaded.foods, draft.foods);
+  assert.deepEqual(loaded.editingFood, { ...draft.foods[0], name: 'Editing rice' });
+  assert.equal(isDraft({ ...draft, foods: draft.foods }, draft.childId), true);
+  const meal = mealFromDraft(draft);
+  values.set(`nurturebites.meals.${draft.childId}.v1`, JSON.stringify([{ ...meal, foods: [food] }]));
+  assert.deepEqual(await readMeals(draft.childId), [meal]);
+  values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({ ...draft, step: 'complete', savedMealId: meal.id, foods: [food] }));
+  assert.deepEqual((await readMealDraft(draft.childId)).foods, draft.foods);
+  assert.equal(Object.hasOwn(newFood(), 'history'), false);
+});
+
+test('legacy food traits are removed from meals, drafts and editor data', async () => {
+  const draft = completeDraft('retired-traits');
+  const legacyFood = { ...draft.foods[0], traits: { texture: ['soft'] } };
+  values.set(`nurturebites.meal-draft.${draft.childId}.v1`, JSON.stringify({ ...draft, foods: [legacyFood], editingFood: legacyFood }));
+  const restored = await readMealDraft(draft.childId);
+  assert.deepEqual(restored.foods, draft.foods);
+  assert.deepEqual(restored.editingFood, draft.foods[0]);
+  const meal = mealFromDraft(draft);
+  values.set(`nurturebites.meals.${draft.childId}.v1`, JSON.stringify([{ ...meal, foods: [legacyFood] }]));
+  assert.deepEqual(await readMeals(draft.childId), [meal]);
+  assert.equal(Object.hasOwn(newFood(), 'traits'), false);
+});
+
+test('legacy editor restores its committed link, while explicit null preserves an unlink', async () => {
+  const draft = completeDraft('legacy-suggestion-editor');
+  const link = { suggestionId: '31', foodId: draft.foods[0].id, title: 'Rice', description: 'Try less' };
+  draft.editingFood = draft.foods[0];
+  draft.suggestionLinks = [link];
+  await saveMealDraft(draft);
+  assert.deepEqual((await readMealDraft(draft.childId)).editingSuggestionLink, link);
+  await saveMealDraft({ ...draft, editingSuggestionLink: null });
+  const restored = await readMealDraft(draft.childId);
+  assert.equal(restored.editingSuggestionLink, null);
+  assert.deepEqual(restored.suggestionLinks, [link]);
+});
+
+test('pending links require their editing food and cannot enter committed links before Save food', async () => {
+  const draft = completeDraft('pending-suggestion-validation');
+  draft.editingFood = { ...newFood(), name: 'Soup' };
+  const link = { suggestionId: '31', foodId: draft.editingFood.id, title: 'Soup', description: 'Try less' };
+  await saveMealDraft({ ...draft, editingSuggestionLink: link });
+  assert.deepEqual((await readMealDraft(draft.childId)).editingSuggestionLink, link);
+  for (const invalid of [
+    { ...draft, editingSuggestionLink: { ...link, foodId: 'missing' } },
+    { ...draft, editingSuggestionLink: { ...link, description: 123 } },
+    { ...draft, editingFood: null, editingSuggestionLink: link },
+    { ...draft, suggestionLinks: [link] },
+  ]) {
+    await assert.rejects(saveMealDraft(invalid), /Invalid meal draft/);
+    assert.deepEqual((await readMealDraft(draft.childId)).editingSuggestionLink, link);
+  }
+});
+
+test('discarding an unconfirmed legacy editor also discards its pending link', async () => {
+  const draft = completeDraft('discard-legacy-editor-link');
+  draft.editingFood = { ...newFood(), source: 'ai', name: 'Old suggestion' };
+  draft.editingSuggestionLink = {
+    suggestionId: '31', foodId: draft.editingFood.id, title: 'Old suggestion', description: 'Try less',
+  };
+  await saveMealDraft(draft);
+  const restored = await readMealDraft(draft.childId);
+  assert.equal(restored.editingFood, null);
+  assert.equal(restored.editingSuggestionLink, null);
+  assert.deepEqual(restored.foods, draft.foods);
+});

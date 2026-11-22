@@ -36,6 +36,8 @@
 
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 사진 교체 시 음식·상세·연결 초기화 안내
+// AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 식후 사진 교체 시트와 식전 사진 없음 안내
 
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
@@ -160,10 +162,10 @@ const en = {
   afterMealReview: {
     titles: { photo: 'after-meal photo', preview: 'Check your photo', compare: 'Review meal photos', comparing: 'Comparing photos', 'comparison-error': 'Analysis failed', outcomes: 'What happened with each food item?', difficulties: 'What made this food difficult?', suggestions: 'Did you try a saved suggestion?', },
     fileHint: 'Files accept supported images only', draftSaved: 'Your review draft is saved as you go.', optional: 'Optional', photoIntro: 'Add after-meal photo', photoRequirement: 'Optional — keep a photo for your meal record.',
-    photoLabel: 'After-meal photo', before: 'BEFORE', after: 'AFTER', enlarge: 'Tap to enlarge',
+    enlarge: 'Tap to enlarge',
     replace: 'Replace photo', removePhoto: 'Remove photo', usePhoto: 'Use this photo',
     photoLocal: 'Optional photo for your meal record. Enter food outcomes yourself.',
-    missingBefore: 'The before-meal photo is unavailable. You can enter outcomes manually.', manual: 'Enter food outcomes', noPhoto: 'Continue without photo',
+    missingBefore: 'No before-meal photo', manual: 'Enter food outcomes', noPhoto: 'Continue without photo',
     reviewStep: 'AFTER MEAL · STEP 2 OF 3',
     amountQuestion: (name: string) => `How much did ${name} eat?`,
     amountHint: 'Think about the food as a whole, slide or tap',
@@ -441,10 +443,10 @@ const ko = {
     addFood: '음식 추가',
     titles: { photo: '식후 사진', preview: '사진 확인', compare: '식사 사진 확인', comparing: '사진 비교 중', 'comparison-error': '비교 실패', outcomes: '음식별로 먹은 결과를 알려주세요', difficulties: '먹기 어려워했던 특징이 있나요?', suggestions: '저장한 추천을 시도했나요?', },
     fileHint: '지원되는 이미지 파일만 선택할 수 있어요', draftSaved: '작성 중인 내용은 자동으로 저장돼요.', optional: '선택 사항', photoIntro: '식후 사진 추가', photoRequirement: '사진은 선택 사항이에요. 식사 기록에 함께 남길 수 있어요.',
-    photoLabel: '식후 사진', before: '식전', after: '식후', enlarge: '눌러서 크게 보기',
+    enlarge: '눌러서 크게 보기',
     replace: '사진 교체', removePhoto: '사진 삭제', usePhoto: '이 사진 사용',
     photoLocal: '사진은 식사 기록에 남겨요. 음식별로 먹은 결과는 직접 입력해 주세요.',
-    missingBefore: '식전 사진을 볼 수 없어요. 먹은 결과는 직접 입력할 수 있어요.', manual: '결과 직접 입력', noPhoto: '사진 없이 입력하기',
+    missingBefore: '식전 사진 없음', manual: '결과 직접 입력', noPhoto: '사진 없이 입력하기',
     itemCount: (count: number) => `음식 ${count}개`,
     outcomes: { eaten: '먹음', tasted: '맛봄', untouched: '먹거나 맛보지 않음', unclear: '확인 어려움' }, definitions: '결과 설명', gotIt: '확인',
     unanswered: '미응답', unansweredHint: '모든 음식과 선택한 재료의 결과를 입력해 주세요.',

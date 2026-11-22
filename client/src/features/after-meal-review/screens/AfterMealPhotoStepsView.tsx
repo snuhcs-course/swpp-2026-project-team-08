@@ -53,14 +53,6 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
   );
 
   if (!p.draft.afterPhoto) return null;
-  if (p.draft.step === 'compare') return (
-      <PhotoComparisonCard
-        before={p.meal.photo} after={p.draft.afterPhoto}
-        beforeLabel={s.mealCheckin.beforeMealBadge} afterLabel={s.mealCheckin.afterMealBadge}
-        missingBeforeLabel={m.missingBefore} enlargeLabel={m.enlarge}
-        onEnlarge={p.onFullPhoto} onAfterImageError={p.onImageError}
-      />
-  );
 
   return (
     <View style={styles.stack}>

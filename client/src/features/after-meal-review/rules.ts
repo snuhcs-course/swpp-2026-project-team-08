@@ -8,8 +8,8 @@
 // Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 최종 저장에 추가 버튼을 누르지 않은 어려움 입력 반영
-// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: Eaten 음식·재료의 선택적 어려움 입력과 저장 허용
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: Eaten의 선택적 어려움 입력과 이전 사진 비교 초안의 확인 화면 복원
 
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome, ReviewStep } from '../../types/afterMealReview';
 import type { FoodItem, Meal } from '../../types/meal';
@@ -18,8 +18,11 @@ import type { MealDetail } from '../../types/mealRecord';
 import { ingredientId } from '../../rules/ingredientIds';
 import { foodFormKey } from '../../rules/recommendationSafety';
 
-// Legacy draft steps resume at the final editable Figma screen without submitting.
-export function normalizeReviewStep(step: ReviewStep): ReviewStep {
+export function normalizeReviewStep(step: ReviewStep, afterPhoto: AfterMealReviewDraft['afterPhoto']): ReviewStep {
+  if (step === 'compare' || step === 'comparing' || step === 'comparison-error') {
+    return afterPhoto?.uri ? 'preview' : 'outcomes';
+  }
+  if (step === 'preview' && !afterPhoto?.uri) return 'photo';
   return step === 'suggestions' ? 'difficulties' : step;
 }
 

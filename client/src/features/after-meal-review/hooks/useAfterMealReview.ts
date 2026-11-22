@@ -8,8 +8,8 @@
 // Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 저장 완료 상태에 자동 반영한 어려움 사유 동기화
-// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 서버·로컬 저장 실패 분리 및 재개 후 진행 전 뒤로가기 처리
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 서버·로컬 저장 분리, 초안 재개와 단일 사진 확인 단계의 뒤로가기
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,7 +24,7 @@ import type { ChildProfile } from '../../../types/profile';
 import { difficultyTargets, addDifficulty, allOutcomesConfirmed, clearOutcomeSuggestions, canAddDifficulty, newReviewDraft, normalizeReviewStep, reconcileDifficultyEntries, reconcileOutcomes, reviewDraftFromServer, reviewFromDraft, setOutcome, toggleIngredient } from '../rules';
 
 type SaveStatus = 'saving' | 'saved' | 'error';
-const stepOrder: ReviewStep[] = ['photo', 'preview', 'compare', 'outcomes', 'difficulties', 'complete'];
+const stepOrder: ReviewStep[] = ['photo', 'preview', 'outcomes', 'difficulties', 'complete'];
 
 export function useAfterMealReview(profile: ChildProfile | null, mealId: string) {
   const childId = profile?.id ?? '';
@@ -74,7 +74,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
           : stored?.step === 'complete' ? newReviewDraft(meal) : stored ?? newReviewDraft(meal);
         const next: AfterMealReviewDraft = {
           ...base,
-          step: detail.review ? 'complete' : ['comparing', 'comparison-error'].includes(base.step) ? (meal.photo && base.afterPhoto ? 'compare' : 'outcomes') : base.step === 'compare' && (!meal.photo || !base.afterPhoto) ? 'outcomes' : normalizeReviewStep(base.step),
+          step: normalizeReviewStep(base.step, base.afterPhoto),
           outcomes: clearOutcomeSuggestions(reconcileOutcomes(base.outcomes, meal.foods)),
           comparisonMethod: 'manual',
         };
@@ -131,7 +131,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   };
   const go = (step: ReviewStep) => {
     cancelPhotoPick();
-    update({ step: normalizeReviewStep(step) });
+    update({ step: normalizeReviewStep(step, current.current?.afterPhoto ?? null) });
   };
   const back = (): boolean => {
     const step = current.current?.step;
@@ -141,9 +141,8 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
       return false;
     }
     const previous: Partial<Record<ReviewStep, ReviewStep>> = {
-      preview: 'photo', compare: 'preview', 'comparison-error': 'compare',
-      outcomes: current.current?.afterPhoto ? (meal?.photo ? 'compare' : 'preview') : 'photo',
-      difficulties: 'outcomes', suggestions: 'difficulties',
+      preview: 'photo', outcomes: current.current?.afterPhoto?.uri ? 'preview' : 'photo',
+      difficulties: 'outcomes',
     };
     const target = previous[step];
     if (!target) return false;
@@ -184,7 +183,10 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     cancelPhotoPick();
     const value = current.current;
     if (!value) return;
-    update({ outcomes: clearOutcomeSuggestions(value.outcomes), comparisonMethod: 'manual', step: 'outcomes' });
+    update({
+      afterPhoto: value.step === 'photo' ? null : value.afterPhoto,
+      outcomes: clearOutcomeSuggestions(value.outcomes), comparisonMethod: 'manual', step: 'outcomes',
+    });
   };
   const chooseOutcome = (foodId: string, outcome: Outcome, ingredientKey?: string) => {
     const value = current.current;

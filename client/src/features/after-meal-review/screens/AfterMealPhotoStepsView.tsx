@@ -7,13 +7,13 @@
 // Changed: 식후 사진 확인에 비교 사진과 공통 교체·삭제 버튼 표시
 
 import { useState } from 'react';
-import { UiAssetIcon } from '../../../components/UiAssetIcon';
+import { MealPhotoActions } from '../../../components/MealPhotoActions';
 import { AppIcon } from '../../../components/AppIcon';
 import { formStyles as ui } from '../../../components/formStyles';
 import { MealPhotoIntroCard } from '../../../components/MealPhotoIntroCard';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MealTextButton } from '../../../components/MealTextButton';
-import { AfterMealPhotoPicker } from '../components/AfterMealPhotoPicker';
+import { MealPhotoSourcePicker } from '../../../components/MealPhotoSourcePicker';
 import { PhotoComparisonCard } from '../components/PhotoComparisonCard';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
@@ -29,8 +29,10 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
   const s = copyFor(p.language);
   const m = s.afterMealReview;
   const [replaceOpen, setReplaceOpen] = useState(false);
-  const photoLabels = { camera: s.mealCheckin.camera, gallery: s.mealCheckin.gallery, files: s.mealCheckin.files };
-  const picker = <AfterMealPhotoPicker labels={photoLabels} fileHint={m.fileHint} picking={p.picking} onPick={(source) => { setReplaceOpen(false); p.onPick(source); }} />;
+  const picker = (
+    <MealPhotoSourcePicker labels={s.mealCheckin} fileHint={m.fileHint} picking={p.picking} inSheet={replaceOpen}
+      onPick={(source) => { setReplaceOpen(false); p.onPick(source); }} />
+  );
   const photoError = p.photoError && (
     <Text accessibilityRole="alert" style={styles.error}>{p.photoError === 'permission' ? m.permission : m.imageError}</Text>
   );
@@ -62,11 +64,10 @@ export function AfterMealPhotoStepsView({ p }: { p: Props }) {
         missingBeforeLabel={m.missingBefore} enlargeLabel={m.enlarge}
         onEnlarge={p.onFullPhoto} onAfterImageError={p.onImageError}
       />
-      <View style={styles.actions}>
-        <MealTextButton icon={<UiAssetIcon name="meal-refresh" />} label={m.replace} onPress={() => setReplaceOpen((value) => !value)} />
-        <MealTextButton icon={<UiAssetIcon name="meal-trash" />} label={m.removePhoto} onPress={p.onRemovePhoto} labelStyle={{ color: colors.error }} />
-      </View>
-      {replaceOpen && picker}
+      <MealPhotoActions language={p.language} sheetTitle={m.replaceSourceTitle} sheetOpen={replaceOpen}
+        onReplace={() => setReplaceOpen(true)} onClose={() => setReplaceOpen(false)} onRemove={p.onRemovePhoto}>
+        {picker}
+      </MealPhotoActions>
       {photoError}
     </View>
   );
@@ -78,6 +79,5 @@ const styles = StyleSheet.create({
   stack: { flex: 1, gap: 12, paddingBottom: 8 },
   photoStack: { gap: 16 },
   autoSave: { marginTop: 'auto', paddingTop: 24, color: colors.mealReviewMuted, textAlign: 'center', fontSize: 14, fontFamily: fonts.interRegular },
-  actions: { gap: 10 },
   error: { color: colors.error, fontSize: 14, fontFamily: fonts.interMedium },
 });

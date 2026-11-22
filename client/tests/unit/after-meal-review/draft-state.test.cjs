@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 현재 리뷰 단계 복원과 저장 대기·실패·재시도·조회 실패 검증
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 현재 리뷰 단계 복원과 저장 대기·실패·재시도·조회 실패 검증 · 통합 사진 확인 흐름 검증
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -37,8 +37,8 @@ async function failedEaten(t) {
   return { h, before };
 }
 
-test('사진 선택·사진 확인·사진 비교·결과·어려움 단계의 초안을 저장하고 불러온 결과는 저장한 단계와 입력값이 같다', async t => {
-  for (const step of ['photo', 'preview', 'compare', 'outcomes', 'difficulties']) {
+test('사진 선택·사진 확인·결과·어려움 단계의 초안을 저장하고 불러온 결과는 저장한 단계와 입력값이 같다', async t => {
+  for (const step of ['photo', 'preview', 'outcomes', 'difficulties']) {
     const draft = { ...unfinishedReview(), step };
     if (step === 'photo') draft.afterPhoto = null;
     const h = await start(t, draft);

@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 식후 사진 교체·취소·실패·삭제 시 기존 입력 보존과 늦은 응답 무시 검증
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 식후 사진 교체·취소·실패·삭제 시 기존 입력 보존과 늦은 응답 무시 검증 · 통합 사진 확인 흐름 검증
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -88,4 +88,15 @@ test('사진 교체 중 삭제한 뒤 이전 요청의 성공·실패 응답이 
     assert.equal(h.current.photoError, null);
     assert.equal(h.current.picking, false);
   }
+});
+
+test('교체 전 사진의 표시 오류가 뒤늦게 도착해도 새 사진에는 오류가 없다', async t => {
+  const { h } = await start(t);
+  const oldPhotoFailed = h.current.markImageError;
+  selectPhoto = async () => replacement;
+  await act(async () => h.current.pick('gallery'));
+  await act(async () => oldPhotoFailed());
+  assert.equal(h.current.draft.afterPhoto.id, replacement.id);
+  assert.equal(h.current.afterPhotoUnreadable, false);
+  assert.equal(h.current.photoError, null);
 });

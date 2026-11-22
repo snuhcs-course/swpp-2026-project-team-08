@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 식사 저장·재시도·Tried·기기 저장 실패 및 새 식사 시작·사진 첨부 완료 흐름 검증
+// AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 식후 사진 확인 화면에 저장된 식전 사진 표시 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, input, click, enter, waitFor, act, deferred, modal, waitForModal,
@@ -236,7 +238,7 @@ test('식사 저장 후 홈에서 Log new meal을 누르면 초안 안내 없이
   assert.deepEqual(await readMeal('1', '900'), savedMeal);
 });
 
-test('식전 사진을 첨부해 저장하면 완료 화면에 사진이 표시되고, 식후 검토에서 식후 사진을 추가하면 사진 비교 화면에 같은 식전 사진이 표시된다', async t => {
+test('체크인에 저장한 식전 사진이 식후 리뷰에서 새로 고른 식후 사진 옆에 표시된다', async t => {
   const { app, server } = await start(t, { photo: completionPhoto });
   assert.equal(app.container.querySelector('img').getAttribute('src'), completionPhoto.uri);
   await click(control(app, 'button', 'Save check-in'));
@@ -252,14 +254,10 @@ test('식전 사진을 첨부해 저장하면 완료 화면에 사진이 표시�
   photoDevice.result = pickedImage({ uri: 'file:///cache/after-meal.png' });
   await click(button(app, sourceLabels.gallery));
   await waitFor(() => control(app, 'heading', 'Check your photo'));
-  const afterUri = app.container.querySelector('img').getAttribute('src');
-  assert.notEqual(afterUri, completionPhoto.uri);
-  await click(control(app, 'button', 'Use this photo'));
-  await waitFor(() => control(app, 'heading', 'Review meal photos'));
-  const before = control(app, 'button', 'BEFORE: Tap to enlarge');
-  const after = control(app, 'button', 'AFTER: Tap to enlarge');
+  const before = control(app, 'button', 'Before meal: Tap to enlarge');
+  const after = control(app, 'button', 'After meal: Tap to enlarge');
   assert.equal(before.querySelector('img').getAttribute('src'), completionPhoto.uri);
-  assert.equal(after.querySelector('img').getAttribute('src'), afterUri);
+  assert.equal(after.querySelector('img').getAttribute('src'), 'file:///cache/after-meal.png');
   assert.equal(app.pathname, '/after-meal-review');
   assert.equal(new URL(window.location.href).searchParams.get('mealId'), '900');
 });

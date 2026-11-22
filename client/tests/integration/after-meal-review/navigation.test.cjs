@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 재개·편집 취소·사진별 단계 왕복과 진입 화면 복귀의 사용자 흐름 검증
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 재개·편집 취소·사진별 단계 왕복과 진입 화면 복귀의 사용자 흐름 검증 · 통합 사진 확인 흐름 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, waitFor, enter, input, modal, waitForModal, photoDevice } = require('../../helpers/meal-checkin-screen.cjs');
@@ -106,7 +106,7 @@ async function openDetails(app) {
   await waitFor(() => app.pathname === '/meal/10' && control(app, 'button', 'Continue Review'));
 }
 
-test('재개한 결과 화면에서 음식 편집을 취소·닫으면 기존 음식과 답변이 유지되고, 뒤로가기는 진행 전에는 홈으로, 진행 후에는 이전 단계로 돌아간다', async t => {
+test('결과 화면을 재개해 음식 수정을 취소하면 답변이 유지되고, 진행 전 뒤로가기는 홈으로 돌아간다', async t => {
   const app = await start(t);
   await resume(app);
   await select(app, 'Soup', 'Unclear');
@@ -123,8 +123,8 @@ test('재개한 결과 화면에서 음식 편집을 취소·닫으면 기존 �
   await click(control(app, 'button', 'Go back'));
   await expectStep(app, 'What happened with each food item?');
   await click(control(app, 'button', 'Go back'));
-  await expectStep(app, 'Review meal photos');
-  await click(control(app, 'button', 'Enter food outcomes'));
+  await expectStep(app, 'Check your photo');
+  await click(control(app, 'button', 'Use this photo'));
   await expectStep(app, 'What happened with each food item?');
   await expectAnswers(app);
   assert.deepEqual(await readAfterMealDraft('1', '10'), answered);
@@ -136,10 +136,10 @@ test('재개한 결과 화면에서 음식 편집을 취소·닫으면 기존 �
   assert.deepEqual(await readAfterMealDraft('1', '10'), answered);
 });
 
-test('전후 사진이 있는 리뷰를 재개해 사진을 확대해도 뒤로가면 홈으로 돌아가며, 다시 진행해 답변·사유를 입력한 뒤 단계들을 왕복해도 입력이 유지된다', async t => {
+test('사진을 확대하고 돌아와도 재개 직후에는 홈으로 나가고, 진행 후에는 사진 확인을 왕복해도 답변과 사유가 유지된다', async t => {
   const app = await start(t, { step: 'preview' });
   await resume(app, 'Check your photo');
-  await click(control(app, 'button', 'Tap to enlarge'));
+  await click(control(app, 'button', 'After meal: Tap to enlarge'));
   await waitFor(() => app.pathname === '/after-meal-photo' && control(app, 'heading', 'After Image'));
   await click(control(app, 'button', 'Go back'));
   await expectStep(app, 'Check your photo');
@@ -147,8 +147,6 @@ test('전후 사진이 있는 리뷰를 재개해 사진을 확대해도 뒤로�
   await expectHome(app);
   await resume(app, 'Check your photo');
   await click(control(app, 'button', 'Use this photo'));
-  await expectStep(app, 'Review meal photos');
-  await click(control(app, 'button', 'Enter food outcomes'));
   await expectStep(app, 'What happened with each food item?');
   await select(app, 'Soup', 'Unclear');
   await click(control(app, 'button', 'Continue'));
@@ -159,16 +157,9 @@ test('전후 사진이 있는 리뷰를 재개해 사진을 확대해도 뒤로�
   await expectStep(app, 'What happened with each food item?');
   await expectAnswers(app);
   await click(control(app, 'button', 'Go back'));
-  await expectStep(app, 'Review meal photos');
-  assert.equal(control(app, 'button', 'BEFORE: Tap to enlarge').querySelector('img').getAttribute('src'), 'file:///before.png');
-  assert.equal(control(app, 'button', 'AFTER: Tap to enlarge').querySelector('img').getAttribute('src'), answered.afterPhoto.uri);
-  await click(control(app, 'button', 'Go back'));
   await expectStep(app, 'Check your photo');
-  assert.equal(app.container.querySelector('img').getAttribute('src'), answered.afterPhoto.uri);
   assert.deepEqual(await readAfterMealDraft('1', '10'), { ...answered, step: 'preview' });
   await click(control(app, 'button', 'Use this photo'));
-  await expectStep(app, 'Review meal photos');
-  await click(control(app, 'button', 'Enter food outcomes'));
   await expectStep(app, 'What happened with each food item?');
   await expectAnswers(app);
   await click(control(app, 'button', 'Continue'));
@@ -178,7 +169,7 @@ test('전후 사진이 있는 리뷰를 재개해 사진을 확대해도 뒤로�
   assert.deepEqual(await readAfterMealDraft('1', '10'), answered);
 });
 
-test('식사 상세에서 시작해 사진 비교를 생략한 리뷰는 사진 유무에 맞는 이전 단계로 돌아가고, 사진 선택에서 다시 뒤로가면 같은 식사 상세가 열린다', async t => {
+test('식사 상세에서 시작한 리뷰는 사진 유무에 맞는 이전 단계로 돌아가고, 사진 선택에서 다시 뒤로가면 같은 식사 상세가 열린다', async t => {
   for (const withAfterPhoto of [true, false]) {
     await t.test(withAfterPhoto ? '식후 사진만 있으면 결과에서 사진 확인으로 돌아간다' : '식후 사진이 없으면 결과에서 사진 선택으로 돌아간다', async t => {
       const app = await start(t, { step: 'photo', beforePhoto: false });

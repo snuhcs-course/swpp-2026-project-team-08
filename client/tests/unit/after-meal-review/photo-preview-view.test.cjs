@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 기존 footer 테스트의 사진 없음과 초안 재시도 검증 보존
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 기존 footer 테스트의 사진 없음과 초안 재시도 검증 보존 · 통합 사진 확인 흐름 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { act } = require('../../helpers/meal-checkin-screen.cjs');
@@ -35,11 +35,11 @@ test('사진 확인 단계에서 식후 사진이 없으면 Use this photo 버�
   assert.equal(button(h.current, 'Use this photo').props.disabled, true);
 });
 
-test('사진 비교 단계의 초안 저장 상태가 오류이면 Retry와 Save as Draft & Exit은 각각 재시도와 나가기 요청을 전달한다', async t => {
+test('사진 확인 단계의 초안 저장 상태가 오류이면 Retry와 Save as Draft & Exit은 각각 재시도와 나가기 요청을 전달한다', async t => {
   const props = viewProps();
   const retry = t.mock.fn(), exit = t.mock.fn();
   const h = await renderHook(t, () => AfterMealReviewView({ ...props,
-    draft: { ...props.draft, step: 'compare' }, saveStatus: 'error',
+    saveStatus: 'error',
     onRetrySave: retry, onSaveExit: exit,
   }));
   await act(async () => button(h.current, 'Retry').props.onPress());
@@ -48,4 +48,9 @@ test('사진 비교 단계의 초안 저장 상태가 오류이면 Retry와 Save
   await act(async () => button(h.current, 'Save as Draft & Exit').props.onPress());
   assert.equal(exit.mock.callCount(), 1);
   assert.equal(retry.mock.callCount(), 1);
+});
+
+test('식후 사진 교체를 기다리는 동안에는 사진 사용 버튼이 비활성화된다', async t => {
+  const h = await renderHook(t, () => AfterMealReviewView({ ...viewProps(), picking: true }));
+  assert.equal(button(h.current, 'Use this photo').props.disabled, true);
 });

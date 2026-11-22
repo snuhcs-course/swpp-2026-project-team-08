@@ -26,14 +26,14 @@
 
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 빈 초안 기본값 검증·사진 중복 제거 및 음식 편집기·추천 연결 테스트 분리
-// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 종합 UI 검증을 담당 기능·컴포넌트별 파일로 분리
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 종합 UI 검증을 담당 기능·컴포넌트별 파일로 분리 · 통합 사진 확인 흐름 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { renderHook, findElement, assertSegmentProgress } = require('../../helpers/static-view.cjs');
 
 
-test("after-meal progress groups photos, outcomes and difficulties into three steps", async (t) => {
+test("사진 선택·확인은 1단계, 결과는 2단계, 어려움과 완료는 3단계로 표시된다", async (t) => {
   const { AfterMealReviewView } = require("../../../src/features/after-meal-review/screens/AfterMealReviewView.tsx");
   const { ReviewProgressHeader } = require("../../../src/features/after-meal-review/components/ReviewProgressHeader.tsx");
   const { OutcomesHeader } = require("../../../src/features/after-meal-review/components/OutcomesHeader.tsx");
@@ -43,9 +43,8 @@ test("after-meal progress groups photos, outcomes and difficulties into three st
   };
   const harness = await renderHook(t, (props) => AfterMealReviewView(props), { props: base });
   for (const [step, filled] of [
-    ["photo", 1], ["preview", 1], ["compare", 1], ["outcomes", 2],
-    ["difficulties", 3], ["complete", 3], ["outcomes", 2], ["preview", 1],
-    ["outcomes", 2], ["photo", 1], ["outcomes", 2],
+    ["photo", 1], ["preview", 1], ["outcomes", 2],
+    ["difficulties", 3], ["complete", 3],
   ]) {
     await harness.rerender({ ...base, draft: { step } });
     const header = findElement(harness.current, (node) => node.type === (step === "outcomes" ? OutcomesHeader : ReviewProgressHeader));

@@ -1,8 +1,8 @@
-// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 식후 사진 확대·교체 재시도·삭제 후 결과 화면 이동과 기존 입력 보존 검증
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 식후 사진 확대·교체 재시도·삭제 후 결과 화면 이동과 기존 입력 보존 검증 · 통합 사진 확인 흐름 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { mountMeal, control, click, waitFor, photoDevice } = require('../../helpers/meal-checkin-screen.cjs');
+const { mountMeal, control, click, waitFor, modal, waitForModal, act, photoDevice } = require('../../helpers/meal-checkin-screen.cjs');
 const { button, sourceLabels, imageError } = require('../../helpers/meal-photo-screen.cjs');
 const { pickedImage } = require('../../helpers/photo-device.cjs');
 const { reviewPhotoFixture } = require('../../fixtures/after-meal-photo.cjs');
@@ -31,10 +31,13 @@ function expectRoute(app, pathname = '/after-meal-review') {
 async function expectPreview(app, draft) {
   await waitFor(() => control(app, 'heading', 'Check your photo'));
   expectRoute(app);
-  assert.equal(app.container.querySelector('img').getAttribute('src'), draft.afterPhoto.uri);
+  assert.equal(tile(app, 'After').querySelector('img').getAttribute('src'), draft.afterPhoto.uri);
   assert.deepEqual(await readAfterMealDraft('1', '10'), { ...draft, step: 'preview' });
 }
-async function enlargeAndReturn(app, trigger, side, uri, heading) {
+function tile(app, side) {
+  return control(app, 'button', `${side} meal: Tap to enlarge`);
+}
+async function enlargeAndReturn(app, trigger, side, uri) {
   await click(trigger);
   await waitFor(() => app.pathname === '/after-meal-photo' && app.container.querySelector('img'));
   expectRoute(app, '/after-meal-photo');
@@ -42,7 +45,7 @@ async function enlargeAndReturn(app, trigger, side, uri, heading) {
   assert.ok(control(app, 'heading', side === 'before' ? 'Before Image' : 'After Image'));
   assert.equal(app.container.querySelector('img').getAttribute('src'), uri);
   await click(control(app, 'button', 'Go back'));
-  await waitFor(() => app.pathname === '/after-meal-review' && control(app, 'heading', heading));
+  await waitFor(() => app.pathname === '/after-meal-review' && control(app, 'heading', 'Check your photo'));
 }
 function selectedOutcomes(app, name) {
   const slider = control(app, 'slider', name);
@@ -67,65 +70,78 @@ async function expectOutcomes(app, draft, meal) {
 }
 async function usePhoto(app, draft, meal) {
   await click(control(app, 'button', 'Use this photo'));
-  if (meal.beforePhotoUri) {
-    await waitFor(() => control(app, 'heading', 'Review meal photos'));
-    assert.equal(control(app, 'button', 'BEFORE: Tap to enlarge').querySelector('img').getAttribute('src'), meal.beforePhotoUri);
-    assert.equal(control(app, 'button', 'AFTER: Tap to enlarge').querySelector('img').getAttribute('src'), draft.afterPhoto.uri);
-    await click(control(app, 'button', 'Enter food outcomes'));
-  }
   await expectOutcomes(app, draft, meal);
 }
-async function replace(app, source) {
+async function openReplacement(app) {
   await click(control(app, 'button', 'Replace photo'));
-  await click(button(app, sourceLabels[source]));
-  await waitFor(() => ![...app.container.querySelectorAll('[role="button"]')]
-    .some(node => node.textContent.startsWith(sourceLabels[source])));
+  await waitForModal('Replace after-meal photo');
+  for (const label of Object.values(sourceLabels)) assert.ok(button(modal(), label));
+}
+async function replace(app, source) {
+  await openReplacement(app);
+  await click(button(modal(), sourceLabels[source]));
+  await waitFor(() => !document.querySelector('[role="dialog"]'));
 }
 
-test('식후 사진을 확대해 확인하고 돌아온 뒤 Use this photo로 진행하면 기존 음식과 답변이 있는 결과 입력 화면이 열린다', async t => {
-  for (const before of [true, false]) {
-    await t.test(before ? '식전 사진이 있으면 전후 사진 비교를 거쳐 진행한다' : '식전 사진이 없으면 결과 입력으로 바로 진행한다', async t => {
-      const { app, draft, meal } = await start(t, before);
-      await enlargeAndReturn(app, control(app, 'button', 'Tap to enlarge'), 'after', draft.afterPhoto.uri, 'Check your photo');
-      await expectPreview(app, draft);
-      if (before) {
-        await click(control(app, 'button', 'Use this photo'));
-        await waitFor(() => control(app, 'heading', 'Review meal photos'));
-        for (const [side, uri] of [['before', meal.beforePhotoUri], ['after', draft.afterPhoto.uri]]) {
-          await enlargeAndReturn(app, control(app, 'button', `${side.toUpperCase()}: Tap to enlarge`), side, uri, 'Review meal photos');
-        }
-        await click(control(app, 'button', 'Enter food outcomes'));
-        await expectOutcomes(app, draft, meal);
-      } else await usePhoto(app, draft, meal);
-    });
-  }
+test('식전·식후 사진을 각각 확대하고 돌아와 사진 사용을 누르면 기존 답변이 있는 결과 화면이 바로 열린다', async t => {
+  const { app, draft, meal } = await start(t);
+  const before = tile(app, 'Before'), after = tile(app, 'After');
+  assert.equal(window.getComputedStyle(before.parentElement.parentElement).flexDirection, 'row');
+  assert.ok(before.compareDocumentPosition(after) & window.Node.DOCUMENT_POSITION_FOLLOWING);
+  await enlargeAndReturn(app, before, 'before', meal.beforePhotoUri);
+  await enlargeAndReturn(app, tile(app, 'After'), 'after', draft.afterPhoto.uri);
+  await usePhoto(app, draft, meal);
 });
 
-test('사진 교체를 취소하거나 실패하면 기존 사진과 입력이 남고, 다시 교체에 성공하면 새 사진과 기존 답변으로 결과 입력을 이어갈 수 있다', async t => {
+test('식전 사진이 없으면 빈자리 안내가 표시되고 식후 사진만으로 결과 입력을 시작할 수 있다', async t => {
+  const { app, draft, meal } = await start(t, false);
+  assert.ok(app.container.textContent.includes('No before-meal photo'));
+  assert.equal(app.container.querySelector('[aria-label="Before meal: Tap to enlarge"]'), null);
+  await usePhoto(app, draft, meal);
+});
+
+test('저장된 식전 사진을 열 수 없어도 식후 사진과 기존 답변으로 계속 진행할 수 있다', async t => {
   const { app, draft, meal } = await start(t);
+  await act(async () => tile(app, 'Before').querySelector('img').dispatchEvent(new window.Event('error')));
+  assert.ok(app.container.textContent.includes('No before-meal photo'));
+  assert.equal(app.container.querySelector('[aria-label="Before meal: Tap to enlarge"]'), null);
+  await usePhoto(app, draft, meal);
+});
+
+test('교체 창이나 갤러리에서 취소하고 잘못된 파일을 골라도 기존 사진과 답변으로 진행할 수 있다', async t => {
+  const { app, draft, meal } = await start(t);
+  await openReplacement(app);
+  await click(control(modal(), 'button', 'Cancel'));
+  await waitFor(() => !document.querySelector('[role="dialog"]'));
+  await expectPreview(app, draft);
   photoDevice.result = { canceled: true, assets: null };
   await replace(app, 'gallery');
   await expectPreview(app, draft);
   assert.equal(app.container.querySelector('[role="alert"]'), null);
-  assert.notEqual(control(app, 'button', 'Use this photo').getAttribute('aria-disabled'), 'true');
-
   photoDevice.result = pickedImage({ mimeType: 'application/pdf' });
   await replace(app, 'files');
   await waitFor(() => control(app, 'alert', imageError));
   await expectPreview(app, draft);
-  assert.equal(control(app, 'button', 'Use this photo').getAttribute('aria-disabled'), 'true');
-  await click(control(app, 'button', 'Use this photo'));
-  await expectPreview(app, draft);
+  await usePhoto(app, draft, meal);
+});
 
+test('현재 식후 사진을 열 수 없으면 진행이 막히고 새 사진으로 교체하면 기존 답변으로 진행할 수 있다', async t => {
+  const { app, draft, meal } = await start(t);
+  await act(async () => tile(app, 'After').querySelector('img').dispatchEvent(new window.Event('error')));
+  await waitFor(() => control(app, 'alert', imageError));
+  const use = control(app, 'button', 'Use this photo');
+  assert.equal(use.getAttribute('aria-disabled'), 'true');
+  await click(use);
+  await expectPreview(app, draft);
   const uri = 'file:///replacement.png';
   photoDevice.result = pickedImage({ uri });
   await replace(app, 'gallery');
-  await waitFor(() => app.container.querySelector('img').getAttribute('src') === uri);
+  await waitFor(() => tile(app, 'After').querySelector('img').getAttribute('src') === uri);
+  assert.equal(tile(app, 'Before').querySelector('img').getAttribute('src'), meal.beforePhotoUri);
   const updated = await readAfterMealDraft('1', '10');
   assert.deepEqual(updated, { ...draft, afterPhoto: updated.afterPhoto });
   assert.equal(updated.afterPhoto.uri, uri);
   assert.equal(app.container.querySelector('[role="alert"]'), null);
-  assert.notEqual(control(app, 'button', 'Use this photo').getAttribute('aria-disabled'), 'true');
   await usePhoto(app, updated, meal);
 });
 

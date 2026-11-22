@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 재개 직후 복귀·사진별 이전 단계·새 재개·최초 진입 경계 검증
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 재개 직후 복귀·사진별 이전 단계·새 재개·최초 진입 경계 검증 · 통합 사진 확인 흐름 검증
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -36,7 +36,7 @@ async function back(h) {
 }
 
 test('재개 후 다음 단계로 진행하지 않았으면 뒤로가기 대상은 리뷰를 연 화면이고 입력과 단계는 유지된다', async t => {
-  for (const step of ['photo', 'preview', 'compare', 'outcomes', 'difficulties']) {
+  for (const step of ['photo', 'preview', 'outcomes', 'difficulties']) {
     const h = await start(t, step);
     await act(async () => h.current.chooseOutcome('1', 'eaten'));
     await act(async () => h.current.editFood(h.current.meal.foods[0]));
@@ -49,9 +49,9 @@ test('재개 후 다음 단계로 진행하지 않았으면 뒤로가기 대상�
   }
 });
 
-test('재개 후 한 번이라도 앞으로 진행했으면 처음 재개한 단계까지 돌아와도 뒤로가기 대상은 현재 단계의 이전 단계이다', async t => {
+test('재개 후 진행했다면 결과에서 뒤로갈 때 식후 사진이 있으면 사진 확인, 없으면 사진 선택으로 돌아간다', async t => {
   for (const [beforePhoto, afterPhoto, previous] of [
-    [true, true, 'compare'], [false, true, 'preview'], [true, false, 'photo'],
+    [true, true, 'preview'], [false, true, 'preview'], [true, false, 'photo'],
   ]) {
     const h = await start(t, 'outcomes', beforePhoto, afterPhoto);
     await act(async () => h.current.go('difficulties'));
@@ -60,10 +60,6 @@ test('재개 후 한 번이라도 앞으로 진행했으면 처음 재개한 단
     assert.deepEqual(h.current.draft, { ...before, step: 'outcomes' });
     assert.equal(await back(h), true);
     assert.deepEqual(h.current.draft, { ...before, step: previous });
-    if (previous === 'compare') {
-      assert.equal(await back(h), true);
-      assert.deepEqual(h.current.draft, { ...before, step: 'preview' });
-    }
     if (afterPhoto) {
       assert.equal(await back(h), true);
       assert.deepEqual(h.current.draft, { ...before, step: 'photo' });

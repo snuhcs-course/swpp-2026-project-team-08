@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 초안 저장·재개·Retry 및 재개 직후 진입 화면 복귀 검증
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 초안 저장·재개·Retry 및 재개 직후 진입 화면 복귀 검증 · 통합 사진 확인 흐름 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, waitFor, act, deferred, storage, photoDevice } = require('../../helpers/meal-checkin-screen.cjs');
@@ -44,12 +44,10 @@ async function attachPhoto(app) {
   photoDevice.result = pickedImage({ uri: 'file:///after.png' });
   await click(button(app, sourceLabels.gallery));
   await expectStep(app, 'Check your photo');
-  return app.container.querySelector('img').getAttribute('src');
+  return control(app, 'button', 'After meal: Tap to enlarge').querySelector('img').getAttribute('src');
 }
 async function enterOutcomes(app) {
   await click(control(app, 'button', 'Use this photo'));
-  await expectStep(app, 'Review meal photos');
-  await click(control(app, 'button', 'Enter food outcomes'));
   await expectStep(app, 'What happened with each food item?');
 }
 async function expand(app, name) {
@@ -116,7 +114,7 @@ function holdWrite(t) {
 }
 
 // 실제 식후 리뷰는 사진 화면에서 Save as Draft & Exit, 결과 화면에서 Save & exit을 사용한다.
-test('사진 확인 화면에서 초안을 저장하고 나갔다 돌아오면 같은 사진이 표시되며, 음식·재료 일부만 답한 뒤 다시 저장하고 재개해도 미응답과 선택한 답변이 유지된다', async t => {
+test('초안을 저장하고 다시 열면 같은 식후 사진과 음식·재료의 답변 및 미응답이 복원된다', async t => {
   const app = await mount(t);
   await openReview(app, 'after-meal photo');
   const photo = await attachPhoto(app);
@@ -126,12 +124,12 @@ test('사진 확인 화면에서 초안을 저장하고 나갔다 돌아오면 �
   await waitFor(() => held.writes.length === 1);
   await expectStep(app, 'Check your photo');
   assert.ok(app.container.textContent.includes('Saving…'));
-  assert.equal(app.container.querySelector('img').getAttribute('src'), photo);
+  assert.equal(control(app, 'button', 'After meal: Tap to enlarge').querySelector('img').getAttribute('src'), photo);
   await act(async () => held.pending.resolve());
   held.mock.mock.restore();
   await expectHome(app);
   await openReview(app, 'Check your photo');
-  assert.equal(app.container.querySelector('img').getAttribute('src'), photo);
+  assert.equal(control(app, 'button', 'After meal: Tap to enlarge').querySelector('img').getAttribute('src'), photo);
   assert.deepEqual(await readAfterMealDraft('1', '10'), preview);
   await enterOutcomes(app);
   await partialAnswers(app);
@@ -145,7 +143,7 @@ test('사진 확인 화면에서 초안을 저장하고 나갔다 돌아오면 �
   assert.equal(answered.afterPhoto.uri, photo);
 });
 
-test('어려움 태그와 작성 중 사유가 자동 저장된 뒤 앱을 다시 열고 History의 식사 상세에서 Continue Review를 누르면 같은 어려움 화면과 입력 내용이 표시된다', async t => {
+test('앱을 다시 열고 식사 상세에서 리뷰를 이어가면 저장한 어려움과 작성 중 사유가 복원된다', async t => {
   const app = await mount(t);
   await openReview(app, 'after-meal photo');
   const photo = await attachPhoto(app);

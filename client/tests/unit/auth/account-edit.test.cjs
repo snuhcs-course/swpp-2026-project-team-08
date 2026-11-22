@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: API·Provider를 대체한 보호자 계정 편집 검증을 auth Unit으로 이동
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -48,7 +50,7 @@ Module._load = function (name, ...args) {
   return originalLoad.call(this, name, ...args);
 };
 
-const { useCaregiverAccount } = require('../src/features/my-page/hooks/useCaregiverAccount.ts');
+const { useCaregiverAccount } = require('../../../src/features/my-page/hooks/useCaregiverAccount.ts');
 function mount() {
   const owner = {
     slots: [], cursor: 0, users: [], names: [], emails: [], codes: [], failSave: false,
@@ -58,7 +60,7 @@ function mount() {
   return owner;
 }
 
-test('name save updates the account; failures keep the draft and prevent leaving', async () => {
+test('보호자 이름 저장 실패 시 입력을 유지하고 나가기를 막으며 재시도 성공 시 공백을 제거한 이름으로 계정을 갱신한다', async () => {
   const owner = mount();
   let model = owner.render();
   model.changeName('  Updated parent  ');
@@ -76,7 +78,7 @@ test('name save updates the account; failures keep the draft and prevent leaving
   assert.equal(owner.render().saveError, false);
 });
 
-test('email verification preserves mismatch handling and updates the session after retry', async () => {
+test('이메일 인증번호가 틀리면 계정을 유지하고 올바른 번호로 재시도하면 새 이메일로 갱신한다', async () => {
   const owner = mount();
   let model = owner.render();
   model.startEmailChange();
@@ -103,7 +105,7 @@ test('email verification preserves mismatch handling and updates the session aft
   assert.equal(model.code, '');
 });
 
-test('invalid email stays on the form and Back returns through each account mode', async () => {
+test('잘못된 이메일은 인증 요청을 보내지 않고 뒤로가기는 인증·이메일 변경·계정 화면 순서로 돌아간다', async () => {
   const owner = mount();
   let model = owner.render();
   model.startEmailChange();

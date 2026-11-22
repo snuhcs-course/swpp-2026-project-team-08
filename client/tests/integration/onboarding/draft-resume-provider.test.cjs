@@ -5,6 +5,10 @@
 // Changed: 안심 음식 없음 선택이 사라진 구조에 맞춰 검증 수정
 // AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
 // Changed: 온보딩 테스트 분리·실행 환경 추출 및 계정 복원 사례 이름 한글화
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 온보딩 행동별 테스트 분리와 실행 환경 추출
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 프로필 수정 중 지운 계정 입력 보존 검증을 초안 복원 파일로 통합
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { values, mount, account, emptyDraft, readDraft, saveDraft } = require('../../helpers/onboarding-provider-harness.cjs');
@@ -89,4 +93,19 @@ test('로그인해도 복원된 빈 값과 로그아웃 중 지운 계정 정보
     assert.equal(model.draft.caregiverName, '');
     harness.unmount();
   }
+});
+
+test('프로필 수정 중 이메일을 지운 뒤 자녀 이름을 바꿔도 이메일은 화면과 초안에서 빈 값으로 유지된다', async () => {
+  values.clear();
+  const draft = { ...emptyDraft(), caregiverName: 'Parent', caregiverEmail: account.user.email };
+  await saveDraft(draft);
+  const harness = mount(account, { ...draft, id: '12', updatedAt: '2026-10-27T00:00:00Z' });
+  let model = await harness.flush();
+  assert.equal(model.editing, true);
+  model.setField('caregiverEmail', '');
+  model = await harness.flush();
+  model.setField('childName', 'Edited child');
+  model = await harness.flush();
+  assert.equal(model.draft.caregiverEmail, '');
+  assert.equal((await readDraft()).caregiverEmail, '');
 });

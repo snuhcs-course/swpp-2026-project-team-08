@@ -4,6 +4,8 @@
 // Changed: 삭제된 재료 카탈로그 훅의 모의 항목 제거
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
 // Changed: 음식 목록의 + Add 와 재료 추가 버튼을 구분
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 공통 음식 편집기의 재료 입력 이벤트 검증 이동 및 중복·무효 검증 제거
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -64,13 +66,12 @@ Module._load = function (name, ...args) {
   return originalLoad.call(this, name, ...args);
 };
 
-const { newDraft } = require('../src/features/meal-checkin/rules.ts');
-const { newFood } = require('../src/rules/foodDraft.ts');
-const { useMealCheckinInputs } = require('../src/features/meal-checkin/hooks/useMealCheckinInputs.ts');
-const { useMealSuggestions } = require('../src/features/meal-checkin/hooks/useMealSuggestions.ts');
-const { MealCheckinView } = require('../src/features/meal-checkin/screens/MealCheckinView.tsx');
-const { MealFoodEditorDialog } = require('../src/components/MealFoodEditorDialog.tsx');
-const { copyFor, abcCopyFor } = require('../src/util/strings.ts');
+const { newDraft } = require('../../../src/features/meal-checkin/rules.ts');
+const { newFood } = require('../../../src/rules/foodDraft.ts');
+const { useMealCheckinInputs } = require('../../../src/features/meal-checkin/hooks/useMealCheckinInputs.ts');
+const { MealCheckinView } = require('../../../src/features/meal-checkin/screens/MealCheckinView.tsx');
+const { MealFoodEditorDialog } = require('../../../src/components/MealFoodEditorDialog.tsx');
+const { copyFor, abcCopyFor } = require('../../../src/util/strings.ts');
 Module._load = originalLoad;
 
 function renderer() {
@@ -131,7 +132,7 @@ function editorHarness({ photo = true, language = 'en', selected = [] } = {}) {
   return harness.render();
 }
 
-for (const photo of [true, false]) test(`Done finishes an inline ingredient chip (photo: ${photo})`, () => {
+for (const photo of [true, false]) test(`사진 첨부 여부가 ${photo}인 편집창에서 재료 입력 후 Done을 누르면 재료가 한 번 추가되고 입력창이 닫힌다`, () => {
   const h = editorHarness({ photo }).open().type('Homemade spice mix');
   const field = h.field();
   assert.equal(field.props.autoFocus, true);
@@ -148,7 +149,7 @@ for (const photo of [true, false]) test(`Done finishes an inline ingredient chip
   assert.ok(h.button('+ Add'));
 });
 
-test('blur trims surrounding whitespace and preserves the entered spelling', () => {
+test('재료 입력창에서 포커스를 옮기면 앞뒤 공백만 제거한 이름으로 재료가 추가된다', () => {
   const h = editorHarness().open().type('  pEaNuT   bUtTeR  ').blur();
   assert.deepEqual(h.food.ingredients, ['pEaNuT   bUtTeR']);
   assert.equal(h.changes, 1);
@@ -156,7 +157,7 @@ test('blur trims surrounding whitespace and preserves the entered spelling', () 
   assert.equal(h.field(), undefined);
 });
 
-test('clicking empty space finishes the chip without requiring a catalog selection', () => {
+test('재료 입력 후 빈 공간을 누르면 검색 항목 선택 없이 입력한 이름으로 재료가 추가된다', () => {
   const h = editorHarness().open().type('pot');
   assert.equal(h.button('Potato'), undefined);
   assert.equal(h.button('Retry'), undefined);
@@ -165,7 +166,7 @@ test('clicking empty space finishes the chip without requiring a catalog selecti
   assert.equal(h.field(), undefined);
 });
 
-test('Done and outside clicks discard blank placeholder chips', () => {
+test('빈 재료 입력이나 공백만 입력한 상태에서 확정하면 재료를 추가하지 않고 입력창을 닫는다', () => {
   for (const action of ['done', 'blur', 'outside']) {
     for (const value of ['', ' ', '  \t ']) {
       const h = editorHarness().open().type(value)[action]();
@@ -178,7 +179,7 @@ test('Done and outside clicks discard blank placeholder chips', () => {
   }
 });
 
-test('duplicates remain editable without adding a repeated chip', () => {
+test('이미 있는 재료를 대소문자·공백만 바꿔 입력하면 추가하지 않고 입력을 유지하며 다른 이름으로 바꾸면 추가된다', () => {
   const h = editorHarness({ selected: ['Peanut Butter'] }).open().type('peanut   BUTTER').done();
   assert.deepEqual(h.food.ingredients, ['Peanut Butter']);
   assert.equal(h.field().props.value, 'peanut   BUTTER');
@@ -187,13 +188,13 @@ test('duplicates remain editable without adding a repeated chip', () => {
   assert.deepEqual(h.food.ingredients, ['Peanut Butter', 'Custom spice']);
 });
 
-test('a rejected addition keeps the ingredient chip editable', () => {
+test('재료 추가가 거절되면 입력창과 입력한 이름을 유지한다', () => {
   const h = editorHarness().open().type('Custom').reject().done();
   assert.equal(h.field().props.value, 'Custom');
   assert.equal(h.changes, 0);
 });
 
-test('submit, blur, pointer, and touch events only finish the chip once', () => {
+test('재료 입력 확정·포커스 이동·포인터·터치 이벤트가 연속 발생해도 재료는 한 번만 추가된다', () => {
   const h = editorHarness().open().type('Custom');
   const field = h.field();
   const outside = h.nodes.find(node => node.type === 'KeyboardAvoidingView' && node.props.onPointerDown);
@@ -206,7 +207,7 @@ test('submit, blur, pointer, and touch events only finish the chip once', () => 
   assert.equal(h.changes, 1);
 });
 
-test('touching within the input preserves editing and long text stays in the chip list', () => {
+test('재료 입력창 안을 터치하면 입력을 유지하고 긴 재료 이름도 입력 영역 너비 안에 표시된다', () => {
   const h = editorHarness().open().type('A very long custom ingredient name '.repeat(10));
   let stopped = 0;
   const field = h.field();
@@ -219,16 +220,7 @@ test('touching within the input preserves editing and long text stays in the chi
   assert.equal(h.food.ingredients.length, 1);
 });
 
-test('finished chips support removal and adding another ingredient', () => {
-  const h = editorHarness().open().type('Custom').done();
-  h.open().type('Another').outside();
-  assert.deepEqual(h.food.ingredients, ['Custom', 'Another']);
-  h.button('Remove: Custom').props.onPress();
-  h.render();
-  assert.deepEqual(h.food.ingredients, ['Another']);
-});
-
-test('only the explicit removal button deletes an ingredient and has a mobile touch target', () => {
+test('재료 이름을 눌러도 삭제되지 않고 48 이상 크기의 삭제 버튼을 눌러야 해당 재료만 삭제된다', () => {
   const h = editorHarness({ selected: ['Carrot', 'Peas'] });
   const remove = h.button('Remove: Carrot');
   assert.equal(textOf(remove), '×');
@@ -246,17 +238,12 @@ test('only the explicit removal button deletes an ingredient and has a mobile to
   assert.equal(h.changes, 1);
 });
 
-test('Korean free-text names can be finished through the check-in view', () => {
+test('한국어 편집창에서 한글 재료 이름을 확정하면 입력한 이름 그대로 추가된다', () => {
   const h = editorHarness({ language: 'ko' }).open().type('우리집 양념').done();
   assert.deepEqual(h.food.ingredients, ['우리집 양념']);
 });
 
-test('meal suggestions do not request the ingredient catalog', () => {
-  assert.deepEqual(useMealSuggestions('child').suggestions, []);
-  useMealSuggestions('child').retry();
-});
-
-test('shared editor preserves the after-meal caller without catalog validation props', () => {
+test('식후 리뷰의 재료 추가 콜백이 값을 반환하지 않아도 포커스를 옮기면 추가 요청 후 입력창이 닫힌다', () => {
   const render = renderer(), s = copyFor('en');
   let additions = 0;
   const props = { food: { ...newFood(), name: 'Soup' }, mode: 'edit', meal: s.mealCheckin, common: s.common,

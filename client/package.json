@@ -3,6 +3,8 @@
   "_changed": "온보딩 하위 테스트 실행 경로 반영",
   "_comment2": "AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo",
   "_changed2": "스플래시 패키지 추가",
+  "_comment3": "AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung",
+  "_changed3": "기능별 Unit·Integration 경로로 테스트 실행",
   "name": "client",
   "version": "1.0.0",
   "main": "expo-router/entry",
@@ -50,7 +52,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test": "node --test \"tests/*.test.cjs\" \"tests/unit/**/*.test.cjs\" \"tests/integration/**/*.test.cjs\"",
+    "test": "node --test \"tests/unit/**/*.test.cjs\" \"tests/integration/**/*.test.cjs\"",
     "test:coverage": "node scripts/coverage-layers.cjs"
   },
   "engines": {

@@ -6,7 +6,7 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 최초 생성 재요청 시 기존 카드 상태 재사용 검증
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: Unit 테스트를 담당 기능·공통 컴포넌트 폴더로 이동
+// Changed: 추천 API 검증 이동 및 생성 실패 시 입력 보존 중복 검증 통합
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -28,7 +28,7 @@ restoreMocks();
 
 const suggestion = suggestionResponse();
 
-test('meal suggestions list includes all statuses and generation sends food targets only', async () => {
+test('추천 목록은 모든 상태를 조회하고 생성 실패 시 대상을 보존하며 재시도 요청에는 음식 ID만 포함한다', async () => {
   request = async (path) => {
     assert.equal(path, '/api/v1/meals/8/suggestions?status=ALL');
     return [suggestion];
@@ -40,13 +40,18 @@ test('meal suggestions list includes all statuses and generation sends food targ
   assert.equal(listed.cookingMethod, 'steamed');
   assert.equal(listed.causes, 'The soft texture was hard.');
   assert.equal(listed.status, 'pending');
+  const targets = [{ foodId: '2' }, { foodId: '3' }];
+  const before = structuredClone(targets);
+  request = async () => { throw new Error('GENERATION_FAILED'); };
+  await assert.rejects(api.generateMealSuggestions('1', '8', targets), /GENERATION_FAILED/);
+  assert.deepEqual(targets, before);
   request = async (path, init) => {
     assert.equal(path, '/api/v1/meals/8/suggestions');
     assert.equal(init.method, 'POST');
     assert.deepEqual(JSON.parse(init.body), { targets: [{ food_id: '2' }, { food_id: '3' }] });
     return [suggestion, suggestionResponse({ id: '32', origin_food_id: '3' })];
   };
-  const items = await api.generateMealSuggestions('1', '8', [{ foodId: '2' }, { foodId: '3' }]);
+  const items = await api.generateMealSuggestions('1', '8', targets);
   assert.deepEqual(items.map(item => [item.id, item.foodId]), [['31', '2'], ['32', '3']]);
   await assert.rejects(api.generateMealSuggestions('1', '8', [{ foodId: '2' }, { foodId: '2' }]),
     /Duplicate suggestion target/);

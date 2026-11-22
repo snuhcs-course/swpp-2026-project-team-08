@@ -1,11 +1,11 @@
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 빈 식사 초안의 종료·재진입·기존 기록 및 사용자 입력 보존 검증
-// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 초안 저장·이어하기·편집 복원·실패 검증 및 재개 직후 뒤로가기 기대 반영
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 초안 저장·재시도, 이어갈 단계 안내, 음식 편집 복원과 재개 후 뒤로가기 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, input, click, enter, waitFor, act, deferred,
-  modal, waitForModal, photoDevice, storage } = require('../../helpers/meal-checkin-screen.cjs');
+  modal, waitForModal, photoDevice, storage, failNextWrite } = require('../../helpers/meal-checkin-screen.cjs');
 const { button, sourceLabels } = require('../../helpers/meal-photo-screen.cjs');
 const { pickedImage } = require('../../helpers/photo-device.cjs');
 const { linkingDraft, link, sourceResponses } = require('../../fixtures/meal-suggestion-linking.cjs');
@@ -33,26 +33,83 @@ async function saveFood() {
   await click(control(modal(), 'button', 'Save food'));
   await waitFor(() => !document.querySelector('[role="dialog"]'));
 }
-async function continueDraft(app) {
+async function continueDraft(app, resumeAt) {
   await waitFor(() => app.container.textContent.includes('Ongoing Meal'));
   assert.ok(app.container.textContent.includes('Finish your draft before starting a new check-in.'));
   assert.ok(!app.container.textContent.includes('Continue to photo'));
+  assert.ok(app.container.textContent.includes(`Continue from: ${resumeAt}`), resumeAt);
   await click(control(app, 'button', 'Continue draft'));
-  await waitFor(() => control(app, 'heading', 'Review food items'));
 }
 async function startExisting(t) {
   const original = linkingDraft([link(0, 'rice')]);
   await saveMealDraft(original);
   const app = await mount(t);
-  await continueDraft(app);
+  await click(control(app, 'button', 'Continue draft'));
+  await waitFor(() => control(app, 'heading', 'Review food items'));
   return { app, original };
 }
 async function editRice(app) {
   await click(control(card(app, 'Carrot rice'), 'button', 'Edit'));
   await waitForModal('Edit Carrot rice');
 }
+function holdDraftWrites(t) {
+  const pending = deferred();
+  const write = storage.setItem;
+  t.mock.method(storage, 'setItem', async (storageKey, value) => {
+    if (storageKey === key) await pending.promise;
+    return write(storageKey, value);
+  });
+  t.after(() => pending.resolve());
+  return pending;
+}
+function assertRestaurantSelected(app) {
+  // RN Web은 장소 버튼의 선택 상태를 테두리로 표시한다.
+  const restaurant = control(app, 'button', 'Restaurant');
+  assert.equal(window.getComputedStyle(restaurant).borderWidth, '2px');
+}
 
-test('Save as Draft & Exit으로 홈에 돌아간 뒤 Log new meal을 누르면 기존 초안 안내가 열리고, Continue draft를 누르면 식사 정보·사진·음식·추천 연결이 복원된다', async t => {
+test('새 식사의 기본 정보에는 저장 표시가 없고, 장소를 선택하면 저장 중을 거쳐 자동 저장 완료가 표시된다', async t => {
+  const app = await mountMeal(t);
+  assert.ok(control(app, 'heading', 'Meal details'));
+  assert.doesNotMatch(app.container.textContent, /Saving…|Auto-saved|Could not save/);
+
+  const pending = holdDraftWrites(t);
+  await click(control(app, 'button', 'Restaurant'));
+  await waitFor(() => app.container.textContent.includes('Saving…'));
+  assert.ok(!app.container.textContent.includes('Auto-saved'));
+
+  await act(async () => pending.resolve());
+  await waitFor(() => app.container.textContent.includes('Auto-saved'));
+  assert.ok(!app.container.textContent.includes('Saving…'));
+  assert.equal((await readMealDraft('1')).setting, 'restaurant');
+});
+
+test('기본 정보 저장에 실패해도 선택한 장소가 남고, 재시도한 뒤 초안을 다시 열면 같은 장소가 선택돼 있다', async t => {
+  const app = await mountMeal(t);
+  failNextWrite(key);
+  await click(control(app, 'button', 'Restaurant'));
+  await waitFor(() => control(app, 'alert', 'Could not save. Retry before leaving.'));
+  assert.ok(control(app, 'heading', 'Meal details'));
+  assert.ok(!app.container.textContent.includes('Auto-saved'));
+  assertRestaurantSelected(app);
+  assert.equal(await readMealDraft('1'), null);
+
+  const pending = holdDraftWrites(t);
+  await click(control(app, 'button', 'Retry'));
+  await waitFor(() => app.container.textContent.includes('Saving…'));
+  assert.equal(app.container.querySelector('[role="alert"]'), null);
+  await act(async () => pending.resolve());
+  await waitFor(() => app.container.textContent.includes('Auto-saved'));
+  assert.equal(app.container.querySelector('[role="button"][aria-label="Retry"]'), null);
+
+  await app.unmount();
+  const reopened = await mountMeal(t);
+  await continueDraft(reopened, 'Meal details');
+  await waitFor(() => control(reopened, 'heading', 'Meal details'));
+  assertRestaurantSelected(reopened);
+});
+
+test('음식 목록에서 초안을 저장하고 홈에서 새 식사를 누르면 이어갈 단계에 음식 확인이 표시되고, 이어가면 식사 정보·사진·음식·추천 연결이 복원된다', async t => {
   const app = await mount(t);
   await click(control(app, 'button', 'Dinner'));
   await click(control(app, 'button', 'Restaurant'));
@@ -74,7 +131,8 @@ test('Save as Draft & Exit으로 홈에 돌아간 뒤 Log new meal을 누르면 
   await waitFor(() => app.pathname === '/home' && control(app, 'button', 'Log new meal'));
   // 새 식사 진입 버튼도 새 초안을 만들지 않고 기존 초안의 이어하기로 연결되어야 한다.
   await click(control(app, 'button', 'Log new meal'));
-  await continueDraft(app);
+  await continueDraft(app, 'Review food items');
+  await waitFor(() => control(app, 'heading', 'Review food items'));
   assert.equal(app.pathname, '/meal-checkin');
   assert.ok(app.container.textContent.includes('Dinner'));
   assert.ok(app.container.textContent.includes('Restaurant'));
@@ -94,7 +152,7 @@ test('Save as Draft & Exit으로 홈에 돌아간 뒤 Log new meal을 누르면 
   assert.deepEqual(await readMealDraft('1'), original);
 });
 
-test('기존 음식의 이름과 추천 연결을 수정하다 자동 저장 후 앱을 다시 열면 이어하기로 편집을 계속할 수 있고, Save food를 누르면 수정한 이름과 추천 연결이 음식 카드에 표시된다', async t => {
+test('음식 수정 중 앱을 다시 열면 이어갈 단계에 수정 중인 음식 이름이 표시되고, 이어서 저장하면 새 이름과 추천이 카드에 반영된다', async t => {
   const { app, original } = await startExisting(t);
   await editRice(app);
   await enter(modal(), 'Food name', 'Banana rice');
@@ -105,7 +163,7 @@ test('기존 음식의 이름과 추천 연결을 수정하다 자동 저장 후
   });
   await app.unmount();
   const reopened = await mount(t);
-  await continueDraft(reopened);
+  await continueDraft(reopened, 'Edit Banana rice');
   await waitForModal('Edit Banana rice');
   assert.equal(input(modal(), 'Food name').value, 'Banana rice');
   assert.ok(control(modal(), 'button', 'Remove: Soft carrot'));

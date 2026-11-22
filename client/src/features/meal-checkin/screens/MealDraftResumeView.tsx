@@ -2,6 +2,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
+// AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 작성 중인 식사 카드에 재개 단계 표시
 
 import { AppHeader, topBarStyles } from '../../../components/AppHeader';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -19,6 +21,11 @@ export function MealDraftResumeView({ draft, childName, language, onContinue, on
 }) {
   const s = copyFor(language);
   const m = s.mealCheckin;
+  const editing = draft.editingFood;
+  let resumeStep = m.titles[draft.step];
+  if (editing) {
+    resumeStep = draft.foods.some(food => food.id === editing.id) ? m.editFoodTitle(editing.name) : m.addFood;
+  }
   return <SafeAreaView style={styles.root}>
     <AppHeader title={m.ongoingHeader} backLabel={s.common.back} onBack={onBack} />
     <ScrollView contentContainerStyle={styles.content}>
@@ -30,6 +37,7 @@ export function MealDraftResumeView({ draft, childName, language, onContinue, on
         <Text style={styles.meal}>{childName}{draft.mealType ? ` · ${m.types[draft.mealType]}` : ''}</Text>
         <Text style={styles.date}>{displayDate(draft.mealDate, language)}</Text>
         <Text style={styles.summary}>{draft.photo ? m.draftPhotoSaved : m.draftNoPhoto} · {m.draftFoodCount(draft.foods.length)}</Text>
+        <Text style={styles.summary}>{m.resumeAt(resumeStep)}</Text>
         <AppButton secondary variant="meal" label={m.continueDraft} onPress={onContinue} style={styles.continue} labelStyle={styles.continueLabel} />
       </View>
     </ScrollView>

@@ -14,7 +14,10 @@
 // Changed: 음식 편집에서 저장 추천 연결
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: Trying 선택 해제와 추천 연결 동기화
+// AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 초안 저장 표시용 사용자 입력 여부 전달
 
+import { hasMealDraftInput } from '../../../rules/mealDraft';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, BackHandler, Text } from 'react-native';
@@ -146,6 +149,7 @@ export function MealCheckinScreen({
       tryingSuggestion={tryingSuggestionId ? { checked: trying, onToggle: toggleTrying } : undefined}
       language={language}
       saveStatus={model.saveStatus}
+      hasDraftInput={hasMealDraftInput(model.draft)}
       error={model.error}
       picking={model.picking}
       saving={model.saving}

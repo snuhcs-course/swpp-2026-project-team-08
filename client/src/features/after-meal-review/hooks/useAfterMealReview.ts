@@ -40,7 +40,8 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const [loadVersion, setLoadVersion] = useState(0);
   const [finalSaveState, setFinalSaveState] = useState<'idle' | 'saving' | 'error'>('idle');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
-  const [photoError, setPhotoError] = useState<'permission' | 'image' | null>(null);
+  const [pickError, setPickError] = useState<'permission' | 'image' | null>(null);
+  const [unreadablePhotoId, setUnreadablePhotoId] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const [editingFood, setEditingFood] = useState<FoodItem | null>(null);
   const [ingredient, setIngredient] = useState('');
@@ -57,6 +58,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const meal = mealQuery.data ?? null;
   const detail = detailQuery.data ?? null;
   const ready = loadedKey === key && draft !== null && meal !== null && detail !== null;
+  const afterPhotoUnreadable = !!draft?.afterPhoto && draft.afterPhoto.id === unreadablePhotoId;
 
   useEffect(() => {
     mounted.current = true;
@@ -70,6 +72,8 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
       (stored) => {
         if (!active) return;
         setFinalSaveState('idle');
+        setPickError(null);
+        setUnreadablePhotoId(null);
         const base = detail.review ? reviewDraftFromServer(meal, detail)
           : stored?.step === 'complete' ? newReviewDraft(meal) : stored ?? newReviewDraft(meal);
         const next: AfterMealReviewDraft = {
@@ -131,6 +135,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   };
   const go = (step: ReviewStep) => {
     cancelPhotoPick();
+    setPickError(null);
     update({ step: normalizeReviewStep(step, current.current?.afterPhoto ?? null) });
   };
   const back = (): boolean => {
@@ -155,15 +160,16 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     pickBusy.current = true;
     const request = ++pickVersion.current;
     setPicking(true);
-    setPhotoError(null);
+    setPickError(null);
     try {
       const photo = await pickMealPhoto(source);
       if (!mounted.current || request !== pickVersion.current || !photo) return;
       const value = current.current;
       if (!value) return;
+      setUnreadablePhotoId(null);
       update({ afterPhoto: photo, step: 'preview', outcomes: clearOutcomeSuggestions(value.outcomes) });
     } catch (error) {
-      if (mounted.current && request === pickVersion.current) setPhotoError(error instanceof PhotoError ? error.code : 'image');
+      if (mounted.current && request === pickVersion.current) setPickError(error instanceof PhotoError ? error.code : 'image');
     } finally {
       if (request === pickVersion.current) {
         pickBusy.current = false;
@@ -175,7 +181,8 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     cancelPhotoPick();
     const value = current.current;
     if (!value) return;
-    setPhotoError(null);
+    setPickError(null);
+    setUnreadablePhotoId(null);
     update({ afterPhoto: null, step: 'photo', outcomes: clearOutcomeSuggestions(value.outcomes) });
   };
 
@@ -183,6 +190,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     cancelPhotoPick();
     const value = current.current;
     if (!value) return;
+    setPickError(null);
     update({
       afterPhoto: value.step === 'photo' ? null : value.afterPhoto,
       outcomes: clearOutcomeSuggestions(value.outcomes), comparisonMethod: 'manual', step: 'outcomes',
@@ -293,8 +301,11 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     missingMeal: !mealId || (mealQuery.isSuccess && !meal),
     loadError: mealQuery.isError || detailQuery.isError || loadError,
     retryLoad: () => { void detailQuery.refetch(); setLoadError(false); setLoadedKey(null); setLoadVersion((value) => value + 1); },
-    saveStatus, finalSaveState, photoError, picking,
-    markImageError: () => setPhotoError('image'),
+    saveStatus, finalSaveState, photoError: pickError ?? (afterPhotoUnreadable ? 'image' : null), picking, afterPhotoUnreadable,
+    markImageError: () => {
+      const id = draft?.afterPhoto?.id;
+      if (id && current.current?.afterPhoto?.id === id) setUnreadablePhotoId(id);
+    },
     saving: finalSaveState === 'saving',
     editingFood, ingredient, editorSaving: updateMealMutation.isPending,
     canContinueOutcomes: !!draft && allOutcomesConfirmed(draft.outcomes),

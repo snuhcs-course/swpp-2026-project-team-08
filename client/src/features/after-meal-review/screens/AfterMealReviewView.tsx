@@ -181,7 +181,7 @@ export function AfterMealReviewView(
             {p.draft.step === "preview" && (
               <MealFlowButton
                 label={m.usePhoto}
-                disabled={p.saving || !p.draft.afterPhoto || !!p.photoError}
+                disabled={p.saving || p.picking || !p.draft.afterPhoto?.uri || p.afterPhotoUnreadable}
                 onPress={p.onManual}
               />
             )}

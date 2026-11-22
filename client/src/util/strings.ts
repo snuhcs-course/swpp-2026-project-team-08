@@ -34,8 +34,8 @@
 // AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
 // Changed: 개인정보처리방침 링크 및 열기 실패 문구
 
-// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: 사진 교체 시 음식·상세·연결 초기화 안내
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 사진 교체 초기화 및 작성 중인 식사 재개 단계 안내
 // AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 식후 사진 교체 시트와 식전 사진 없음 안내
 
@@ -145,6 +145,7 @@ const en = {
     localPhoto: 'Optional photo for your meal record. Add the foods yourself.', manual: 'Enter food items manually',
     privacy: 'How photo data is used', privacyBody: 'Analysis is optional. Photos and meal records are saved on this device. No photo is sent for AI training.',
     permission: 'Photo access was denied. Allow access in device settings or choose another source.', imageError: 'Could not open this image. Choose another supported image.',
+    resumeAt: (step: string) => `Continue from: ${step}`,
     ongoingHeader: 'Meal Check-in', ongoingTitle: 'Ongoing Meal', ongoingIntro: 'Finish your draft before starting a new check-in.', childMeals: (name: string) => `${name}’s meals`, autoSavedDraft: 'AUTO-SAVED DRAFT', continueDraft: 'Continue draft', draftPhotoSaved: 'Photo saved', draftNoPhoto: 'No photo', draftFoodCount: (count: number) => `${count} ${count === 1 ? 'food' : 'foods'}`,
     loadFailed: 'Could not restore your meal draft. Retry before continuing.', saveFailed: 'Could not save the meal. Your food items are preserved.',
     addFoodsTitle: 'Add food items', addFoodPrompt: 'Add the foods you served, with or without a photo.', emptyFoodBody: 'No foods added yet. Add the foods you served.', foodCount: (count: number) => `${count} food item${count === 1 ? '' : 's'}`, beforePhoto: 'Before-meal photo', beforeMealBadge: 'Before meal', afterMealBadge: 'After meal', addFood: 'Add food item', saveFood: 'Save food',
@@ -416,6 +417,7 @@ const ko = {
     localPhoto: '사진은 식사 기록에 남겨요. 음식 정보는 직접 입력해 주세요.', manual: '음식 입력하기',
     privacy: '사진 사용 안내 자세히 보기', privacyBody: '사진 분석은 선택 사항이에요. 사진과 식사 기록은 기기에 저장해요. AI 학습을 위해 사진을 전송하지 않아요.',
     permission: '사진에 접근할 수 없어요. 기기 설정에서 권한을 허용하거나 다른 방법으로 사진을 선택해 주세요.', imageError: '사진을 열지 못했어요. 지원되는 다른 사진을 선택해 주세요.',
+    resumeAt: (step: string) => `이어갈 단계: ${step}`,
     ongoingHeader: '식사 기록', ongoingTitle: '작성 중인 식사', ongoingIntro: '작성 중인 식사를 마무리한 뒤 새 식사를 기록할 수 있어요.', childMeals: (name: string) => `${name}의 식사`, autoSavedDraft: '자동 저장된 초안', continueDraft: '초안 이어하기', draftPhotoSaved: '사진 저장됨', draftNoPhoto: '사진 없음', draftFoodCount: (count: number) => `음식 ${count}개`,
     loadFailed: '식사 초안을 불러오지 못했어요. 다시 시도해 주세요.', saveFailed: '식사를 저장하지 못했어요. 입력한 음식을 확인하고 다시 시도해 주세요.',
     addFoodsTitle: '음식 추가', addFoodPrompt: '제공한 음식을 직접 추가해 주세요. 사진은 없어도 돼요.', emptyFoodBody: '‘음식 추가’를 눌러 제공한 음식을 입력해 주세요.', foodCount: (count: number) => `음식 ${count}개`, beforePhoto: '식전 사진', beforeMealBadge: '식전', afterMealBadge: '식후', addFood: '음식 추가', saveFood: '음식 저장',

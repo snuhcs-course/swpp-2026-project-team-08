@@ -26,25 +26,31 @@
 
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 빈 초안 기본값 검증·사진 중복 제거 및 음식 편집기·추천 연결 테스트 분리
-// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 종합 UI 검증을 담당 기능·컴포넌트별 파일로 분리
+// AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 저장된 단계와 추가·수정 중인 음식에 따른 이어하기 문구 검증
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 종합 UI 검증의 기능별 분리 및 초안 카드 정보·이어갈 단계 검증 통합
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { React, renderToStaticMarkup } = require('../../helpers/static-view.cjs');
-const { copyFor, abcCopyFor } = require("../../../src/util/strings.ts");
+const { MealDraftResumeView } = require('../../../src/features/meal-checkin/screens/MealDraftResumeView.tsx');
+const { newDraft } = require('../../../src/features/meal-checkin/rules.ts');
+const { newFood } = require('../../../src/rules/foodDraft.ts');
+const { photoDraft } = require('../../fixtures/meal-photo.cjs');
 
-const { newFood } = require("../../../src/rules/foodDraft.ts");
+function renderResumeCard(draft, language) {
+  return renderToStaticMarkup(React.createElement(MealDraftResumeView, {
+    draft, childName: 'Alex', language, onContinue() {}, onBack() {},
+  }));
+}
 
-const { newDraft } = require("../../../src/features/meal-checkin/rules.ts");
-
-const s = copyFor("en"),
-  a = abcCopyFor("en"),
-  noop = () => {};
+function resumeCardText(draft) {
+  const card = document.createElement('div');
+  card.innerHTML = renderResumeCard(draft, 'ko');
+  return card.textContent;
+}
 
 test("ongoing meal entry shows real draft metadata and only an explicit continue action", () => {
-  const {
-    MealDraftResumeView,
-  } = require("../../../src/features/meal-checkin/screens/MealDraftResumeView.tsx");
   const draft = {
     ...newDraft("child"),
     mealDate: "2026-10-11",
@@ -54,15 +60,7 @@ test("ongoing meal entry shows real draft metadata and only an explicit continue
     photo: { id: "photo", uri: "saved-photo" },
   };
   const before = JSON.stringify(draft);
-  const html = renderToStaticMarkup(
-    React.createElement(MealDraftResumeView, {
-      draft,
-      childName: "Alex",
-      language: "en",
-      onContinue: noop,
-      onBack: noop,
-    }),
-  );
+  const html = renderResumeCard(draft, 'en');
   assert.match(html, /Ongoing Meal/);
   assert.match(html, /Finish your draft before starting a new check-in/);
   assert.match(html, /Alex · Dinner/);
@@ -75,20 +73,34 @@ test("ongoing meal entry shows real draft metadata and only an explicit continue
 });
 
 test("사진과 음식이 없는 초안 안내는 자동 선택된 점심과 빈 상태를 표시한다", () => {
-  const {
-    MealDraftResumeView,
-  } = require("../../../src/features/meal-checkin/screens/MealDraftResumeView.tsx");
-  const html = renderToStaticMarkup(
-    React.createElement(MealDraftResumeView, {
-      draft: newDraft("child", new Date(2026, 10, 21, 11)),
-      childName: "Alex",
-      language: "en",
-      onContinue: noop,
-      onBack: noop,
-    }),
-  );
+  const html = renderResumeCard(newDraft("child", new Date(2026, 10, 21, 11)), 'en');
   assert.match(html, /No photo/);
   assert.match(html, /0 foods/);
   assert.match(html, /Alex · Lunch/);
   assert.doesNotMatch(html, /Photo saved|Rolled omelet/);
+});
+
+test('음식 편집창이 닫힌 초안에는 마지막으로 열었던 단계가 표시된다', () => {
+  const draft = photoDraft();
+  for (const [step, title] of [
+    ['details', '식사 정보'], ['photo', '식전 사진'], ['preview', '사진 확인'], ['foods', '음식 확인'],
+  ]) {
+    assert.ok(resumeCardText({ ...draft, step }).includes(`이어갈 단계: ${title}`), title);
+  }
+});
+
+test('기존 음식과 같은 이름의 새 음식을 입력 중이면 이어갈 단계는 음식 추가다', () => {
+  const draft = photoDraft();
+  const editingFood = { ...draft.foods[0], id: 'new-food' };
+  const text = resumeCardText({ ...draft, step: 'foods', editingFood });
+  assert.ok(text.includes('이어갈 단계: 음식 추가'));
+  assert.ok(!text.includes(`이어갈 단계: ${editingFood.name} 수정`));
+});
+
+test('기존 음식의 이름을 바꾸던 초안에는 새 이름과 수정이 이어갈 단계로 표시된다', () => {
+  const draft = photoDraft();
+  const editingFood = { ...draft.foods[0], name: '바나나 밥' };
+  const text = resumeCardText({ ...draft, step: 'foods', editingFood });
+  assert.ok(text.includes('이어갈 단계: 바나나 밥 수정'));
+  assert.ok(!text.includes(`이어갈 단계: ${draft.foods[0].name} 수정`));
 });

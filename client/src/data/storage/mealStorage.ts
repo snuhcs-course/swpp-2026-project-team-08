@@ -7,9 +7,13 @@
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 편집 추천 연결 복원 및 이전 초안 호환
 
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 이전 초안의 조리법을 지원하는 ID 또는 미입력으로 복원
+
 import { hasMealDraftInput } from '../../rules/mealDraft';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { FoodItem, Meal, MealDraft } from '../../types/meal';
+import { cookingMethodIds } from '../../types/recordValues';
 import { isDraft, isMeal } from './mealValidation';
 import { updateHomeRecords } from './homeStorage';
 const draftKey = (id: string) => `nurturebites.meal-draft.${id}.v1`;
@@ -38,6 +42,8 @@ function normalizeStoredFood(value: unknown): unknown {
   if (next.confirmed === undefined) next.confirmed = next.source === 'parent';
   if (next.origin === 'ai' || next.origin === 'parent') next.source = next.origin;
   delete next.origin;
+  if (typeof next.preparation === 'string'
+    && !cookingMethodIds.some(method => method === next.preparation)) next.preparation = '';
   return next;
 }
 

@@ -1,6 +1,8 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 삭제된 재료 카탈로그 API 검증 제거, 서버 발급 id·대문자 enum 저장 계약으로 수정
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 식사 입력의 조리법 ID 저장 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../helpers/register.cjs');
@@ -25,7 +27,7 @@ const meal = {
   id: 'local-draft', childId: '1', mealDate: '2026-10-21', mealType: 'lunch',
   setting: 'home', photo: null, savedAt: '2026-10-21T00:00:00Z',
   foods: [
-    { id: 'local-food-a', name: 'Potato', ingredients: ['Potato'], preparation: '삶기', servingNote: '', source: 'parent', confirmed: true, acceptance: 1 },
+    { id: 'local-food-a', name: 'Potato', ingredients: ['Potato'], preparation: 'boiled', servingNote: '', source: 'parent', confirmed: true, acceptance: 1 },
     { id: 'local-food-b', name: 'Carrot', ingredients: ['Carrot'], preparation: '', servingNote: '', source: 'parent', confirmed: true, acceptance: null },
   ],
   suggestionLinks: [{ suggestionId: '301', foodId: 'local-food-b', title: 'Try carrot', description: 'Small serving' }],

@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 홈 식사 이동 카드를 공통 컴포넌트로 분리
 
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../util/colors';
@@ -24,12 +26,7 @@ export const homeStyles = StyleSheet.create({
   mealActionText: { fontSize: 13, lineHeight: 19.5 },
   section: { gap: 12 },
   sectionTitle: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 16, lineHeight: 21.6 },
-  reviewCard: { minHeight: 92, padding: 16, paddingBottom: 35, gap: 0, backgroundColor: colors.surface, borderRadius: 20, shadowColor: colors.homeShadow, shadowOffset: { width: 0, height: 6 }, shadowRadius: 22, shadowOpacity: 0.04, elevation: 1 },
-  mealCopy: { gap: 3, paddingRight: 0 },
-  mealTitle: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 16, lineHeight: 21.6 },
   mealMeta: { color: colors.homeMuted, fontFamily: fonts.poppinsRegular, fontSize: 11, lineHeight: 16.5 },
-  reviewAction: { position: 'absolute', right: 22, bottom: 9, flexDirection: 'row', gap: 6, alignItems: 'center' },
-  reviewStatus: { color: colors.homePrimary, fontFamily: fonts.poppinsBold, fontSize: 9, lineHeight: 13.5 },
   suggestionCard: { padding: 16, gap: 12, borderRadius: 20, backgroundColor: colors.surface, shadowColor: colors.homeShadow, shadowOffset: { width: 0, height: 6 }, shadowRadius: 22, shadowOpacity: 0.04, elevation: 1 },
   ideaRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   ideaCopy: { flex: 1, minWidth: 0, gap: 3 },

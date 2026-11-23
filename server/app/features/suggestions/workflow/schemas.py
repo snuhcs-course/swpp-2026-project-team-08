@@ -4,6 +4,8 @@
 # Changed: used_ingredients 를 ingredients 로 바꾸고 cooking_method, causes 추가
 # AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
 # Changed: 조리 방법 선택지 설명을 싣고 재료 설명의 낡은 도구 표현 정리
+# AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+# Changed: 추천 생성 조리법 열 가지와 프롬프트 설명을 일치
 
 """LLM 구조화 출력 스키마.
 
@@ -15,7 +17,7 @@ from pydantic import BaseModel, Field
 
 from app.features.suggestions.workflow.cooking_methods import cooking_method_choices
 from app.features.suggestions.workflow.state import GeneratedSuggestion
-from app.models.meal_enums import MealCookingMethod
+from app.models.meal_enums import MealCookingMethodInput
 
 
 class SuggestionDraft(BaseModel):
@@ -31,7 +33,7 @@ class SuggestionDraft(BaseModel):
             "쓸 수 있는 재료 목록의 이름 그대로 적는다."
         )
     )
-    cooking_method: MealCookingMethod = Field(
+    cooking_method: MealCookingMethodInput = Field(
         description=f"제안하는 음식의 조리 방법. 선택지: {cooking_method_choices()}."
     )
     causes: str = Field(

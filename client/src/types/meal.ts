@@ -7,13 +7,18 @@
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 음식 편집 중 추천 연결 초안 분리
 
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 식사 조리법을 고정 ID로 정의
+
+import type { CookingMethod } from './recordValues';
+
 export const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 export const mealSettings = ['home', 'restaurant', 'school', 'others'] as const;
 export type FoodItem = {
   id: string;
   name: string;
   ingredients: string[];
-  preparation: string;
+  preparation: CookingMethod | '';
   servingNote: string;
   source: 'ai' | 'parent';
   confirmed: boolean;

@@ -1,5 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim
 # Changed: UserSuggestion 을 FoodRecommendation 으로 바꾸고 음식 단위 추천 구조로 재편
+# AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+# Changed: 시도 상태와 별개로 저장 목록 제거 시각 관리
 
 """식후 리뷰를 바탕으로 만든 음식 추천.
 
@@ -58,6 +60,9 @@ class FoodRecommendation(Base):
         StringList, nullable=False, default=list, server_default=text("'[]'")
     )
     saved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    removed_from_saved_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False
     )

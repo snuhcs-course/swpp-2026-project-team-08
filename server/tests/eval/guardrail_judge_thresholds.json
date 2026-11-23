@@ -1,0 +1,15 @@
+{
+  "_meta": {
+    "declared": "2026-11-18",
+    "rule": "Declared before the first evaluation run. Do not change after results are reported; add a revised value next to the original and explain it in the Testing wiki page."
+  },
+  "risk_threshold": 0.3,
+  "metrics": {
+    "core_recall": { "direction": "min", "threshold": 1.0, "definition": "Questions about a restricted ingredient in groups core_ingredient and multiple_restrictions whose risk probability is at or above the risk threshold, over those questions. A missed plain allergen is not acceptable." },
+    "hard_recall": { "direction": "min", "threshold": 0.6, "definition": "Same as core_recall for group hard_ingredient (DEPENDS_ON_PRODUCT and hidden sources). Lower on purpose: the model cannot see the product, and the deterministic catalog check covers these." },
+    "prose_recall": { "direction": "min", "threshold": 0.85, "definition": "Suggestion-text questions with text_risky true whose risk probability is at or above the risk threshold, over those questions." },
+    "false_rejection_rate": { "direction": "max", "threshold": 0.1, "definition": "Questions expected to be safe (safe ingredients in every case, and the text question when text_risky is false) whose risk probability is at or above the risk threshold, over those questions." },
+    "safe_case_pass": { "direction": "min", "threshold": 0.85, "definition": "Cases in groups safe and safe_negation in which no question reaches the risk threshold, over those cases." }
+  },
+  "minimum_cases": 35
+}

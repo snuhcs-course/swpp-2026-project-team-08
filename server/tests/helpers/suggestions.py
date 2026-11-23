@@ -1,6 +1,8 @@
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 새 초안 필드, DB 카탈로그·프로필 시드 헬퍼로 변경
+# AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
+# Changed: 가짜 판정기를 설치하는 install_judge 헬퍼 추가
 """Explicit LLM responses and DB seeds for API integration; the real graph/validation still run."""
 
 from httpx import AsyncClient
@@ -13,6 +15,7 @@ from app.models.ingredient_enums import RestrictionDegree
 from app.models.restriction_enums import RestrictionType
 from tests.fixtures.onboarding import request_body
 from tests.helpers.fake_chat_model import ScriptedChatModel
+from tests.helpers.fake_judge import ScriptedJudge
 
 # tests/fixtures/onboarding.py 프로필의 제한.
 # 카탈로그 재료는 이 둘에 NEVER 판정이 있어야 쓸 수 있다.
@@ -37,6 +40,12 @@ def install_model(monkeypatch, batches):
     model = ScriptedChatModel(drafts=batches)
     monkeypatch.setattr("app.features.suggestions.generator.build_chat_model", lambda: model)
     return model
+
+
+def install_judge(monkeypatch, judge: ScriptedJudge) -> ScriptedJudge:
+    """기본 가짜 판정기를 테스트가 정한 판정기로 바꾼다."""
+    monkeypatch.setattr("app.features.suggestions.generator.build_judge", lambda: judge)
+    return judge
 
 
 def batch(*food_ids: str):

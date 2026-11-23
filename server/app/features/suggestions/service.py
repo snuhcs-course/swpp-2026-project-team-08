@@ -11,6 +11,8 @@
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 음식별 추가 추천 1회와 재요청 결과 재사용
+# AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
+# Changed: 아이의 제한 설명을 추천 생성기에 전달
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 이력을 보존하는 저장 목록 제거와 재저장
 
@@ -31,6 +33,7 @@ from app.features.suggestions.catalog import load_catalog
 from app.features.suggestions.familiar import load_familiar_foods
 from app.features.suggestions.generator import generate_suggestions
 from app.features.suggestions.ingredients import ChildRestrictions
+from app.features.suggestions.workflow.restrictions import describe_restrictions
 from app.features.suggestions.workflow.state import (
     FoodInput,
     GeneratedSuggestion,
@@ -292,7 +295,12 @@ class FoodRecommendationService:
         familiar = await load_familiar_foods(self._session, user_id, exclude_food_ids=food_ids)
         try:
             async with asyncio.timeout(60):
-                generated = await generate_suggestions(inputs, catalog, familiar=familiar)
+                generated = await generate_suggestions(
+                    inputs,
+                    catalog,
+                    restrictions=describe_restrictions(restrictions.types),
+                    familiar=familiar,
+                )
         except Exception as error:
             raise GenerationFailedError() from error
         if (

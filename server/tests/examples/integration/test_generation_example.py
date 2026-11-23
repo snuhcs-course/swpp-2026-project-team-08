@@ -1,5 +1,7 @@
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: 최신 main 동작에 맞춘 테스트 작성 예시
+# AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
+# Changed: 재료 목록 구분자 변경 반영
 
 import pytest
 from langchain_core.messages import HumanMessage

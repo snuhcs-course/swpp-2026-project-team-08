@@ -17,6 +17,9 @@
 // AI-generated with Grok 4.7, 2026-11-14, reviewed by Doyeon Kim
 // Changed: 식전 저장 화면에 사진 라벨과 저장 배경 적용
 
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 장소 없이 사진 단계 진행 및 식사 기본 정보 자동 저장 상태 표시
+
 import { ProgressBar } from '../../../components/ProgressBar';
 import { AppHeader } from '../../../components/AppHeader';
 import { useState } from "react";
@@ -115,6 +118,17 @@ export function MealCheckinView(p: MealCheckinViewProps) {
               disabled={p.saving} onPress={p.tryingSuggestion.onToggle} style={styles.header}>
               <Text style={ui.text}>{p.tryingSuggestion.checked ? '☑' : '☐'} {suggestionCopyFor(p.language).trying}</Text>
             </Pressable>}
+            {d.step === 'details' && (p.saveStatus !== 'saved' || p.hasDraftInput) && (
+              <View style={styles.header}>
+                <Text accessibilityLiveRegion="polite" accessibilityRole={p.saveStatus === 'error' ? 'alert' : undefined}
+                  style={[ui.muted, p.saveStatus === 'error' && { color: colors.error }]}>
+                  {p.saveStatus === 'saving' ? s.common.saving : p.saveStatus === 'error' ? s.common.saveFailed : s.common.saved}
+                </Text>
+                {p.saveStatus === 'error' && (
+                  <AppButton secondary label={s.common.retry} onPress={p.onRetryDraft} />
+                )}
+              </View>
+            )}
             <ProgressBar current={segment + 1} total={5} style={styles.progress}
               trackStyle={[styles.segment, d.step === 'photo' && styles.photoSegment]}
               fillStyle={styles.activeSegment} />
@@ -132,7 +146,7 @@ export function MealCheckinView(p: MealCheckinViewProps) {
                   variant="meal"
                   label={m.toPhoto}
                   icon={<UiAssetIcon name="meal-arrow-right" />}
-                  disabled={!d.mealType || !d.setting}
+                  disabled={!d.mealType}
                   onPress={() => p.onGo("photo")}
                 />
               </View>

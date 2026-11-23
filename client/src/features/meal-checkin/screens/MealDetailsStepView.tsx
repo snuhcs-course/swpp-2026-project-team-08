@@ -1,6 +1,9 @@
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
 
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 선택 장소 재선택 해제 및 필수 유형 선택 유지
+
 import { Text, View } from 'react-native';
 import { AppIcon } from '../../../components/AppIcon';
 import { DateField } from '../../../components/DateField';
@@ -57,7 +60,7 @@ export function MealDetailsStepView({ p }: { p: Props }) {
             tile
             icon={<AppIcon name={value} size={16} />}
             selected={d.setting === value}
-            onPress={() => p.onUpdate({ setting: value })}
+            onPress={() => p.onUpdate({ setting: d.setting === value ? null : value })}
           />
         ))}
       </View>

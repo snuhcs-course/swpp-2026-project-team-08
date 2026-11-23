@@ -26,6 +26,8 @@
 // Changed: 식생활 유형 단계(family)를 선택 사항으로 되돌려 수정
 // AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
 // Changed: 온보딩 테스트 분리 및 단계 경계·검토 복귀 경로·진행 표시 검증
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 온보딩 이동 중복 검증 통합 및 프로필 복귀 경로 유지
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../../helpers/register.cjs");
@@ -119,8 +121,12 @@ test('식생활 유형과 음식 단계는 바로 왕복하고 첫 단계 이전
   assert.equal(steps.length, 8);
 });
 
-test('일반 이동은 단계만 전달하고 Review에서 시작한 수정은 입력 화면 사이에서도 복귀 대상을 유지한다', () => {
-  assert.deepEqual(onboardingRouteParams('child'), { step: 'child' });
+test('일반 이동에는 단계만 있고 Review·자녀 프로필에서 시작한 수정에는 복귀 대상이 있다', () => {
+  for (const step of ['child', 'review']) {
+    assert.deepEqual(onboardingRouteParams(step), { step });
+  }
+  assert.deepEqual(onboardingRouteParams('family', 'child-profile'),
+    { step: 'family', from: 'child-profile' });
   for (const step of ['child', 'allergies', 'restrictions']) {
     assert.deepEqual(onboardingRouteParams(step, 'review'), { step, from: 'review' });
   }

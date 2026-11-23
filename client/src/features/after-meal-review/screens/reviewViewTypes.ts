@@ -3,6 +3,8 @@
 
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: Pass food and ingredient difficulty targets from Screen to Views
+// AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 현재 식후 사진의 표시 오류와 교체 선택 오류 구분
 
 import type { AfterMealReviewDraft, DifficultyCategory, Outcome, ReviewStep } from '../../../types/afterMealReview';
 import type { FoodItem, Meal, PhotoSource } from '../../../types/meal';
@@ -16,6 +18,7 @@ export type ReviewViewProps = {
   finalSaveState?: 'idle' | 'saving' | 'error';
   saveStatus: 'saving' | 'saved' | 'error';
   photoError: 'permission' | 'image' | null;
+  afterPhotoUnreadable: boolean;
   picking: boolean;
   saving: boolean;
   canContinueOutcomes: boolean;

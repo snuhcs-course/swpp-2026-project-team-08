@@ -8,6 +8,8 @@
 // Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 최종 저장에 추가 버튼을 누르지 않은 어려움 입력 반영
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: Eaten의 선택적 어려움 입력과 이전 사진 비교 초안의 확인 화면 복원
 
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome, ReviewStep } from '../../types/afterMealReview';
 import type { FoodItem, Meal } from '../../types/meal';
@@ -16,8 +18,11 @@ import type { MealDetail } from '../../types/mealRecord';
 import { ingredientId } from '../../rules/ingredientIds';
 import { foodFormKey } from '../../rules/recommendationSafety';
 
-// Legacy draft steps resume at the final editable Figma screen without submitting.
-export function normalizeReviewStep(step: ReviewStep): ReviewStep {
+export function normalizeReviewStep(step: ReviewStep, afterPhoto: AfterMealReviewDraft['afterPhoto']): ReviewStep {
+  if (step === 'compare' || step === 'comparing' || step === 'comparison-error') {
+    return afterPhoto?.uri ? 'preview' : 'outcomes';
+  }
+  if (step === 'preview' && !afterPhoto?.uri) return 'photo';
   return step === 'suggestions' ? 'difficulties' : step;
 }
 
@@ -54,10 +59,9 @@ export function reconcileOutcomes(previous: FoodOutcome[], foods: FoodItem[]): F
 /** Selected ingredients are targets within their own food, even when names repeat. */
 export function difficultyTargets(foods: FoodItem[], outcomes: FoodOutcome[]) {
   return foods.flatMap(food => [
-    ...(outcomes.find(outcome => outcome.foodId === food.id)?.decision.confirmed === 'eaten'
-      ? [] : [{ id: food.id, name: food.name, parentName: null as string | null }]),
+    { id: food.id, name: food.name, parentName: null as string | null },
     ...(outcomes.find(outcome => outcome.foodId === food.id)?.ingredients ?? [])
-      .filter(ingredient => ingredient.selected !== false && ingredient.decision.confirmed !== 'eaten')
+      .filter(ingredient => ingredient.selected !== false)
       .map(ingredient => ({ id: ingredient.id, name: ingredient.name, parentName: food.name })),
   ]);
 }

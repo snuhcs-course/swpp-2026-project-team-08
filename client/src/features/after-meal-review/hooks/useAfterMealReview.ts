@@ -8,6 +8,8 @@
 // Changed: Eaten 대상의 어려움·추천 제외 및 빈 단계 건너뛰기
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 저장 완료 상태에 자동 반영한 어려움 사유 동기화
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 서버·로컬 저장 분리, 초안 재개와 단일 사진 확인 단계의 뒤로가기
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -22,6 +24,7 @@ import type { ChildProfile } from '../../../types/profile';
 import { difficultyTargets, addDifficulty, allOutcomesConfirmed, clearOutcomeSuggestions, canAddDifficulty, newReviewDraft, normalizeReviewStep, reconcileDifficultyEntries, reconcileOutcomes, reviewDraftFromServer, reviewFromDraft, setOutcome, toggleIngredient } from '../rules';
 
 type SaveStatus = 'saving' | 'saved' | 'error';
+const stepOrder: ReviewStep[] = ['photo', 'preview', 'outcomes', 'difficulties', 'complete'];
 
 export function useAfterMealReview(profile: ChildProfile | null, mealId: string) {
   const childId = profile?.id ?? '';
@@ -37,7 +40,8 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const [loadVersion, setLoadVersion] = useState(0);
   const [finalSaveState, setFinalSaveState] = useState<'idle' | 'saving' | 'error'>('idle');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
-  const [photoError, setPhotoError] = useState<'permission' | 'image' | null>(null);
+  const [pickError, setPickError] = useState<'permission' | 'image' | null>(null);
+  const [unreadablePhotoId, setUnreadablePhotoId] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const [editingFood, setEditingFood] = useState<FoodItem | null>(null);
   const [ingredient, setIngredient] = useState('');
@@ -45,6 +49,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const saveVersion = useRef(0);
   const skipFirstSave = useRef(true);
   const finishing = useRef(false);
+  const resumedWithoutProgress = useRef(false);
   const pickBusy = useRef(false);
   const pickVersion = useRef(0);
   const editorBusy = useRef(false);
@@ -53,6 +58,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   const meal = mealQuery.data ?? null;
   const detail = detailQuery.data ?? null;
   const ready = loadedKey === key && draft !== null && meal !== null && detail !== null;
+  const afterPhotoUnreadable = !!draft?.afterPhoto && draft.afterPhoto.id === unreadablePhotoId;
 
   useEffect(() => {
     mounted.current = true;
@@ -66,16 +72,19 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
       (stored) => {
         if (!active) return;
         setFinalSaveState('idle');
+        setPickError(null);
+        setUnreadablePhotoId(null);
         const base = detail.review ? reviewDraftFromServer(meal, detail)
           : stored?.step === 'complete' ? newReviewDraft(meal) : stored ?? newReviewDraft(meal);
         const next: AfterMealReviewDraft = {
           ...base,
-          step: detail.review ? 'complete' : ['comparing', 'comparison-error'].includes(base.step) ? (meal.photo && base.afterPhoto ? 'compare' : 'outcomes') : base.step === 'compare' && (!meal.photo || !base.afterPhoto) ? 'outcomes' : normalizeReviewStep(base.step),
+          step: normalizeReviewStep(base.step, base.afterPhoto),
           outcomes: clearOutcomeSuggestions(reconcileOutcomes(base.outcomes, meal.foods)),
           comparisonMethod: 'manual',
         };
         if (next.step === 'difficulties' && !difficultyTargets(meal.foods, next.outcomes).length) next.step = 'outcomes';
         skipFirstSave.current = true;
+        resumedWithoutProgress.current = !!stored && stored.step !== 'complete' && !detail.review;
         current.current = next;
         setDraft(next);
         setLoadedKey(key);
@@ -106,12 +115,15 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     if (skipFirstSave.current) { skipFirstSave.current = false; return; }
     void Promise.resolve().then(() => {
       if (!finishing.current && current.current?.step !== 'complete') return persist(draft);
-    });
+    }).catch(() => undefined);
   }, [draft, ready, persist]);
 
   const update = (patch: Partial<AfterMealReviewDraft>) => {
     const value = current.current;
     if (!value) return;
+    if (patch.step && stepOrder.indexOf(patch.step) > stepOrder.indexOf(value.step)) {
+      resumedWithoutProgress.current = false;
+    }
     const next = { ...value, ...patch };
     current.current = next;
     setDraft(next);
@@ -123,15 +135,19 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
   };
   const go = (step: ReviewStep) => {
     cancelPhotoPick();
-    update({ step: normalizeReviewStep(step) });
+    setPickError(null);
+    update({ step: normalizeReviewStep(step, current.current?.afterPhoto ?? null) });
   };
   const back = (): boolean => {
     const step = current.current?.step;
     if (!step || step === 'photo' || step === 'complete') return false;
+    if (resumedWithoutProgress.current) {
+      cancelPhotoPick();
+      return false;
+    }
     const previous: Partial<Record<ReviewStep, ReviewStep>> = {
-      preview: 'photo', compare: 'preview', 'comparison-error': 'compare',
-      outcomes: current.current?.afterPhoto ? (meal?.photo ? 'compare' : 'preview') : 'photo',
-      difficulties: 'outcomes', suggestions: 'difficulties',
+      preview: 'photo', outcomes: current.current?.afterPhoto?.uri ? 'preview' : 'photo',
+      difficulties: 'outcomes',
     };
     const target = previous[step];
     if (!target) return false;
@@ -144,15 +160,16 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     pickBusy.current = true;
     const request = ++pickVersion.current;
     setPicking(true);
-    setPhotoError(null);
+    setPickError(null);
     try {
       const photo = await pickMealPhoto(source);
       if (!mounted.current || request !== pickVersion.current || !photo) return;
       const value = current.current;
       if (!value) return;
+      setUnreadablePhotoId(null);
       update({ afterPhoto: photo, step: 'preview', outcomes: clearOutcomeSuggestions(value.outcomes) });
     } catch (error) {
-      if (mounted.current && request === pickVersion.current) setPhotoError(error instanceof PhotoError ? error.code : 'image');
+      if (mounted.current && request === pickVersion.current) setPickError(error instanceof PhotoError ? error.code : 'image');
     } finally {
       if (request === pickVersion.current) {
         pickBusy.current = false;
@@ -164,7 +181,8 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     cancelPhotoPick();
     const value = current.current;
     if (!value) return;
-    setPhotoError(null);
+    setPickError(null);
+    setUnreadablePhotoId(null);
     update({ afterPhoto: null, step: 'photo', outcomes: clearOutcomeSuggestions(value.outcomes) });
   };
 
@@ -172,7 +190,11 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     cancelPhotoPick();
     const value = current.current;
     if (!value) return;
-    update({ outcomes: clearOutcomeSuggestions(value.outcomes), comparisonMethod: 'manual', step: 'outcomes' });
+    setPickError(null);
+    update({
+      afterPhoto: value.step === 'photo' ? null : value.afterPhoto,
+      outcomes: clearOutcomeSuggestions(value.outcomes), comparisonMethod: 'manual', step: 'outcomes',
+    });
   };
   const chooseOutcome = (foodId: string, outcome: Outcome, ingredientKey?: string) => {
     const value = current.current;
@@ -258,17 +280,16 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     finishing.current = true;
     setFinalSaveState('saving');
     try {
-      await persist(value);
-      await saveChain.current;
       const review = reviewFromDraft(value, meal);
       await saveMutation.mutateAsync({ review, detail });
       if (mounted.current && current.current?.mealId === value.mealId) {
         update({ step: 'complete', difficulties: review.difficulties, difficultyInputs: {} });
+        setSaveStatus('saved');
         setFinalSaveState('idle');
       }
       return true;
     } catch {
-      if (mounted.current && current.current?.mealId === value.mealId) { setSaveStatus('error'); setFinalSaveState('error'); }
+      if (mounted.current && current.current?.mealId === value.mealId) setFinalSaveState('error');
       return false;
     }
     finally { finishing.current = false; }
@@ -280,8 +301,11 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     missingMeal: !mealId || (mealQuery.isSuccess && !meal),
     loadError: mealQuery.isError || detailQuery.isError || loadError,
     retryLoad: () => { void detailQuery.refetch(); setLoadError(false); setLoadedKey(null); setLoadVersion((value) => value + 1); },
-    saveStatus, finalSaveState, photoError, picking,
-    markImageError: () => setPhotoError('image'),
+    saveStatus, finalSaveState, photoError: pickError ?? (afterPhotoUnreadable ? 'image' : null), picking, afterPhotoUnreadable,
+    markImageError: () => {
+      const id = draft?.afterPhoto?.id;
+      if (id && current.current?.afterPhoto?.id === id) setUnreadablePhotoId(id);
+    },
     saving: finalSaveState === 'saving',
     editingFood, ingredient, editorSaving: updateMealMutation.isPending,
     canContinueOutcomes: !!draft && allOutcomesConfirmed(draft.outcomes),

@@ -3,6 +3,8 @@
 
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 조리법 열 가지 저장 및 기존 통합값 미입력 처리
+// AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+// Changed: 식사 장소 null 요청·응답 변환
 
 import type { Meal, MealDetail, MealDraft, FoodItem } from '../../types/mealRecord';
 import { cookingMethodIds } from '../../types/recordValues';
@@ -25,7 +27,7 @@ export type MealFoodWriteDto = {
 export type MealWriteDto = {
   meal_date: string;
   meal_type: string;
-  setting: string;
+  setting: string | null;
   before_photo_uri: string | null;
   foods: (MealFoodWriteDto & { food_recommendation_ids: string[] })[];
 };
@@ -39,7 +41,7 @@ export function toMeal(value: unknown): Meal {
     userId: id(dto.user_id),
     mealDate: date(dto.meal_date),
     mealType: fromApiEnum(dto.meal_type, mealTypes),
-    setting: fromApiEnum(dto.setting, mealLocations),
+    setting: nullable(dto.setting, (setting) => fromApiEnum(setting, mealLocations)),
     beforePhotoUri: nullable(dto.before_photo_uri, text),
     afterPhotoUri: nullable(dto.after_photo_uri, text),
     savedAt: timestamp(dto.saved_at),
@@ -105,7 +107,7 @@ export function toMealWrite(draft: MealDraft): MealWriteDto {
   return {
     meal_date: date(draft.mealDate),
     meal_type: toApiEnum(draft.mealType, mealTypes),
-    setting: toApiEnum(draft.setting, mealLocations),
+    setting: nullable(draft.setting, (setting) => toApiEnum(setting, mealLocations)),
     before_photo_uri: nullable(draft.beforePhotoUri, text),
     foods: draft.foods.map((food) => ({
       ...toMealFoodWrite(food),

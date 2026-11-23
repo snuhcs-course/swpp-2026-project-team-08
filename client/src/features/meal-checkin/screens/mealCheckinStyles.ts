@@ -4,6 +4,8 @@
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: 사진 안내·하단 UI 공통화 및 식사 정보 배치 조정
+// AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 공통 사진 선택 목록과 교체 버튼으로 스타일 이동
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
@@ -52,18 +54,11 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.homeBorder,
   },
-  sourceList: { gap: 8 },
-  sourceAction: { height: 60, borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, backgroundColor: colors.surface, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 12 },
   manualRoute: { height: 60, borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, backgroundColor: colors.surface, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10 },
   manualRouteLabel: { color: colors.homeText, fontSize: 13, fontFamily: fonts.poppinsSemiBold },
-  sourceIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: colors.homeSelected, alignItems: 'center', justifyContent: 'center' },
-  sourceLabel: { color: colors.homeText, fontSize: 12, fontFamily: fonts.poppinsSemiBold },
   methodPhoto: { height: 150 },
   fullPhotoHint: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   fullPhotoHintText: { color: colors.homePrimary, fontSize: 10, fontFamily: fonts.poppinsSemiBold },
-  photoActions: { flexDirection: 'row', gap: 8 },
-  removePhotoButton: { flex: 1, height: 52, borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, backgroundColor: colors.safetySurface, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 },
-  removePhotoText: { color: colors.error, fontSize: 14, fontFamily: fonts.poppinsSemiBold },
   localPhotoInfo: { borderRadius: 10, backgroundColor: colors.calendarEmpty, padding: 10, flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
   consentSurface: { backgroundColor: colors.infoSurface, borderRadius: 12, borderWidth: 1, borderColor: colors.homeBorder, padding: 12, gap: 6 },
   methodActions: { marginHorizontal: 14, gap: 10, marginTop: 14 },

@@ -1,5 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim
 # Changed: meal_type, setting 을 StrEnum 으로 바꾸고 CHECK 제약 삭제
+# AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+# Changed: 식사 장소 미응답을 NULL로 저장
 
 """한 사용자가 기록한 식사."""
 
@@ -42,8 +44,8 @@ class Meal(Base):
     meal_type: Mapped[MealType] = mapped_column(
         Enum(MealType, native_enum=False, create_constraint=False, length=20), nullable=False
     )
-    setting: Mapped[MealSetting] = mapped_column(
-        Enum(MealSetting, native_enum=False, create_constraint=False, length=20), nullable=False
+    setting: Mapped[MealSetting | None] = mapped_column(
+        Enum(MealSetting, native_enum=False, create_constraint=False, length=20), nullable=True
     )
     before_photo_uri: Mapped[str | None] = mapped_column(Text, nullable=True)
     after_photo_uri: Mapped[str | None] = mapped_column(Text, nullable=True)

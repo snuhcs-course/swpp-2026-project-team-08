@@ -13,6 +13,9 @@
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 편집 추천 연결 초안·취소 및 Record a Try 자동 연결과 해제
 
+// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
+// Changed: 사진 교체·삭제 규칙 및 재개 후 진행 여부에 따른 Ongoing Meal 복귀
+
 import { hasMealDraftInput } from '../../../rules/mealDraft';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -39,6 +42,8 @@ import {
   newDraft,
 } from '../rules';
 
+const stepOrder: readonly MealStep[] = ['details', 'photo', 'preview', 'foods', 'complete'];
+
 function snapshotLink(selected: MealSuggestionOption, foodId: string) {
   return {
     suggestionId: selected.id,
@@ -54,6 +59,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerSuggestionId, setPickerSuggestionId] = useState('');
   const [resumeRequired, setResumeRequired] = useState(false);
+  const resumedWithoutProgress = useRef(false);
   const current = useRef<MealDraft | null>(null);
   const [removed, setRemoved] = useState<{ food: FoodItem; index: number; links: NonNullable<MealDraft['suggestionLinks']> } | null>(null);
   const [loadError, setLoadError] = useState(false);
@@ -82,6 +88,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
           ? newDraft(childId)
           : (stored ?? newDraft(childId));
       if (mounted.current) {
+        resumedWithoutProgress.current = false;
         current.current = value;
         setResumeRequired(!!stored && stored.step !== 'complete');
         setDraft(value);
@@ -96,6 +103,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     readMealDraft(childId)
       .then((value) => {
         if (active) {
+          resumedWithoutProgress.current = false;
           const restored =
             value?.step === 'complete' && (freshAfterComplete || value.savedMealId === startAfterMealId)
               ? newDraft(childId)
@@ -131,6 +139,9 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
   }, [client]);
   const update = useCallback((patch: Partial<MealDraft>) => {
     if (!current.current || busy.current) return;
+    if (patch.step && stepOrder.indexOf(patch.step) > stepOrder.indexOf(current.current.step)) {
+      resumedWithoutProgress.current = false;
+    }
     const value = { ...current.current, ...patch };
     current.current = value;
     setDraft(value);
@@ -173,7 +184,16 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       return true;
     }
     const step = current.current.step;
-    if (step === 'details' || step === 'complete') return false;
+    if (step === 'complete') return false;
+    if (resumedWithoutProgress.current) {
+      photoRequest.current += 1;
+      pickBusy.current = false;
+      setPicking(false);
+      resumedWithoutProgress.current = false;
+      setResumeRequired(true);
+      return true;
+    }
+    if (step === 'details') return false;
 
     const previous: Partial<Record<MealStep, MealStep>> = {
       photo: 'details',
@@ -187,15 +207,27 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     if (busy.current || pickBusy.current) return;
     pickBusy.current = true;
     const request = ++photoRequest.current;
+    const replacing = !!current.current?.photo;
     setPicking(true);
     setError(null);
     try {
       const photo = await pickMealPhoto(source);
       if (photo && mounted.current && request === photoRequest.current) {
-          setRemoved(null);
+        setRemoved(null);
+        if (replacing) {
+          pendingTryLink.current = false;
+          setPickerOpen(false);
+          setPickerSuggestionId('');
+        }
         update({
           photo,
           step: 'preview',
+          ...(replacing ? {
+            foods: [],
+            suggestionLinks: [],
+            editingFood: null,
+            editingSuggestionLink: null,
+          } : {}),
         });
       }
     } catch (err) {
@@ -252,6 +284,7 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
           savedMealId: result.id,
         };
         current.current = complete;
+        resumedWithoutProgress.current = false;
         setDraft(complete);
         setSaveStatus('saved');
       }
@@ -384,7 +417,11 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
       },
     } satisfies MealSuggestionLinking,
     resumeRequired,
-    continueDraft: () => setResumeRequired(false),
+    continueDraft: () => {
+      if (!resumeRequired) return;
+      resumedWithoutProgress.current = true;
+      setResumeRequired(false);
+    },
     loadError,
     removed,
     undoRemove: () => {
@@ -427,11 +464,14 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     },
     removePhoto: () => {
       const value = current.current;
-      if (!value) return;
+      if (!value || busy.current) return;
+      photoRequest.current += 1;
+      pickBusy.current = false;
+      setPicking(false);
+      setError(null);
       update({
         photo: null,
         step: 'photo',
-        foods: value.foods,
       });
     },
     confirm: () => {

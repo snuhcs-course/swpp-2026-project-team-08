@@ -9,6 +9,11 @@
 // AI-generated with Grok 4.7, 2026-11-14, reviewed by Doyeon Kim
 // Changed: 식후 저장 화면에 사진 라벨과 저장 배경 적용
 
+// AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+// Changed: 선택하지 않은 식사 장소를 미입력으로 표시
+// AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 단일 사진 확인 화면에서 수동 결과 입력·초안 저장으로 이동
+
 import { OutcomesHeader } from '../components/OutcomesHeader';
 import { Ionicons } from '@expo/vector-icons';
 import { topBarStyles } from '../../../components/AppHeader';
@@ -44,24 +49,13 @@ export function AfterMealReviewView(
   const s = copyFor(p.language);
   const m = s.afterMealReview;
   const a = abcCopyFor(p.language);
+  const mealCaption = p.draft.step === 'preview' || p.draft.step === 'outcomes'
+    ? `${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${p.meal.setting ? s.mealCheckin.settings[p.meal.setting] : s.common.notEntered}`
+    : '';
   const [savePanelHidden, setSavePanelHidden] = useState(false);
   const [showUnanswered, setShowUnanswered] = useState(false);
-  const photoStep = [
-    "photo",
-    "preview",
-    "compare",
-  ].includes(p.draft.step);
-  const phase = {
-    photo: 0,
-    preview: 0,
-    compare: 0,
-    comparing: 0,
-    "comparison-error": 0,
-    outcomes: 1,
-    difficulties: 2,
-    suggestions: 2,
-    complete: 2,
-  }[p.draft.step];
+  const photoStep = p.draft.step === 'photo' || p.draft.step === 'preview';
+  const phase = photoStep ? 0 : p.draft.step === 'outcomes' ? 1 : 2;
   const goAfterDifficulties = () => {
     if (p.saving || !p.canContinueOutcomes) return;
     setSavePanelHidden(false);
@@ -79,17 +73,17 @@ export function AfterMealReviewView(
     onRetry={p.onSave} onSaveExit={p.onSaveExit} onReturn={() => setSavePanelHidden(true)} />;
 
   return (
-    <SafeAreaView style={[styles.root, p.draft.step === "outcomes" && styles.outcomesRoot, p.draft.step === "compare" && { backgroundColor: colors.homeBackground }, p.draft.step === "difficulties" && { backgroundColor: colors.difficultyBackground }, saved && { backgroundColor: colors.saveSavedBackground }]} edges={["top", "bottom"]}>
+    <SafeAreaView style={[styles.root, p.draft.step === "outcomes" && styles.outcomesRoot, p.draft.step === "difficulties" && { backgroundColor: colors.difficultyBackground }, saved && { backgroundColor: colors.saveSavedBackground }]} edges={["top", "bottom"]}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         {p.draft.step === 'outcomes' ? <OutcomesHeader language={p.language} saveStatus={p.saveStatus} onBack={p.onBack} disabled={p.saving}
-          caption={`${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${s.mealCheckin.settings[p.meal.setting]}`} /> : <ReviewProgressHeader
+          caption={mealCaption} /> : <ReviewProgressHeader
           title={p.draft.step === "complete" ? a.reviewSavedHeader : m.titles[p.draft.step]}
           headerStyle={saved ? { backgroundColor: colors.saveSavedBackground } : undefined}
           stacked={["outcomes", "difficulties"].includes(p.draft.step)}
-          caption={p.draft.step === "preview" && !p.meal.photo ? a.draftFor(p.childName) : !["outcomes", "preview"].includes(p.draft.step) ? undefined : `${p.childName} · ${displayDate(p.meal.mealDate, p.language)} · ${s.mealCheckin.types[p.meal.mealType]} · ${s.mealCheckin.settings[p.meal.setting]}`}
+          caption={mealCaption || undefined}
           backLabel={s.common.back}
           progress={phase}
           onBack={p.onBack}
@@ -180,19 +174,16 @@ export function AfterMealReviewView(
             />
           )}
         </ScrollView>
-        {["preview", "compare", "outcomes", "difficulties"].includes(
+        {["preview", "outcomes", "difficulties"].includes(
           p.draft.step,
         ) && (
           <MealFlowFooter style={p.draft.step === "outcomes" ? styles.outcomesFooter : p.draft.step === "difficulties" ? { backgroundColor: colors.difficultyBackground } : undefined}>
             {p.draft.step === "preview" && (
               <MealFlowButton
                 label={m.usePhoto}
-                disabled={p.saving || !p.draft.afterPhoto || !!p.photoError}
-                onPress={() => p.meal.photo ? p.onGo("compare") : p.onManual()}
+                disabled={p.saving || p.picking || !p.draft.afterPhoto?.uri || p.afterPhotoUnreadable}
+                onPress={p.onManual}
               />
-            )}
-            {p.draft.step === "compare" && (
-              <MealFlowButton label={m.manual} disabled={p.saving} onPress={p.onManual} />
             )}
             {p.draft.step === "outcomes" && (
               <MealFlowButton
@@ -222,9 +213,9 @@ export function AfterMealReviewView(
                 />
               </>
             )}
-            {["compare", "outcomes"].includes(p.draft.step) || (p.draft.step === "preview" && !!p.meal.photo) ? (
+            {["preview", "outcomes"].includes(p.draft.step) && (
               <MealTextButton label={p.draft.step === "outcomes" ? s.common.saveExit : a.saveExit} labelStyle={p.draft.step === "outcomes" ? styles.exitLabel : undefined} disabled={p.saving} onPress={p.onSaveExit} />
-            ) : null}
+            )}
             {p.saveStatus !== "saved" && <Text accessibilityLiveRegion="polite" style={styles.status}>
               {p.saveStatus === "saving"
                 ? s.common.saving

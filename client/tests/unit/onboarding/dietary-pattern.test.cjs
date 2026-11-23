@@ -10,6 +10,8 @@
 // Changed: 식생활 유형 단계(family)와 snake_case 식별자 기준으로 수정
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 // Changed: 식생활 유형 테스트 분리 및 화면 구성·진행 경계 보강 · 음식 없음 응답 반영
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: 식생활 초기 표시·진행 조건·Review 요약 중복 검증 제거
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -29,30 +31,6 @@ const { ChoiceStepView } = require('../../../src/features/onboarding/screens/Cho
 const { ChoiceRow } = require('../../../src/components/ChoiceRow.tsx');
 const { emptyDraft } = require('../../../src/features/onboarding/types.ts');
 const { copyFor } = require('../../../src/util/strings.ts');
-const { reviewRows } = require('../../../src/features/onboarding/screens/reviewRows.ts');
-
-test('all seven radio rows select through the complete label/description row', async t => {
-  let selected = null;
-  const props = { step: 'family', values: { ...emptyDraft(), childName: 'Max' }, language: 'en',
-    onSetField: (field, value) => { assert.equal(field, 'dietaryPattern'); selected = value; } };
-  const view = await renderHook(t, input => ChoiceStepView(input), { props });
-  assert.equal(view.current.props.children[0].props.children, copyFor('en').onboarding.dietaryPattern.helper('Max'));
-  const rows = view.current.props.children[1].props.children;
-  assert.equal(rows.length, 7);
-  assert.equal(rows.every(row => !row.props.selected), true);
-  for (const option of rows) {
-    const row = ChoiceRow(option.props);
-    assert.equal(row.props.accessibilityRole, 'radio');
-    assert.equal(row.props.children[1].props.children[1].props.children, option.props.subtitle);
-    await act(async () => row.props.onPress());
-    assert.equal(selected, option.key);
-    await view.rerender({ ...props, values: { ...props.values, dietaryPattern: selected } });
-    assert.equal(view.current.props.children[1].props.children.filter(row => row.props.selected).length, 1);
-  }
-  assert.equal(reviewRows({ ...emptyDraft(), dietaryPattern: selected }, 'en')[2].value,
-    'No specific dietary pattern');
-  assert.equal(reviewRows(emptyDraft(), 'en')[2].value, 'Not answered');
-});
 
 const { canContinue, canFinish, isDraft } = require('../../../src/features/onboarding/rules.ts');
 
@@ -62,7 +40,24 @@ function completeDraft() {
     allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'], noSafeFoods: true };
 }
 
-test('dietary pattern is optional and a draft without it restores as unanswered', () => {
+test('식생활 유형의 이름·설명 영역을 누르면 해당 유형 하나만 선택된다', async t => {
+  let selected = null;
+  const props = { step: 'family', values: { ...emptyDraft(), childName: 'Max' }, language: 'en',
+    onSetField: (field, value) => { assert.equal(field, 'dietaryPattern'); selected = value; } };
+  const view = await renderHook(t, input => ChoiceStepView(input), { props });
+  const rows = view.current.props.children[1].props.children;
+  for (const option of rows) {
+    const row = ChoiceRow(option.props);
+    assert.equal(row.props.accessibilityRole, 'radio');
+    assert.equal(row.props.children[1].props.children[1].props.children, option.props.subtitle);
+    await act(async () => row.props.onPress());
+    assert.equal(selected, option.key);
+    await view.rerender({ ...props, values: { ...props.values, dietaryPattern: selected } });
+    assert.equal(view.current.props.children[1].props.children.filter(row => row.props.selected).length, 1);
+  }
+});
+
+test('식생활 유형이 없는 초안은 미응답으로 복원되고 유효한 선택값은 저장 전과 같다', () => {
   const { restoreDraft } = require('../../../src/features/onboarding/rules.ts');
   const { dietaryPatternLabel } = require('../../../src/util/dietaryPattern.ts');
   const legacy = completeDraft();
@@ -72,7 +67,6 @@ test('dietary pattern is optional and a draft without it restores as unanswered'
   assert.equal(dietaryPatternLabel('no_specific_pattern', 'en'), 'No specific dietary pattern');
   for (const dietaryPattern of [null, 'flexitarian', 'no_specific_pattern']) {
     const draft = { ...completeDraft(), dietaryPattern };
-    assert.equal(canContinue('family', draft, ''), true);
     assert.equal(canFinish(draft), true);
     assert.equal(restoreDraft(JSON.parse(JSON.stringify(draft))).dietaryPattern, dietaryPattern);
   }
@@ -114,7 +108,7 @@ test('처음에는 선택 없이 일곱 식생활 유형과 설명·닉네임 �
 });
 
 test('미응답·유효한 식생활 유형·특정 유형 없음은 다음 단계 진행을 허용한다', () => {
-  for (const dietaryPattern of [null, 'vegan', 'no_specific_pattern']) {
+  for (const dietaryPattern of [null, 'vegan', 'flexitarian', 'no_specific_pattern']) {
     assert.equal(canContinue('family', { ...emptyDraft(), dietaryPattern }, ''), true);
   }
 });

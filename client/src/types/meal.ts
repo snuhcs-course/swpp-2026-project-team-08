@@ -10,6 +10,9 @@
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 식사 조리법을 고정 ID로 정의
 
+// AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+// Changed: 식사 장소 미응답과 초기 유형 보존
+
 import type { CookingMethod } from './recordValues';
 
 export const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
@@ -38,7 +41,7 @@ export type Meal = {
   childId: string;
   mealDate: string;
   mealType: (typeof mealTypes)[number];
-  setting: (typeof mealSettings)[number];
+  setting: (typeof mealSettings)[number] | null;
   photo: MealPhoto | null;
   foods: FoodItem[];
   suggestionLinks?: MealSuggestionLink[];
@@ -58,6 +61,7 @@ export const mealSteps = [
 export type MealStep = (typeof mealSteps)[number];
 export type MealDraft = Omit<Meal, 'mealType' | 'setting' | 'savedAt'> & {
   initialMealDate?: string;
+  initialMealType?: Meal['mealType'];
   mealType: Meal['mealType'] | null;
   setting: Meal['setting'] | null;
   step: MealStep;

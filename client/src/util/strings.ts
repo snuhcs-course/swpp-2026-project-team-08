@@ -34,6 +34,11 @@
 // AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
 // Changed: 개인정보처리방침 링크 및 열기 실패 문구
 
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 사진 교체 초기화 및 작성 중인 식사 재개 단계 안내
+// AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 식후 사진 교체 시트와 식전 사진 없음 안내
+
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
 
@@ -140,6 +145,7 @@ const en = {
     localPhoto: 'Optional photo for your meal record. Add the foods yourself.', manual: 'Enter food items manually',
     privacy: 'How photo data is used', privacyBody: 'Analysis is optional. Photos and meal records are saved on this device. No photo is sent for AI training.',
     permission: 'Photo access was denied. Allow access in device settings or choose another source.', imageError: 'Could not open this image. Choose another supported image.',
+    resumeAt: (step: string) => `Continue from: ${step}`,
     ongoingHeader: 'Meal Check-in', ongoingTitle: 'Ongoing Meal', ongoingIntro: 'Finish your draft before starting a new check-in.', childMeals: (name: string) => `${name}’s meals`, autoSavedDraft: 'AUTO-SAVED DRAFT', continueDraft: 'Continue draft', draftPhotoSaved: 'Photo saved', draftNoPhoto: 'No photo', draftFoodCount: (count: number) => `${count} ${count === 1 ? 'food' : 'foods'}`,
     loadFailed: 'Could not restore your meal draft. Retry before continuing.', saveFailed: 'Could not save the meal. Your food items are preserved.',
     addFoodsTitle: 'Add food items', addFoodPrompt: 'Add the foods you served, with or without a photo.', emptyFoodBody: 'No foods added yet. Add the foods you served.', foodCount: (count: number) => `${count} food item${count === 1 ? '' : 's'}`, beforePhoto: 'Before-meal photo', beforeMealBadge: 'Before meal', afterMealBadge: 'After meal', addFood: 'Add food item', saveFood: 'Save food',
@@ -157,10 +163,10 @@ const en = {
   afterMealReview: {
     titles: { photo: 'after-meal photo', preview: 'Check your photo', compare: 'Review meal photos', comparing: 'Comparing photos', 'comparison-error': 'Analysis failed', outcomes: 'What happened with each food item?', difficulties: 'What made this food difficult?', suggestions: 'Did you try a saved suggestion?', },
     fileHint: 'Files accept supported images only', draftSaved: 'Your review draft is saved as you go.', optional: 'Optional', photoIntro: 'Add after-meal photo', photoRequirement: 'Optional — keep a photo for your meal record.',
-    photoLabel: 'After-meal photo', before: 'BEFORE', after: 'AFTER', enlarge: 'Tap to enlarge',
+    replaceSourceTitle: 'Replace after-meal photo', enlarge: 'Tap to enlarge',
     replace: 'Replace photo', removePhoto: 'Remove photo', usePhoto: 'Use this photo',
     photoLocal: 'Optional photo for your meal record. Enter food outcomes yourself.',
-    missingBefore: 'The before-meal photo is unavailable. You can enter outcomes manually.', manual: 'Enter food outcomes', noPhoto: 'Continue without photo',
+    missingBefore: 'No before-meal photo', manual: 'Enter food outcomes', noPhoto: 'Continue without photo',
     reviewStep: 'AFTER MEAL · STEP 2 OF 3',
     amountQuestion: (name: string) => `How much did ${name} eat?`,
     amountHint: 'Think about the food as a whole, slide or tap',
@@ -411,6 +417,7 @@ const ko = {
     localPhoto: '사진은 식사 기록에 남겨요. 음식 정보는 직접 입력해 주세요.', manual: '음식 입력하기',
     privacy: '사진 사용 안내 자세히 보기', privacyBody: '사진 분석은 선택 사항이에요. 사진과 식사 기록은 기기에 저장해요. AI 학습을 위해 사진을 전송하지 않아요.',
     permission: '사진에 접근할 수 없어요. 기기 설정에서 권한을 허용하거나 다른 방법으로 사진을 선택해 주세요.', imageError: '사진을 열지 못했어요. 지원되는 다른 사진을 선택해 주세요.',
+    resumeAt: (step: string) => `이어갈 단계: ${step}`,
     ongoingHeader: '식사 기록', ongoingTitle: '작성 중인 식사', ongoingIntro: '작성 중인 식사를 마무리한 뒤 새 식사를 기록할 수 있어요.', childMeals: (name: string) => `${name}의 식사`, autoSavedDraft: '자동 저장된 초안', continueDraft: '초안 이어하기', draftPhotoSaved: '사진 저장됨', draftNoPhoto: '사진 없음', draftFoodCount: (count: number) => `음식 ${count}개`,
     loadFailed: '식사 초안을 불러오지 못했어요. 다시 시도해 주세요.', saveFailed: '식사를 저장하지 못했어요. 입력한 음식을 확인하고 다시 시도해 주세요.',
     addFoodsTitle: '음식 추가', addFoodPrompt: '제공한 음식을 직접 추가해 주세요. 사진은 없어도 돼요.', emptyFoodBody: '‘음식 추가’를 눌러 제공한 음식을 입력해 주세요.', foodCount: (count: number) => `음식 ${count}개`, beforePhoto: '식전 사진', beforeMealBadge: '식전', afterMealBadge: '식후', addFood: '음식 추가', saveFood: '음식 저장',
@@ -438,10 +445,10 @@ const ko = {
     addFood: '음식 추가',
     titles: { photo: '식후 사진', preview: '사진 확인', compare: '식사 사진 확인', comparing: '사진 비교 중', 'comparison-error': '비교 실패', outcomes: '음식별로 먹은 결과를 알려주세요', difficulties: '먹기 어려워했던 특징이 있나요?', suggestions: '저장한 추천을 시도했나요?', },
     fileHint: '지원되는 이미지 파일만 선택할 수 있어요', draftSaved: '작성 중인 내용은 자동으로 저장돼요.', optional: '선택 사항', photoIntro: '식후 사진 추가', photoRequirement: '사진은 선택 사항이에요. 식사 기록에 함께 남길 수 있어요.',
-    photoLabel: '식후 사진', before: '식전', after: '식후', enlarge: '눌러서 크게 보기',
+    replaceSourceTitle: '식후 사진 교체', enlarge: '눌러서 크게 보기',
     replace: '사진 교체', removePhoto: '사진 삭제', usePhoto: '이 사진 사용',
     photoLocal: '사진은 식사 기록에 남겨요. 음식별로 먹은 결과는 직접 입력해 주세요.',
-    missingBefore: '식전 사진을 볼 수 없어요. 먹은 결과는 직접 입력할 수 있어요.', manual: '결과 직접 입력', noPhoto: '사진 없이 입력하기',
+    missingBefore: '식전 사진 없음', manual: '결과 직접 입력', noPhoto: '사진 없이 입력하기',
     itemCount: (count: number) => `음식 ${count}개`,
     outcomes: { eaten: '먹음', tasted: '맛봄', untouched: '먹거나 맛보지 않음', unclear: '확인 어려움' }, definitions: '결과 설명', gotIt: '확인',
     unanswered: '미응답', unansweredHint: '모든 음식과 선택한 재료의 결과를 입력해 주세요.',
@@ -707,7 +714,7 @@ const abcCopy = {
     selectFood: 'Which food does this apply to?', link: 'Link suggestion', linked: 'Linked · pending after-meal review',
     linkHint: 'Choose a suggestion, then select its actual served target. Nothing is added to the food list. The suggestion stays untried until a saved after-meal review confirms use.',
     noSuggestions: 'No saved suggestions available.', suggestionsFailed: 'Could not load saved suggestions.',
-    replaceTitle: 'Replace this photo?', replaceBody: 'Only the photo will change. Your foods, food details, meal details, and suggestion links stay.', replaceHint: 'Cancel or an invalid image keeps everything.',
+    replaceTitle: 'Replace this photo?', replaceBody: 'Choosing a valid replacement photo will clear your food list, food details, and suggestion links. Your meal date, type, and setting will stay.', replaceHint: 'Cancel or an invalid image keeps everything.',
     savingMeal: 'Saving check-in…', savingReview: 'Saving this review…', draftKept: 'Your draft stays until saving is confirmed.',
     checkInStep: 'Check-in', afterMealStep: 'After-meal review', stepSaved: 'Saved', stepAwaiting: 'Awaiting',
     selectIngredients: 'Select Ingredients to log outcome', ingredientIn: (ingredient: string, food: string) => `${ingredient} in ${food}`,
@@ -732,7 +739,7 @@ const abcCopy = {
     selectFood: '어느 음식에 적용하나요?', link: '추천 연결', linked: '연결됨 · 식후 기록 전',
     linkHint: '추천을 고른 뒤 실제 제공한 음식을 선택해 주세요. 음식은 직접 추가해야 해요. 식후 기록을 저장하면 추천 사용 여부를 확인해요.',
     noSuggestions: '연결할 수 있는 추천이 없어요.', suggestionsFailed: '저장한 추천을 불러오지 못했어요.',
-    replaceTitle: '사진을 교체할까요?', replaceBody: '사진을 교체해도 입력한 음식과 식사 정보, 연결한 추천은 유지돼요.', replaceHint: '사진 선택을 취소하면 기존 사진을 유지해요.',
+    replaceTitle: '사진을 교체할까요?', replaceBody: '새 사진으로 교체하면 입력한 음식과 음식 상세, 연결한 추천이 삭제돼요. 식사 날짜와 유형, 장소는 유지돼요.', replaceHint: '취소하거나 사용할 수 없는 사진을 고르면 기존 사진과 입력을 모두 유지해요.',
     savingMeal: '식사를 저장하고 있어요…', savingReview: '식후 기록을 저장하고 있어요…', draftKept: '저장을 마칠 때까지 초안을 유지해요.',
     checkInStep: '식사 기록', afterMealStep: '식후 기록', stepSaved: '저장됨', stepAwaiting: '대기',
     selectIngredients: '먹은 결과를 기록할 재료를 선택해 주세요', ingredientIn: (ingredient: string, food: string) => `${food}의 ${ingredient}`,

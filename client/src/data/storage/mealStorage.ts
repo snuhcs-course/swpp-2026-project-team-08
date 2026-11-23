@@ -9,6 +9,8 @@
 
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 이전 초안의 조리법을 지원하는 ID 또는 미입력으로 복원
+// AI-generated with GPT-6, 2026-11-23, reviewed by Haechan Jung
+// Changed: 식사 완료 기록을 먼저 저장하고 홈 식사 요약의 중복 저장 제거
 
 import { hasMealDraftInput } from '../../rules/mealDraft';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -130,26 +132,20 @@ export function updateMealFoods(childId: string, mealId: string, foods: FoodItem
 export const saveMeal = (meal: Meal): Promise<Meal> =>
   queued(meal.childId, async () => {
     if (!isMeal(meal, meal.childId)) throw new Error('Invalid meal');
-    const meals = await readMeals(meal.childId);
-    const saved = meals.find((entry) => entry.id === meal.id) ?? meal;
+    let meals: Meal[];
+    let saved = meal;
+    try {
+      meals = await readMeals(meal.childId);
+      saved = meals.find((entry) => entry.id === meal.id) ?? meal;
+    } finally {
+      // 목록을 읽지 못한 경우에도 서버 응답으로 초안의 완료 상태를 기록한다.
+      await AsyncStorage.setItem(
+        draftKey(meal.childId),
+        JSON.stringify({ ...saved, step: 'complete', editingFood: null, savedMealId: saved.id }),
+      );
+    }
     if (!meals.some((entry) => entry.id === saved.id)) meals.push(saved);
     await AsyncStorage.setItem(mealsKey(meal.childId), JSON.stringify(meals));
-    await updateHomeRecords(meal.childId, (home) => {
-      home.meals = [
-        ...home.meals.filter((entry) => entry.id !== saved.id),
-        { id: saved.id, childId: saved.childId, mealDate: saved.mealDate },
-      ];
-    });
-    // A completion receipt preserves the saved ID even if the app closes before navigation.
-    await AsyncStorage.setItem(
-      draftKey(meal.childId),
-      JSON.stringify({
-        ...saved,
-        step: 'complete',
-        editingFood: null,
-        savedMealId: saved.id,
-      }),
-    );
     return saved;
   });
 export const deleteLocalMeal = (childId: string, mealId: string): Promise<void> =>
@@ -157,7 +153,6 @@ export const deleteLocalMeal = (childId: string, mealId: string): Promise<void> 
     const meals = (await readMeals(childId)).filter((meal) => meal.id !== mealId);
     await AsyncStorage.setItem(mealsKey(childId), JSON.stringify(meals));
     await updateHomeRecords(childId, (home) => {
-      home.meals = home.meals.filter((entry) => entry.id !== mealId);
       home.suggestions = home.suggestions.filter((item) => item.recommendation?.mealId !== mealId);
     });
   });

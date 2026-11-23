@@ -2,6 +2,8 @@
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-23, reviewed by Haechan Jung
+// Changed: 홈 저장값에서 추천만 읽고 쓰도록 정리
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { HomeRecords, SavedSuggestion } from '../../types/home';
@@ -69,17 +71,13 @@ export function updateHomeRecords<T>(childId: string, change: (records: HomeReco
 
 export async function readHomeRecords(childId: string): Promise<HomeRecords> {
   const raw = await AsyncStorage.getItem(keyFor(childId));
-  if (!raw) return { meals: [], suggestions: [] };
+  if (!raw) return { suggestions: [] };
   const value: unknown = JSON.parse(raw);
   if (!value || typeof value !== 'object') throw new Error('Invalid home records');
   const records = value as Record<string, unknown>;
-  if (!Array.isArray(records.meals) || !Array.isArray(records.suggestions)) {
+  if (!Array.isArray(records.suggestions)) {
     throw new Error('Invalid home records');
   }
-  const mealsValid = records.meals.every((meal: unknown) => meal && typeof meal === 'object'
-    && typeof (meal as Record<string, unknown>).id === 'string'
-    && typeof (meal as Record<string, unknown>).childId === 'string'
-    && typeof (meal as Record<string, unknown>).mealDate === 'string');
   const suggestionsValid = records.suggestions.every((item: unknown) => item && typeof item === 'object'
     && typeof (item as Record<string, unknown>).id === 'string'
     && typeof (item as Record<string, unknown>).childId === 'string'
@@ -100,6 +98,6 @@ export async function readHomeRecords(childId: string): Promise<HomeRecords> {
         && (value.difficulty === undefined || value.difficulty === 'shape' || value.difficulty === 'visibility')
         && value.kind === 'small-separate-portion';
     })()));
-  if (!mealsValid || !suggestionsValid) throw new Error('Invalid home records');
-  return { meals: records.meals, suggestions: records.suggestions } as HomeRecords;
+  if (!suggestionsValid) throw new Error('Invalid home records');
+  return { suggestions: records.suggestions };
 }

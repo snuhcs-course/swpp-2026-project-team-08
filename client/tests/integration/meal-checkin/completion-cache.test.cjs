@@ -3,17 +3,17 @@
 // Changed: 대문자 enum·음식 id 없는 저장 요청·식사 상세 저장 응답 기준으로 수정
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 서버·기기 저장 분리 반영 및 완료 화면 흐름으로 중복 검증 이동
-// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: 식사 저장 후 목록 재조회 실패·재시도 검증 분리
+// AI-generated with GPT-6, 2026-11-23, reviewed by Haechan Jung
+// Changed: 기기 식사 목록 쓰기 실패 후 서버 목록·상세 및 기기 초안 재조회 검증
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
 const { completeDraft } = require('../../fixtures/meal-checkin.cjs');
 const { act, renderHook, waitFor } = require('../../helpers/react-harness.cjs');
-const { values } = require('../../helpers/native-boundaries.cjs').nativeBoundaries();
+const { values, failNextWrite } = require('../../helpers/native-boundaries.cjs').nativeBoundaries();
 const { mealResponse } = require('../../fixtures/server-meal.cjs');
 const { clearSession } = require('../../../src/data/storage/authStorage.ts');
-const { useSaveMeal } = require('../../../src/data/queries/mealQueries.ts');
+const { useSaveMeal, useMeals, useMealDraft, useMealDetail } = require('../../../src/data/queries/mealQueries.ts');
 const { useMealList } = require('../../../src/data/queries/mealLogQueries.ts');
 beforeEach(async () => { values.clear(); await clearSession(); });
 const { mealFromDraft } = require('../../../src/features/meal-checkin/rules.ts');
@@ -27,7 +27,12 @@ async function mountSaving(t) {
     foods: [{ ...mealResponse().foods[0], meal_id: '11' }] };
   const server = { items: [existing], writes: 0, reads: 0, failWrite: false, failList: false };
   t.mock.method(global, 'fetch', async (url, init = {}) => {
-    assert.equal(new URL(url).pathname + new URL(url).search, '/api/v1/meals');
+    const path = new URL(url).pathname + new URL(url).search;
+    if (path === '/api/v1/meals/10' && (init.method ?? 'GET') === 'GET') {
+      const meal = server.items.find(item => item.id === '10');
+      return meal ? json(meal) : Response.json({ error_code: 'NOT_FOUND' }, { status: 404 });
+    }
+    assert.equal(path, '/api/v1/meals');
     if ((init.method ?? 'GET') === 'GET') {
       server.reads++;
       return server.failList ? unavailable() : json(server.items);
@@ -72,5 +77,30 @@ test('식사 저장 후 목록 재조회가 실패하면 기존 목록을 유지
   server.failList = false;
   await act(async () => { await hook.current.list.refetch(); });
   await expectSaved(hook);
+  assert.equal(server.writes, 1);
+});
+
+test('기기 식사 목록 저장이 실패해도 서버 목록과 상세에 새 식사가 표시되고 기기 초안은 완료로 바뀐다', async t => {
+  const { hook, server, save } = await mountSaving(t);
+  // 기기 목록은 이미 조회한 상태로 시작해, 저장 실패 뒤 다시 읽었는지 확인한다.
+  hook.client.setQueryData(['meals', '1'], []);
+  const queries = await renderHook(t, () => ({
+    meals: useMeals('1'), draft: useMealDraft('1'), detail: useMealDetail('1', '10'),
+  }), { client: hook.client });
+  await waitFor(() => queries.current.detail.isError && queries.current.draft.isSuccess);
+  assert.deepEqual(hook.current.list.data.map(meal => meal.id), ['11']);
+  assert.equal(queries.current.meals.isFetchedAfterMount, false);
+  assert.equal(queries.current.draft.data.step, 'foods');
+
+  failNextWrite('nurturebites.meals.1.v1');
+  await act(async () => { assert.equal((await save()).id, '10'); });
+
+  await waitFor(() => hook.current.list.data.length === 2 && queries.current.detail.isSuccess
+    && queries.current.meals.isFetchedAfterMount && queries.current.draft.data.step === 'complete');
+  assert.deepEqual(hook.current.list.data.map(meal => meal.id), ['10', '11']);
+  assert.equal(queries.current.detail.data.id, '10');
+  assert.equal(queries.current.detail.data.foods[0].name, 'Rice');
+  assert.deepEqual(queries.current.meals.data, []);
+  assert.equal(queries.current.draft.data.savedMealId, '10');
   assert.equal(server.writes, 1);
 });

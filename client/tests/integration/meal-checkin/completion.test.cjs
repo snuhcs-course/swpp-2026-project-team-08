@@ -1,7 +1,7 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 식사 저장·재시도·Tried·기기 저장 실패 및 새 식사 시작·사진 첨부 완료 흐름 검증
-// AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
-// Changed: 식후 사진 확인 화면에 저장된 식전 사진 표시 검증
+// AI-generated with GPT-6.2 Astra, GPT-6, 2026-11-23, reviewed by Haechan Jung
+// Changed: 식후 사진 확인의 식전 사진 표시와 기기 식사 목록 저장 실패 후 새 식사 시작 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, input, click, enter, waitFor, act, deferred, modal, waitForModal,
@@ -172,13 +172,14 @@ test('추천을 연결한 식사 저장을 서버가 거절하면 입력이 유�
   assert.ok(app.container.textContent.includes('Tofu soup'));
 });
 
-test('서버 저장 후 기기 저장이 실패해도 완료 화면이 표시되고, 홈으로 돌아가면 저장한 식사가 보인다', async t => {
+test('기기 식사 목록 저장이 실패해도 완료 화면이 열리고 홈에서 저장한 식사를 열거나 새 식사를 시작할 수 있다', async t => {
   const { app } = await start(t);
+  const mealsKey = 'nurturebites.meals.1.v1';
   const write = t.mock.method(storage, 'setItem', storage.setItem);
-  failNextWrite('nurturebites.home.1.v1');
+  failNextWrite(mealsKey);
   await click(control(app, 'button', 'Save check-in'));
   await expectComplete(app, ['Carrot rice', 'Tofu soup']);
-  const failedWrite = write.mock.calls.find(call => call.arguments[0] === 'nurturebites.home.1.v1');
+  const failedWrite = write.mock.calls.find(call => call.arguments[0] === mealsKey);
   assert.ok(failedWrite);
   await assert.rejects(failedWrite.result, /Disk full/);
   await goHome(app);
@@ -188,6 +189,10 @@ test('서버 저장 후 기기 저장이 실패해도 완료 화면이 표시되
   await click(pendingMeal);
   await waitFor(() => app.pathname === '/after-meal-review' && app.container.textContent.includes('Continue without photo'));
   assert.equal(new URL(window.location.href).searchParams.get('mealId'), '900');
+  await click(control(app, 'button', 'Go back'));
+  await waitFor(() => app.pathname === '/home' && control(app, 'button', 'Log new meal'));
+  await click(control(app, 'button', 'Log new meal'));
+  await waitFor(() => app.pathname === '/meal-checkin' && control(app, 'heading', 'Meal details'));
 });
 
 test('식사 저장 후 홈에서 Log new meal을 누르면 초안 안내 없이 오늘의 새 식사가 열리고 이전 음식·사진·추천 연결은 남지 않는다', async t => {

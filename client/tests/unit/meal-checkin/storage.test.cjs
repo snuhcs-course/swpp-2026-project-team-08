@@ -5,8 +5,8 @@
 // Changed: 기존 초안의 조리법 미입력 복원과 나머지 입력 보존 검증
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 초안 저장 중복 검증 이동 및 과거 사진 분석 단계 복원 테스트 제거
-// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
-// Changed: Unit 테스트를 담당 기능·공통 컴포넌트 폴더로 이동
+// AI-generated with GPT-6, 2026-11-23, reviewed by Haechan Jung
+// Changed: Unit 테스트를 기능별로 이동하고 기존 홈 저장값의 호환성 검증
 const { test } = require('node:test');
 
 const assert = require('node:assert/strict');
@@ -29,7 +29,30 @@ const { newFood } = require('../../../src/rules/foodDraft.ts');
 
 const { isDraft } = require('../../../src/data/storage/mealValidation.ts');
 
-const { readMealDraft, saveMealDraft, readMeals } = require('../../../src/data/storage/mealStorage.ts');
+const { readMealDraft, saveMealDraft, readMeals, saveMeal, deleteLocalMeal } = require('../../../src/data/storage/mealStorage.ts');
+
+test('식사를 저장해도 홈에 식사 요약이 생기지 않고, 식사를 삭제하면 해당 식사에 연결된 추천만 사라진다', async () => {
+  const meal = mealFromDraft(completeDraft('home-records'));
+  const homeKey = `nurturebites.home.${meal.childId}.v1`;
+  await saveMeal(meal);
+  assert.equal(values.has(homeKey), false);
+
+  const unrelated = {
+    id: 'other', childId: meal.childId, title: 'Rice', description: '', ingredients: [],
+    isSaved: true, safetyVerifiedForProfileAt: 'v1',
+  };
+  const linked = { ...unrelated, id: 'linked', recommendation: {
+    mealId: meal.id, foodId: meal.foods[0].id, foodName: 'Rice', foodFormKey: 'rice',
+    reviewSavedAt: meal.savedAt, outcome: 'tasted', kind: 'small-separate-portion',
+  } };
+  values.set(homeKey, JSON.stringify({
+    meals: [{ id: meal.id, childId: meal.childId, mealDate: meal.mealDate }], suggestions: [linked, unrelated],
+  }));
+
+  await deleteLocalMeal(meal.childId, meal.id);
+  assert.deepEqual(await readMeals(meal.childId), []);
+  assert.deepEqual(JSON.parse(values.get(homeKey)), { suggestions: [unrelated] });
+});
 
 test('기존 초안은 지원하는 조리법을 유지하고 오래된 조리법만 미입력으로 복원한다', async () => {
   const draft = completeDraft('cooking-method-draft');
@@ -126,7 +149,7 @@ test('legacy goal drafts and receipts retain meals while discarding retired data
   assert.equal(Object.hasOwn(receipt, 'exposureFoodId'), false);
   const { readHomeRecords } = require('../../../src/data/storage/homeStorage.ts');
   values.set(`nurturebites.home.${child}.v1`, JSON.stringify({ meals: [], suggestions: [], exposures: [{ stage: 'touched' }] }));
-  assert.deepEqual(await readHomeRecords(child), { meals: [], suggestions: [] });
+  assert.deepEqual(await readHomeRecords(child), { suggestions: [] });
 });
 
 test('retired food history is removed from legacy drafts, editors, receipts and meals', async () => {

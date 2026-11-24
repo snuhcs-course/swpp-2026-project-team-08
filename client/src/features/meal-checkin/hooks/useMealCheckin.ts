@@ -15,6 +15,8 @@
 
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 사진 교체·삭제 규칙 및 재개 후 진행 여부에 따른 Ongoing Meal 복귀
+// AI-generated with GPT-6, 2026-11-24, reviewed by Seoyeon Heo
+// Changed: 식전 사진 건너뛰기 시 초안 사진 초기화
 
 import { hasMealDraftInput } from '../../../rules/mealDraft';
 import { useQueryClient } from '@tanstack/react-query';
@@ -27,7 +29,7 @@ import {
   readMealDraft,
   saveMealDraft,
 } from '../../../data/storage/mealStorage';
-import { pickMealPhoto, PhotoError } from '../../../data/device/mealPhotoPicker';
+import { deleteMealPhoto, pickMealPhoto, PhotoError } from '../../../data/device/mealPhotoPicker';
 import type {
   FoodItem,
   MealDraft,
@@ -163,9 +165,23 @@ export function useMealCheckin(childId: string, startAfterMealId?: string, fresh
     update({ editingSuggestionLink: snapshotLink(selected, food.id) });
   }, [suggestions, initialSuggestionId, update]);
   const go = (step: MealStep) => {
+    if (busy.current) return;
     photoRequest.current += 1;
     pickBusy.current = false;
     setPicking(false);
+    if (step === 'foods' && current.current?.step === 'photo' && current.current.photo) {
+      const photo = current.current.photo;
+      const value = { ...current.current, photo: null, step };
+      resumedWithoutProgress.current = false;
+      current.current = value;
+      setDraft(value);
+      void persist(value).then((saved) => {
+        if (saved) {
+          try { deleteMealPhoto(photo); } catch { /* Draft no longer references the file. */ }
+        }
+      });
+      return;
+    }
     update({ step });
   };
   const back = () => {

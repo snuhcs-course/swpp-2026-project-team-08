@@ -2,6 +2,8 @@
 <!-- Changed: 서버 초기 구성 -->
 <!-- AI-generated with GPT-6, 2026-10-26, reviewed by Haechan Jung -->
 <!-- Changed: AI 주석 규칙 및 문서 정리 -->
+<!-- AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung -->
+<!-- Changed: 재료 원본과 서버 assets 동시 커밋 규칙 -->
 
 # AGENTS.md
 
@@ -49,6 +51,13 @@
   요구사항 변경으로 테스트를 수정할 때는 바뀐 기대 동작과 수정 근거를 명시한다.
 - 검증하지 않은 결과를 완료로 보고하지 않는다. 실행한 검사, 실패 결과, 미실행 사유를 알린다.
 - `.env`나 비밀값을 읽어 출력하거나 코드·문서·로그에 노출하거나 커밋하지 않는다.
+
+## 재료 카탈로그 파일 관리
+
+- 재료·제한 판정의 최종 원본은 `data/ingredient_db/result/ingredients.jsonl`과
+  `data/ingredient_db/result/ingredients_restrictions.jsonl`이다.
+- 두 파일 중 하나라도 수정하면 두 파일을 `server/assets/`에 복사하고, 원본과 복사본의 변경을
+  같은 커밋에 포함한다. `server/assets/`의 복사본은 별도로 수정하지 않는다.
 
 ## Git 작업
 

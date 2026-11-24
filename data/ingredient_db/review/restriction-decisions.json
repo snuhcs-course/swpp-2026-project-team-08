@@ -1,0 +1,2778 @@
+{
+  "reviewer": "GPT-6 Astra, GPT-6",
+  "date": "2026-11-11",
+  "authorization": "사용자 지시: 끝났으면 제한 판정 결과 검토해서 최종 JSONL 생성이랑 검증까지 마저 해.",
+  "scope": "전체 판정 검색과 위험 후보 원문·세 판정 대조. 근거가 부족하거나 정책과 충돌하는 쌍만 보류하며 새로운 NEVER는 만들지 않는다.",
+  "votes_sha256": "948190b8c0948e51f1d79f0abc501c9788d8b5f0a5109e2889bb0a20cff5c442",
+  "policy_sha256": "5ec9ce838043932839ff1833e49658674912e43c0ac0f2dcdeffc7f9ba1b5e05",
+  "edits": [
+    {
+      "ingredient_id": 11,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Majority NEVER reasons affirm presence of the restricted constituent. Degree and rationale contradict; preserve votes and withhold the result.",
+      "review_rule": "degree_reason_reversal"
+    },
+    {
+      "ingredient_id": 13,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 13,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 20,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Majority NEVER reasons affirm presence of the restricted constituent. Degree and rationale contradict; preserve votes and withhold the result.",
+      "review_rule": "degree_reason_reversal"
+    },
+    {
+      "ingredient_id": 21,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 21,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 21,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 35,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 35,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 35,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 35,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 35,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 35,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 38,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 43,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 58,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 58,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 125,
+      "restriction_type": "VEGETARIAN.RED_MEAT",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Group includes source 173857 Bologna, turkey; beef/pork recipe cannot establish mammalian meat ALWAYS for the group.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 134,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Majority NEVER reasons affirm presence of the restricted constituent. Degree and rationale contradict; preserve votes and withhold the result.",
+      "review_rule": "degree_reason_reversal"
+    },
+    {
+      "ingredient_id": 154,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes unspecified vegetable oil(s); milk/butter identity alone does not identify oil source or retained allergen protein.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 163,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Commercial source gives product style and storage/fat form, not a universal formula; majority assumes customary cheese/egg/fish/nut recipe applies to every product.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 163,
+      "restriction_type": "ALLERGY.FISH",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Commercial source gives product style and storage/fat form, not a universal formula; majority assumes customary cheese/egg/fish/nut recipe applies to every product.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 163,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Commercial source gives product style and storage/fat form, not a universal formula; majority assumes customary cheese/egg/fish/nut recipe applies to every product.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 163,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Commercial source gives product style and storage/fat form, not a universal formula; majority assumes customary cheese/egg/fish/nut recipe applies to every product.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 163,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Commercial source gives product style and storage/fat form, not a universal formula; majority assumes customary cheese/egg/fish/nut recipe applies to every product.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 163,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Commercial source gives product style and storage/fat form, not a universal formula; majority assumes customary cheese/egg/fish/nut recipe applies to every product.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 163,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Commercial source gives product style and storage/fat form, not a universal formula; majority assumes customary cheese/egg/fish/nut recipe applies to every product.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 163,
+      "restriction_type": "VEGETARIAN.SEAFOOD",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Commercial source gives product style and storage/fat form, not a universal formula; majority assumes customary cheese/egg/fish/nut recipe applies to every product.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 169,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 169,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 169,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 169,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 169,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 169,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 169,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 169,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 170,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 170,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 170,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 170,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 170,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 170,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 170,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 170,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 187,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 187,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 215,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 215,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 215,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 215,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 215,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 215,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 219,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 219,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 219,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 219,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 219,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 219,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 230,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 230,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 230,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 230,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 230,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 230,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 232,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 232,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 232,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 232,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 232,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 232,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 240,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 240,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 240,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 240,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 240,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 240,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 244,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 248,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 255,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Ghee/anhydrous butter oil source does not establish residual milk protein/casein/lactose. Milk origin establishes DAIRY provenance, not residual restricted constituents.",
+      "review_rule": "unverified_processing_residue"
+    },
+    {
+      "ingredient_id": 255,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "DEPENDS_ON_PRODUCT",
+      "after": "UNKNOWN",
+      "reason": "Ghee/anhydrous butter oil source does not establish residual milk protein/casein/lactose. Milk origin establishes DAIRY provenance, not residual restricted constituents.",
+      "review_rule": "unverified_processing_residue"
+    },
+    {
+      "ingredient_id": 255,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "DEPENDS_ON_PRODUCT",
+      "after": "UNKNOWN",
+      "reason": "Ghee/anhydrous butter oil source does not establish residual milk protein/casein/lactose. Milk origin establishes DAIRY provenance, not residual restricted constituents.",
+      "review_rule": "unverified_processing_residue"
+    },
+    {
+      "ingredient_id": 260,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 260,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 260,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 260,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 260,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 260,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 261,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 262,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 266,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Coconut tree-nut classification is not established by policy; legal/botanical assertions in votes conflict. FDA current guidance no longer lists coconut as a major tree-nut allergen, but legal exemption does not establish NEVER. https://www.fda.gov/food/food-allergensgluten-free-guidance-documents-regulatory-information/frequently-asked-questions-food-allergen-labeling-guidance-industry",
+      "review_rule": "unsupported_coconut_category"
+    },
+    {
+      "ingredient_id": 268,
+      "restriction_type": "ALLERGY.FISH",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Cod liver oil fish origin alone does not establish retained fish protein; extraction/refinement is unspecified.",
+      "review_rule": "unverified_processing_residue"
+    },
+    {
+      "ingredient_id": 277,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 279,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Corn/rice gluten-free pasta description is not a full formulation or proof of absence of wheat protein; gluten-free and wheat-free are separate policy tests.",
+      "review_rule": "gluten_not_wheat"
+    },
+    {
+      "ingredient_id": 285,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Corn/rice gluten-free pasta description is not a full formulation or proof of absence of wheat protein; gluten-free and wheat-free are separate policy tests.",
+      "review_rule": "gluten_not_wheat"
+    },
+    {
+      "ingredient_id": 312,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Majority NEVER reasons affirm presence of the restricted constituent. Degree and rationale contradict; preserve votes and withhold the result.",
+      "review_rule": "degree_reason_reversal"
+    },
+    {
+      "ingredient_id": 317,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 317,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 329,
+      "restriction_type": "ALLERGY.FISH",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Devilfish Alaska Native source is not established as finfish; votes conflict between mollusk identity and USDA Fish category. Category heading is not sufficient taxonomic evidence.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 346,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Coconut tree-nut classification is not established by policy; legal/botanical assertions in votes conflict. FDA current guidance no longer lists coconut as a major tree-nut allergen, but legal exemption does not establish NEVER. https://www.fda.gov/food/food-allergensgluten-free-guidance-documents-regulatory-information/frequently-asked-questions-food-allergen-labeling-guidance-industry",
+      "review_rule": "unsupported_coconut_category"
+    },
+    {
+      "ingredient_id": 352,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 352,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 352,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 367,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 367,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 367,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 408,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 408,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 438,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 438,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 438,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 438,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 438,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 438,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 466,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 469,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 469,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 503,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 503,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 503,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 503,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 503,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 503,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 506,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 515,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 515,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 515,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 515,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 515,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 515,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 515,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 515,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 615,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 620,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 620,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 620,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 625,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes unspecified vegetable oil(s); milk/butter identity alone does not identify oil source or retained allergen protein.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 625,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes unspecified vegetable oil(s); milk/butter identity alone does not identify oil source or retained allergen protein.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 625,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes unspecified vegetable oil(s); milk/butter identity alone does not identify oil source or retained allergen protein.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 627,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Non-soy imitation milk specifies only soy absence; its replacement base is unspecified. Majority infers absence of other base ingredients without a formulation.",
+      "review_rule": "unspecified_replacement_base"
+    },
+    {
+      "ingredient_id": 627,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Non-soy imitation milk specifies only soy absence; its replacement base is unspecified. Majority infers absence of other base ingredients without a formulation.",
+      "review_rule": "unspecified_replacement_base"
+    },
+    {
+      "ingredient_id": 627,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Non-soy imitation milk specifies only soy absence; its replacement base is unspecified. Majority infers absence of other base ingredients without a formulation.",
+      "review_rule": "unspecified_replacement_base"
+    },
+    {
+      "ingredient_id": 627,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Non-soy imitation milk specifies only soy absence; its replacement base is unspecified. Majority infers absence of other base ingredients without a formulation.",
+      "review_rule": "unspecified_replacement_base"
+    },
+    {
+      "ingredient_id": 627,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Non-soy imitation milk specifies only soy absence; its replacement base is unspecified. Majority infers absence of other base ingredients without a formulation.",
+      "review_rule": "unspecified_replacement_base"
+    },
+    {
+      "ingredient_id": 627,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Non-soy imitation milk specifies only soy absence; its replacement base is unspecified. Majority infers absence of other base ingredients without a formulation.",
+      "review_rule": "unspecified_replacement_base"
+    },
+    {
+      "ingredient_id": 634,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 655,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 655,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 677,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Source only says nuts in syrup; unspecified nut kind does not establish tree nuts rather than peanuts, which policy separates.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 677,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Source only says nuts in syrup; unspecified nut kind does not establish tree nuts rather than peanuts, which policy separates.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 692,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 692,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 707,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 707,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 707,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 707,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 707,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 707,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 708,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 709,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 722,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 722,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 722,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 722,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 722,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 722,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 728,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 728,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Majority counts peanut as a nut/seed; policy explicitly excludes legumes, including peanuts, from NUTS_SEEDS. Product additives cannot be invented to justify ALWAYS.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 729,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Majority counts peanut as a nut/seed; policy explicitly excludes legumes, including peanuts, from NUTS_SEEDS. Product additives cannot be invented to justify ALWAYS.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 730,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Majority counts peanut as a nut/seed; policy explicitly excludes legumes, including peanuts, from NUTS_SEEDS. Product additives cannot be invented to justify ALWAYS.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 731,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Majority counts peanut as a nut/seed; policy explicitly excludes legumes, including peanuts, from NUTS_SEEDS. Product additives cannot be invented to justify ALWAYS.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 732,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Majority counts peanut as a nut/seed; policy explicitly excludes legumes, including peanuts, from NUTS_SEEDS. Product additives cannot be invented to justify ALWAYS.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 736,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 736,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 744,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 744,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Commercial source gives product style and storage/fat form, not a universal formula; majority assumes customary cheese/egg/fish/nut recipe applies to every product.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 744,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Commercial source gives product style and storage/fat form, not a universal formula; majority assumes customary cheese/egg/fish/nut recipe applies to every product.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 744,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 744,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Commercial source gives product style and storage/fat form, not a universal formula; majority assumes customary cheese/egg/fish/nut recipe applies to every product.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 744,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 744,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Commercial source gives product style and storage/fat form, not a universal formula; majority assumes customary cheese/egg/fish/nut recipe applies to every product.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 744,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 744,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Commercial source gives product style and storage/fat form, not a universal formula; majority assumes customary cheese/egg/fish/nut recipe applies to every product.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 772,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 772,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 772,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 772,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 772,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 772,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 772,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 772,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 772,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 772,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 775,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 775,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 775,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 775,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 775,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 775,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 791,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 791,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 791,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 791,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 791,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 791,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 791,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 791,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 800,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 800,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 800,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 800,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 800,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 800,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 800,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 800,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 805,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 805,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 805,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 805,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 805,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 805,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 805,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 805,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 809,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 809,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 809,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 809,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 809,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 809,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 809,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 809,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 895,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 899,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 899,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 899,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 899,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 899,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 899,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 931,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 949,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Unqualified soba source does not specify wheat content; majority assumes a traditional wheat-containing recipe universally.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 949,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Unqualified soba source does not specify wheat content; majority assumes a traditional wheat-containing recipe universally.",
+      "review_rule": "recipe_assumed_universal"
+    },
+    {
+      "ingredient_id": 958,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "DEPENDS_ON_PRODUCT",
+      "after": "UNKNOWN",
+      "reason": "Soy lecithin reasons rely on unspecified refining/protein retention; source does not establish that processing fact.",
+      "review_rule": "unverified_processing_residue"
+    },
+    {
+      "ingredient_id": 964,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source includes an edible seed or seed-derived oil/cocoa; majority excludes it by treating only nuts or the final processed product as this category. Policy includes edible seed derivatives and excludes only grains/legumes.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 981,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 981,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 981,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 981,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 981,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 981,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 992,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 992,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 992,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 997,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 997,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 1000,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1000,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1000,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1000,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1001,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1001,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1001,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1001,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1001,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1001,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1009,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1009,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1023,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1023,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1023,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1023,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1023,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1023,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1045,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 1048,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1048,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1048,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1048,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1048,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1048,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1050,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1050,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1050,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1050,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1050,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1050,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1052,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1052,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1052,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1052,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1052,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1052,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1053,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1053,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1053,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1053,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1053,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1053,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1055,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1055,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1055,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1055,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1055,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1055,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1055,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1055,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1064,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1064,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1064,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1064,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1064,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1064,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1064,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1064,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1069,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1069,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1069,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1069,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1069,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1069,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1069,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1069,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1070,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1070,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1070,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1070,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1070,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1070,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1070,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1070,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1071,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1071,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1071,
+      "restriction_type": "ALLERGY.WHEAT",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1071,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1071,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1071,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1071,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1071,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes added solution/broth with unspecified formulation. Majority reasons use plain meat identity to deny potential solution constituents without evaluating that declared addition.",
+      "review_rule": "declared_solution_ignored"
+    },
+    {
+      "ingredient_id": 1076,
+      "restriction_type": "VEGETARIAN.SEAFOOD",
+      "before": "ALWAYS",
+      "after": "UNKNOWN",
+      "reason": "Green turtle is a reptile; policy seafood is limited to fish, crustaceans and mollusks. Aquatic habitat/USDA category cannot establish ALWAYS.",
+      "review_rule": "source_identity_or_category_conflict"
+    },
+    {
+      "ingredient_id": 1150,
+      "restriction_type": "ALLERGY.SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 1150,
+      "restriction_type": "VEGETARIAN.LEGUMES_SOY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 1150,
+      "restriction_type": "VEGETARIAN.NUTS_SEEDS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Source explicitly includes oil roasting or oil packing but does not identify the oil. Majority evaluates only the base food; added oil origin/protein cannot be determined.",
+      "review_rule": "unspecified_added_oil"
+    },
+    {
+      "ingredient_id": 1160,
+      "restriction_type": "ALLERGY.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1160,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1160,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1160,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1160,
+      "restriction_type": "VEGETARIAN.DAIRY",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    },
+    {
+      "ingredient_id": 1160,
+      "restriction_type": "VEGETARIAN.EGGS",
+      "before": "NEVER",
+      "after": "UNKNOWN",
+      "reason": "Commercial compound sauce/dressing/dip/gravy/seasoning has no complete formula in these sources. Majority asserts this constituent is absent based on the generic product name/typical recipe, without source composition establishing absence. This is formulation uncertainty, not cross-contact or animal feed.",
+      "review_rule": "unverified_compound_formula"
+    }
+  ]
+}

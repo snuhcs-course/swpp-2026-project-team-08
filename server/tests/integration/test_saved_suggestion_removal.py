@@ -1,5 +1,7 @@
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 저장 목록 제거와 시도 기록 보존 검증
+# AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung
+# Changed: 영어 추천 fixture와 카탈로그·가짜 판정기의 재료명 일치
 
 """실제 API·SQLite로 보관 해제, 재저장, 권한과 시도 이력을 검증한다."""
 
@@ -17,12 +19,12 @@ from tests.helpers.suggestions import batch, install_model, save_profile, seed_i
 async def prepare_suggestions(client, monkeypatch):
     owner = await auth_headers(client, "saved-removal@example.com")
     await save_profile(client, owner)
-    await seed_ingredient("쌀")
+    await seed_ingredient("Rice")
     install_model(monkeypatch, [batch("0", "1")])
     created = await client.put(
         "/api/v1/meals",
         headers=owner,
-        json=meal_payload(food_payload("Potato"), food_payload("Rice", "쌀")),
+        json=meal_payload(food_payload("Potato"), food_payload("Rice", "Rice")),
     )
     assert created.status_code == 200, created.text
     meal = created.json()

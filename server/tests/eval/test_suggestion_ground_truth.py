@@ -1,9 +1,11 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-06, reviewed by Jaemin Kim
 # Changed: 추천 가드레일 ground-truth 평가 세트와 사전 선언 임계값 평가 추가
+# AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung
+# Changed: 고정 평가 사례를 원본 한국어 카탈로그 스냅샷으로 검증
 
 """추천 결과 가드레일의 ground-truth 평가.
 
-`suggestion_ground_truth.json` 의 후보 제안을 실제 재료 카탈로그(`assets/*.jsonl`)에 적재한
+`suggestion_ground_truth.json` 의 후보 제안을 원본 한국어 카탈로그 스냅샷을 적재한
 격리된 DB 에서 `load_catalog` + `find_problems` 로 판정하고, `thresholds.json` 에 미리 선언한
 기준과 비교한다. LLM 을 호출하지 않는다.
 
@@ -22,10 +24,9 @@ from app.features.suggestions.validation import find_problems
 from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
 from app.models.meal_enums import MealCookingMethod
 from app.models.restriction_enums import RestrictionType
-from scripts.load_ingredients import import_catalog
+from tests.helpers.legacy_catalog import seed_legacy_catalog
 
 HERE = Path(__file__).resolve().parent
-ASSETS = HERE.parents[1] / "assets"
 RESTRICTION_GROUPS = {"allergy", "dietary_approach", "depends_on_product", "multiple_restrictions"}
 
 
@@ -123,9 +124,7 @@ async def test_ground_truth_cases_meet_the_declared_thresholds(session_factory) 
     spec, limits = load_json("suggestion_ground_truth.json"), load_json("thresholds.json")
 
     async with session_factory() as session:
-        await import_catalog(
-            session, ASSETS / "ingredients.jsonl", ASSETS / "ingredients_restrictions.jsonl"
-        )
+        await seed_legacy_catalog(session)
         await session.commit()
         outcomes = await evaluate(session, spec)
 

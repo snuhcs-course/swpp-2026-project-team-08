@@ -4,6 +4,8 @@
 
 <!-- AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim -->
 <!-- Changed: 추천 가드레일 평가(eval/)와 판정 모델 평가 실행 안내 추가 -->
+<!-- AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung -->
+<!-- Changed: 고정 한국어 평가 사례의 원본 카탈로그와 영어 카탈로그 검증 범위 구분 -->
 
 # Backend 테스트 기준
 
@@ -42,6 +44,12 @@
 
 정답 세트와 기준은 사례를 보기 전에 선언하고, 사례는 추가만 하며 수정·삭제하지 않는다.
 기준을 바꿀 때는 원래 값 옆에 새 값을 적고 이유를 남긴다.
+
+기존 한국어 사례는 `fixtures/legacy_ingredient_catalog.json`의 원본 카탈로그로 검증한다.
+스냅샷은 `_meta.source_commit`의 `server/assets/`에서 사례에 등장하는 재료와 해당 재료의
+모든 판정 행을 그대로 보존한다. 평가 JSON의 `assets/` 출처는 이 원본을 가리키며,
+기존 사례·기대값·통과 기준은 바꾸지 않는다. 현재 영어 assets의 적재·제한별 조회·추천 연결은
+`integration/test_suggestion_catalog.py`와 재료 데이터 테스트가 검증한다.
 
 | 대상 | 정답 세트·기준 | 실행 |
 |---|---|---|

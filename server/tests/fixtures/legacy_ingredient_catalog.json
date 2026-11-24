@@ -1,0 +1,3022 @@
+{
+  "_meta": {
+    "ai_history": [
+      "AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung",
+      "Changed: 변경 불가한 한국어 평가 사례의 원본 재료·판정 보존"
+    ],
+    "source_commit": "485ae10e9b9dc2cf4cac11105711768f0a6f8c39",
+    "source_paths": [
+      "server/assets/ingredients.jsonl",
+      "server/assets/ingredients_restrictions.jsonl"
+    ],
+    "scope": "Original rows for every ingredient named by the frozen evaluation cases; all original judgements for those ingredient IDs. Expected outcomes are not used to select judgements."
+  },
+  "ingredients": [
+    {
+      "id": 42,
+      "korean_name": "감자",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 52,
+      "korean_name": "강력밀가루",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 84,
+      "korean_name": "게맛살",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 91,
+      "korean_name": "고구마",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 99,
+      "korean_name": "고다 치즈",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 146,
+      "korean_name": "국수",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 271,
+      "korean_name": "달걀",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 288,
+      "korean_name": "닭고기",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 298,
+      "korean_name": "당근",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 373,
+      "korean_name": "돼지고기",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 402,
+      "korean_name": "된장",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 408,
+      "korean_name": "두부",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 409,
+      "korean_name": "두유",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 428,
+      "korean_name": "땅콩",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 430,
+      "korean_name": "땅콩 버터",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 454,
+      "korean_name": "리코타 치즈",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 554,
+      "korean_name": "멸치",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 625,
+      "korean_name": "바나나",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 748,
+      "korean_name": "브로콜리",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 786,
+      "korean_name": "사과",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 831,
+      "korean_name": "새우",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1016,
+      "korean_name": "아몬드",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1067,
+      "korean_name": "어묵",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1083,
+      "korean_name": "연어",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1163,
+      "korean_name": "우유",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1318,
+      "korean_name": "참기름",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1320,
+      "korean_name": "참깨",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1423,
+      "korean_name": "콩나물",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1458,
+      "korean_name": "토마토",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1561,
+      "korean_name": "호두",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    }
+  ],
+  "restrictions": [
+    {
+      "id": 477,
+      "ingredient_id": 42,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 478,
+      "ingredient_id": 42,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 479,
+      "ingredient_id": 42,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 480,
+      "ingredient_id": 42,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 481,
+      "ingredient_id": 42,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 482,
+      "ingredient_id": 42,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 483,
+      "ingredient_id": 42,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 484,
+      "ingredient_id": 42,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 485,
+      "ingredient_id": 42,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 486,
+      "ingredient_id": 42,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 487,
+      "ingredient_id": 42,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 488,
+      "ingredient_id": 42,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 584,
+      "ingredient_id": 52,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 585,
+      "ingredient_id": 52,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 586,
+      "ingredient_id": 52,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 587,
+      "ingredient_id": 52,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 588,
+      "ingredient_id": 52,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 589,
+      "ingredient_id": 52,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 590,
+      "ingredient_id": 52,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 591,
+      "ingredient_id": 52,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 592,
+      "ingredient_id": 52,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 593,
+      "ingredient_id": 52,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 594,
+      "ingredient_id": 52,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 595,
+      "ingredient_id": 52,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 968,
+      "ingredient_id": 84,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "DEPENDS_ON_PRODUCT",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 969,
+      "ingredient_id": 84,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 970,
+      "ingredient_id": 84,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "DEPENDS_ON_PRODUCT",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 971,
+      "ingredient_id": 84,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 972,
+      "ingredient_id": 84,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 973,
+      "ingredient_id": 84,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 974,
+      "ingredient_id": 84,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "DEPENDS_ON_PRODUCT",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 975,
+      "ingredient_id": 84,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 976,
+      "ingredient_id": 84,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "DEPENDS_ON_PRODUCT",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1031,
+      "ingredient_id": 91,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1032,
+      "ingredient_id": 91,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1033,
+      "ingredient_id": 91,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1034,
+      "ingredient_id": 91,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1035,
+      "ingredient_id": 91,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1036,
+      "ingredient_id": 91,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1037,
+      "ingredient_id": 91,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1038,
+      "ingredient_id": 91,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1039,
+      "ingredient_id": 91,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1040,
+      "ingredient_id": 91,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1041,
+      "ingredient_id": 91,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1042,
+      "ingredient_id": 91,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1112,
+      "ingredient_id": 99,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1113,
+      "ingredient_id": 99,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1114,
+      "ingredient_id": 99,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1115,
+      "ingredient_id": 99,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1116,
+      "ingredient_id": 99,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "DEPENDS_ON_PRODUCT",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1117,
+      "ingredient_id": 99,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1118,
+      "ingredient_id": 99,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1119,
+      "ingredient_id": 99,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1120,
+      "ingredient_id": 99,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1121,
+      "ingredient_id": 99,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1122,
+      "ingredient_id": 99,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1123,
+      "ingredient_id": 99,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1663,
+      "ingredient_id": 146,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1664,
+      "ingredient_id": 146,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1665,
+      "ingredient_id": 146,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1666,
+      "ingredient_id": 146,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1667,
+      "ingredient_id": 146,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1668,
+      "ingredient_id": 146,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1669,
+      "ingredient_id": 146,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1670,
+      "ingredient_id": 146,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1671,
+      "ingredient_id": 146,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1672,
+      "ingredient_id": 146,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1673,
+      "ingredient_id": 146,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 1674,
+      "ingredient_id": 146,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3111,
+      "ingredient_id": 271,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3112,
+      "ingredient_id": 271,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3113,
+      "ingredient_id": 271,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3114,
+      "ingredient_id": 271,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3115,
+      "ingredient_id": 271,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3116,
+      "ingredient_id": 271,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3117,
+      "ingredient_id": 271,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3118,
+      "ingredient_id": 271,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3119,
+      "ingredient_id": 271,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3120,
+      "ingredient_id": 271,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3121,
+      "ingredient_id": 271,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3122,
+      "ingredient_id": 271,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3315,
+      "ingredient_id": 288,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3316,
+      "ingredient_id": 288,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3317,
+      "ingredient_id": 288,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3318,
+      "ingredient_id": 288,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3319,
+      "ingredient_id": 288,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3320,
+      "ingredient_id": 288,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3321,
+      "ingredient_id": 288,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3322,
+      "ingredient_id": 288,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3323,
+      "ingredient_id": 288,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3324,
+      "ingredient_id": 288,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3325,
+      "ingredient_id": 288,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3326,
+      "ingredient_id": 288,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3435,
+      "ingredient_id": 298,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3436,
+      "ingredient_id": 298,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3437,
+      "ingredient_id": 298,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3438,
+      "ingredient_id": 298,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3439,
+      "ingredient_id": 298,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3440,
+      "ingredient_id": 298,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3441,
+      "ingredient_id": 298,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3442,
+      "ingredient_id": 298,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3443,
+      "ingredient_id": 298,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3444,
+      "ingredient_id": 298,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3445,
+      "ingredient_id": 298,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 3446,
+      "ingredient_id": 298,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4330,
+      "ingredient_id": 373,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4331,
+      "ingredient_id": 373,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4332,
+      "ingredient_id": 373,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4333,
+      "ingredient_id": 373,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4334,
+      "ingredient_id": 373,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4335,
+      "ingredient_id": 373,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4336,
+      "ingredient_id": 373,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4337,
+      "ingredient_id": 373,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4338,
+      "ingredient_id": 373,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4339,
+      "ingredient_id": 373,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4340,
+      "ingredient_id": 373,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4341,
+      "ingredient_id": 373,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4678,
+      "ingredient_id": 402,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4679,
+      "ingredient_id": 402,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4680,
+      "ingredient_id": 402,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4681,
+      "ingredient_id": 402,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "DEPENDS_ON_PRODUCT",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4682,
+      "ingredient_id": 402,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4683,
+      "ingredient_id": 402,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4684,
+      "ingredient_id": 402,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4685,
+      "ingredient_id": 402,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4686,
+      "ingredient_id": 402,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4687,
+      "ingredient_id": 402,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4688,
+      "ingredient_id": 402,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4689,
+      "ingredient_id": 402,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "DEPENDS_ON_PRODUCT",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4744,
+      "ingredient_id": 408,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4745,
+      "ingredient_id": 408,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4746,
+      "ingredient_id": 408,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4747,
+      "ingredient_id": 408,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4748,
+      "ingredient_id": 408,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4749,
+      "ingredient_id": 408,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4750,
+      "ingredient_id": 408,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4751,
+      "ingredient_id": 408,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4752,
+      "ingredient_id": 408,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4753,
+      "ingredient_id": 408,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4754,
+      "ingredient_id": 408,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4755,
+      "ingredient_id": 408,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4756,
+      "ingredient_id": 409,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4757,
+      "ingredient_id": 409,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4758,
+      "ingredient_id": 409,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4759,
+      "ingredient_id": 409,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4760,
+      "ingredient_id": 409,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4761,
+      "ingredient_id": 409,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4762,
+      "ingredient_id": 409,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4763,
+      "ingredient_id": 409,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4764,
+      "ingredient_id": 409,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4765,
+      "ingredient_id": 409,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4766,
+      "ingredient_id": 409,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4767,
+      "ingredient_id": 409,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4978,
+      "ingredient_id": 428,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4979,
+      "ingredient_id": 428,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4980,
+      "ingredient_id": 428,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4981,
+      "ingredient_id": 428,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4982,
+      "ingredient_id": 428,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4983,
+      "ingredient_id": 428,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4984,
+      "ingredient_id": 428,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4985,
+      "ingredient_id": 428,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4986,
+      "ingredient_id": 428,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4987,
+      "ingredient_id": 428,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4988,
+      "ingredient_id": 428,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 4989,
+      "ingredient_id": 428,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5002,
+      "ingredient_id": 430,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5003,
+      "ingredient_id": 430,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5004,
+      "ingredient_id": 430,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5005,
+      "ingredient_id": 430,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5006,
+      "ingredient_id": 430,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5007,
+      "ingredient_id": 430,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5008,
+      "ingredient_id": 430,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5009,
+      "ingredient_id": 430,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5010,
+      "ingredient_id": 430,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5011,
+      "ingredient_id": 430,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5012,
+      "ingredient_id": 430,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5013,
+      "ingredient_id": 430,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5289,
+      "ingredient_id": 454,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5290,
+      "ingredient_id": 454,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5291,
+      "ingredient_id": 454,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5292,
+      "ingredient_id": 454,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5293,
+      "ingredient_id": 454,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "DEPENDS_ON_PRODUCT",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5294,
+      "ingredient_id": 454,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5295,
+      "ingredient_id": 454,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5296,
+      "ingredient_id": 454,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5297,
+      "ingredient_id": 454,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5298,
+      "ingredient_id": 454,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5299,
+      "ingredient_id": 454,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 5300,
+      "ingredient_id": 454,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 6412,
+      "ingredient_id": 554,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 6413,
+      "ingredient_id": 554,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 6414,
+      "ingredient_id": 554,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 6415,
+      "ingredient_id": 554,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 6416,
+      "ingredient_id": 554,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 6417,
+      "ingredient_id": 554,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 6418,
+      "ingredient_id": 554,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 6419,
+      "ingredient_id": 554,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 6420,
+      "ingredient_id": 554,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 6421,
+      "ingredient_id": 554,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 6422,
+      "ingredient_id": 554,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 6423,
+      "ingredient_id": 554,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 7197,
+      "ingredient_id": 625,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 7198,
+      "ingredient_id": 625,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 7199,
+      "ingredient_id": 625,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 7200,
+      "ingredient_id": 625,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 7201,
+      "ingredient_id": 625,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 7202,
+      "ingredient_id": 625,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 7203,
+      "ingredient_id": 625,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 7204,
+      "ingredient_id": 625,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 7205,
+      "ingredient_id": 625,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 7206,
+      "ingredient_id": 625,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 7207,
+      "ingredient_id": 625,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 7208,
+      "ingredient_id": 625,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 8647,
+      "ingredient_id": 748,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 8648,
+      "ingredient_id": 748,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 8649,
+      "ingredient_id": 748,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 8650,
+      "ingredient_id": 748,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 8651,
+      "ingredient_id": 748,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 8652,
+      "ingredient_id": 748,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 8653,
+      "ingredient_id": 748,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 8654,
+      "ingredient_id": 748,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 8655,
+      "ingredient_id": 748,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 8656,
+      "ingredient_id": 748,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 8657,
+      "ingredient_id": 748,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 8658,
+      "ingredient_id": 748,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9097,
+      "ingredient_id": 786,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9098,
+      "ingredient_id": 786,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9099,
+      "ingredient_id": 786,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9100,
+      "ingredient_id": 786,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9101,
+      "ingredient_id": 786,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9102,
+      "ingredient_id": 786,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9103,
+      "ingredient_id": 786,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9104,
+      "ingredient_id": 786,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9105,
+      "ingredient_id": 786,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9106,
+      "ingredient_id": 786,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9107,
+      "ingredient_id": 786,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9108,
+      "ingredient_id": 786,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9609,
+      "ingredient_id": 831,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9610,
+      "ingredient_id": 831,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9611,
+      "ingredient_id": 831,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9612,
+      "ingredient_id": 831,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9613,
+      "ingredient_id": 831,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9614,
+      "ingredient_id": 831,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9615,
+      "ingredient_id": 831,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9616,
+      "ingredient_id": 831,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9617,
+      "ingredient_id": 831,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9618,
+      "ingredient_id": 831,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9619,
+      "ingredient_id": 831,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 9620,
+      "ingredient_id": 831,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 11754,
+      "ingredient_id": 1016,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 11755,
+      "ingredient_id": 1016,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 11756,
+      "ingredient_id": 1016,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 11757,
+      "ingredient_id": 1016,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 11758,
+      "ingredient_id": 1016,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 11759,
+      "ingredient_id": 1016,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 11760,
+      "ingredient_id": 1016,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 11761,
+      "ingredient_id": 1016,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 11762,
+      "ingredient_id": 1016,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 11763,
+      "ingredient_id": 1016,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 11764,
+      "ingredient_id": 1016,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 11765,
+      "ingredient_id": 1016,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12362,
+      "ingredient_id": 1067,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "DEPENDS_ON_PRODUCT",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12363,
+      "ingredient_id": 1067,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12364,
+      "ingredient_id": 1067,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "DEPENDS_ON_PRODUCT",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12365,
+      "ingredient_id": 1067,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "DEPENDS_ON_PRODUCT",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12366,
+      "ingredient_id": 1067,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12367,
+      "ingredient_id": 1067,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12368,
+      "ingredient_id": 1067,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12369,
+      "ingredient_id": 1067,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "DEPENDS_ON_PRODUCT",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12370,
+      "ingredient_id": 1067,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12547,
+      "ingredient_id": 1083,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12548,
+      "ingredient_id": 1083,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12549,
+      "ingredient_id": 1083,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12550,
+      "ingredient_id": 1083,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12551,
+      "ingredient_id": 1083,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12552,
+      "ingredient_id": 1083,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12553,
+      "ingredient_id": 1083,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12554,
+      "ingredient_id": 1083,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12555,
+      "ingredient_id": 1083,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12556,
+      "ingredient_id": 1083,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12557,
+      "ingredient_id": 1083,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 12558,
+      "ingredient_id": 1083,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 13477,
+      "ingredient_id": 1163,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 13478,
+      "ingredient_id": 1163,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 13479,
+      "ingredient_id": 1163,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 13480,
+      "ingredient_id": 1163,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 13481,
+      "ingredient_id": 1163,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 13482,
+      "ingredient_id": 1163,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 13483,
+      "ingredient_id": 1163,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 13484,
+      "ingredient_id": 1163,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 13485,
+      "ingredient_id": 1163,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 13486,
+      "ingredient_id": 1163,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 13487,
+      "ingredient_id": 1163,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 13488,
+      "ingredient_id": 1163,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15254,
+      "ingredient_id": 1318,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15255,
+      "ingredient_id": 1318,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15256,
+      "ingredient_id": 1318,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15257,
+      "ingredient_id": 1318,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15258,
+      "ingredient_id": 1318,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15259,
+      "ingredient_id": 1318,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15260,
+      "ingredient_id": 1318,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15261,
+      "ingredient_id": 1318,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15262,
+      "ingredient_id": 1318,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15263,
+      "ingredient_id": 1318,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15264,
+      "ingredient_id": 1318,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15277,
+      "ingredient_id": 1320,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15278,
+      "ingredient_id": 1320,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15279,
+      "ingredient_id": 1320,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15280,
+      "ingredient_id": 1320,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15281,
+      "ingredient_id": 1320,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15282,
+      "ingredient_id": 1320,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15283,
+      "ingredient_id": 1320,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15284,
+      "ingredient_id": 1320,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15285,
+      "ingredient_id": 1320,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15286,
+      "ingredient_id": 1320,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15287,
+      "ingredient_id": 1320,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 15288,
+      "ingredient_id": 1320,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16485,
+      "ingredient_id": 1423,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16486,
+      "ingredient_id": 1423,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16487,
+      "ingredient_id": 1423,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16488,
+      "ingredient_id": 1423,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16489,
+      "ingredient_id": 1423,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16490,
+      "ingredient_id": 1423,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16491,
+      "ingredient_id": 1423,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16492,
+      "ingredient_id": 1423,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16493,
+      "ingredient_id": 1423,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16494,
+      "ingredient_id": 1423,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16495,
+      "ingredient_id": 1423,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16496,
+      "ingredient_id": 1423,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16894,
+      "ingredient_id": 1458,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16895,
+      "ingredient_id": 1458,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16896,
+      "ingredient_id": 1458,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16897,
+      "ingredient_id": 1458,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16898,
+      "ingredient_id": 1458,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16899,
+      "ingredient_id": 1458,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16900,
+      "ingredient_id": 1458,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16901,
+      "ingredient_id": 1458,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16902,
+      "ingredient_id": 1458,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16903,
+      "ingredient_id": 1458,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16904,
+      "ingredient_id": 1458,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 16905,
+      "ingredient_id": 1458,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 18077,
+      "ingredient_id": 1561,
+      "restriction_type": "DIETARY_APPROACH.CASEIN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 18078,
+      "ingredient_id": 1561,
+      "restriction_type": "ALLERGY.EGGS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 18079,
+      "ingredient_id": 1561,
+      "restriction_type": "ALLERGY.FISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 18080,
+      "ingredient_id": 1561,
+      "restriction_type": "DIETARY_APPROACH.GLUTEN_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 18081,
+      "ingredient_id": 1561,
+      "restriction_type": "DIETARY_APPROACH.LACTOSE_FREE",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 18082,
+      "ingredient_id": 1561,
+      "restriction_type": "ALLERGY.MILK_DAIRY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 18083,
+      "ingredient_id": 1561,
+      "restriction_type": "ALLERGY.PEANUTS",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 18084,
+      "ingredient_id": 1561,
+      "restriction_type": "ALLERGY.SESAME",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 18085,
+      "ingredient_id": 1561,
+      "restriction_type": "ALLERGY.SHELLFISH",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 18086,
+      "ingredient_id": 1561,
+      "restriction_type": "ALLERGY.SOY",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 18087,
+      "ingredient_id": 1561,
+      "restriction_type": "ALLERGY.TREE_NUTS",
+      "degree": "ALWAYS",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    },
+    {
+      "id": 18088,
+      "ingredient_id": 1561,
+      "restriction_type": "ALLERGY.WHEAT",
+      "degree": "NEVER",
+      "created_at": "2026-11-02T17:57:13+09:00",
+      "updated_at": "2026-11-02T17:57:13+09:00"
+    }
+  ]
+}

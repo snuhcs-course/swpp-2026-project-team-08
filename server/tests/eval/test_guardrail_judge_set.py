@@ -1,5 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
 # Changed: 가드레일 판정 모델 평가 세트의 형식·정답 근거와 채점 로직 검증 추가
+# AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung
+# Changed: 고정 평가 사례를 원본 한국어 카탈로그 스냅샷으로 검증
 
 """가드레일 판정 모델 평가 세트(`guardrail_judge_ground_truth.json`)의 오프라인 검증.
 
@@ -10,8 +12,6 @@
 
     uv run pytest tests/eval -q -s
 """
-
-from pathlib import Path
 
 from app.features.suggestions.catalog import load_catalog
 from app.features.suggestions.ingredients import ChildRestrictions
@@ -25,10 +25,9 @@ from scripts.evaluate_guardrail import (
     metrics,
     risk_threshold,
 )
-from scripts.load_ingredients import import_catalog
 from tests.helpers.fake_judge import ScriptedJudge
+from tests.helpers.legacy_catalog import seed_legacy_catalog
 
-ASSETS = Path(__file__).resolve().parents[2] / "assets"
 GROUPS = {
     "core_ingredient",
     "multiple_restrictions",
@@ -84,9 +83,7 @@ async def test_expected_risks_follow_the_ingredient_catalog(session_factory) -> 
     spec, _ = spec_and_limits()
 
     async with session_factory() as session:
-        await import_catalog(
-            session, ASSETS / "ingredients.jsonl", ASSETS / "ingredients_restrictions.jsonl"
-        )
+        await seed_legacy_catalog(session)
         await session.commit()
         for case in spec["cases"]:
             restrictions = ChildRestrictions(

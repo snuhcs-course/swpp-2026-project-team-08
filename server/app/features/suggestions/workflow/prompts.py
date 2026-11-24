@@ -7,6 +7,8 @@
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 추가 추천 생성 시 기존 거절 제안과 사유 반영
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
+# Changed: 영어 전환 전후 카탈로그 재료명 그대로 사용
 # AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
 # Changed: 시스템 프롬프트 구역 재구성, 이유·결과·조리법 코드를 설명으로 풀고 가드레일 피드백 추가
 

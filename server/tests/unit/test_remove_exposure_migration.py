@@ -8,6 +8,8 @@
 # Changed: 식생활 유형·선택 조리 방법 마이그레이션(0025) 이력과 SQL 검증
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 추가 추천 마이그레이션 연결 확인
+# AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung
+# Changed: 재료 적재 상태와 최신 main의 마이그레이션 병합 이력 검증
 # AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 # Changed: 익숙한 음식 응답 마이그레이션 이력 연결 확인
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
@@ -30,7 +32,15 @@ MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0029_optional_meal_setting"]
+    assert scripts.get_heads() == ["0030_merge_ingredient_catalog"]
+    assert set(scripts.get_revision("0030_merge_ingredient_catalog").down_revision) == {
+        "0027_ingredient_catalog_state",
+        "0029_optional_meal_setting",
+    }
+    assert (
+        scripts.get_revision("0027_ingredient_catalog_state").down_revision
+        == "0026_recommendation_retry"
+    )
     assert (
         scripts.get_revision("0029_optional_meal_setting").down_revision
         == "0028_saved_suggestion_removal"

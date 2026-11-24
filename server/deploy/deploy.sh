@@ -1,6 +1,8 @@
 #!/bin/bash
 # AI-generated with Claude Sonnet 5.5, 2026-10-17, reviewed by Jaemin Kim
 # Changed: CD 스크립트 작성
+# AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung
+# Changed: 재료 검사·적재·검증과 임시 파일·헬스체크 보호
 
 # EC2 에서 실행되는 배포 스크립트. GitHub Actions 가 SSM(AWS-RunShellScript)으로 보낸다.
 #
@@ -9,8 +11,9 @@
 #   REGISTRY ECR 레지스트리 주소
 #   REGION   AWS 리전
 #
-# 순서: 설정 읽기 → 이미지 pull → DB 마이그레이션 → 컨테이너 교체 → 헬스체크 → 실패 시 롤백
+# 순서: 설정 읽기 → 이미지 pull·파일 검사 → 마이그레이션 → 서버 교체·헬스체크 → 재료 적재·검증
 set -euo pipefail
+umask 077
 
 PARAM_PATH="/nurturebites/prod"
 CONTAINER="nurturebites-server"
@@ -52,6 +55,8 @@ fi
 aws ecr get-login-password --region "$REGION" \
   | docker login --username AWS --password-stdin "$REGISTRY"
 docker pull "$IMAGE"
+docker run --rm --env-file "$ENV_FILE" "$IMAGE" \
+  python -m scripts.ingredient_catalog.cli check
 
 # 3. 롤백에 쓸 현재 이미지를 기억해 둔다 (처음 배포면 비어 있다).
 PREVIOUS="$(docker inspect --format '{{.Config.Image}}' "$CONTAINER" 2>/dev/null || true)"
@@ -68,7 +73,7 @@ start_container() {
 
 wait_healthy() {
   for _ in $(seq 1 30); do
-    if curl -fsS "http://localhost:$PORT/health" >/dev/null 2>&1; then
+    if curl --connect-timeout 2 --max-time 3 -fsS "http://localhost:$PORT/health" >/dev/null 2>&1; then
       return 0
     fi
     sleep 2
@@ -78,6 +83,10 @@ wait_healthy() {
 
 start_container "$IMAGE"
 if wait_healthy; then
+  docker run --rm --env-file "$ENV_FILE" "$IMAGE" \
+    python -m scripts.ingredient_catalog.cli apply
+  docker run --rm --env-file "$ENV_FILE" "$IMAGE" \
+    python -m scripts.ingredient_catalog.cli verify
   echo "배포 성공: $IMAGE"
   # 일주일 넘은 사용하지 않는 이미지를 정리한다 (롤백용 최근 이미지는 남는다).
   docker image prune -af --filter "until=168h" >/dev/null || true

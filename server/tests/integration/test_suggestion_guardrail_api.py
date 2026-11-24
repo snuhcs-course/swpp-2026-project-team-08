@@ -1,5 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
 # Changed: 아이의 제한이 가드레일까지 전달되고 위험·판정 실패 시 저장하지 않는지 검증 추가
+# AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung
+# Changed: 영어 추천 fixture와 카탈로그·가짜 판정기의 재료명 일치
 
 """실제 API·서비스·DB·그래프를 거쳐 가드레일 동작을 검증한다. LLM과 판정 모델만 가짜다."""
 
@@ -22,7 +24,7 @@ from tests.integration.test_contract_api import food
 async def reviewed_meal(api_client: AsyncClient) -> tuple[dict, str, dict]:
     owner = await auth_headers(api_client, "owner@example.com")
     await save_profile(api_client, owner)
-    await seed_ingredient("쌀")
+    await seed_ingredient("Rice")
     meal = (
         await api_client.put(
             "/api/v1/meals",
@@ -61,7 +63,7 @@ async def test_the_childs_restrictions_reach_the_judge_as_readable_descriptions(
     state, questions = judge.calls[0]
     # tests/fixtures/onboarding.py 프로필: 달걀 알러지와 채식(유제품).
     assert state["child_restrictions"] == ["달걀 알러지", "채식: 유제품을 먹지 않음"]
-    assert state["suggestions"][0]["ingredients"] == ["쌀"]
+    assert state["suggestions"][0]["ingredients"] == ["Rice"]
     assert set(questions) == {"food0_text", "food0_ingredient0"}
 
 
@@ -70,7 +72,7 @@ async def test_a_risk_that_persists_is_not_saved_and_ends_as_a_generation_failur
 ) -> None:
     owner, path, body = await reviewed_meal(api_client)
     model = install_model(monkeypatch, [batch("0")] * MAX_ATTEMPTS)
-    judge = install_judge(monkeypatch, ScriptedJudge.flagging("'쌀'", probability=0.95))
+    judge = install_judge(monkeypatch, ScriptedJudge.flagging("'Rice'", probability=0.95))
 
     failed = await api_client.post(path, headers=owner, json=body)
 

@@ -9,6 +9,9 @@
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 추가 추천 테이블과 Eaten 제외에 맞춘 생성 대상
 
+# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
+# Changed: 영어 추천 fixture와 공용 재료 적재 상태 테이블 계약
+
 """Contract edge cases for authenticated meals, reviews, and suggestions."""
 
 from datetime import timedelta
@@ -36,6 +39,7 @@ def test_only_current_tables_and_routes_are_registered() -> None:
     assert set(Base.metadata.tables) == {
         "ingredients",
         "ingredient_restrictions",
+        "ingredient_catalog_state",
         "meals",
         "meal_foods",
         "meal_food_ingredients",
@@ -137,7 +141,7 @@ async def test_suggestion_target_validation_and_generation_failure_are_atomic(
     owner = await login(api_client, "owner@example.com")
     other = await login(api_client, "other@example.com")
     await save_profile(api_client, owner)
-    await seed_ingredient("쌀")
+    await seed_ingredient("Rice")
     meal_id = await save_meal(api_client, owner, "2026-10-20", ingredient=True)
     food_id = await first_food_id(api_client, owner, meal_id)
     path = f"/api/v1/meals/{meal_id}/suggestions"
@@ -171,7 +175,7 @@ async def test_suggestion_target_validation_and_generation_failure_are_atomic(
     created = retried.json()[0]
     assert created["status"] == "PENDING" and created["origin_food_id"] == food_id
     assert created["meal_id"] == meal_id
-    assert created["ingredients"] == ["쌀"] and created["cooking_method"] == "STEAMED"
+    assert created["ingredients"] == ["Rice"] and created["cooking_method"] == "STEAMED"
     assert created["causes"]
     assert len((await api_client.get(f"{path}?status=ALL", headers=owner)).json()) == 1
 
@@ -196,7 +200,7 @@ async def test_generation_needs_a_profile_and_only_uses_ingredients_judged_safe(
     await save_profile(api_client, owner)
     judgements = dict.fromkeys(PROFILE_RESTRICTIONS, RestrictionDegree.NEVER)
     judgements[PROFILE_RESTRICTIONS[0]] = RestrictionDegree.DEPENDS_ON_PRODUCT
-    await seed_ingredient("쌀", judgements)
+    await seed_ingredient("Rice", judgements)
     model = install_model(monkeypatch, [batch("0")] * MAX_ATTEMPTS)
     rejected = await api_client.post(path, headers=owner, json=body)
     assert rejected.status_code == 502
@@ -211,7 +215,7 @@ async def test_saved_filter_decision_validation_and_undo(
     owner = await login(api_client, "owner@example.com")
     other = await login(api_client, "other@example.com")
     await save_profile(api_client, owner)
-    await seed_ingredient("쌀")
+    await seed_ingredient("Rice")
     meal_id = await save_meal(api_client, owner, "2026-10-20")
     assert (await review_meal(api_client, owner, meal_id)).status_code == 200
 

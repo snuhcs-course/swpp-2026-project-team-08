@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 온보딩 단계 간소화
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
@@ -59,9 +61,8 @@ export function canFinish(draft: OnboardingDraft): boolean {
     && validEmail(draft.caregiverEmail)
     && draft.consent.accountPrivacy && draft.consent.photoAnalysis
     && !!draft.childName.trim() && !!draft.ageRange
-    && draft.allergies.length > 0 && draft.restrictions.length > 0
-    && (draft.dietaryPattern == null || isDietaryPattern(draft.dietaryPattern))
-    && (draft.noSafeFoods || draft.safeFoods.length > 0);
+    && draft.allergies.length > 0
+    && (draft.dietaryPattern == null || isDietaryPattern(draft.dietaryPattern));
 }
 
 export function matchingSafeFoods(draft: OnboardingDraft, language: Language): string[] {
@@ -106,7 +107,7 @@ export function restoreDraft(value: unknown): OnboardingDraft | null {
     ...stored,
     dietaryPattern: stored.dietaryPattern ?? null,
     noSafeFoods: stored.noSafeFoods ?? false,
-    step: isStep(stored.step) ? stored.step : 'family',
+    step: stored.step === 'restrictions' ? 'family' : stored.step === 'safe-foods' ? 'review' : isStep(stored.step) ? stored.step : 'family',
   };
   if (!isDraft(draft)) return null;
   return Object.fromEntries(

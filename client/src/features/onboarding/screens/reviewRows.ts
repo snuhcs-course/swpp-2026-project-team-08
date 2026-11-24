@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 온보딩 단계 간소화
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
@@ -25,22 +27,10 @@ export function reviewRows(draft: OnboardingDraft, language: Language): ReviewRo
   const selectedValue = (group: OptionGroup, value: string) => value
     ? labelFor(group, value, language)
     : s.common.notEntered;
-  const restrictionsValue = draft.restrictions.length
-    ? draft.restrictions.map((value) => value === 'none'
-      ? s.onboarding.reviewNone
-      : labelFor('restrictions', value, language)).join(', ')
-    : s.onboarding.reviewNotAnswered;
 
   return [
     { step: 'child', title: s.onboarding.reviewChild, value: `${draft.childName || s.common.notEntered} · ${selectedValue('age', draft.ageRange)}` },
-    { step: 'allergies', title: s.onboarding.reviewSafety, value: `${s.onboarding.reviewAllergies}: ${listValue('allergies', draft.allergies)} · ${s.onboarding.titles.restrictions}: ${restrictionsValue}` },
+    { step: 'allergies', title: s.onboarding.reviewSafety, value: `${s.onboarding.reviewAllergies}: ${listValue('allergies', draft.allergies)}` },
     { step: 'family', title: s.onboarding.reviewFamily, value: dietaryPatternLabel(draft.dietaryPattern, language) },
-    {
-      step: 'safe-foods',
-      title: s.onboarding.reviewSafeFoods,
-      value: draft.noSafeFoods ? s.onboarding.noSafeFoods : draft.safeFoods.length
-        ? draft.safeFoods.map((food) => [food.name, food.preparation, food.presentationNote].filter(Boolean).join(' · ')).join(', ')
-        : s.common.notEntered,
-    },
   ];
 }

@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 온보딩 단계 간소화
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
@@ -12,11 +14,10 @@
 import type { ChildProfile } from '../../types/profile';
 
 export const steps = [
-  'account', 'consent', 'child', 'allergies', 'restrictions', 'family',
-  'safe-foods', 'review',
+  'account', 'consent', 'child', 'allergies', 'family', 'review',
 ] as const;
 
-export type OnboardingStep = (typeof steps)[number];
+export type OnboardingStep = (typeof steps)[number] | 'restrictions' | 'safe-foods';
 
 export type OnboardingDraft = Omit<ChildProfile, 'id' | 'updatedAt'> & {
   noSafeFoods: boolean;
@@ -35,13 +36,13 @@ export function emptyDraft(): OnboardingDraft {
 }
 
 export function isStep(value: string): value is OnboardingStep {
-  return (steps as readonly string[]).includes(value);
+  return (steps as readonly string[]).includes(value) || value === 'restrictions' || value === 'safe-foods';
 }
 
 export function nextStep(step: OnboardingStep): OnboardingStep {
-  return steps[Math.min(steps.indexOf(step) + 1, steps.length - 1)];
+  return steps[Math.min((steps as readonly string[]).indexOf(step) + 1, steps.length - 1)];
 }
 
 export function previousStep(step: OnboardingStep): OnboardingStep {
-  return steps[Math.max(steps.indexOf(step) - 1, 0)];
+  return steps[Math.max((steps as readonly string[]).indexOf(step) - 1, 0)];
 }

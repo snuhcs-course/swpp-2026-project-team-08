@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 온보딩 단계 간소화
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 제외된 온보딩 질문 제거; 동작별 버튼 문구 구분
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
@@ -53,7 +55,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
   const [authError, setAuthError] = useState<string | undefined>();
   const step = typeof routeStep === 'string' && isStep(routeStep) ? routeStep : model.draft.step;
   const s = copyFor(language);
-  const index = steps.indexOf(step);
+  const index = Math.max(0, (steps as readonly string[]).indexOf(step));
 
   const origin = typeof from === 'string' ? from : undefined;
   const navigate = (target: OnboardingStep, returnTo = origin) => {
@@ -113,8 +115,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         completionInFlight.current = false;
         setSubmitting(false);
       }
-    } else if (origin === 'review' && step === 'allergies') navigate('restrictions', 'review');
-    else if (origin === 'review') navigate('review');
+    } else if (origin === 'review') navigate('review');
     else navigate(nextStep(step));
   };
   const handleSaveExit = async () => {
@@ -206,7 +207,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
           ? strings.ko.onboarding.looksGood
           : step === 'account' && !model.editing && !auth.session
             ? strings.ko.onboarding.createAccount
-            : origin === 'review' && step !== 'allergies'
+            : origin === 'review'
               ? strings.ko.onboarding.returnToReview : s.common.continue
         : undefined}
       previousLabel={language === 'ko' && origin === 'child-profile'

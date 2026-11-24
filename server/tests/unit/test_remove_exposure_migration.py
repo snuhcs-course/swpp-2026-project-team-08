@@ -8,8 +8,14 @@
 # Changed: 식생활 유형·선택 조리 방법 마이그레이션(0025) 이력과 SQL 검증
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 추가 추천 마이그레이션 연결 확인
-# AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
-# Changed: 재료 적재 상태 마이그레이션의 head와 기존 이력 연결 검증
+# AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung
+# Changed: 재료 적재 상태와 최신 main의 마이그레이션 병합 이력 검증
+# AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+# Changed: 익숙한 음식 응답 마이그레이션 이력 연결 확인
+# AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+# Changed: 추천 보관 해제 마이그레이션 이력 연결 확인
+# AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+# Changed: 선택 장소 마이그레이션 head와 이전 이력 연결 확인
 
 """Unit: 마이그레이션의 이력·SQL 생성 계약. DB 적용이나 Postgres 동작은 검사하지 않는다."""
 
@@ -26,10 +32,25 @@ MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0027_ingredient_catalog_state"]
+    assert scripts.get_heads() == ["0030_merge_ingredient_catalog"]
+    assert set(scripts.get_revision("0030_merge_ingredient_catalog").down_revision) == {
+        "0027_ingredient_catalog_state",
+        "0029_optional_meal_setting",
+    }
     assert (
         scripts.get_revision("0027_ingredient_catalog_state").down_revision
         == "0026_recommendation_retry"
+    )
+    assert (
+        scripts.get_revision("0029_optional_meal_setting").down_revision
+        == "0028_saved_suggestion_removal"
+    )
+    assert (
+        scripts.get_revision("0028_saved_suggestion_removal").down_revision
+        == "0027_safe_foods_answer"
+    )
+    assert (
+        scripts.get_revision("0027_safe_foods_answer").down_revision == "0026_recommendation_retry"
     )
     assert scripts.get_revision("0026_recommendation_retry").down_revision == "0025_dietary_pattern"
     assert scripts.get_revision("0025_dietary_pattern").down_revision == "0024_food_recommendations"

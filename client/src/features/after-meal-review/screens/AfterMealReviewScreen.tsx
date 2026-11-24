@@ -2,6 +2,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 식후 검토 디자인·제스처 및 재료별 어려움 입력 연결
+// AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 사진 확인 화면에 현재 식후 사진의 표시 오류 전달
 
 import { router, Stack } from 'expo-router';
 import { useEffect } from 'react';
@@ -71,6 +73,7 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
         saveStatus={review.saveStatus}
         finalSaveState={review.finalSaveState}
         photoError={review.photoError}
+        afterPhotoUnreadable={review.afterPhotoUnreadable}
         picking={review.picking}
         saving={review.saving}
         canContinueOutcomes={review.canContinueOutcomes}

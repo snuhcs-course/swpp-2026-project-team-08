@@ -1,13 +1,19 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 대문자 enum·서버 발급 id·음식 안 리뷰와 추천 시도 기준으로 변환 재작성
 
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 조리법 열 가지 저장 및 기존 통합값 미입력 처리
+// AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+// Changed: 식사 장소 null 요청·응답 변환
+
 import type { Meal, MealDetail, MealDraft, FoodItem } from '../../types/mealRecord';
+import { cookingMethodIds } from '../../types/recordValues';
 import type { SuggestionMealLink } from '../../types/suggestionRecord';
 import type { IngredientInputDto } from './ingredientDto';
 import { toIngredient, toIngredientInput } from './ingredientDto';
 import { toMealReview } from './reviewDto';
 import {
-  acceptance, array, cookingMethods, date, fromApiEnum, id, mealLocations,
+  acceptance, array, date, fromApiCookingMethod, fromApiEnum, id, mealLocations,
   mealTypes, nullable, object, text, timestamp, toApiEnum,
 } from './values';
 
@@ -21,7 +27,7 @@ export type MealFoodWriteDto = {
 export type MealWriteDto = {
   meal_date: string;
   meal_type: string;
-  setting: string;
+  setting: string | null;
   before_photo_uri: string | null;
   foods: (MealFoodWriteDto & { food_recommendation_ids: string[] })[];
 };
@@ -35,7 +41,7 @@ export function toMeal(value: unknown): Meal {
     userId: id(dto.user_id),
     mealDate: date(dto.meal_date),
     mealType: fromApiEnum(dto.meal_type, mealTypes),
-    setting: fromApiEnum(dto.setting, mealLocations),
+    setting: nullable(dto.setting, (setting) => fromApiEnum(setting, mealLocations)),
     beforePhotoUri: nullable(dto.before_photo_uri, text),
     afterPhotoUri: nullable(dto.after_photo_uri, text),
     savedAt: timestamp(dto.saved_at),
@@ -49,7 +55,7 @@ export function toFoodItem(value: unknown): FoodItem {
     mealId: id(dto.meal_id),
     name: text(dto.name),
     ingredients: array(dto.ingredients, toIngredient),
-    cookingMethod: nullable(dto.cooking_method, (method) => fromApiEnum(method, cookingMethods)),
+    cookingMethod: nullable(dto.cooking_method, fromApiCookingMethod),
     servingNote: nullable(dto.serving_note, text),
     acceptance: acceptance(dto.acceptance),
   };
@@ -101,7 +107,7 @@ export function toMealWrite(draft: MealDraft): MealWriteDto {
   return {
     meal_date: date(draft.mealDate),
     meal_type: toApiEnum(draft.mealType, mealTypes),
-    setting: toApiEnum(draft.setting, mealLocations),
+    setting: nullable(draft.setting, (setting) => toApiEnum(setting, mealLocations)),
     before_photo_uri: nullable(draft.beforePhotoUri, text),
     foods: draft.foods.map((food) => ({
       ...toMealFoodWrite(food),
@@ -117,7 +123,7 @@ export function toMealFoodWrite(food: MealDraft['foods'][number]): MealFoodWrite
   return {
     name: text(food.name),
     ingredients: food.ingredients.map(toIngredientInput),
-    cooking_method: nullable(food.cookingMethod, (method) => toApiEnum(method, cookingMethods)),
+    cooking_method: nullable(food.cookingMethod, (method) => toApiEnum(method, cookingMethodIds)),
     serving_note: nullable(food.servingNote, text),
     acceptance: acceptance(food.acceptance),
   };

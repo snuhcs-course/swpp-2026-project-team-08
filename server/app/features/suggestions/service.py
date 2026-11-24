@@ -11,6 +11,10 @@
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 음식별 추가 추천 1회와 재요청 결과 재사용
+# AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
+# Changed: 아이의 제한 설명을 추천 생성기에 전달
+# AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+# Changed: 시도 이력을 보존하는 저장 목록 제거와 재저장
 
 """인증된 사용자의 음식 추천을 만들고 조회하고 결정한다."""
 
@@ -29,6 +33,7 @@ from app.features.suggestions.catalog import load_catalog
 from app.features.suggestions.familiar import load_familiar_foods
 from app.features.suggestions.generator import generate_suggestions
 from app.features.suggestions.ingredients import ChildRestrictions
+from app.features.suggestions.workflow.restrictions import describe_restrictions
 from app.features.suggestions.workflow.state import (
     FoodInput,
     GeneratedSuggestion,
@@ -43,7 +48,7 @@ from app.models.food_recommendation_enums import (
 from app.models.meal_enums import EatingOutcome
 from app.models.restriction_enums import RestrictionType
 
-# 목록에 보이는 추천. 시도한(TRIED) 추천도 저장한 추천과 함께 계속 보인다.
+# 보관 해제하지 않은 저장·시도 상태의 추천을 목록에 표시한다.
 LISTED_STATUSES = (FoodRecommendationStatus.SAVED, FoodRecommendationStatus.TRIED)
 
 
@@ -104,6 +109,7 @@ class FoodRecommendationService:
             .where(
                 FoodRecommendation.user_id == user_id,
                 FoodRecommendation.status.in_(LISTED_STATUSES),
+                FoodRecommendation.removed_from_saved_at.is_(None),
             )
         )
         if after_meal_date is not None:
@@ -130,7 +136,10 @@ class FoodRecommendationService:
             .where(FoodRecommendation.user_id == user_id, MealFood.meal_id == meal_id)
         )
         if not include_all:
-            stmt = stmt.where(FoodRecommendation.status.in_(LISTED_STATUSES))
+            stmt = stmt.where(
+                FoodRecommendation.status.in_(LISTED_STATUSES),
+                FoodRecommendation.removed_from_saved_at.is_(None),
+            )
         stmt = stmt.order_by(FoodRecommendation.created_at.desc(), FoodRecommendation.id.desc())
         return await self._with_retry_state(
             [
@@ -286,7 +295,12 @@ class FoodRecommendationService:
         familiar = await load_familiar_foods(self._session, user_id, exclude_food_ids=food_ids)
         try:
             async with asyncio.timeout(60):
-                generated = await generate_suggestions(inputs, catalog, familiar=familiar)
+                generated = await generate_suggestions(
+                    inputs,
+                    catalog,
+                    restrictions=describe_restrictions(restrictions.types),
+                    familiar=familiar,
+                )
         except Exception as error:
             raise GenerationFailedError() from error
         if (
@@ -330,7 +344,7 @@ class FoodRecommendationService:
         status: FoodRecommendationStatus,
         dismiss_reasons: list[FoodRecommendationDismissReason],
     ) -> RecommendationRecord:
-        item = await self._owned(user_id, suggestion_id)
+        item = await self._owned_for_decision(user_id, suggestion_id)
         if (
             status == FoodRecommendationStatus.DISMISSED
             and item.status != FoodRecommendationStatus.DISMISSED
@@ -351,16 +365,24 @@ class FoodRecommendationService:
         item.status = status
         item.dismiss_reasons = [reason.value for reason in dismiss_reasons]
         item.saved_at = now_kst() if status == FoodRecommendationStatus.SAVED else None
+        if status == FoodRecommendationStatus.SAVED:
+            item.removed_from_saved_at = None
         await self._session.flush()
         return await self._record(item)
 
     async def undo(self, *, user_id: int, suggestion_id: int) -> RecommendationRecord:
-        item = await self._owned(user_id, suggestion_id)
+        item = await self._owned_for_decision(user_id, suggestion_id)
         item.status = FoodRecommendationStatus.PENDING
         item.dismiss_reasons = []
         item.saved_at = None
         await self._session.flush()
         return await self._record(item)
+
+    async def remove_saved(self, *, user_id: int, suggestion_id: int) -> None:
+        item = await self._owned(user_id, suggestion_id)
+        if item.status in LISTED_STATUSES and item.removed_from_saved_at is None:
+            item.removed_from_saved_at = now_kst()
+            await self._session.flush()
 
     async def _child_restrictions(self, user_id: int) -> ChildRestrictions:
         """프로필의 restrictions 에서 ALLERGY.NONE 을 뺀 값이 아이의 제한이다."""
@@ -394,6 +416,10 @@ class FoodRecommendationService:
         )
         if item is None:
             raise SuggestionNotFoundError()
+        return item
+
+    async def _owned_for_decision(self, user_id: int, suggestion_id: int) -> FoodRecommendation:
+        item = await self._owned(user_id, suggestion_id)
         # 시도한 추천은 시도 기록과 일관되어야 하므로 결정을 바꿀 수 없다.
         if item.status == FoodRecommendationStatus.TRIED:
             raise RecommendationTriedError()

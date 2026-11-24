@@ -3,12 +3,20 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 익숙한 음식 필드 라벨과 선택 안내 정렬
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 입력 비활성화·키보드 이동·포커스 전달 지원
 
-import { StyleSheet, Text, TextInput, View, type KeyboardTypeOptions } from 'react-native';
+import type { ComponentPropsWithRef } from 'react';
+import { StyleSheet, Text, TextInput, View, type KeyboardTypeOptions, type TextInputProps } from 'react-native';
 import { colors } from '../util/colors';
 import { fonts } from '../util/fonts';
 
 type Props = {
+  inputRef?: ComponentPropsWithRef<typeof TextInput>['ref'];
+  editable?: boolean;
+  returnKeyType?: TextInputProps['returnKeyType'];
+  onSubmitEditing?: TextInputProps['onSubmitEditing'];
+  submitBehavior?: TextInputProps['submitBehavior'];
   variant?: 'onboarding' | 'account' | 'safe' | 'safe-note' | 'meal' | 'editor';
   label: string;
   value: string;
@@ -22,7 +30,7 @@ type Props = {
   optionalLabel?: string;
 };
 
-export function FormField({ label, value, onChangeText, placeholder, error, secureTextEntry, keyboardType, autoCapitalize, hideLabel, optionalLabel, variant = 'onboarding' }: Props) {
+export function FormField({ label, value, onChangeText, placeholder, error, secureTextEntry, keyboardType, autoCapitalize, hideLabel, optionalLabel, inputRef, editable, returnKeyType, onSubmitEditing, submitBehavior, variant = 'onboarding' }: Props) {
   return (
     <View style={[styles.wrap, variant === 'editor' && styles.editorWrap, (variant === 'safe' || variant === 'safe-note') && { marginBottom: 0 }]}>
       {!hideLabel && 
@@ -38,6 +46,11 @@ export function FormField({ label, value, onChangeText, placeholder, error, secu
         </View>
       }
       <TextInput
+        ref={inputRef}
+        editable={editable}
+        returnKeyType={returnKeyType}
+        onSubmitEditing={onSubmitEditing}
+        submitBehavior={submitBehavior}
         accessibilityLabel={label}
         value={value}
         onChangeText={onChangeText}

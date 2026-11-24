@@ -1,5 +1,7 @@
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: 최신 main 동작에 맞춘 테스트 작성 예시
+# AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
+# Changed: 재료 목록 구분자 변경 반영
 
 import pytest
 from langchain_core.messages import HumanMessage
@@ -76,6 +78,5 @@ async def test_사용_가능한_재료_목록을_모델에_전달한다():
     results = await generate_suggestions([FoodInput(id="1", name="밥")], catalog, llm=model)
 
     prompt = next(m.content for m in model.compose_inputs[0] if isinstance(m, HumanMessage))
-    listed = prompt.split("쓸 수 있는 재료 (한 줄에 하나):\n")[1].splitlines()
-    assert listed == ["쌀"]
+    assert prompt.endswith("이름 안의 쉼표는 이름의 일부):\n쌀")
     assert results[0].ingredients == ("쌀",)

@@ -1,5 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 식사 저장·리뷰 입력을 새 ORM(음식별 재료, 음식 안 리뷰 결과) 기준으로 재작성
+# AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+# Changed: 식사 장소 미응답을 서비스에 그대로 전달
 
 """HTTP 계층이 검증한 식사 데이터를 서비스로 넘기는 값 객체."""
 
@@ -37,7 +39,7 @@ class FoodData:
 class MealData:
     meal_date: date
     meal_type: MealType
-    setting: MealSetting
+    setting: MealSetting | None
     before_photo_uri: str | None
     foods: list[FoodData]
 

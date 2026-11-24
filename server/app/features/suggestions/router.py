@@ -5,13 +5,15 @@
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 기존 생성 API에서 선택적 추가 추천 처리
+# AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+# Changed: 시도 기록과 독립된 저장 목록 제거 API
 
 """인증된 사용자의 음식 추천 API."""
 
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query, status
+from fastapi import APIRouter, Depends, Path, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.errors import ErrorMappedRoute, ErrorSpec, error_specs
@@ -177,3 +179,14 @@ async def undo(
     service: Service,
 ) -> SuggestionResponse:
     return response(await service.undo(user_id=current_user.id, suggestion_id=suggestion_id))
+
+
+@router.delete("/suggestions/{suggestion_id}/saved", status_code=status.HTTP_204_NO_CONTENT)
+@error_specs({SuggestionNotFoundError: SUGGESTION_ERRORS[SuggestionNotFoundError]})
+async def remove_saved(
+    suggestion_id: Id,
+    current_user: CurrentUser,
+    service: Service,
+) -> Response:
+    await service.remove_saved(user_id=current_user.id, suggestion_id=suggestion_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

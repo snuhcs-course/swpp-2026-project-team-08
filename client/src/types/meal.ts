@@ -4,6 +4,16 @@
 // Changed: 추천 연결에서 재료 id 제거
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 입력 없는 첫 단계 식사 초안 저장 및 복원 방지
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 음식 편집 중 추천 연결 초안 분리
+
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 식사 조리법을 고정 ID로 정의
+
+// AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+// Changed: 식사 장소 미응답과 초기 유형 보존
+
+import type { CookingMethod } from './recordValues';
 
 export const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 export const mealSettings = ['home', 'restaurant', 'school', 'others'] as const;
@@ -11,7 +21,7 @@ export type FoodItem = {
   id: string;
   name: string;
   ingredients: string[];
-  preparation: string;
+  preparation: CookingMethod | '';
   servingNote: string;
   source: 'ai' | 'parent';
   confirmed: boolean;
@@ -31,7 +41,7 @@ export type Meal = {
   childId: string;
   mealDate: string;
   mealType: (typeof mealTypes)[number];
-  setting: (typeof mealSettings)[number];
+  setting: (typeof mealSettings)[number] | null;
   photo: MealPhoto | null;
   foods: FoodItem[];
   suggestionLinks?: MealSuggestionLink[];
@@ -51,9 +61,11 @@ export const mealSteps = [
 export type MealStep = (typeof mealSteps)[number];
 export type MealDraft = Omit<Meal, 'mealType' | 'setting' | 'savedAt'> & {
   initialMealDate?: string;
+  initialMealType?: Meal['mealType'];
   mealType: Meal['mealType'] | null;
   setting: Meal['setting'] | null;
   step: MealStep;
   editingFood: FoodItem | null;
+  editingSuggestionLink?: MealSuggestionLink | null;
   savedMealId: string | null;
 };

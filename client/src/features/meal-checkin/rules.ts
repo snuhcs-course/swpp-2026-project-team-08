@@ -5,6 +5,9 @@
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 입력 없는 첫 단계 식사 초안 저장 및 복원 방지
 
+// AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+// Changed: 현지 시각별 식사 유형 기본값과 선택 장소 저장
+
 import { localDate, validDate } from '../../util/date';
 import {
   type FoodItem,
@@ -13,14 +16,23 @@ import {
 } from '../../types/meal';
 export const newId = () =>
   `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-export const newDraft = (childId: string): MealDraft => {
-  const initialMealDate = localDate();
+export function mealTypeAt(date: Date): Meal['mealType'] {
+  const hour = date.getHours();
+  if (hour >= 5 && hour < 11) return 'breakfast';
+  if (hour >= 11 && hour < 15) return 'lunch';
+  if (hour >= 17 && hour < 22) return 'dinner';
+  return 'snack';
+}
+export const newDraft = (childId: string, createdAt = new Date()): MealDraft => {
+  const initialMealDate = localDate(createdAt);
+  const initialMealType = mealTypeAt(createdAt);
   return {
     id: newId(),
     childId,
     mealDate: initialMealDate,
     initialMealDate,
-    mealType: null,
+    initialMealType,
+    mealType: initialMealType,
     setting: null,
     photo: null,
     foods: [],
@@ -35,7 +47,6 @@ export function mealFromDraft(draft: MealDraft): Meal {
   if (
     !validDate(draft.mealDate) ||
     !draft.mealType ||
-    !draft.setting ||
     !draft.foods.length ||
     draft.foods.some((food) => !food.name.trim() || food.confirmed !== true)
   )

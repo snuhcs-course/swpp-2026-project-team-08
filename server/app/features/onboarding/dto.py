@@ -4,6 +4,8 @@
 # Changed: 온보딩 요청·응답을 restrictions 목록과 StrEnum 기반으로 재편
 # AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 # Changed: 식생활 유형 추가, 익숙한 음식의 조리 방법을 선택 입력으로 변경
+# AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+# Changed: 익숙한 음식 명시적 없음 null 계약
 
 """온보딩 요청과 응답의 모양.
 
@@ -27,7 +29,7 @@ class StrictDto(BaseModel):
 class SafeFoodWriteDto(StrictDto):
     """안전 음식 입력. id 는 서버가 발급하므로 받지 않는다.
 
-    조리 방법과 제공 메모는 선택 입력이다. 공백뿐인 조리 방법은 null 로 저장한다.
+    제공 형태(preparation)와 추가 설명은 선택 자유 입력이다. 공백뿐인 제공 형태는 null 이다.
     """
 
     name: str
@@ -55,7 +57,8 @@ class ProfileWriteDto(StrictDto):
     restrictions: list[RestrictionType]
     # 식생활 유형. null 은 미응답이다. 필드는 생략할 수 없다.
     dietary_pattern: DietaryPattern | None
-    safe_foods: list[SafeFoodWriteDto]
+    # null: 명시적 없음, []: 미응답, 비어 있지 않은 목록: 답변
+    safe_foods: list[SafeFoodWriteDto] | None
 
     @field_validator("child_name")
     @classmethod
@@ -110,7 +113,7 @@ class UserProfileDto(StrictDto):
     age_group: AgeGroup
     restrictions: list[RestrictionType]
     dietary_pattern: DietaryPattern | None
-    safe_foods: list[SafeFoodDto]
+    safe_foods: list[SafeFoodDto] | None
     updated_at: datetime
 
 

@@ -1,0 +1,206 @@
+// AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
+// Changed: 식사 기록·로그인 기능 추가
+// AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
+// Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
+// Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
+// Changed: 삭제된 mealLogApi 를 검증하던 테스트 제거, 추천 연결을 음식 카드에만 붙이도록 수정
+// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
+// Changed: 식사 기록에서 음식·재료의 어려움 세부 항목 보존 검증
+// AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
+// Changed: History 기존 검증을 보존하고 추천 저장 상태 검증을 분리
+const { test } = require('node:test');
+
+const assert = require('node:assert/strict');
+
+require('../../helpers/register.cjs');
+
+const { mockModules } = require('../../helpers/mock-modules.cjs');
+
+mockModules((name) => {
+  if (name === '@react-native-async-storage/async-storage') {
+    return { getItem: async () => null, setItem: async () => undefined, removeItem: async () => undefined };
+  }
+
+  if (name === 'expo-secure-store') {
+    const store = {
+      WHEN_UNLOCKED: 1,
+      isAvailableAsync: async () => false,
+      getItemAsync: async () => null,
+      setItemAsync: async () => undefined,
+      deleteItemAsync: async () => undefined,
+    };
+    return { __esModule: true, ...store, default: store };
+  }
+  if (name === 'expo-constants') {
+    const constants = { expoConfig: { hostUri: '127.0.0.1:8081' } };
+    return { __esModule: true, default: constants, ...constants };
+  }
+  return undefined;
+});
+
+const {
+  calendarCells, countsByDate, densityLevel, filterMeals, foodResponseCards,
+  isoDate, matchesMealQuery, mealDateParts, mealThumbnail, monthKey, shiftMonth,
+  sortMealsLatestFirst,
+  filterMealDetails, foodResponseCardsFromDetail, sortMealDetailsLatestFirst,
+} = require('../../../src/features/meal-log/rules.ts');
+
+const rice = {
+  id: 'food-1',
+  mealDate: '2026-10-12',
+  mealType: 'breakfast',
+  setting: 'home',
+  beforePhotoUri: null,
+  afterPhotoUri: null,
+  foods: [{ name: 'Kimchi fried rice', ingredients: ['rice', 'kimchi'] }],
+  reviewStatus: 'awaiting_review',
+};
+
+const soup = {
+  id: 'food-2',
+  mealDate: '2026-10-12',
+  mealType: 'lunch',
+  setting: 'school',
+  beforePhotoUri: null,
+  afterPhotoUri: 'file:///after.png',
+  foods: [{ name: 'Seaweed soup', ingredients: ['seaweed'] }],
+  reviewStatus: 'reviewed',
+};
+
+test('calendar uses Sunday-first weeks and ISO month keys', () => {
+  const cells = calendarCells(2026, 9);
+  assert.equal(cells[0].day, 27);
+  assert.equal(cells[0].inMonth, false);
+  assert.equal(cells[4].day, 1);
+  assert.equal(cells[4].inMonth, true);
+  assert.equal(cells[4].date, '2026-10-01');
+  assert.equal(isoDate(2026, 9, 12), '2026-10-12');
+  assert.equal(monthKey(2026, 9), '2026-10');
+  assert.deepEqual(shiftMonth(2026, 0, -1), { year: 2025, month: 11 });
+  assert.deepEqual(countsByDate([{ date: '2026-10-12', count: 2 }]), { '2026-10-12': 2 });
+  assert.equal(densityLevel(0), 0);
+  assert.equal(densityLevel(1), 1);
+  assert.equal(densityLevel(2), 2);
+  assert.equal(densityLevel(5), 3);
+});
+
+test('meal list sorts latest first and prefers the before photo thumbnail', () => {
+  assert.deepEqual(sortMealsLatestFirst([rice, soup]).map((meal) => meal.id), ['food-2', 'food-1']);
+  assert.equal(mealThumbnail(rice), null);
+  assert.equal(mealThumbnail(soup), 'file:///after.png');
+  assert.equal(mealThumbnail({ beforePhotoUri: 'file:///before.png', afterPhotoUri: 'file:///after.png' }), 'file:///before.png');
+});
+
+test('frontend search matches food names or ingredients and can hide reviewed meals', () => {
+  assert.equal(matchesMealQuery(rice, 'KIMCHI'), true);
+  assert.equal(matchesMealQuery(rice, 'seaweed'), false);
+  assert.equal(filterMeals([rice, soup], '', false).length, 2);
+  assert.deepEqual(filterMeals([rice, soup], 'rice', false).map((meal) => meal.id), ['food-1']);
+  assert.deepEqual(filterMeals([rice, soup], '', true).map((meal) => meal.id), ['food-1']);
+  assert.deepEqual(filterMeals([rice, soup], 'soup', true), []);
+});
+
+test('server meal details drive history search, review filter, and linked suggestion cards', () => {
+  const reviewed = {
+    id: '8', userId: '2', mealDate: '2026-10-12', mealType: 'lunch', setting: 'home',
+    beforePhotoUri: null, afterPhotoUri: null, savedAt: '2026-10-12T12:00:00Z',
+    foods: [{ id: '4', mealId: '8', name: 'Rice', cookingMethod: null, servingNote: null,
+      acceptance: null, ingredients: [{ id: '3', name: 'Egg' }] }],
+    review: { foodResults: [{ foodId: '4', outcome: 'tasted', difficulties: [] }],
+      ingredientResults: [{ foodId: '4', ingredientId: '3', outcome: 'eaten', difficulties: [] }] },
+    suggestionLinks: [{ id: '10', suggestionId: '20', mealId: '8', foodId: '4',
+      suggestion: { whatToTry: 'Try egg', whyThisMayHelp: 'Familiar food', servingTip: 'Small piece' } }],
+  };
+  const pending = { ...reviewed, id: '9', review: null, suggestionLinks: [] };
+  assert.deepEqual(sortMealDetailsLatestFirst([reviewed, pending]).map((meal) => meal.id), ['9', '8']);
+  assert.deepEqual(filterMealDetails([reviewed, pending], 'egg', true).map((meal) => meal.id), ['9']);
+  const cards = foodResponseCardsFromDetail(reviewed);
+  assert.deepEqual(cards.map((card) => [card.kind, card.outcome]), [['food', 'tasted'], ['ingredient', 'eaten']]);
+  // 추천 연결은 음식 단위라 음식 카드에만 붙고 재료 카드에는 붙지 않는다.
+  assert.equal(cards[0].suggestion.title, 'Try egg');
+  assert.equal(cards[0].suggestion.description, 'Familiar food');
+  assert.equal(cards[1].suggestion, null);
+});
+
+test('meal history requests use the authenticated v1 collection and delete route', async () => {
+  const api = require('../../../src/data/network/apiClient.ts');
+  const { listMealDetails } = require('../../../src/data/api/mealReadApi.ts');
+  const { deleteMealRecord } = require('../../../src/data/api/mealHistoryApi.ts');
+  const original = api.apiRequest;
+  const calls = [];
+  api.apiRequest = async (path, init) => {
+    calls.push([path, init?.method ?? 'GET']);
+    return path === '/api/v1/meals' ? [] : undefined;
+  };
+  try {
+    assert.deepEqual(await listMealDetails(), []);
+    await deleteMealRecord('42');
+    assert.deepEqual(calls, [['/api/v1/meals', 'GET'], ['/api/v1/meals/42', 'DELETE']]);
+  } finally {
+    api.apiRequest = original;
+  }
+});
+
+test('food cards join stored outcomes, difficulties, and linked suggestions', () => {
+  const food = {
+    id: 'food-1', name: 'Rice', ingredients: ['rice'], preparation: 'steamed', servingNote: '',
+    source: 'parent', confirmed: true,
+  };
+  const cards = foodResponseCards(
+    [food],
+    {
+      outcomes: [{
+        foodId: 'food-1',
+        decision: { confirmed: 'tasted', suggested: 'tasted' },
+        ingredients: [{ id: 'ing-egg', name: 'Egg', decision: { confirmed: 'tasted', suggested: null } }],
+      }],
+      difficulties: {
+        'food-1': [{ id: 'd1', category: 'texture', subcategory: 'hardness', value: 'soft' }],
+        'ing-egg': [{ id: 'd2', category: 'texture', subcategory: 'surface', value: 'rough', note: 'Edges' }],
+      },
+    },
+    [{ id: 'sug-1', foodId: 'food-1', title: 'Offer a small portion', description: 'Keep the same form', servingTip: 'Place separately' }],
+  );
+  assert.equal(cards[0].outcome, 'tasted');
+  assert.deepEqual(cards[0].reasons,
+    [{ category: 'texture', subcategory: 'hardness', value: 'soft', note: undefined }]);
+  assert.deepEqual(cards[1].reasons,
+    [{ category: 'texture', subcategory: 'surface', value: 'rough', note: 'Edges' }]);
+  assert.equal(cards[0].kind, 'food');
+  assert.equal(cards[0].suggestion.id, 'sug-1');
+  assert.equal(cards[0].suggestion.title, 'Offer a small portion');
+  assert.equal(cards[1].kind, 'ingredient');
+  assert.equal(cards[1].name, 'Egg');
+  assert.equal(cards[1].parentName, 'Rice');
+  assert.equal(foodResponseCards([food], null, [])[0].outcome, null);
+});
+
+test('meal date parts stay stable for a fixed ISO date', () => {
+  const parts = mealDateParts('2026-10-12', 'en-US');
+  assert.equal(parts.year, 2026);
+  assert.match(parts.monthDay, /Oct/);
+  assert.match(parts.weekday, /Mon/);
+});
+
+test('meal history food and ingredient cards preserve managed suggestion routing', () => {
+  const food = {
+    id: 'food-managed', name: 'Omelet', ingredients: ['Egg'], preparation: 'pan-fried',
+    servingNote: '', source: 'parent', confirmed: true,
+  };
+  const cards = foodResponseCards([food], {
+    outcomes: [{ foodId: food.id, decision: { confirmed: 'tasted', suggested: null },
+      ingredients: [{ id: 'ingredient-egg', name: 'Egg', decision: { confirmed: 'eaten', suggested: null } }],
+    }], difficulties: {},
+  }, [
+    { managed: true, id: 'managed-food', foodId: food.id, title: 'Try a slice', description: 'Familiar form', servingTip: null },
+    { managed: true, id: 'managed-ingredient', foodId: 'ingredient-egg', title: 'Try egg', description: 'Keep familiar', servingTip: 'Small piece' },
+  ]);
+  assert.deepEqual(cards.map((card) => [card.kind, card.foodId, card.suggestion.managed]), [
+    ['food', 'food-managed', true], ['ingredient', 'ingredient-egg', true],
+  ]);
+  assert.equal(cards[1].parentName, 'Omelet');
+  assert.equal(cards[1].outcome, 'eaten');
+});

@@ -14,14 +14,38 @@
 // Changed: 온보딩 선택지 id 를 서버 값으로, 채식 단계 문구 재작성, 지원 안 하는 난이도 문구 제거
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 채식 단계 문구를 식생활 유형 문구로 되돌리고 식생활 유형 id 를 snake_case 로 변경
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 익숙한 음식 제공 형태·명시적 없음 및 검토 화면 응답 상태 문구
 
-// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
-// Changed: 추가 추천 생성과 재시도 문구
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 추가 추천·재시도 문구, Skip 제거 및 조리 방법 표시 문구
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 음식 편집의 저장 추천 연결과 어려움 안내 문구
+// AI-generated with Grok 4.7, 2026-11-14, reviewed by Doyeon Kim
+// Changed: 저장 화면의 사진 라벨과 단계 표시 문구
+
+// AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
+// Changed: 개인정보처리방침 링크 및 열기 실패 문구
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 저장 목록 제거 안내 및 조리법 열 가지 공통 표시명
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 홈 추천 진입 문구
+
+// AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo
+// Changed: 개인정보처리방침 링크 및 열기 실패 문구
+
+// AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 사진 교체 초기화 및 작성 중인 식사 재개 단계 안내
+// AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 식후 사진 교체 시트와 식전 사진 없음 안내
 
 import type { Language } from '../types/profile';
+import type { CookingMethod } from '../types/recordValues';
 
 const en = {
   common: {
+    privacyPolicy: 'Privacy Policy',
+    openLinkFailed: 'Could not open the link. Please try again.',
     brand: 'NurtureBites',
     previous: 'Previous', continue: 'Continue', add: 'Add', remove: 'Remove', edit: 'Edit',
     retry: 'Retry', saveExit: 'Save & exit', saved: 'Auto-saved', saving: 'Saving…',
@@ -64,7 +88,8 @@ const en = {
     allergySafetyBody: 'Always check labels, preparation and cross-contact yourself. The app does not replace medical advice.',
     treeNutsHint: 'almonds, walnuts, or cashews',
     noKnownAllergies: 'No known food allergies', noOtherRestrictions: 'No other dietary restrictions',
-    foodName: 'Food name', preparation: 'Cooking method', presentationNote: 'Additional details',
+    foodName: 'Food name', preparation: 'Presentation', presentationNote: 'Additional details',
+    noSafeFoods: 'No Safe Foods Yet',
     addSafeFood: 'Add safe food', addSafeFoodAction: '+ Add',
     safeFoodExamples: 'e.g. apple slices, white bread', safeFoodNameExample: 'e.g. apple slices',
     safeFoodPreparationExample: 'e.g. sliced, mashed, warmed', safeFoodPresentationExample: 'e.g. blue bowl, cut into coins',
@@ -95,6 +120,7 @@ const en = {
     },
     reviewAllergies: 'Allergies', reviewChild: 'Child basics', reviewSafety: 'Safety restrictions', reviewFamily: 'Dietary Pattern',
     reviewSafeFoods: 'Safe foods',
+    reviewNotAnswered: 'Not answered', reviewNone: 'None',
     conflict: 'A safe food name matches a listed restriction. Review it before relying on that food.',
     looksGood: 'Looks good',
     start: 'Start setup', resume: 'Resume setup',
@@ -119,9 +145,13 @@ const en = {
     localPhoto: 'Optional photo for your meal record. Add the foods yourself.', manual: 'Enter food items manually',
     privacy: 'How photo data is used', privacyBody: 'Analysis is optional. Photos and meal records are saved on this device. No photo is sent for AI training.',
     permission: 'Photo access was denied. Allow access in device settings or choose another source.', imageError: 'Could not open this image. Choose another supported image.',
+    resumeAt: (step: string) => `Continue from: ${step}`,
     ongoingHeader: 'Meal Check-in', ongoingTitle: 'Ongoing Meal', ongoingIntro: 'Finish your draft before starting a new check-in.', childMeals: (name: string) => `${name}’s meals`, autoSavedDraft: 'AUTO-SAVED DRAFT', continueDraft: 'Continue draft', draftPhotoSaved: 'Photo saved', draftNoPhoto: 'No photo', draftFoodCount: (count: number) => `${count} ${count === 1 ? 'food' : 'foods'}`,
     loadFailed: 'Could not restore your meal draft. Retry before continuing.', saveFailed: 'Could not save the meal. Your food items are preserved.',
-    addFoodsTitle: 'Add food items', addFoodPrompt: 'Add the foods you served, with or without a photo.', emptyFoodBody: 'No foods added yet. Add the foods you served.', foodCount: (count: number) => `${count} food item${count === 1 ? '' : 's'}`, beforePhoto: 'Before-meal photo', addFood: 'Add food item', saveFood: 'Save food',
+    addFoodsTitle: 'Add food items', addFoodPrompt: 'Add the foods you served, with or without a photo.', emptyFoodBody: 'No foods added yet. Add the foods you served.', foodCount: (count: number) => `${count} food item${count === 1 ? '' : 's'}`, beforePhoto: 'Before-meal photo', beforeMealBadge: 'Before meal', afterMealBadge: 'After meal', addFood: 'Add food item', saveFood: 'Save food',
+    savedSuggestion: 'Saved suggestion', linkSavedSuggestion: 'Link a saved suggestion', savedSuggestionsTitle: 'Saved suggestions',
+    chooseTriedSuggestion: 'Choose the suggestion you tried.', savedSuggestionCount: (count: number) => `${count} saved suggestion${count === 1 ? '' : 's'}`,
+    linkedSuggestion: 'Linked suggestion', change: 'Change',
     name: 'Food name', ingredients: 'Ingredients', addIngredient: 'Add ingredient',
     editFoodTitle: (name: string) => `Edit ${name}`,
     foodNamePlaceholder: 'Enter food name', detailPlaceholder: 'Add detail',
@@ -133,10 +163,10 @@ const en = {
   afterMealReview: {
     titles: { photo: 'after-meal photo', preview: 'Check your photo', compare: 'Review meal photos', comparing: 'Comparing photos', 'comparison-error': 'Analysis failed', outcomes: 'What happened with each food item?', difficulties: 'What made this food difficult?', suggestions: 'Did you try a saved suggestion?', },
     fileHint: 'Files accept supported images only', draftSaved: 'Your review draft is saved as you go.', optional: 'Optional', photoIntro: 'Add after-meal photo', photoRequirement: 'Optional — keep a photo for your meal record.',
-    photoLabel: 'After-meal photo', before: 'BEFORE', after: 'AFTER', enlarge: 'Tap to enlarge',
+    replaceSourceTitle: 'Replace after-meal photo', enlarge: 'Tap to enlarge',
     replace: 'Replace photo', removePhoto: 'Remove photo', usePhoto: 'Use this photo',
     photoLocal: 'Optional photo for your meal record. Enter food outcomes yourself.',
-    missingBefore: 'The before-meal photo is unavailable. You can enter outcomes manually.', manual: 'Enter food outcomes', noPhoto: 'Continue without photo',
+    missingBefore: 'No before-meal photo', manual: 'Enter food outcomes', noPhoto: 'Continue without photo',
     reviewStep: 'AFTER MEAL · STEP 2 OF 3',
     amountQuestion: (name: string) => `How much did ${name} eat?`,
     amountHint: 'Think about the food as a whole, slide or tap',
@@ -152,7 +182,7 @@ const en = {
     unanswered: 'Unanswered', unansweredHint: 'Choose an outcome for each food and selected ingredient.',
     definitionsIntro: 'Use what you observed. You don’t need to estimate exact amounts.',
     outcomeDescriptions: { eaten: 'You observed the child swallow some food.', tasted: 'Licked or tasted, with no confirmed swallow', untouched: 'Neither tasted nor ate', unclear: 'You cannot determine what happened', unanswered: 'This cannot be saved. Choose unclear when the outcome is unknown.' },
-    difficultyIntro: 'Some categories allow multiple value selections.', selectCategory: 'Select category', selectValue: 'value',
+    difficultyIntro: 'Please tap add button when adding the reasoning. Some categories allow multiple value selections.', selectCategory: 'Select category', selectValue: 'value',
     note: 'Optional note', otherValue: 'Describe your answer', addTag: '+ Add', skip: 'Skip',
     categories: { texture: 'Texture', tasteType: 'Taste type', smell: 'Smell', color: 'Color', temperature: 'Temperature', notSure: 'Not sure' },
     values: { smooth: 'Smooth/creamy', soft: 'Soft/mushy', lumpy: 'Lumpy/chunky', crunchy: 'Crunchy/crisp', chewy: 'Chewy/tough', wet: 'Wet/slippery', mixed: 'Mixed textures', other: 'Other', sweet: 'Sweet', salty: 'Salty', sour: 'Sour', bitter: 'Bitter', spicy: 'Spicy/hot', mild: 'Mild', strong: 'Strong', none: 'No noticeable smell', notSure: 'Not sure', red: 'Red', orange: 'Orange', yellow: 'Yellow', green: 'Green', blue: 'Blue', purple: 'Purple', brown: 'Brown', black: 'Black', white: 'White', gray: 'Gray', consistent: 'Consistent', varied: 'Varied', note: 'Optional note', visible: 'Visible', hidden: 'Hidden', room: 'Room temperature', warm: 'Warm', cool: 'Cool / chilled' },
@@ -176,6 +206,7 @@ const en = {
     logMeal: 'Log this meal', noRecommendations: 'No saved suggestions yet', calendar: 'Meal Log Calendar', profileTitle: 'Profile',
     caregiver: 'Caregiver', child: 'Child', editProfile: 'Edit profile',
     refreshFailed: 'Could not load your records.',
+    viewSuggestion: 'View Suggestion', suggestionsLoadFailed: 'Could not load meal suggestions.',
   },
   mealLog: {
     title: 'Meal History',
@@ -241,8 +272,8 @@ const en = {
     viewProfile: 'View profile',
     settings: 'SETTINGS',
     caregiverAccount: 'Caregiver Account',
-    privacyTitle: 'Privacy and photo data',
-    privacySubtitle: 'How your information is used',
+    privacyTitle: 'Privacy Policy',
+    privacySubtitle: 'Read how your information is used',
     helpTitle: 'Help',
     helpSubtitle: 'View tutorial again',
     logOut: 'Log out',
@@ -283,6 +314,8 @@ const en = {
 
 const ko = {
   common: {
+    privacyPolicy: '개인정보처리방침',
+    openLinkFailed: '링크를 열지 못했어요. 다시 시도해 주세요.',
     brand: 'NurtureBites',
     previous: '이전', continue: '다음', add: '추가', remove: '삭제', edit: '수정',
     retry: '다시 시도', saveExit: '초안 저장 후 나가기', saved: '자동 저장됨', saving: '저장 중…',
@@ -326,7 +359,8 @@ const ko = {
     allergySafetyBody: '식품 표시와 조리 과정을 확인해 주세요. 다른 음식의 알레르기 유발 성분이 섞일 가능성도 확인해 주세요. 앱은 의학적 조언을 대신하지 않아요.',
     treeNutsHint: '아몬드, 호두, 캐슈넛',
     noKnownAllergies: '알려진 식품 알레르기 없음', noOtherRestrictions: '기타 식이 제한 없음',
-    foodName: '음식 이름', preparation: '조리 방법', presentationNote: '추가 설명',
+    foodName: '음식 이름', preparation: '제공 형태', presentationNote: '추가 설명',
+    noSafeFoods: '아직 익숙한 음식 없음',
     addSafeFood: '익숙한 음식 추가', addSafeFoodAction: '+ 추가',
     safeFoodExamples: '예: 사과 조각, 흰 빵', safeFoodNameExample: '예: 사과 조각',
     safeFoodPreparationExample: '예: 얇게 썰기, 으깨기, 데우기', safeFoodPresentationExample: '예: 파란 그릇, 동전 모양으로 자르기',
@@ -357,6 +391,7 @@ const ko = {
     },
     reviewAllergies: '알레르기', reviewChild: '아이 기본 정보', reviewSafety: '안전 관련 제한', reviewFamily: '식생활 유형',
     reviewSafeFoods: '익숙한 음식',
+    reviewNotAnswered: '미응답', reviewNone: '없음',
     conflict: '익숙한 음식 이름이 식이 제한 항목과 겹쳐요. 해당 음식을 다시 확인해 주세요.',
     looksGood: '프로필 저장하기',
     createAccount: '계정 만들기', returnToReview: '확인 화면으로', cancelEdit: '수정 취소',
@@ -382,9 +417,13 @@ const ko = {
     localPhoto: '사진은 식사 기록에 남겨요. 음식 정보는 직접 입력해 주세요.', manual: '음식 입력하기',
     privacy: '사진 사용 안내 자세히 보기', privacyBody: '사진 분석은 선택 사항이에요. 사진과 식사 기록은 기기에 저장해요. AI 학습을 위해 사진을 전송하지 않아요.',
     permission: '사진에 접근할 수 없어요. 기기 설정에서 권한을 허용하거나 다른 방법으로 사진을 선택해 주세요.', imageError: '사진을 열지 못했어요. 지원되는 다른 사진을 선택해 주세요.',
+    resumeAt: (step: string) => `이어갈 단계: ${step}`,
     ongoingHeader: '식사 기록', ongoingTitle: '작성 중인 식사', ongoingIntro: '작성 중인 식사를 마무리한 뒤 새 식사를 기록할 수 있어요.', childMeals: (name: string) => `${name}의 식사`, autoSavedDraft: '자동 저장된 초안', continueDraft: '초안 이어하기', draftPhotoSaved: '사진 저장됨', draftNoPhoto: '사진 없음', draftFoodCount: (count: number) => `음식 ${count}개`,
     loadFailed: '식사 초안을 불러오지 못했어요. 다시 시도해 주세요.', saveFailed: '식사를 저장하지 못했어요. 입력한 음식을 확인하고 다시 시도해 주세요.',
-    addFoodsTitle: '음식 추가', addFoodPrompt: '제공한 음식을 직접 추가해 주세요. 사진은 없어도 돼요.', emptyFoodBody: '‘음식 추가’를 눌러 제공한 음식을 입력해 주세요.', foodCount: (count: number) => `음식 ${count}개`, beforePhoto: '식전 사진', addFood: '음식 추가', saveFood: '음식 저장',
+    addFoodsTitle: '음식 추가', addFoodPrompt: '제공한 음식을 직접 추가해 주세요. 사진은 없어도 돼요.', emptyFoodBody: '‘음식 추가’를 눌러 제공한 음식을 입력해 주세요.', foodCount: (count: number) => `음식 ${count}개`, beforePhoto: '식전 사진', beforeMealBadge: '식전', afterMealBadge: '식후', addFood: '음식 추가', saveFood: '음식 저장',
+    savedSuggestion: '저장한 추천', linkSavedSuggestion: '저장한 추천 연결', savedSuggestionsTitle: '저장한 추천',
+    chooseTriedSuggestion: '시도한 추천을 선택해 주세요.', savedSuggestionCount: (count: number) => `저장한 추천 ${count}개`,
+    linkedSuggestion: '연결한 추천', change: '변경',
     name: '음식 이름', ingredients: '재료', addIngredient: '재료 추가',
     editFoodTitle: (name: string) => `${name} 수정`,
     foodNamePlaceholder: '음식 이름 입력', detailPlaceholder: '설명 추가',
@@ -406,16 +445,16 @@ const ko = {
     addFood: '음식 추가',
     titles: { photo: '식후 사진', preview: '사진 확인', compare: '식사 사진 확인', comparing: '사진 비교 중', 'comparison-error': '비교 실패', outcomes: '음식별로 먹은 결과를 알려주세요', difficulties: '먹기 어려워했던 특징이 있나요?', suggestions: '저장한 추천을 시도했나요?', },
     fileHint: '지원되는 이미지 파일만 선택할 수 있어요', draftSaved: '작성 중인 내용은 자동으로 저장돼요.', optional: '선택 사항', photoIntro: '식후 사진 추가', photoRequirement: '사진은 선택 사항이에요. 식사 기록에 함께 남길 수 있어요.',
-    photoLabel: '식후 사진', before: '식전', after: '식후', enlarge: '눌러서 크게 보기',
+    replaceSourceTitle: '식후 사진 교체', enlarge: '눌러서 크게 보기',
     replace: '사진 교체', removePhoto: '사진 삭제', usePhoto: '이 사진 사용',
     photoLocal: '사진은 식사 기록에 남겨요. 음식별로 먹은 결과는 직접 입력해 주세요.',
-    missingBefore: '식전 사진을 볼 수 없어요. 먹은 결과는 직접 입력할 수 있어요.', manual: '결과 직접 입력', noPhoto: '사진 없이 입력하기',
+    missingBefore: '식전 사진 없음', manual: '결과 직접 입력', noPhoto: '사진 없이 입력하기',
     itemCount: (count: number) => `음식 ${count}개`,
     outcomes: { eaten: '먹음', tasted: '맛봄', untouched: '먹거나 맛보지 않음', unclear: '확인 어려움' }, definitions: '결과 설명', gotIt: '확인',
     unanswered: '미응답', unansweredHint: '모든 음식과 선택한 재료의 결과를 입력해 주세요.',
     definitionsIntro: '직접 본 내용을 선택해 주세요. 정확한 양은 입력하지 않아도 돼요.',
     outcomeDescriptions: { eaten: '아이가 음식을 삼키는 모습을 봤어요.', tasted: '핥거나 맛봤지만 삼켰는지는 확인하지 못했어요.', untouched: '먹거나 맛보지 않았어요.', unclear: '먹거나 맛봤는지 판단하기 어려워요.', unanswered: '결과를 선택해야 저장할 수 있어요. 모르면 ‘확인 어려움’을 선택해 주세요.' },
-    difficultyIntro: '일부 항목은 특징을 여러 개 추가할 수 있어요.', selectCategory: '항목 선택', selectValue: '특징 선택',
+    difficultyIntro: '이유를 추가할 때는 추가 버튼을 눌러 주세요. 일부 항목은 특징을 여러 개 추가할 수 있어요.', selectCategory: '항목 선택', selectValue: '특징 선택',
     note: '메모 (선택)', otherValue: '직접 입력', addTag: '+ 추가', skip: '건너뛰고 저장',
     categories: { texture: '식감', tasteType: '맛 종류', smell: '냄새', color: '색', temperature: '온도', notSure: '잘 모르겠음' },
     values: { smooth: '매끄럽고 크림 같음', soft: '부드럽고 무름', lumpy: '덩어리가 있음', crunchy: '바삭함', chewy: '질김', wet: '젖고 미끄러움', mixed: '혼합 식감', other: '기타', sweet: '단맛', salty: '짠맛', sour: '신맛', bitter: '쓴맛', spicy: '매운맛', mild: '약함', strong: '강함', none: '뚜렷한 냄새 없음', notSure: '잘 모르겠음', red: '빨강', orange: '주황', yellow: '노랑', green: '초록', blue: '파랑', purple: '보라', brown: '갈색', black: '검정', white: '흰색', gray: '회색', consistent: '일정함', varied: '다양함', note: '메모 (선택)', visible: '보임', hidden: '숨김', room: '실온', warm: '따뜻함', cool: '차가움' },
@@ -438,6 +477,7 @@ const ko = {
     logMeal: '식사 기록하기', noRecommendations: '아직 저장된 추천이 없어요.', calendar: '식사 기록 달력', profileTitle: '프로필',
     caregiver: '보호자', child: '아이', editProfile: '프로필 수정',
     refreshFailed: '기록을 불러오지 못했어요.',
+    viewSuggestion: '추천 보기', suggestionsLoadFailed: '식사 추천을 불러오지 못했어요.',
   },
   mealLog: {
     title: '식사 기록',
@@ -503,8 +543,8 @@ const ko = {
     viewProfile: '프로필 보기',
     settings: '설정',
     caregiverAccount: '보호자 계정',
-    privacyTitle: '개인정보 및 사진 데이터',
-    privacySubtitle: '아직 준비 중이에요',
+    privacyTitle: '개인정보처리방침',
+    privacySubtitle: '개인정보 처리방침 자세히 보기',
     helpTitle: '도움말',
     helpSubtitle: '아직 준비 중이에요',
     logOut: '로그아웃',
@@ -586,6 +626,19 @@ export function labelFor(group: OptionGroup, id: string, language: Language): st
   return options[group].find((option) => option.id === id)?.label[language] ?? id;
 }
 
+const cookingMethodLabels = {
+  en: {
+    raw: 'Raw', boiled: 'Boiled', steamed: 'Steamed', pan_fried: 'Pan-fried',
+    stir_fried: 'Stir-fried', baked: 'Baked', roasted: 'Roasted',
+    mashed: 'Mashed', blended: 'Blended', other: 'Other',
+  },
+  ko: {
+    raw: '생식', boiled: '삶기', steamed: '찜', pan_fried: '팬에 굽기',
+    stir_fried: '볶기', baked: '오븐에 굽기', roasted: '로스팅',
+    mashed: '으깨기', blended: '갈기', other: '기타',
+  },
+} satisfies Record<Language, Record<CookingMethod, string>>;
+
 const suggestionCopy = {
   en: {
     generatingDetail: 'Using your meal review to find something to try next.', generationTitle: 'Couldn’t load suggestions', generationDetail: 'Something went wrong. Please try again in a moment.',
@@ -600,15 +653,16 @@ const suggestionCopy = {
     regenerate: 'Regenerate', regenerationFailed: 'Could not generate another suggestion. Please retry.',
     what: 'What to try', why: 'Why this may help', serving: 'Serving tip', foodDetails: 'FOOD DETAILS',
     ingredients: 'Ingredients', cooking: 'Cooking method',
+    cookingMethods: cookingMethodLabels.en,
     tapDetails: 'Tap for food details', tapFront: 'Tap to see suggestion',
     save: 'Save suggestion', dismiss: 'Dismiss suggestion', dismissTitle: 'What does not work for you?',
     reasons: { restriction: 'This conflicts with an allergy or required restriction', dislike: 'My child dislikes this food or form', not_fit: 'This does not fit our food preferences', too_much_preparation: 'Too much preparation', ingredient_hard_to_get: 'The ingredient is hard to get', already_tried: 'We already tried this' },
-    skipReason: 'Skip', done: 'Done', skip: 'Skip for now', undo: '↶ Undo',
+    skipReason: 'Skip', done: 'Done', undo: '↶ Undo',
     savedNotice: '✓ Saved to suggestions', dismissedNotice: 'Suggestion dismissed',
     saveFailed: "Changes couldn't be saved. Please try again.", allDone: 'All Suggestions Reviewed!',
     allDoneBody: 'Your saved suggestions are ready whenever you want to try them.', savedTitle: 'Saved Suggestions',
     savedIntro: 'Suggestions you can come back to', backMeal: 'Back to Meal', empty: 'No saved suggestions yet',
-    history: 'View Meal History', remove: 'Remove',
+    history: 'View Meal History', remove: 'Remove', removedNotice: 'Suggestion removed from saved.',
     recordTry: 'Record a Try', tried: 'Tried',
     unavailable: 'This suggestion is no longer saved.', trying: 'Trying this suggestion', swipeSave: 'Keep swiping to save', swipeDismiss: 'Keep swiping to dismiss', count: (n: number, total: number) => `${n} of ${total}`,
     update: 'Update suggestions', close: 'Close', cancel: 'Cancel', back: 'Back', retry: 'Retry',
@@ -627,15 +681,16 @@ const suggestionCopy = {
     regenerate: '새 추천 받기', regenerationFailed: '다른 추천을 만들지 못했어요. 다시 시도해 주세요.',
     what: '시도해 볼 방법', why: '도움이 될 수 있는 이유', serving: '준비 방법', foodDetails: '음식 정보',
     ingredients: '재료', cooking: '조리 방법',
+    cookingMethods: cookingMethodLabels.ko,
     tapDetails: '눌러서 음식 정보 보기', tapFront: '눌러서 추천으로 돌아가기',
     save: '추천 저장', dismiss: '추천 제외', dismissTitle: '어떤 점이 맞지 않나요?',
     reasons: { restriction: '알레르기나 식이 제한과 맞지 않아요', dislike: '아이가 이 음식이나 모양을 싫어해요', not_fit: '우리 가족의 음식 취향과 맞지 않아요', too_much_preparation: '준비할 것이 너무 많아요', ingredient_hard_to_get: '재료를 구하기 어려워요', already_tried: '이미 시도했어요' },
-    skipReason: '건너뛰기', done: '추천 제외하기', skip: '홈으로 이동', undo: '↶ 되돌리기',
+    skipReason: '건너뛰기', done: '추천 제외하기', undo: '↶ 되돌리기',
     savedNotice: '✓ 추천을 저장했어요', dismissedNotice: '추천을 제외했어요',
     saveFailed: '변경을 저장하지 못했어요. 다시 시도해 주세요.', allDone: '추천을 모두 확인했어요',
     allDoneBody: '저장한 추천은 언제든 다시 볼 수 있어요.', savedTitle: '저장된 추천',
     savedIntro: '다시 살펴볼 수 있는 추천이에요', backMeal: '식사로 돌아가기', empty: '아직 저장된 추천이 없어요',
-    history: '식사 기록 보기', remove: '저장 해제',
+    history: '식사 기록 보기', remove: '저장 해제', removedNotice: '저장 목록에서 추천을 제거했어요.',
     recordTry: '시도 기록', tried: '시도함',
     unavailable: '더 이상 저장된 추천이 아니에요.', trying: '이 추천을 시도하는 식사', swipeSave: '더 밀면 저장해요', swipeDismiss: '더 밀면 제외해요', count: (n: number, total: number) => `${total}개 중 ${n}번째`,
     update: '추천받기', close: '닫기', cancel: '취소', back: '뒤로', retry: '다시 시도',
@@ -653,14 +708,15 @@ const abcCopy = {
     acceptanceOptions: ['Unfamiliar', 'Often\nRejected', 'Often\nAccepted', 'Safe Food'] as const,
     acceptanceUnset: 'Not entered',
     cooking: 'Cooking method', detail: 'Additional detail', selectCooking: 'Select method',
-    cookingOptions: ['Steamed', 'Boiled', 'Pan-fried', 'Baked', 'Roasted', 'Grilled', 'Raw', 'Other'],
+    cookingMethods: cookingMethodLabels.en,
     missingPhoto: 'No Before-meal photo added', removed: (name: string) => `${name} removed`, undo: 'Undo',
     previousSuggestion: 'Are you trying a previous suggestion?', chooseSuggestion: 'Choose from recommendations you saved earlier.', linkStep: (step: number) => `Step ${step} of 2`, savedEarlier: 'Saved earlier', selectedSuggestion: 'Selected Suggestion', foodList: 'Food List', selectMealFood: 'Select the food card in this meal.',
     selectFood: 'Which food does this apply to?', link: 'Link suggestion', linked: 'Linked · pending after-meal review',
     linkHint: 'Choose a suggestion, then select its actual served target. Nothing is added to the food list. The suggestion stays untried until a saved after-meal review confirms use.',
     noSuggestions: 'No saved suggestions available.', suggestionsFailed: 'Could not load saved suggestions.',
-    replaceTitle: 'Replace this photo?', replaceBody: 'Only the photo will change. Your foods, food details, meal details, and suggestion links stay.', replaceHint: 'Cancel or an invalid image keeps everything.',
+    replaceTitle: 'Replace this photo?', replaceBody: 'Choosing a valid replacement photo will clear your food list, food details, and suggestion links. Your meal date, type, and setting will stay.', replaceHint: 'Cancel or an invalid image keeps everything.',
     savingMeal: 'Saving check-in…', savingReview: 'Saving this review…', draftKept: 'Your draft stays until saving is confirmed.',
+    checkInStep: 'Check-in', afterMealStep: 'After-meal review', stepSaved: 'Saved', stepAwaiting: 'Awaiting',
     selectIngredients: 'Select Ingredients to log outcome', ingredientIn: (ingredient: string, food: string) => `${ingredient} in ${food}`,
     enterOutcomes: 'Enter food outcomes yourself', addOutcomeFood: '+ Add a food', draftFor: (name: string) => `Draft · ${name}`, saveExit: 'Save as Draft & Exit',
     textureQuestion: 'Select texture characteristic', textureCause: 'may have caused the refusal, especially', textureTrait: 'trait of the food.',
@@ -677,14 +733,15 @@ const abcCopy = {
     acceptanceOptions: ['낯선 음식', '자주\n거부해요', '자주\n먹어요', '익숙한 음식'] as const,
     acceptanceUnset: '입력하지 않음',
     cooking: '조리 방법', detail: '추가 설명', selectCooking: '조리 방법 선택',
-    cookingOptions: ['찜', '삶기', '팬에 굽기', '오븐에 굽기', '로스팅', '직화 구이', '생식', '기타'],
+    cookingMethods: cookingMethodLabels.ko,
     missingPhoto: '식전 사진이 없어요', removed: (name: string) => `${name} 삭제됨`, undo: '되돌리기',
     previousSuggestion: '저장한 추천을 시도하고 있나요?', chooseSuggestion: '저장한 추천에서 선택해 주세요.',
     selectFood: '어느 음식에 적용하나요?', link: '추천 연결', linked: '연결됨 · 식후 기록 전',
     linkHint: '추천을 고른 뒤 실제 제공한 음식을 선택해 주세요. 음식은 직접 추가해야 해요. 식후 기록을 저장하면 추천 사용 여부를 확인해요.',
     noSuggestions: '연결할 수 있는 추천이 없어요.', suggestionsFailed: '저장한 추천을 불러오지 못했어요.',
-    replaceTitle: '사진을 교체할까요?', replaceBody: '사진을 교체해도 입력한 음식과 식사 정보, 연결한 추천은 유지돼요.', replaceHint: '사진 선택을 취소하면 기존 사진을 유지해요.',
+    replaceTitle: '사진을 교체할까요?', replaceBody: '새 사진으로 교체하면 입력한 음식과 음식 상세, 연결한 추천이 삭제돼요. 식사 날짜와 유형, 장소는 유지돼요.', replaceHint: '취소하거나 사용할 수 없는 사진을 고르면 기존 사진과 입력을 모두 유지해요.',
     savingMeal: '식사를 저장하고 있어요…', savingReview: '식후 기록을 저장하고 있어요…', draftKept: '저장을 마칠 때까지 초안을 유지해요.',
+    checkInStep: '식사 기록', afterMealStep: '식후 기록', stepSaved: '저장됨', stepAwaiting: '대기',
     selectIngredients: '먹은 결과를 기록할 재료를 선택해 주세요', ingredientIn: (ingredient: string, food: string) => `${food}의 ${ingredient}`,
     enterOutcomes: '음식 결과는 직접 입력해 주세요', addOutcomeFood: '+ 음식 추가', draftFor: (name: string) => `초안 · ${name}`, saveExit: '초안 저장 후 나가기',
     textureQuestion: '식감 특성 선택', textureCause: '중 살펴볼 특징을 선택해 주세요.', textureTrait: '특징을 추가할 수 있어요.',

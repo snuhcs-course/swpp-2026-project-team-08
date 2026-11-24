@@ -7,9 +7,14 @@
 // Changed: 채식 단계 선택 사항 처리, 직접 입력·카탈로그 규칙 제거
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형 단계 규칙을 새 프로필 구조 위에 반영
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 익숙한 음식 응답 필수 조건과 없음 초안 복원
+
+// AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo
+// Changed: 익숙한 음식 중복 검증
 
 import { emptyDraft, isStep, type OnboardingDraft, type OnboardingStep } from './types';
-import type { Language } from '../../types/profile';
+import type { Language, SafeFood } from '../../types/profile';
 import { isDietaryPattern } from '../../util/dietaryPattern';
 import { labelFor } from '../../util/strings';
 
@@ -21,8 +26,11 @@ export function validPassword(value: string): boolean {
   return value.length >= 8;
 }
 
-export function canAddSafeFood(input: OnboardingDraft['safeFoodInput']): boolean {
-  return !!input.name.trim();
+export function canAddSafeFood(input: OnboardingDraft['safeFoodInput'], foods: SafeFood[] = []): boolean {
+  return !!input.name.trim() && !foods.some((food) =>
+    food.name === input.name.trim()
+    && food.preparation === input.preparation.trim()
+    && food.presentationNote === input.presentationNote.trim());
 }
 
 export function toggleExclusive(values: string[], value: string, noneValue = 'none'): string[] {
@@ -41,6 +49,7 @@ export function canContinue(step: OnboardingStep, draft: OnboardingDraft, passwo
     case 'allergies': return draft.allergies.length > 0;
     case 'restrictions': return draft.restrictions.length > 0;
     case 'family': return draft.dietaryPattern == null || isDietaryPattern(draft.dietaryPattern);
+    case 'safe-foods': return draft.noSafeFoods || draft.safeFoods.length > 0;
     default: return true;
   }
 }
@@ -51,10 +60,12 @@ export function canFinish(draft: OnboardingDraft): boolean {
     && draft.consent.accountPrivacy && draft.consent.photoAnalysis
     && !!draft.childName.trim() && !!draft.ageRange
     && draft.allergies.length > 0 && draft.restrictions.length > 0
-    && (draft.dietaryPattern == null || isDietaryPattern(draft.dietaryPattern));
+    && (draft.dietaryPattern == null || isDietaryPattern(draft.dietaryPattern))
+    && (draft.noSafeFoods || draft.safeFoods.length > 0);
 }
 
 export function matchingSafeFoods(draft: OnboardingDraft, language: Language): string[] {
+  if (draft.noSafeFoods) return [];
   const restricted = [
     ...draft.allergies.filter((item) => item !== 'none').flatMap((item) => [labelFor('allergies', item, language), labelFor('allergies', item, 'en')]),
     ...draft.restrictions.filter((item) => item !== 'none').flatMap((item) => [labelFor('restrictions', item, language), labelFor('restrictions', item, 'en')]),
@@ -82,6 +93,7 @@ export function isDraft(value: unknown): value is OnboardingDraft {
     && ['allergies', 'restrictions', 'vegetarianRestrictions', 'safeFoods']
       .every((key) => Array.isArray(draft[key]))
     && (draft.dietaryPattern == null || isDietaryPattern(draft.dietaryPattern))
+    && typeof draft.noSafeFoods === 'boolean'
     && !!safeFoodInput && ['name', 'preparation', 'presentationNote'].every((key) => typeof safeFoodInput[key] === 'string');
 }
 
@@ -93,6 +105,7 @@ export function restoreDraft(value: unknown): OnboardingDraft | null {
   const draft = {
     ...stored,
     dietaryPattern: stored.dietaryPattern ?? null,
+    noSafeFoods: stored.noSafeFoods ?? false,
     step: isStep(stored.step) ? stored.step : 'family',
   };
   if (!isDraft(draft)) return null;

@@ -1,5 +1,9 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 대문자 enum, 서버 발급 id, 음식 안 리뷰 결과·난이도 사유 문자열 목록으로 재편
+# AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+# Changed: 식사 입력 조리법을 열 가지로 제한
+# AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+# Changed: 식사 장소 미응답을 null로 요청·응답
 
 """식사 저장·수정·리뷰의 요청과 응답 모양.
 
@@ -14,7 +18,13 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field, field_validat
 
 from app.models.difficulty_enums import DifficultyReason
 from app.models.food_recommendation_enums import FoodRecommendationFeedback
-from app.models.meal_enums import EatingOutcome, MealCookingMethod, MealSetting, MealType
+from app.models.meal_enums import (
+    EatingOutcome,
+    MealCookingMethod,
+    MealCookingMethodInput,
+    MealSetting,
+    MealType,
+)
 
 
 def _bigint_id(value: str) -> str:
@@ -59,7 +69,7 @@ class IngredientInput(StrictDto):
 class FoodWriteRequest(StrictDto):
     name: str
     ingredients: list[IngredientInput]
-    cooking_method: MealCookingMethod | None = None
+    cooking_method: MealCookingMethodInput | None = None
     serving_note: str | None = None
     acceptance: int | None = Field(default=None, ge=0, le=3, strict=True)
 
@@ -94,7 +104,8 @@ class MealFoodUpdateRequest(FoodWriteRequest):
 class MealWriteRequest(StrictDto):
     meal_date: date
     meal_type: MealType
-    setting: MealSetting
+    # 장소는 선택 입력이며 미응답은 null로 보존한다.
+    setting: MealSetting | None
     before_photo_uri: str | None = None
     foods: list[MealFoodCreateRequest] = Field(min_length=1)
 
@@ -127,7 +138,7 @@ class MealWriteResponse(BaseModel):
     user_id: str
     meal_date: date
     meal_type: MealType
-    setting: MealSetting
+    setting: MealSetting | None
     before_photo_uri: str | None
     after_photo_uri: str | None
     saved_at: datetime

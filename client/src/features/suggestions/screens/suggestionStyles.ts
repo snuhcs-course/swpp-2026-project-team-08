@@ -3,8 +3,11 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
 // Changed: 클라이언트 모델, DTO, DB Schema 통합 및 일관화
 
-// AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
-// Changed: 거절 직후 추가 추천 선택 단계 배치
+// AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
+// Changed: 추가 추천 단계 배치 및 거절·저장 버튼 정리
+
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 앞 카드는 수평으로 두고 뒤 카드 두 장을 반대 방향으로 배치
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
@@ -38,11 +41,9 @@ export const suggestionStyles = StyleSheet.create({
   statusMessage: { flex: 1, fontFamily: fonts.poppinsMedium, fontSize: 12, lineHeight: 18, color: colors.suggestionTried },
   undoAction: { minHeight: 30, minWidth: 70, justifyContent: 'center', alignItems: 'flex-end' },
   undoLabel: { fontFamily: fonts.poppinsSemiBold, fontSize: 14, lineHeight: 19, color: colors.homePrimary },
-  recommendationActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 18 },
+  recommendationActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 48 },
   dismissAction: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.homeBorder, backgroundColor: colors.surface },
   saveAction: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.homePrimary },
-  skipAction: { minHeight: 44, width: 150, alignItems: 'center', justifyContent: 'center' },
-  skipLabel: { fontFamily: fonts.poppinsMedium, fontSize: 16, lineHeight: 21, color: colors.suggestionMuted, textDecorationLine: 'underline' },
   heading: { fontFamily: fonts.poppinsSemiBold, fontSize: 16, lineHeight: 21, color: colors.homeText },
   text: { fontFamily: fonts.poppinsRegular, fontSize: 14, lineHeight: 19, color: colors.homeText },
   muted: {
@@ -126,9 +127,9 @@ export const suggestionStyles = StyleSheet.create({
   hidden: { display: 'none' },
   cardStack: { height: 406, flexShrink: 1, minHeight: 280, marginTop: 6, marginBottom: 8 },
   stackLayer: { position: 'absolute', borderRadius: 24, borderWidth: 1, borderColor: colors.suggestionCardBorder },
-  stackBack: { top: 12, bottom: 0, left: 0, right: 24, backgroundColor: colors.suggestionStackBack, transform: [{ rotate: '3deg' }] },
-  stackMiddle: { top: 0, bottom: 12, left: 8, right: 8, backgroundColor: colors.suggestionStackMiddle, transform: [{ rotate: '-1.5deg' }] },
-  stackFace: { flex: 1, borderRadius: 24, borderWidth: 1, borderColor: colors.suggestionCardBorder, backgroundColor: colors.surface, paddingHorizontal: 18, paddingVertical: 16, gap: 10, transform: [{ rotate: '2deg' }], shadowColor: colors.homeText, shadowOpacity: 0.07, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
+  stackBack: { top: 8, bottom: -8, left: 6, right: 6, backgroundColor: colors.suggestionStackBack, transform: [{ rotate: '5deg' }] },
+  stackMiddle: { top: 4, bottom: -4, left: 4, right: 4, backgroundColor: colors.suggestionStackMiddle, transform: [{ rotate: '-5deg' }] },
+  stackFace: { flex: 1, borderRadius: 24, borderWidth: 1, borderColor: colors.suggestionCardBorder, backgroundColor: colors.surface, paddingHorizontal: 18, paddingVertical: 16, gap: 10, shadowColor: colors.homeText, shadowOpacity: 0.07, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
   cardPosition: { fontFamily: fonts.poppinsSemiBold, fontSize: 12, lineHeight: 18, color: colors.suggestionMuted },
   cardFoodName: { flex: 1, fontFamily: fonts.poppinsMedium, fontSize: 12, lineHeight: 18, color: colors.homeText, textAlign: 'right' },
   ingredientChip: { borderRadius: 119, paddingHorizontal: 8, paddingVertical: 5, backgroundColor: colors.successSurface, borderWidth: 1, borderColor: colors.suggestionIngredientBorder },

@@ -2,8 +2,9 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 추천 근거의 난이도 카테고리 타입을 문자열로 확장
+// AI-generated with GPT-6, 2026-11-23, reviewed by Haechan Jung
+// Changed: 홈 저장 형식에서 미사용 식사 요약 제거
 
-export type MealSummary = { id: string; childId: string; mealDate: string };
 export type RecommendationEvidence = {
   mealId: string;
   foodId: string;
@@ -26,4 +27,4 @@ export type SavedSuggestion = {
   safetyVerifiedForProfileAt: string;
   recommendation?: RecommendationEvidence;
 };
-export type HomeRecords = { meals: MealSummary[]; suggestions: SavedSuggestion[] };
+export type HomeRecords = { suggestions: SavedSuggestion[] };

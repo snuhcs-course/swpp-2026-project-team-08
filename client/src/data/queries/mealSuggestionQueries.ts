@@ -1,14 +1,20 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 추가 추천 결과 캐시 반영과 중복 제거
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 기록을 보존하는 저장 목록 제거와 늦은 조회 응답 취소
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 홈 새로고침을 위한 사용자별 추천 캐시 키 추가
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { DismissReason, Suggestion, SuggestionTarget } from '../../types/suggestionRecord';
 import {
-  decideMealSuggestion, generateMealSuggestions, listMealSuggestions, undoMealSuggestion,
+  decideMealSuggestion, generateMealSuggestions, listMealSuggestions, removeSavedSuggestion,
+  undoMealSuggestion,
 } from '../api/mealSuggestionApi';
 import { checkinReferenceKeys } from './checkinReferenceQueries';
 
 export const mealSuggestionKeys = {
+  byUser: (userId: string) => ['meal-suggestions-v1', userId] as const,
   all: (userId: string, mealId: string) => ['meal-suggestions-v1', userId, mealId] as const,
 };
 
@@ -17,6 +23,20 @@ export function useMealSuggestions(userId: string, mealId: string) {
     queryKey: mealSuggestionKeys.all(userId, mealId),
     queryFn: ({ signal }) => listMealSuggestions(userId, mealId, signal),
     enabled: !!userId && !!mealId,
+  });
+}
+
+export function useRemoveSavedSuggestion(userId: string) {
+  const client = useQueryClient();
+  const savedKey = checkinReferenceKeys.savedSuggestions(userId);
+  return useMutation({
+    mutationFn: removeSavedSuggestion,
+    retry: false,
+    onSuccess: async (_result, id) => {
+      await client.cancelQueries({ queryKey: savedKey });
+      client.setQueryData<Suggestion[]>(savedKey, (old) => old?.filter((item) => item.id !== id));
+      void client.invalidateQueries({ queryKey: savedKey });
+    },
   });
 }
 

@@ -4,6 +4,9 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 추가 추천 가능 여부와 원본 관계 타입
 
+// AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
+// Changed: 기존 추천의 조리법 미입력 허용
+
 import type { CookingMethod, Id, TimestampString } from './recordValues';
 
 export type SuggestionStatus = 'pending' | 'saved' | 'dismissed' | 'tried';
@@ -46,7 +49,7 @@ export type Suggestion = {
   servingTip: string | null;
   /** 제안하는 음식에 들어가는 재료 이름 */
   ingredients: string[];
-  cookingMethod: CookingMethod;
+  cookingMethod: CookingMethod | null;
   /** 식후 리뷰에서 참고한 특성(아이가 어려워한 원인)을 서술한 문장 */
   causes: string;
   status: SuggestionStatus;

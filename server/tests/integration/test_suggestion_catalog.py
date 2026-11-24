@@ -3,8 +3,8 @@
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
 
-# AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung
-# Changed: 통합 CLI의 재료 교체·기록 보존과 서버 계약·원본 집계 검증
+# AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung
+# Changed: 통합 CLI의 교체·기록 보존과 최신 프롬프트의 영어 재료 목록 검증
 
 """영어 재료 파일, 카탈로그 조회, 추천 API를 실제 SQLite로 검증한다."""
 
@@ -245,7 +245,8 @@ async def test_영어_재료로_추천하고_교체_후에도_식사와_저장_�
     recommendation = generated.json()[0]
     assert recommendation["ingredients"] == ["Rice"]
     prompt = next(m.content for m in model.compose_inputs[0] if isinstance(m, HumanMessage))
-    assert prompt.split("쓸 수 있는 재료 (한 줄에 하나):\n")[1] == "Rice"
+    catalog_heading = "쓸 수 있는 재료 (세미콜론 ';'으로 구분, 이름 안의 쉼표는 이름의 일부):\n"
+    assert prompt.split(catalog_heading)[1] == "Rice"
     decision = await api_client.put(
         f"/api/v1/suggestions/{recommendation['id']}/decision",
         headers=owner,

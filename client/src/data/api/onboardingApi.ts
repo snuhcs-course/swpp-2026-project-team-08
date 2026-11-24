@@ -4,6 +4,8 @@
 // Changed: 서버 restrictions 목록·대문자 enum 계약으로 변환 로직 재작성
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 식생활 유형과 선택 입력인 조리 방법을 새 서버 계약으로 변환
+// AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
+// Changed: 익숙한 음식 null 응답과 미응답 목록 구분
 
 import { apiRequest } from '../network/apiClient';
 import { isUserId, type AuthUser } from '../storage/authStorage';
@@ -25,7 +27,7 @@ type ProfileResponse = {
     name: string;
     preparation: string | null;
     presentation_note: string | null;
-  }[];
+  }[] | null;
   updated_at: string;
 };
 
@@ -58,11 +60,12 @@ function parseResponse(value: unknown): OnboardingResponse {
   const profile = value.profile;
   if (!record(profile) || !isUserId(profile.user_id) || typeof profile.child_name !== 'string'
     || typeof profile.age_group !== 'string' || typeof profile.updated_at !== 'string'
-    || !Array.isArray(profile.restrictions) || !Array.isArray(profile.safe_foods)) {
+    || !Array.isArray(profile.restrictions)
+    || (profile.safe_foods !== null && !Array.isArray(profile.safe_foods))) {
     throw new Error('Invalid onboarding profile');
   }
   if (!profile.restrictions.every((item: unknown) => typeof item === 'string' && RESTRICTION_PATTERN.test(item))
-    || !profile.safe_foods.every((food: unknown) => record(food) && isUserId(food.id)
+    || !(profile.safe_foods ?? []).every((food: unknown) => record(food) && isUserId(food.id)
       && typeof food.name === 'string'
       && (food.preparation === null || typeof food.preparation === 'string')
       && (food.presentation_note === null || typeof food.presentation_note === 'string'))) {
@@ -98,7 +101,7 @@ export function toOnboardingWrite(profile: ChildProfile) {
       ],
       dietary_pattern: nullable(profile.dietaryPattern ?? null,
         (value) => toApiEnum(value, dietaryPatternIds)),
-      safe_foods: profile.safeFoods.map((food) => ({
+      safe_foods: profile.noSafeFoods ? null : profile.safeFoods.map((food) => ({
         name: food.name,
         preparation: food.preparation.trim() || null,
         presentation_note: food.presentationNote || null,
@@ -138,7 +141,8 @@ export function fromOnboardingResponse(
     vegetarianRestrictions: fromRestrictionTypes('vegetarian', source.restrictions),
     dietaryPattern: nullable(source.dietary_pattern,
       (value) => fromApiEnum(value, dietaryPatternIds)),
-    safeFoods: source.safe_foods.map((food) => ({
+    noSafeFoods: source.safe_foods === null,
+    safeFoods: (source.safe_foods ?? []).map((food) => ({
       id: food.id, name: food.name, preparation: food.preparation ?? '',
       presentationNote: food.presentation_note ?? '',
     })),
@@ -157,7 +161,10 @@ export async function writeOnboarding(profile: ChildProfile): Promise<Onboarding
   }));
   const saved = response.profile
     && nullable(response.profile.dietary_pattern, (value) => fromApiEnum(value, dietaryPatternIds));
-  if (!response.profile || saved !== (profile.dietaryPattern ?? null)) {
+  if (!response.profile || (response.profile.safe_foods === null) !== !!profile.noSafeFoods) {
+    throw new Error('Safe foods answer was not saved');
+  }
+  if (saved !== (profile.dietaryPattern ?? null)) {
     throw new Error('Dietary pattern was not saved');
   }
   return response;

@@ -2,6 +2,8 @@
 # Changed: 추천 생성 입력에 safe food, 과거 EATEN 음식, 재료별 리뷰가 실리는지 검증 추가
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
+# AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
+# Changed: 이유·결과·조리법이 설명으로 풀려 프롬프트에 실리는지 검증
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 영어 추천 카탈로그 fixture 적용
@@ -17,7 +19,7 @@ from tests.fixtures.onboarding import request_body
 from tests.helpers.auth import auth_headers
 from tests.helpers.suggestions import batch, install_model, save_profile, seed_ingredient
 
-EATEN_HEADING = "과거 식사에서 아이가 먹은 음식 (outcome: EATEN):\n"
+EATEN_HEADING = "과거 식사에서 아이가 잘 먹은 음식 (식후 리뷰에 '잘 먹었다'로 기록):\n"
 
 
 def food(name: str, *ingredients: str, cooking_method: str = "STEAMED") -> dict:
@@ -120,8 +122,12 @@ async def test_prompt_carries_reasons_safe_foods_and_past_eaten_foods(
 
     prompt = user_prompt(model)
     # 아이가 어려워한 이유: 음식 전체와, 따로 리뷰한 재료.
-    assert "difficulty_reasons: TEXTURE.HARDNESS.HARD" in prompt
-    assert "당근 (outcome: UNTOUCHED, difficulty_reasons: SMELL.SULFUR)" in prompt
+    assert "difficulty_reasons: 식감이 딱딱하고 단단해서" in prompt
+    assert (
+        "당근 (outcome: 입에 대지 않았다, difficulty_reasons: 달걀·양배추류 같은 유황 냄새가 나서)"
+        in prompt
+    )
+    assert "TEXTURE.HARDNESS" not in prompt and "SMELL.SULFUR" not in prompt
     # 리뷰하지 않은 재료는 결과로 싣지 않는다.
     assert "감자 (outcome" not in prompt
     # 프로필의 safe food 는 기록된 조리·제공 형태와 함께 실린다.
@@ -129,8 +135,9 @@ async def test_prompt_carries_reasons_safe_foods_and_past_eaten_foods(
     assert "- 쌀밥, cooking: 질게 짓기" in prompt
     # 과거 식사와 같은 식사에서 잘 먹은 음식도 실린다. 이번에 제안할 음식 자신은 뺀다.
     eaten = eaten_section(prompt)
-    assert "- 계란찜, cooking_method: STEAMED, ingredients: 달걀" in eaten
-    assert "- 밥, cooking_method: STEAMED, ingredients: 쌀" in eaten
+    assert "- 계란찜, cooking_method: 찌기, ingredients: 달걀" in eaten
+    assert "- 밥, cooking_method: 찌기, ingredients: 쌀" in eaten
+    assert "STEAMED" not in eaten
     assert "당근 감자볶음" not in eaten
 
 
@@ -153,8 +160,8 @@ async def test_same_named_eaten_foods_are_listed_once_with_the_latest_form(
 
     eaten = eaten_section(user_prompt(model))
     assert eaten.count("계란찜") == 1
-    assert "cooking_method: STEAMED" in eaten
-    assert "BOILED" not in eaten
+    assert "cooking_method: 찌기" in eaten
+    assert "삶거나 끓이기" not in eaten
 
 
 @pytest.mark.asyncio

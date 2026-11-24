@@ -3,6 +3,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 추천 선택지에서 재료 필드 제거
+// AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
+// Changed: 음식 편집에서 저장 추천 연결
 
 export type MealSuggestionOption = {
   id: string;
@@ -14,14 +16,12 @@ export type MealSuggestionOption = {
 };
 
 export type MealSuggestionLinking = {
-  step: 0 | 1 | 2;
-  selectedSuggestion?: MealSuggestionOption;
-  selectedFoodId: string;
-  canContinue: boolean;
-  onOpen: () => void;
-  onBack: () => void;
+  pickerOpen: boolean;
+  selectedSuggestionId: string;
+  canOpenPicker: boolean;
+  onOpenPicker: () => void;
+  onClosePicker: () => void;
   onSelectSuggestion: (id: string) => void;
-  onSelectFood: (id: string) => void;
-  onContinue: () => void;
-  onUnlink: (id: string) => void;
+  onLink: (foodId: string) => void;
+  onUnlink: (suggestionId: string) => void;
 };

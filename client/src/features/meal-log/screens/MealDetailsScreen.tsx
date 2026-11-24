@@ -3,7 +3,14 @@
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 식사 기록 화면 디자인 개선
 
-import { Redirect, router } from 'expo-router';
+// AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
+// Changed: 식사 상세 추천 진입과 중복 이동 방지
+
+// AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
+// Changed: 식사 상세에서 장소 미응답 표시
+
+import { Redirect, router, useFocusEffect } from 'expo-router';
+import { useCallback, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useProfile } from '../../../providers/ProfileProvider';
@@ -16,6 +23,10 @@ import { MealDetailsView } from './MealDetailsView';
 export function MealDetailsScreen({ mealId }: { mealId?: string }) {
   const profile = useProfile();
   const details = useMealDetails(profile.profile?.id ?? '', mealId ?? '');
+  const openingSuggestion = useRef(false);
+  useFocusEffect(useCallback(() => {
+    openingSuggestion.current = false;
+  }, []));
   const s = copyFor(profile.language);
   const locale = profile.language === 'ko' ? 'ko-KR' : 'en-US';
 
@@ -38,7 +49,7 @@ export function MealDetailsScreen({ mealId }: { mealId?: string }) {
       parts.monthDay,
       parts.weekday,
       mealType,
-      s.mealCheckin.settings[meal.setting],
+      meal.setting ? s.mealCheckin.settings[meal.setting] : s.common.notEntered,
     )
     : '';
 
@@ -51,6 +62,15 @@ export function MealDetailsScreen({ mealId }: { mealId?: string }) {
       afterUri={meal?.afterPhotoUri ?? null}
       awaitingReview={!!meal && !meal.review}
       cards={details.cards}
+      canViewSuggestions={details.canViewSuggestions}
+      suggestionsLoading={details.suggestionsLoading}
+      suggestionsError={details.suggestionsError}
+      onViewSuggestions={() => {
+        if (!meal || !details.canViewSuggestions || details.deleting || openingSuggestion.current) return;
+        openingSuggestion.current = true;
+        // 추천 화면도 상세로 replace하여 돌아오므로 상세를 스택에 중복으로 남기지 않는다.
+        router.replace({ pathname: '/recommendation/[mealId]', params: { mealId: meal.id } });
+      }}
       loading={details.loading}
       error={details.error || (!details.loading && !meal)}
       deleting={details.deleting}

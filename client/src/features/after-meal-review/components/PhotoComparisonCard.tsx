@@ -3,45 +3,63 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: 식후 검토 글자 크기 및 가독성 개선
+// AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
+// Changed: 식전·식후 사진 나란히 확인·개별 확대와 식전 사진 없음 표시
 
-import { HeightFitPhoto } from '../../../components/HeightFitPhoto';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import type { MealPhoto } from '../../../types/meal';
+import { HeightFitPhoto } from '../../../components/HeightFitPhoto';
 import { UiAssetIcon } from '../../../components/UiAssetIcon';
+import type { MealPhoto } from '../../../types/meal';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
 
-export function PhotoComparisonCard({ before, after, beforeLabel, afterLabel, enlargeLabel, onEnlarge }: {
-  before: MealPhoto;
+type Props = {
+  before: MealPhoto | null;
   after: MealPhoto;
   beforeLabel: string;
   afterLabel: string;
+  missingBeforeLabel: string;
   enlargeLabel: string;
   onEnlarge: (side: 'before' | 'after') => void;
-}) {
+  onAfterImageError: () => void;
+};
+
+export function PhotoComparisonCard({
+  before, after, beforeLabel, afterLabel, missingBeforeLabel, enlargeLabel, onEnlarge, onAfterImageError,
+}: Props) {
+  const [failedBeforeUri, setFailedBeforeUri] = useState<string | null>(null);
+  const tiles = [
+    { side: 'before', photo: before?.uri === failedBeforeUri ? null : before, label: beforeLabel },
+    { side: 'after', photo: after, label: afterLabel },
+  ] as const;
+
   return (
-    <View style={styles.card}>
-      <View style={styles.row}>
-        {([{ photo: before, side: 'before', label: beforeLabel }, { photo: after, side: 'after', label: afterLabel }] as const).map((item) => (
-          <Pressable key={item.side} accessibilityRole="button" accessibilityLabel={`${item.label}: ${enlargeLabel}`} onPress={() => onEnlarge(item.side)} style={styles.frame}>
-            <HeightFitPhoto uri={item.photo.uri} height={228} />
-            <Text style={styles.badge}>{item.label}</Text>
-          </Pressable>
-        ))}
-      </View>
-      <Pressable accessibilityRole="button" onPress={() => onEnlarge('after')}>
-        <View style={styles.enlargeRow}><UiAssetIcon name="meal-maximize" /><Text style={styles.enlarge}>{enlargeLabel}</Text></View>
-      </Pressable>
+    <View style={styles.row}>
+      {tiles.map(({ side, photo, label }) => (
+        <View key={side} style={styles.column}>
+          <Text style={styles.label}>{label}</Text>
+          {photo ? (
+            <Pressable accessibilityRole="button" accessibilityLabel={`${label}: ${enlargeLabel}`}
+              onPress={() => onEnlarge(side)} style={styles.frame}>
+              <HeightFitPhoto key={photo.id} uri={photo.uri} height={228}
+                onError={side === 'before' ? () => setFailedBeforeUri(photo.uri) : onAfterImageError} />
+              <View style={styles.enlarge}><UiAssetIcon name="meal-maximize" /></View>
+            </Pressable>
+          ) : (
+            <View style={styles.frame}><Text style={styles.placeholder}>{missingBeforeLabel}</Text></View>
+          )}
+        </View>
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { gap: 8 },
   row: { flexDirection: 'row', gap: 8 },
-  frame: { flex: 1, height: 230, borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, overflow: 'hidden', backgroundColor: colors.homeBackground },
-  image: { width: '100%', height: '100%' },
-  badge: { position: 'absolute', top: 8, left: 7, maxWidth: '90%', backgroundColor: colors.surface, color: colors.homeText, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, fontSize: 14, letterSpacing: 0.6, fontFamily: fonts.poppinsBold },
-  enlargeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  enlarge: { color: colors.homePrimary, fontSize: 14, textAlign: 'center', fontFamily: fonts.interMedium },
+  column: { flex: 1, minWidth: 0, gap: 6 },
+  label: { color: colors.homeText, fontSize: 14, fontFamily: fonts.poppinsSemiBold },
+  frame: { height: 230, justifyContent: 'center', borderRadius: 14, borderWidth: 1, borderColor: colors.mealReviewBorder, overflow: 'hidden', backgroundColor: colors.homeBackground },
+  enlarge: { position: 'absolute', right: 6, bottom: 6, padding: 4, borderRadius: 6, backgroundColor: colors.surface },
+  placeholder: { paddingHorizontal: 8, textAlign: 'center', color: colors.mealReviewMuted, fontFamily: fonts.interRegular, fontSize: 14 },
 });

@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-24, reviewed by Seoyeon Heo
+// Changed: 식사 초안 삭제 및 실행 취소
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
@@ -7,6 +9,7 @@
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: 오늘 기본값 및 1900년 1월부터 현재 월까지 이동 제한
 
+import { useDeleteMealDraft } from '../../../data/queries/useDeleteMealDraft';
 import { useCallback, useMemo, useState } from 'react';
 import { localDate, validDate } from '../../../util/date';
 import { useMealList } from '../../../data/queries/mealLogQueries';
@@ -26,6 +29,7 @@ export function useMealLog(childId: string, initialDate?: string) {
   const monthValue = monthKey(year, month);
   const list = useMealList(childId, null);
   const draftQuery = useMealDraft(childId);
+  const deletion = useDeleteMealDraft(childId);
 
   const counts = useMemo(() => {
     const next: Record<string, number> = {};
@@ -84,6 +88,7 @@ export function useMealLog(childId: string, initialDate?: string) {
   );
 
   return {
+    deletion,
     year,
     month,
     selectedDate,

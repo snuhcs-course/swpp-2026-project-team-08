@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-24, reviewed by Seoyeon Heo
+// Changed: 식사 초안 삭제·실행 취소 및 시트 위 메뉴 표시
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
@@ -9,6 +11,7 @@
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: 식사 기록 탭 헤더의 뒤로가기 제거; 식사 기록 배경색 통일
 
+import { DraftMenu, DraftMenuOverlay, DraftToast } from '../../../components/DraftActions';
 import { AppHeader } from '../../../components/AppHeader';
 import { useState, type Ref } from 'react';
 import {
@@ -65,6 +68,10 @@ type Props = {
   onSubmitSearch: () => void;
   onToggleUnreviewed: () => void;
   onContinueDraft: () => void;
+  onDeleteDraft: () => void;
+  onUndoDraft: () => void;
+  draftRemoved: boolean;
+  draftDeleteError: 'delete' | 'undo' | null;
   onOpenMeal: (id: string) => void;
   onGoCheckin: () => void;
 };
@@ -73,6 +80,8 @@ export function MealLogView({ sheetRef, ...p }: Props) {
   const s = copyFor(p.language);
   const m = s.mealLog;
   const locale = p.language === 'ko' ? 'ko-KR' : 'en-US';
+  const [menuStage, setMenuStage] = useState<'menu' | 'confirm' | null>(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, right: 16 });
   const [controlsHeight, setControlsHeight] = useState(0);
   const [filtersHeight, setFiltersHeight] = useState(72);
   const [minimum, setMinimum] = useState(Platform.OS !== 'web');
@@ -83,13 +92,15 @@ export function MealLogView({ sheetRef, ...p }: Props) {
   return (
     <MealLogSheetLayout ref={sheetRef} controlsHeight={controlsHeight} filtersHeight={filtersHeight}
       onMinimumChange={setMinimum} active={p.active} onBack={p.onBack}
-      sheet={<MealLogList minimum={minimum} onFiltersLayout={setFiltersHeight}
+      sheet={<><MealLogList minimum={minimum} onFiltersLayout={setFiltersHeight}
         language={p.language} records={p.records} query={p.query}
         hasMeals={p.hasMeals} loading={p.loading} error={p.error}
         search={p.search} fromLabel={p.fromLabel} unreviewedOnly={p.unreviewedOnly}
         onSearch={p.onSearch} onSubmitSearch={p.onSubmitSearch}
         onToggleUnreviewed={p.onToggleUnreviewed}
-        onRefresh={p.onRefresh} onOpenMeal={p.onOpenMeal} onGoCheckin={p.onGoCheckin} />}>
+        onRefresh={p.onRefresh} onOpenMeal={p.onOpenMeal} onGoCheckin={p.onGoCheckin} />
+        <DraftMenuOverlay language={p.language} onDelete={p.onDeleteDraft} stage={menuStage}
+          setStage={setMenuStage} position={menuPosition} /></>}>
       <View style={styles.historyRoot}>
         <AppHeader title={m.title} />
         <ScrollView
@@ -117,9 +128,15 @@ export function MealLogView({ sheetRef, ...p }: Props) {
                   <Pressable accessibilityRole="button" onPress={p.onContinueDraft} style={styles.resume}>
                     <Text style={styles.resumeLabel}>{m.resume}</Text>
                   </Pressable>
+                  <View>
+                    <DraftMenu language={p.language} onDelete={p.onDeleteDraft} onOpen={position => {
+                      setMenuPosition(position); setMenuStage('menu');
+                    }} />
+                  </View>
                 </View>
               </View>
             ) : null}
+            <DraftToast language={p.language} visible={p.draftRemoved} error={p.draftDeleteError} onUndo={p.onUndoDraft} />
             <MealLogCalendar
               monthLabel={s.mealCheckin.month}
               yearLabel={s.mealCheckin.year}

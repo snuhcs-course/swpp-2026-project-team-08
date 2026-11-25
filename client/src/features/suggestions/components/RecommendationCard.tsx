@@ -8,9 +8,8 @@
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 앞쪽 텍스트 카드는 수평으로 두고 배경 카드 기울기 유지
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 카드 양면에 추천 자체의 음식명 표시
+// Changed: 추천 한 장에 자체 음식명과 앞·뒷면 표시
 
-import { ProgressBar } from '../../../components/ProgressBar';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Pressable, ScrollView, Text, View } from 'react-native';
 import type { Suggestion } from '../../../types/suggestionRecord';
@@ -23,8 +22,6 @@ import { suggestionStyles as s } from '../screens/suggestionStyles';
 type Props = {
   item: Suggestion;
   language: Language;
-  index: number;
-  total: number;
   disabled: boolean;
   onSave: () => void;
   onDismiss: () => void;
@@ -99,8 +96,6 @@ export function RecommendationCard(p: Props) {
   };
   return (
     <View style={s.cardStack}>
-      <View style={[s.stackLayer, s.stackBack]} />
-      <View style={[s.stackLayer, s.stackMiddle]} />
       <Animated.View
         {...pan.panHandlers}
         style={{ flex: 1, transform: [{ translateX: x }] }}
@@ -141,14 +136,10 @@ export function RecommendationCard(p: Props) {
             extrapolate: 'clamp',
           }),
         }}>
-          {!details && <>
-            <ProgressBar variant="continuous" current={p.index} total={p.total}
-              style={s.progress} fillStyle={s.fill} accessible={false} />
-            <View style={s.row}>
-              <Text style={s.cardPosition}>{c.count(p.index, p.total)}</Text>
-              <Text style={s.cardFoodName}>{p.item.foodName}</Text>
-            </View>
-          </>}
+          {!details && <View style={s.row}>
+            <Text style={s.cardPosition}>{c.count}</Text>
+            <Text style={s.cardFoodName}>{p.item.foodName}</Text>
+          </View>}
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
             <Pressable
               accessibilityRole="button"

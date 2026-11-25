@@ -99,7 +99,7 @@ function RecommendationContent({ userId }: { userId: string }) {
           </View>
         </View>
       </View>}
-      {current && !reasons && <RecommendationCard index={1} total={1} item={current} language={language} disabled={model.busy}
+      {current && !reasons && <RecommendationCard item={current} language={language} disabled={model.busy}
         onSave={() => model.changeDecision('saved')} onDismiss={() => setReasons([])} />}
     </ScrollView>
     {current && !reasons && <View style={s.recommendationFooter}>

@@ -7,6 +7,8 @@
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
 # AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 # Changed: 개별 조리법 저장·수정과 이전 통합값 조회 검증
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 사용자 지정 식후 사유 저장 검증
 
 """인증된 식사 저장·수정·리뷰·삭제와 추천 시도 연결."""
 
@@ -461,7 +463,11 @@ async def test_review_stores_results_inside_foods_and_ingredients(api_client: As
             {
                 "food_id": food["id"],
                 "outcome": "TASTED",
-                "difficulty_reasons": ["TEXTURE.HARDNESS.SOFT", "COLOR.WHITE"],
+                "difficulty_reasons": [
+                    "TEXTURE.HARDNESS.SOFT",
+                    "COLOR.WHITE",
+                    'CUSTOM:["TASTE",null,"Too earthy"]',
+                ],
                 "ingredient_outcomes": [
                     {
                         "ingredient_id": potato["id"],
@@ -480,7 +486,11 @@ async def test_review_stores_results_inside_foods_and_ingredients(api_client: As
     assert body["after_photo_uri"] == "file:///after.png"
     reviewed = body["foods"][0]
     assert reviewed["outcome"] == "TASTED"
-    assert reviewed["difficulty_reasons"] == ["TEXTURE.HARDNESS.SOFT", "COLOR.WHITE"]
+    assert reviewed["difficulty_reasons"] == [
+        "TEXTURE.HARDNESS.SOFT",
+        "COLOR.WHITE",
+        'CUSTOM:["TASTE",null,"Too earthy"]',
+    ]
     by_name = {item["name"]: item for item in reviewed["ingredients"]}
     assert by_name["감자"]["outcome"] == "UNTOUCHED"
     assert by_name["감자"]["difficulty_reasons"] == ["SMELL.SULFUR"]

@@ -10,6 +10,8 @@
 # Changed: 식생활 유형 추가, 익숙한 음식의 조리 방법을 선택 입력으로 변경
 # AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 # Changed: 익숙한 음식 명시적 없음 null 계약
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 거부 음식 사용자 지정 사유 검증
 
 """온보딩 요청과 응답의 모양.
 
@@ -23,6 +25,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, StrictBool, field_validator, model_validator
 
 from app.models.difficulty_enums import DifficultyReason
+from app.models.difficulty_reason_value import DifficultyReasonValue
 from app.models.meal_enums import MealCookingMethodInput
 from app.models.restriction_enums import RestrictionType
 from app.models.user_consent_enums import UserConsentKind
@@ -62,7 +65,7 @@ class RefusedFoodDto(StrictDto):
     id: str
     name: str
     cooking_method: MealCookingMethodInput | None
-    reasons: list[DifficultyReason]
+    reasons: list[DifficultyReasonValue]
 
     @field_validator("id", "name")
     @classmethod
@@ -74,7 +77,7 @@ class RefusedFoodDto(StrictDto):
 
     @field_validator("reasons")
     @classmethod
-    def unique_reasons(cls, value: list[DifficultyReason]) -> list[DifficultyReason]:
+    def unique_reasons(cls, value: list[DifficultyReasonValue]) -> list[DifficultyReasonValue]:
         if len(value) != len(set(value)):
             raise ValueError("duplicate reasons")
         return value

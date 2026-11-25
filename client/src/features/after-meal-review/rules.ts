@@ -12,6 +12,8 @@
 // Changed: 최종 저장에 추가 버튼을 누르지 않은 어려움 입력 반영
 // AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: Eaten의 선택적 어려움 입력과 이전 사진 비교 초안의 확인 화면 복원
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 사용자 지정 사유 복원과 중복 처리
 
 import { textureQuestions } from '../../util/difficultyOptions';
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome, ReviewStep } from '../../types/afterMealReview';
@@ -74,7 +76,7 @@ function restoredDifficulties(targetId: string, tags: Difficulty[]): DifficultyT
       id: `${targetId}:${index}`,
       category: tag.category,
       value: separator < 0 ? tag.value : tag.value.slice(0, separator),
-      ...(separator < 0 ? {} : { note: tag.value.slice(separator + 2) }),
+      ...(tag.note ? { note: tag.note } : separator < 0 ? {} : { note: tag.value.slice(separator + 2) }),
       ...(tag.subcategory ? { subcategory: tag.subcategory } : {}),
     };
   });
@@ -202,8 +204,8 @@ export function addDifficulty(
     value: normalized,
     ...(normalizedNote ? { note: normalizedNote } : {}),
   };
-  const single = category === 'smell' || category === 'temperature' || category === 'notSure' || category === 'pieceSize' || category === 'arrangement';
-  const retained = single ? tags.filter((item) => item.category !== category) : tags;
+  const single = value !== 'other' && (category === 'smell' || category === 'temperature' || category === 'notSure' || category === 'pieceSize' || category === 'arrangement');
+  const retained = single ? tags.filter((item) => item.category !== category || item.value === 'other') : tags;
   return retained.some((item) => item.id === tag.id) ? retained : [...retained, tag];
 }
 

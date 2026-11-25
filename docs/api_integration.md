@@ -5,6 +5,8 @@
 
 <!-- AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung -->
 <!-- Changed: 식사 장소 미응답 null 저장 계약 -->
+<!-- AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo -->
+<!-- Changed: 사용자 지정 어려움 사유 API 계약 -->
 
 # API 연동 변경 사항 (클라이언트)
 
@@ -87,7 +89,10 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
 - 난이도 사유는 `{category, subcategory, value}` 객체의 목록에서 **문자열 목록**(`difficulty_reasons`)으로 바뀐다. 중복은 422다.
 
 ### 난이도 사유 값 (`DifficultyReason`)
-값은 category를 점(`.`)으로 구분한 경로 문자열이다. `texture`만 하위 category가 하나 더 있다.
+기본 선택지는 category를 점(`.`)으로 구분한 경로 문자열이다. `texture`만 하위 category가 하나 더 있다.
+직접 입력한 사유는 `CUSTOM:` 뒤에 JSON 배열 `[서버 category, texture 하위 항목 또는 null, 사유]`을 붙인다.
+예를 들어 `CUSTOM:["TASTE",null,"Too earthy"]`다. 사유는 공백을 제외하고 1~2000자이며
+같은 category의 서로 다른 사유를 각각 저장한다. 거부 음식과 식후 리뷰에 같은 형식을 사용한다.
 
 | 이전 (`category` / `subcategory` / `value`) | 이후 |
 |---|---|
@@ -102,9 +107,7 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
   `arrangement` → `ARRANGEMENT`, `color` → `COLOR`, `temperature` → `TEMPERATURE`, `notSure` → `NOT_SURE`.
 - value 이름은 대문자 SNAKE_CASE로 바꾼다 (`nonSticky` → `NON_STICKY`, `nonFatty` → `NON_FATTY`).
 - 전체 값 목록(77개)은 바로 아래 표와 같다. 값의 기준은 PRD의 "Reason Category and Mapped Values"다.
-- **PRD에 없는 항목은 서버가 받지 않는다.** 클라이언트의 `tasteIntensity`(`mild` `strong`), `shape`(`consistent` `varied` `notSure`
-  `note`), `visibility`(`visible` `hidden` `mixed`), `tasteType`의 `other`는 선택지에서 제거해야 한다. 보내면 422다.
-- 메모(`note`)는 지금처럼 서버로 보내지 않는다.
+- 기본 선택지는 아래 목록을 따른다. 사용자 지정 사유에는 `OTHER` category 또는 기존 category와 사유를 사용한다.
 
 #### `DifficultyReason` 전체 값 (77개)
 
@@ -147,7 +150,7 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
 - 앱 안의 값(`lunch`, `home`, `stir_fried`, `eaten` 등)은 소문자로 두고, 서버의 대문자 값과의 변환은 데이터 계층 경계에서만 한다
   (`src/data/dto/values.ts`의 `fromApiEnum`, `toApiEnum`). 서버가 소문자를 보내면 오류로 처리한다.
 - 난이도 사유는 앱의 `{category, subcategory, value}` 태그와 서버의 경로 문자열을 `src/data/dto/difficultyReasons.ts`가 변환한다.
-  선택지에서 `tasteIntensity`, `shape`, `visibility`, `tasteType`의 `other`를 제거했다. 난이도 메모는 서버로 보내지 않고, 같은 사유는 한 번만 보낸다.
+  기타 사유의 직접 입력은 서버에 저장하며, 같은 사유는 한 번만 보낸다.
 - 저장·수정·리뷰 응답은 모두 식사 상세로 받는다. 음식 안의 `outcome`, `difficulty_reasons`에서 앱의 식후 리뷰(`MealDetail.review`)를,
   `recommendation_tries`에서 추천 연결(`suggestionLinks`, 재료 연결 없음)을 만든다.
 - 앱 안의 음식 id는 서버 id를 받기 전까지의 임시 값이다. 저장 응답의 음식 순서로 서버 id를 대응시키고, 수정할 때는 서버 id를 가진

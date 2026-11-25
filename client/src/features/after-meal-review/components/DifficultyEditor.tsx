@@ -11,6 +11,8 @@
 // Changed: 어려움 태그에 항목명과 식감 세부 항목 표시
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
 // Changed: 어려움 추가 버튼을 오른쪽에 두고 선택 상자 글자 축소
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 기타 사유 입력 표시
 
 import { DifficultyReasonTag } from '../../../components/DifficultyReasonTag';
 import { UiAssetIcon, type UiAssetIconName } from "../../../components/UiAssetIcon";
@@ -162,7 +164,7 @@ export function DifficultyEditor({
           onChange={item => onCategory(item as DifficultyCategory)}
           style={styles.categorySelect}
         />
-        {!isTexture && valueSelect}
+        {!isTexture && category !== 'other' && valueSelect}
         <MealFlowButton
           label={labels.add}
           icon={null}
@@ -200,6 +202,7 @@ export function DifficultyEditor({
           value={note}
           onChangeText={onNote}
           multiline
+          maxLength={2000}
           style={styles.note}
         />
       )}
@@ -353,7 +356,8 @@ const styles = StyleSheet.create({
     borderColor: colors.mealReviewBorder,
   },
   note: {
-    minHeight: 44,
+    minHeight: 80,
+    textAlignVertical: 'top',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.mealReviewBorder,

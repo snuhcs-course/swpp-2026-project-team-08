@@ -3,6 +3,8 @@
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 기존 리뷰 조리법 통합값을 미입력으로 변환
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 사용자 지정 사유 저장
 
 import type {
   MealReview,
@@ -64,7 +66,7 @@ export function toMealReview(mealId: string, foods: unknown[]): MealReview | nul
   return { foodResults, ingredientResults };
 }
 
-// 같은 사유가 두 번 들어가면 서버가 거절하므로 중복을 없앤다. 메모는 서버로 보내지 않는다.
+// 같은 사유가 두 번 들어가면 서버가 거절하므로 중복을 없앤다.
 const reasons = (difficulties: Parameters<typeof toDifficultyReason>[0][]) =>
   [...new Set(difficulties.map(toDifficultyReason))];
 

@@ -9,6 +9,8 @@
 # Changed: 식생활 유형 저장·조회와 조리 방법 없는 익숙한 음식 검증
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 사용자 지정 거부 사유 저장 검증
 
 """Onboarding API persistence, ownership, and validation."""
 
@@ -321,7 +323,12 @@ async def test_refused_foods_round_trip_legacy_write_and_validation(
             "id": "food-1",
             "name": "Apple",
             "cooking_method": "PAN_FRIED",
-            "reasons": ["TEXTURE.HARDNESS.HARD", "TASTE.SOUR"],
+            "reasons": [
+                "TEXTURE.HARDNESS.HARD",
+                "TASTE.SOUR",
+                'CUSTOM:["OTHER",null,"Looks unfamiliar"]',
+                'CUSTOM:["TASTE",null,"Too earthy"]',
+            ],
         },
         {"id": "food-2", "name": "Pear", "cooking_method": None, "reasons": []},
     ]

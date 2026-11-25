@@ -10,6 +10,8 @@
 // Changed: 저장 완료 상태에 자동 반영한 어려움 사유 동기화
 // AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 서버·로컬 저장 분리, 초안 재개와 단일 사진 확인 단계의 뒤로가기
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 기타 사유 연속 입력
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -214,7 +216,7 @@ export function useAfterMealReview(profile: ChildProfile | null, mealId: string)
     const currentTags = value.difficulties[targetId] ?? [];
     update({
       difficulties: { ...value.difficulties, [targetId]: addDifficulty(currentTags, input.category!, input.value, input.note, input.subcategory) },
-      difficultyInputs: { ...value.difficultyInputs, [targetId]: { category: input.category, value: '', note: '', subcategory: '' } },
+      difficultyInputs: { ...value.difficultyInputs, [targetId]: { category: input.category, value: input.category === 'other' ? 'other' : '', note: '', subcategory: '' } },
     });
   };
   const removeDifficultyTag = (targetId: string, tagId: string) => {

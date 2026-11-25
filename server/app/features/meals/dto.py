@@ -4,6 +4,8 @@
 # Changed: 식사 입력 조리법을 열 가지로 제한
 # AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
 # Changed: 식사 장소 미응답을 null로 요청·응답
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 사용자 지정 어려움 사유 검증
 
 """식사 저장·수정·리뷰의 요청과 응답 모양.
 
@@ -16,7 +18,7 @@ from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, field_validator
 
-from app.models.difficulty_enums import DifficultyReason
+from app.models.difficulty_reason_value import DifficultyReasonValue
 from app.models.food_recommendation_enums import FoodRecommendationFeedback
 from app.models.meal_enums import (
     EatingOutcome,
@@ -39,13 +41,13 @@ EntityId = Annotated[
 ]
 
 
-def _unique_reasons(value: list[DifficultyReason]) -> list[DifficultyReason]:
+def _unique_reasons(value: list[DifficultyReasonValue]) -> list[DifficultyReasonValue]:
     if len(value) != len(set(value)):
         raise ValueError("difficulty_reasons must not contain duplicates")
     return value
 
 
-DifficultyReasons = Annotated[list[DifficultyReason], AfterValidator(_unique_reasons)]
+DifficultyReasons = Annotated[list[DifficultyReasonValue], AfterValidator(_unique_reasons)]
 
 
 class StrictDto(BaseModel):
@@ -149,7 +151,7 @@ class IngredientResponse(BaseModel):
     name: str
     # outcome 이 None 이면 아직 리뷰하지 않은 재료다.
     outcome: EatingOutcome | None
-    difficulty_reasons: list[DifficultyReason]
+    difficulty_reasons: list[DifficultyReasonValue]
 
 
 class LinkedRecommendationResponse(BaseModel):
@@ -176,7 +178,7 @@ class MealFoodResponse(BaseModel):
     acceptance: int | None
     # outcome 이 None 이면 아직 리뷰하지 않은 음식이다.
     outcome: EatingOutcome | None
-    difficulty_reasons: list[DifficultyReason]
+    difficulty_reasons: list[DifficultyReasonValue]
     ingredients: list[IngredientResponse]
     recommendation_tries: list[RecommendationTryResponse]
 

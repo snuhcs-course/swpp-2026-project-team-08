@@ -16,6 +16,8 @@
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Seoyeon Heo
 // Changed: 익숙한 음식 중복 검증
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 사용자 지정 사유 초안 검증
 
 import { emptyDraft, isStep, type OnboardingDraft, type OnboardingStep } from './types';
 import type { Language, SafeFood } from '../../types/profile';
@@ -91,6 +93,8 @@ function validRefusedFood(value: unknown, needsId: boolean): boolean {
     if (!reason || typeof reason !== 'object') return false;
     const item = reason as Record<string, unknown>;
     if (typeof item.category !== 'string' || typeof item.value !== 'string') return false;
+    if (item.note !== undefined && (typeof item.note !== 'string' || !item.note.trim())) return false;
+    if (item.category === 'other') return item.subcategory === null && item.value === 'other';
     if (item.category === 'texture') return typeof item.subcategory === 'string'
       && !!textureQuestions[item.subcategory]?.includes(item.value);
     return item.subcategory === null && !!difficultyOptions[item.category as keyof typeof difficultyOptions]?.includes(item.value);

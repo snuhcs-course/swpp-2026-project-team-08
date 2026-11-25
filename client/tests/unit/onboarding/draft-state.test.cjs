@@ -20,6 +20,8 @@
 // Changed: 식생활 유형 단계(family)를 선택 사항으로 되돌려 수정
 // AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
 // Changed: 온보딩 테스트 분리 및 현재 초안 복원·잘못된 저장값 경계 검증
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: Match current onboarding step order in draft restoration
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -41,7 +43,7 @@ test('작성 중인 초안은 미응답·공백 입력과 현재 단계를 그�
 
 test('없음과 실제 선택을 구분하고 음식 목록·설명·작성 중 입력을 모두 복원한다', () => {
   const draft = {
-    ...emptyDraft(), step: 'safe-foods', childName: '나루', ageRange: 'AGE_4_5',
+    ...emptyDraft(), step: 'sensory', childName: '나루', ageRange: 'AGE_4_5',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
     allergies: ['EGGS', 'MILK_DAIRY'],
     restrictions: ['none'], dietaryPattern: 'no_specific_pattern', noSafeFoods: true,

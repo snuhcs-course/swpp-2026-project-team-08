@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: legacy safe foods are excluded from the current review summary
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 익숙한 음식 폼·선택 조리 방법·토큰 삭제 상호작용 검증
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
@@ -72,7 +74,8 @@ async function checkFormControls(t, language) {
   tree.find(n => n.type === AppButton).props.onPress();
   tree = await render();
   assert.equal(foods[0].preparation, '');
-  assert.equal(reviewRows({ ...emptyDraft(), safeFoods: foods }, language)[3].value, 'Apple slices');
+  assert.equal(reviewRows({ ...emptyDraft(), safeFoods: foods }, language)
+    .some(row => row.step === 'safe-foods'), false);
   assert.equal(tree.find(n => n.type === FormField).props.value, '');
   assert.equal(tree.find(n => n.type === AppButton).props.disabled, true);
   const remove = tree.find(n => n.props?.accessibilityLabel === `${copyFor(language).common.remove} Apple slices`);

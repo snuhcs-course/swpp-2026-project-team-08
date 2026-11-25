@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
-// Changed: 실제 이전·다음 왕복에서 답변·선택·음식 입력과 화면별 진행 표시 검증
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 현재 온보딩 단계의 이전·다음 이동과 진행 표시 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountDraft, waitFor, control, input, click } = require('../../helpers/onboarding-screen.cjs');
@@ -8,8 +8,8 @@ const { strings } = require('../../../src/util/strings.ts');
 const s = strings.en;
 
 const positions = {
-  account: 1, consent: 2, child: 3, allergies: 4, restrictions: 5,
-  family: 6, 'safe-foods': 7, review: 8,
+  account: 1, consent: 2, child: 3, allergies: 4,
+  family: 5, sensory: 6, 'refused-foods': 7, review: 8,
 };
 function answers(step) {
   return {
@@ -17,14 +17,17 @@ function answers(step) {
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
     childName: '나루', ageRange: 'AGE_4_5', allergies: ['EGGS', 'MILK_DAIRY'],
     restrictions: ['GLUTEN_FREE'], dietaryPattern: 'pescatarian',
+    sensoryTextures: ['hardness.hard'], sensoryNote: 'Likes crisp food',
+    refusedFoods: [{ id: 'peas', name: 'Peas', cookingMethod: null, reasons: [] }],
     safeFoods: [{ id: 'apple', name: 'Apple', preparation: 'Sliced', presentationNote: 'Blue bowl' }],
     safeFoodInput: { name: 'Banana', preparation: 'Mashed', presentationNote: 'Small plate' },
   };
 }
 async function assertScreen(app, step, expected) {
   await waitFor(() => app.pathname === `/onboarding/${step}`);
-  const title = step === 'safe-foods' ? s.onboarding.safeFoodsTitle(expected.childName)
-    : step === 'review' ? s.onboarding.reviewTitle(expected.childName) : s.onboarding.titles[step];
+  const title = step === 'refused-foods' ? s.refusedFoods.title(expected.childName)
+    : step === 'sensory' ? s.sensory.title
+      : step === 'review' ? s.onboarding.reviewTitle(expected.childName) : s.onboarding.titles[step];
   assert.ok(control(app, 'heading', title));
   assert.deepEqual(app.current.draft, { ...expected, step });
   const number = positions[step];
@@ -42,21 +45,18 @@ async function assertScreen(app, step, expected) {
   } else if (step === 'child') {
     assert.equal(input(app, s.onboarding.childName).value, expected.childName);
     assert.ok(control(app, 'button', '4-5 years'));
-  } else if (step === 'safe-foods') {
-    assert.ok(control(app, 'button', `${s.common.remove} Apple`));
-    assert.ok(app.container.textContent.includes('Sliced, Blue bowl'));
-    for (const [field, label] of [['name', s.onboarding.foodName],
-      ['preparation', s.onboarding.preparation], ['presentationNote', s.onboarding.presentationNote]]) {
-      assert.equal(input(app, label).value, expected.safeFoodInput[field]);
-    }
+  } else if (step === 'sensory') {
+    assert.ok(app.container.textContent.includes('Likes crisp food'));
+  } else if (step === 'refused-foods') {
+    assert.ok(control(app, 'button', 'Remove Peas'));
   }
 }
 
 test('이전·다음 왕복 후 답변과 작성 중 음식 입력이 유지되고 단계 번호·진행률이 실제 화면과 일치한다', async t => {
   for (const [current, previous] of [
     ['consent', 'account'], ['child', 'consent'], ['allergies', 'child'],
-    ['restrictions', 'allergies'], ['family', 'restrictions'],
-    ['safe-foods', 'family'], ['review', 'safe-foods'],
+    ['family', 'allergies'], ['sensory', 'family'],
+    ['refused-foods', 'sensory'], ['review', 'refused-foods'],
   ]) {
     const expected = answers(current);
     const app = await mountDraft(t, expected);

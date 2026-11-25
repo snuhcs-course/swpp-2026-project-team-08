@@ -10,6 +10,8 @@
 // Changed: 완료 테스트 분리 및 필수 답변·선택 입력·음식 응답 경계 검증
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 식생활 단계 진행 중복 검증 제거 및 완료 조건 검증 유지
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: Match completion rules after onboarding flow simplification
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -22,7 +24,7 @@ function completeDraft() {
     allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'], noSafeFoods: true };
 }
 
-test('필수 계정·동의·자녀·제한 답변 중 하나라도 유효하지 않으면 완료를 차단한다', () => {
+test('필수 계정·동의·자녀·알레르기 답변이 유효하지 않으면 완료를 차단한다', () => {
   const draft = completeDraft();
   assert.equal(canFinish(draft), true);
   // 다른 조건은 유효하게 두고 최종 완료에 필요한 조건을 하나씩 제거한다.
@@ -34,23 +36,22 @@ test('필수 계정·동의·자녀·제한 답변 중 하나라도 유효하지
     ['자녀 이름', { childName: ' ' }],
     ['자녀 연령대', { ageRange: '' }],
     ['알레르기 답변', { allergies: [] }],
-    ['식이 제한 답변', { restrictions: [] }],
   ]) {
     assert.equal(canFinish({ ...draft, ...changes }), false, missing);
   }
 });
 
-test('음식을 추가하거나 없음을 선택하지 않으면 작성 중 입력이 있어도 완료를 차단한다', () => {
+test('익숙한 음식 입력은 온보딩 완료 조건이 아니다', () => {
   const draft = { ...completeDraft(), noSafeFoods: false, safeFoods: [] };
   for (const safeFoodInput of [
     { name: '', preparation: '', presentationNote: '' },
     { name: 'Apple', preparation: 'Sliced', presentationNote: 'Blue bowl' },
   ]) {
-    assert.equal(canFinish({ ...draft, safeFoodInput }), false);
+    assert.equal(canFinish({ ...draft, safeFoodInput }), true);
   }
 });
 
-test('선택 동의는 거부하고 식생활은 미응답이어도 제한과 음식에 없음으로 답하면 완료를 허용한다', () => {
+test('선택 동의를 거부하고 식생활 유형에 응답하지 않아도 완료를 허용한다', () => {
   const draft = { ...completeDraft(), dietaryPattern: null, safeFoods: [] };
   assert.equal(canFinish(draft), true);
 });

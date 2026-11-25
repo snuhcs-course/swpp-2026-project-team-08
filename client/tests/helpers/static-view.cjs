@@ -28,6 +28,8 @@
 // Changed: 빈 초안 기본값 검증·사진 중복 제거 및 음식 편집기·추천 연결 테스트 분리
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 종합 UI 테스트를 기능별로 분리하고 정적 렌더링 경계를 공통화
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: mock keyboard and dimension APIs used by views
 const assert = require("node:assert/strict");
 require("./register.cjs");
 
@@ -91,6 +93,8 @@ mockModules((name) => {
       TextInput: primitive("input"),
       ScrollView: primitive("section"),
       KeyboardAvoidingView: primitive("div"),
+      Keyboard: { addListener: () => ({ remove() {} }), isVisible: () => false },
+      useWindowDimensions: () => ({ width: 390, height: 844, scale: 1, fontScale: 1 }),
       Modal: ({ visible = true, children }) => (visible ? children : null),
       Platform: { OS: "web" },
       StyleSheet: { create: (v) => v, absoluteFill: {} },

@@ -9,7 +9,7 @@
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 앞 카드는 수평으로 두고 뒤 카드 두 장을 반대 방향으로 배치
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 저장 카드 화살표와 홈 추천의 저장·제외 완료 화면 배치
+// Changed: 저장 카드 화살표와 홈 추천의 Use now·저장·제외 완료 화면 배치
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
@@ -32,7 +32,9 @@ export const suggestionStyles = StyleSheet.create({
   recommendationFooter: { paddingHorizontal: 24, paddingBottom: 20, gap: 10 },
   recommendationContent: { flexGrow: 1, ...topBarStyles.content, paddingBottom: 16, gap: 20 },
   undoLabel: { fontFamily: fonts.poppinsSemiBold, fontSize: 14, lineHeight: 19, color: colors.homePrimary },
-  recommendationActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 48 },
+  recommendationActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' },
+  useNowAction: { width: 118, flexShrink: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  useNowLabel: { fontFamily: fonts.poppinsSemiBold, fontSize: 13, lineHeight: 20, color: colors.homePrimary },
   dismissAction: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.homeBorder, backgroundColor: colors.surface },
   saveAction: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.homePrimary },
   heading: { fontFamily: fonts.poppinsSemiBold, fontSize: 16, lineHeight: 21, color: colors.homeText },

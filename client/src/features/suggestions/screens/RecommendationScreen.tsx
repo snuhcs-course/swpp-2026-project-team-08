@@ -11,7 +11,7 @@
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 추가 추천 선택 화면 연결 및 Skip 버튼 제거
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 한 장 표시, 저장·제외 완료 화면에서 재생성·나가기
+// Changed: 홈 추천 카드의 저장·제외·재생성과 Use now 체크인 연결
 
 import { Image } from 'expo-image';
 import { Redirect, router } from 'expo-router';
@@ -36,6 +36,9 @@ function RecommendationContent({ userId }: { userId: string }) {
   const model = useRecommendationFlow(userId);
   const current = model.current;
   const [reasons, setReasons] = useState<DismissReason[] | null>(null);
+  const saveAndOpenCheckin = () => model.changeDecision('saved', [], savedSuggestion => {
+    router.push({ pathname: '/meal-checkin', params: { tryingSuggestionId: savedSuggestion.id } });
+  });
   const back = () => {
     if (model.busy) return;
     if (current?.status === 'pending' && reasons) setReasons(null);
@@ -125,6 +128,10 @@ function RecommendationContent({ userId }: { userId: string }) {
         <Pressable accessibilityRole="button" accessibilityLabel={c.dismiss} disabled={model.busy}
           style={[s.dismissAction, model.busy && s.disabled]}
           onPress={() => setReasons([])}><UiAssetIcon name="suggestion-dismiss" /></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel={c.useNow} disabled={model.busy}
+          style={[s.useNowAction, model.busy && s.disabled]} onPress={saveAndOpenCheckin}>
+          <Text style={s.useNowLabel}>{c.useNow}</Text>
+        </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel={c.save} disabled={model.busy}
           style={[s.saveAction, model.busy && s.disabled]}
           onPress={() => model.changeDecision('saved')}><UiAssetIcon name="suggestion-save" /></Pressable>

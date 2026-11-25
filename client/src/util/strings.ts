@@ -39,7 +39,7 @@
 // AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 식후 사진 교체 시트와 식전 사진 없음 안내
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 진입·카드·저장 목록과 결정 후 재생성 문구
+// Changed: 홈 추천 진입·카드·저장 목록·재생성과 Use now 문구
 
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
@@ -656,7 +656,7 @@ const suggestionCopy = {
     ingredients: 'Ingredients', cooking: 'Cooking method',
     cookingMethods: cookingMethodLabels.en,
     tapDetails: 'Tap for food preparation tip', tapFront: 'Tap to see suggestion',
-    save: 'Save suggestion', dismiss: 'Dismiss suggestion', dismissTitle: 'What does not work for you?',
+    save: 'Save suggestion', useNow: 'Use now', dismiss: 'Dismiss suggestion', dismissTitle: 'What does not work for you?',
     reasons: { restriction: 'This conflicts with an allergy or required restriction', dislike: 'My child dislikes this food or form', not_fit: 'This does not fit our food preferences', too_much_preparation: 'Too much preparation', ingredient_hard_to_get: 'The ingredient is hard to get', already_tried: 'We already tried this' },
     done: 'Done',
     savedNotice: 'Suggestion saved', dismissedNotice: 'Suggestion dismissed',
@@ -682,7 +682,7 @@ const suggestionCopy = {
     ingredients: '재료', cooking: '조리 방법',
     cookingMethods: cookingMethodLabels.ko,
     tapDetails: '눌러서 음식 준비 방법 보기', tapFront: '눌러서 추천으로 돌아가기',
-    save: '추천 저장', dismiss: '추천 제외', dismissTitle: '어떤 점이 맞지 않나요?',
+    save: '추천 저장', useNow: '바로 사용', dismiss: '추천 제외', dismissTitle: '어떤 점이 맞지 않나요?',
     reasons: { restriction: '알레르기나 식이 제한과 맞지 않아요', dislike: '아이가 이 음식이나 모양을 싫어해요', not_fit: '우리 가족의 음식 취향과 맞지 않아요', too_much_preparation: '준비할 것이 너무 많아요', ingredient_hard_to_get: '재료를 구하기 어려워요', already_tried: '이미 시도했어요' },
     done: '추천 제외하기',
     savedNotice: '추천을 저장했어요', dismissedNotice: '추천을 제외했어요',

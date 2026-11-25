@@ -13,7 +13,7 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 거절 직후 추가 생성 선택 단계와 실패 복구
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 생성·결정과 완료 후 재생성, 요청 재시도와 일일 한도 처리
+// Changed: 홈 추천 생성·결정·재생성과 저장 성공 후 체크인 연결
 
 import { uuid } from 'expo';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -72,13 +72,18 @@ export function useRecommendationFlow(userId: string) {
     request(retryId ?? uuid.v4());
   };
 
-  const changeDecision = (status: 'saved' | 'dismissed' | 'pending', reasons: DismissReason[] = []) => {
+  const changeDecision = (
+    status: 'saved' | 'dismissed' | 'pending',
+    reasons: DismissReason[] = [],
+    onSuccess?: (item: Suggestion) => void,
+  ) => {
     if (!current || current.status === status || inFlight.current) return;
     inFlight.current = true;
     const callbacks = {
       onSuccess: (item: Suggestion) => {
         setCurrent(item);
         generate.reset();
+        onSuccess?.(item);
       },
       onSettled: () => { inFlight.current = false; },
     };

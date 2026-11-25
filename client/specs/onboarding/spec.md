@@ -1,4 +1,6 @@
 <!-- AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo -->
+<!-- Changed: 감각 프로필 검토 및 편집 -->
+<!-- AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo -->
 <!-- Changed: 거부 음식 온보딩과 단계 순서 -->
 <!-- AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo -->
 <!-- Changed: 식생활 유형 및 익숙한 음식 추가 폼·선택 조리 방법 -->
@@ -124,7 +126,7 @@
 
 ### R9 — Review profile
 
-1. 보호자는 온보딩을 완료하기 전에 Child basics, Safety restrictions, Dietary Pattern, Refused foods의 네 카드를 검토한다.
+1. 보호자는 온보딩을 완료하기 전에 Child basics, Safety restrictions, Dietary Pattern, Sensory Profile, Refused foods의 카드를 검토한다.
 2. Safety restrictions 카드에는 알레르기를 표시한다.
 3. 각 카드의 수정 버튼을 누르면 해당 입력 화면으로 이동해야 한다. 수정 후 검토 화면으로 돌아왔을 때 다른 항목의 답변은 유지되어야 한다.
 4. 검토 화면에는 입력하지 않은 항목도 미입력 상태로 구분되어야 하며, 보호자가 이를 수정할 수 있어야 한다.

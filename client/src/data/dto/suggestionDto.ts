@@ -7,7 +7,7 @@
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 기존 추천 조리법 통합값을 미입력으로 변환
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 추천 음식명과 선택적 원본 ID를 읽고 식사별 생성 요청 제거
+// Changed: 홈 추천 음식명·원본 ID 변환과 사유 없는 제외 지원
 
 import type { DismissReason, Suggestion } from '../../types/suggestionRecord';
 import {
@@ -51,7 +51,8 @@ export function toSuggestionDecision(
   reasons: DismissReason[] = [],
 ): SuggestionDecisionDto {
   const values = reasons.map((reason) => toApiEnum(reason, dismissReasons));
-  if ((status === 'saved' && values.length) || (status === 'dismissed' && !values.length)
-    || new Set(values).size !== values.length) throw new Error('Invalid suggestion decision');
+  if ((status === 'saved' && values.length) || new Set(values).size !== values.length) {
+    throw new Error('Invalid suggestion decision');
+  }
   return { status: toApiEnum(status, ['saved', 'dismissed'] as const) as 'SAVED' | 'DISMISSED', dismiss_reasons: values };
 }

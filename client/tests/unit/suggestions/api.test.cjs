@@ -8,7 +8,7 @@
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 추천 API 검증 이동 및 생성 실패 시 입력 보존 중복 검증 통합
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 한 장의 요청·본문 검증 및 결정 계약 확인
+// Changed: 홈 추천 한 장의 요청·본문 검증 및 사유 없는 제외 계약 확인
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -72,19 +72,19 @@ test('saved, dismissed, and undo decisions use the v1 decision route', async () 
   request = async (path, init) => {
     assert.equal(path, '/api/v1/suggestions/31/decision');
     assert.equal(init.method, 'PUT');
-    assert.deepEqual(JSON.parse(init.body), { status: 'DISMISSED', dismiss_reasons: ['ALREADY_TRIED'] });
-    return { ...suggestion, status: 'DISMISSED', dismiss_reasons: ['ALREADY_TRIED'] };
+    assert.deepEqual(JSON.parse(init.body), { status: 'DISMISSED', dismiss_reasons: [] });
+    return { ...suggestion, status: 'DISMISSED', dismiss_reasons: [] };
   };
-  const dismissed = await api.decideSuggestion('1', '31', 'dismissed', ['already_tried']);
+  const dismissed = await api.decideSuggestion('1', '31', 'dismissed');
   assert.equal(dismissed.status, 'dismissed');
-  assert.deepEqual(dismissed.dismissReasons, ['already_tried']);
+  assert.deepEqual(dismissed.dismissReasons, []);
   request = async (path, init) => {
     assert.equal(path, '/api/v1/suggestions/31/decision');
     assert.equal(init.method, 'DELETE');
     return suggestion;
   };
   assert.equal((await api.undoSuggestion('1', '31')).status, 'pending');
-  await assert.rejects(api.decideSuggestion('1', '31', 'dismissed'), /Invalid suggestion decision/);
+  await assert.rejects(api.decideSuggestion('1', '31', 'saved', ['dislike']), /Invalid suggestion decision/);
 });
 
 test('every dismiss reason maps to a server value and old values are rejected', async () => {

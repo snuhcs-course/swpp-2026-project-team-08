@@ -39,7 +39,7 @@
 // AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 식후 사진 교체 시트와 식전 사진 없음 안내
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 진입·카드 문구 및 저장한 추천 목록 이동
+// Changed: 홈 추천 진입·카드·제외 사유 건너뛰기 및 저장 목록 문구
 
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
@@ -666,7 +666,7 @@ const suggestionCopy = {
     history: 'View Meal History', remove: 'Remove', removedNotice: 'Suggestion removed from saved.',
     recordTry: 'Record a Try', tried: 'Tried',
     unavailable: 'This suggestion is no longer saved.', trying: 'Trying this suggestion', swipeSave: 'Keep swiping to save', swipeDismiss: 'Keep swiping to dismiss', count: '1 of 1',
-    close: 'Close', cancel: 'Cancel', back: 'Back', retry: 'Retry',
+    close: 'Close', skipReason: 'Skip', back: 'Back', retry: 'Retry',
     noDetails: 'Not entered', loadFailed: 'Suggestions could not be loaded. Please try again.',
   },
   ko: {
@@ -689,7 +689,7 @@ const suggestionCopy = {
     history: '식사 기록 보기', remove: '저장 해제', removedNotice: '저장 목록에서 추천을 제거했어요.',
     recordTry: '시도 기록', tried: '시도함',
     unavailable: '더 이상 저장된 추천이 아니에요.', trying: '이 추천을 시도하는 식사', swipeSave: '더 밀면 저장해요', swipeDismiss: '더 밀면 제외해요', count: '1개 중 1번째',
-    close: '닫기', cancel: '취소', back: '뒤로', retry: '다시 시도',
+    close: '닫기', skipReason: '건너뛰기', back: '뒤로', retry: '다시 시도',
     noDetails: '입력하지 않음', loadFailed: '추천을 불러오지 못했어요. 다시 시도해 주세요.',
   },
 };

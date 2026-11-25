@@ -11,7 +11,7 @@
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 추가 추천 선택 화면 연결 및 Skip 버튼 제거
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈에서 받은 추천 한 장 표시와 결정·되돌리기
+// Changed: 홈 추천 한 장 표시, 사유 선택·건너뛰기와 결정 되돌리기
 
 import { Redirect, router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -91,8 +91,8 @@ function RecommendationContent({ userId }: { userId: string }) {
             </Pressable>)}
           </ScrollView>
           <View style={s.reasonActions}>
-            <AppButton variant="suggestion" style={s.reasonButton} secondary label={c.cancel}
-              disabled={model.busy} onPress={() => setReasons(null)} />
+            <AppButton variant="suggestion" style={s.reasonButton} secondary label={c.skipReason}
+              disabled={model.busy} onPress={() => model.changeDecision('dismissed', [])} />
             <AppButton variant="suggestion" style={s.reasonButton}
               disabled={model.busy || !reasons.length} label={c.done}
               onPress={() => model.changeDecision('dismissed', reasons)} />

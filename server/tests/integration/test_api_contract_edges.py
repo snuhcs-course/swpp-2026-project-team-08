@@ -12,7 +12,7 @@
 # AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
 # Changed: 영어 추천 fixture와 공용 재료 적재 상태 테이블 계약
 # AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-# Changed: 홈 추천 생성 조건과 한 장 저장·실패 원자성 검증
+# Changed: 홈 추천 생성·저장·실패 처리와 제외 사유 유무 검증
 
 """Contract edge cases for authenticated meals, reviews, and suggestions."""
 
@@ -215,8 +215,9 @@ async def test_failed_generation_never_stores_a_partial_card(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("dismiss_reasons", [[], ["TOO_MUCH_PREPARATION"]])
 async def test_saved_filter_decision_validation_and_undo(
-    api_client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+    api_client: AsyncClient, monkeypatch: pytest.MonkeyPatch, dismiss_reasons: list[str]
 ) -> None:
     owner = await login(api_client, "owner@example.com")
     other = await login(api_client, "other@example.com")
@@ -228,7 +229,6 @@ async def test_saved_filter_decision_validation_and_undo(
     suggestion_id = created.json()["id"]
     decision = f"/api/v1/suggestions/{suggestion_id}/decision"
     for body in (
-        {"status": "DISMISSED", "dismiss_reasons": []},
         {"status": "SAVED", "dismiss_reasons": ["ALREADY_TRIED"]},
         {"status": "DISMISSED", "dismiss_reasons": ["already_tried"]},
         {"status": "DISMISSED", "dismiss_reasons": ["ALREADY_TRIED", "ALREADY_TRIED"]},
@@ -259,9 +259,11 @@ async def test_saved_filter_decision_validation_and_undo(
     dismissed = await api_client.put(
         decision,
         headers=owner,
-        json={"status": "DISMISSED", "dismiss_reasons": ["TOO_MUCH_PREPARATION"]},
+        json={"status": "DISMISSED", "dismiss_reasons": dismiss_reasons},
     )
-    assert dismissed.json()["dismiss_reasons"] == ["TOO_MUCH_PREPARATION"]
+    assert dismissed.status_code == 200
+    assert dismissed.json()["status"] == "DISMISSED"
+    assert dismissed.json()["dismiss_reasons"] == dismiss_reasons
     assert dismissed.json()["saved_at"] is None
     assert (await api_client.get("/api/v1/suggestions", headers=owner)).json() == []
     assert (await api_client.delete(decision, headers=owner)).json()["status"] == "PENDING"

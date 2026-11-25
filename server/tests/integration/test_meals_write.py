@@ -7,6 +7,8 @@
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
 # AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 # Changed: 개별 조리법 저장·수정과 이전 통합값 조회 검증
+# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
+# Changed: 추천 응답에서 조리법을 뺀 계약에 맞춰 레거시 조리법 조회 검증 변경
 
 """인증된 식사 저장·수정·리뷰·삭제와 추천 시도 연결."""
 
@@ -200,7 +202,9 @@ async def test_레거시_조리법은_조회만_가능하다(
     assert detail.status_code == 200, detail.text
     assert suggestions.status_code == 200, suggestions.text
     assert detail.json()["foods"][0]["cooking_method"] == method
-    assert suggestions.json()[0]["cooking_method"] == method
+    # 추천의 조리법은 제거 예정 컬럼이라 레거시 값이 있어도 조회되고 응답에는 싣지 않는다.
+    assert suggestions.json()[0]["id"] == str(recommendation_id)
+    assert "cooking_method" not in suggestions.json()[0]
 
 
 @pytest.mark.asyncio

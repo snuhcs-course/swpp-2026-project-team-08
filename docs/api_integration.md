@@ -6,6 +6,9 @@
 <!-- AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung -->
 <!-- Changed: 식사 장소 미응답 null 저장 계약 -->
 
+<!-- AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim -->
+<!-- Changed: 홈 화면 음식 추천 생성 API와 응답 필드 정리 -->
+
 # API 연동 변경 사항 (클라이언트)
 
 > DB 스키마 개편([`db-overhaul.md`](db-overhaul.md))으로 서버 API가 바뀌는 부분 중 클라이언트가 맞춰야 하는 것을 모았다.
@@ -245,40 +248,42 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
 
 ### 응답 (`SuggestionResponse`)
 
-- `ingredient_id`, `food_snapshot`이 사라지고 `food_id`는 `origin_food_id`가 된다(근거가 된 음식).
-  `meal_id`는 남는다. 서버가 근거 음식에서 채우며, 원본 식사를 찾는 데 쓴다.
-- `ingredients`(문자열 목록), `cooking_method`(2절의 값), `causes`(식후 리뷰에서 참고한 특성을 서술한 문장)가 추가된다.
-  `what_to_try`, `why_this_may_help`, `serving_tip`은 그대로다.
+- 추천은 특정 식사나 음식에 묶이지 않는다. 응답 필드는 `id`, `user_id`, `what_to_try`(추천 음식 이름),
+  `why_this_may_help`, `ingredients`(문자열 목록), `preparation_method`(편식을 덜기 위한 제공 시 고려 사항, 없으면 `null`),
+  `status`, `dismiss_reasons`, `saved_at`, `created_at`이다.
 - `status`는 `PENDING` `SAVED` `DISMISSED` `TRIED`, `dismiss_reasons`는 2절의 새 값이다.
 
 ### 요청과 규칙
 
-- 생성(`POST /meals/{id}/suggestions`)의 대상은 음식 단위다: `{"targets": [{"food_id": "…"}]}`. `ingredient_id`를 보내면 422다.
-  - 식후 리뷰가 없는 식사는 `409 REVIEW_REQUIRED`, 리뷰하지 않은 음식이나 이 식사에 없는 음식은 `422 INVALID_SUGGESTION_TARGET`이다.
+- 생성(`POST /suggestions`)은 본문 없이 보낸다. 서버가 프로필과 기록을 읽어 추천 세 개를 만들고 `201`로 돌려준다.
   - 아이의 제한은 프로필의 `restrictions`(`ALLERGY.NONE` 제외)다. 프로필이 없으면 `409 PROFILE_REQUIRED`다.
   - 추천에 쓰는 재료는 아이의 모든 제한에 `NEVER` 판정이 있는 재료뿐이다 ([제한 id 규칙](food-ingredient-restriction-ids.md)).
+  - 생성이나 검증에 실패하면 `502 GENERATION_FAILED`이며 아무것도 저장하지 않는다.
 - 결정(`PUT/DELETE /suggestions/{id}/decision`)의 `status`는 `SAVED` `DISMISSED`만 보낸다. `TRIED`인 추천은 결정을 바꿀 수 없다
   (`409 RECOMMENDATION_ALREADY_TRIED`).
-- 목록(`GET /meals/{id}/suggestions`)의 `status` 쿼리는 `SAVED`(기본) `ALL`이다. `SAVED`는 `SAVED`와 `TRIED`를 함께 보여 주며,
-  저장된 추천 목록(`GET /suggestions`)도 같다. `ALL`은 enum 값이 아니라 조회용 값이다.
+- 저장된 추천 목록(`GET /suggestions`)은 `SAVED`와 `TRIED`를 함께 보여 준다.
 
 ### 시도 상태 (`TRIED`)
 
 - 식사를 저장할 때 음식의 `food_recommendation_ids`로 추천을 연결하면(3절) 그 추천은 `TRIED`가 된다. `SAVED`와 `TRIED`인 추천만 연결할 수 있고,
   이미 `TRIED`인 추천도 다른 식사에 다시 연결할 수 있다.
 - 시도한 식사나 음식을 지워 마지막 시도 기록이 없어지면 추천은 `SAVED`로 돌아간다.
-- 추천의 근거가 된 음식(식사)을 지우면 그 음식에서 나온 추천과 그 추천의 시도 기록도 함께 지워진다.
+- 홈 화면 추천은 식사에 묶이지 않아 식사를 지워도 남는다. 이전 식후 음식별 추천은 근거가 된 음식(식사)을 지우면
+  그 추천과 시도 기록도 함께 지워진다.
 
 ### 클라이언트 반영 상태
 
-**클라이언트 반영 완료.**
+**홈 화면 추천 생성 API는 클라이언트 반영 전이다.** 클라이언트는 아직 식사 기준 생성(`POST /meals/{id}/suggestions`)과
+응답의 `meal_id`·`origin_food_id`·`cooking_method`·`causes`·`serving_tip`을 쓴다. 다음을 반영해야 한다.
+
+- 생성은 홈 화면에서 `POST /suggestions`로 요청한다. 식사 기준 생성·조회, 음식 선택, 추가 생성 흐름을 없앤다.
+- 추천 카드는 `what_to_try`를 음식 이름으로 보여 주고, 상세는 `ingredients`와 `preparation_method`를 보여 준다.
+  원본 식사에서 음식 이름을 찾지 않는다.
+
+다음은 그대로 유지한다.
 
 - 앱 안의 상태·사유 값은 소문자(`tried`, `not_fit` 등)로 두고 서버의 대문자와의 변환은 `src/data/dto/suggestionDto.ts`에서만 한다.
   거절 사유의 앱 값은 서버 값을 소문자로 쓴 것이다 (`restriction` `dislike` `not_fit` `too_much_preparation` `ingredient_hard_to_get` `already_tried`).
-  화면 문구는 키만 바꾸었고 내용은 그대로다.
-- 추천은 음식 단위다. 재료를 골라 추천받는 선택지와 추천 카드의 재료 이름 표시, 식사 기록의 재료 카드에 붙던 추천 연결을 없앴다.
-  추천에 음식 이름이 없으므로 화면은 원본 식사(`meal_id`)의 음식에서 이름을 찾는다.
-- 추천 카드의 상세는 추천이 제안하는 음식의 `ingredients`, `cooking_method`, `serving_tip`을 보여 준다. `causes`는 아직 화면에 보이지 않는다.
 - 저장된 추천 목록은 `SAVED`와 `TRIED`를 함께 받는다.
 - 식사 저장 요청의 추천 연결은 음식별 `food_recommendation_ids`다 (3절).
 

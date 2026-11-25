@@ -2,17 +2,16 @@
 # Changed: 조리 방법(MealCookingMethod) 코드를 프롬프트에 풀어 쓰기 위한 설명 사전 추가
 # AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 # Changed: 개별 조리법 설명과 현재 입력 선택지 열 가지 제공
+# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
+# Changed: 추천 출력에서 조리법을 빼면서 출력 선택지 설명 제거
 
 """조리 방법(`MealCookingMethod`) 코드의 프롬프트용 설명.
 
-LLM 에는 코드(`STEAMED`) 대신 조리 방법 이름을 보낸다. 출력 스키마에서 모델이 고르는 값의
-뜻을 알리는 데도 같은 설명을 쓴다. 기존 기록용 통합값을 포함한 모든 `MealCookingMethod` 에
-설명이 있으며, 출력 선택지는 `MealCookingMethodInput` 으로 제한한다.
+LLM 에는 식사 기록의 조리 방법을 코드(`STEAMED`) 대신 이름으로 보낸다.
+기존 기록용 통합값을 포함한 모든 `MealCookingMethod` 에 설명이 있다.
 """
 
-from typing import get_args
-
-from app.models.meal_enums import MealCookingMethod, MealCookingMethodInput
+from app.models.meal_enums import MealCookingMethod
 
 COOKING_METHOD_DESCRIPTIONS: dict[MealCookingMethod, str] = {
     MealCookingMethod.RAW: "익히지 않고 날것으로",
@@ -36,11 +35,3 @@ def describe_cooking_method(code: str) -> str:
         return COOKING_METHOD_DESCRIPTIONS[MealCookingMethod(code)]
     except (ValueError, KeyError):
         return code
-
-
-def cooking_method_choices() -> str:
-    """출력 스키마 설명용 선택지 목록. 예: 'RAW(익히지 않고 날것으로), BOILED(삶거나 끓이기)'."""
-    return ", ".join(
-        f"{method.value}({COOKING_METHOD_DESCRIPTIONS[method]})"
-        for method in get_args(MealCookingMethodInput)
-    )

@@ -2,6 +2,8 @@
 # Changed: 백엔드 레이어별 테스트 작성 예시
 # AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
 # Changed: 검증을 통과하면 가드레일로 가는 분기 반영
+# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
+# Changed: 추천 개수 문제로 검증 실패 상태 예시 변경
 
 import pytest
 
@@ -22,7 +24,7 @@ from app.features.suggestions.workflow.state import ValidationProblem
 def test_검증_결과와_시도_횟수로_다음_노드를_선택한다(invalid, attempts, expected):
     # 준비: 분기 함수가 읽는 상태만 준비한다. 그래프·LLM은 실행하지 않는다.
     state = {
-        "problems": [ValidationProblem(kind="missing_food", food_id="1")] if invalid else [],
+        "problems": [ValidationProblem(kind="wrong_count", count=2)] if invalid else [],
         "attempts": attempts,
     }
 

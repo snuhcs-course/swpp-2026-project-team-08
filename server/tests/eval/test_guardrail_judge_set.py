@@ -2,6 +2,8 @@
 # Changed: 가드레일 판정 모델 평가 세트의 형식·정답 근거와 채점 로직 검증 추가
 # AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung
 # Changed: 고정 평가 사례를 원본 한국어 카탈로그 스냅샷으로 검증
+# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
+# Changed: 판정 요청의 제공 방법 필드(preparation_method)로 사례를 찾도록 변경
 
 """가드레일 판정 모델 평가 세트(`guardrail_judge_ground_truth.json`)의 오프라인 검증.
 
@@ -112,7 +114,9 @@ def perfect_judge(spec: dict) -> ScriptedJudge:
             for case in spec["cases"]
             if case["ingredients"] == suggestion["ingredients"]
             and {**spec["suggestion_defaults"], **case}["what_to_try"] == suggestion["what_to_try"]
-            and {**spec["suggestion_defaults"], **case}["serving_tip"] == suggestion["serving_tip"]
+            # 동결된 세트의 serving_tip 은 판정 요청의 preparation_method 로 실린다.
+            and {**spec["suggestion_defaults"], **case}["serving_tip"]
+            == suggestion["preparation_method"]
         )
         if name.endswith("_text"):
             return 0.95 if case["text_risky"] else 0.02

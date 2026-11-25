@@ -35,7 +35,6 @@ from app.features.suggestions.catalog import load_catalog
 from app.features.suggestions.familiar import load_familiar_foods
 from app.features.suggestions.generator import generate_suggestions
 from app.features.suggestions.home_generation import (
-    HomeSuggestionGeneratorUnavailableError,
     HomeSuggestionResult,
     generate_home_suggestion,
 )
@@ -124,8 +123,6 @@ class FoodRecommendationService:
             async with asyncio.timeout(10):
                 generated = await generate_home_suggestion(self._session, user_id=user_id)
             result = HomeSuggestionResult.model_validate(generated)
-        except HomeSuggestionGeneratorUnavailableError:
-            raise
         except Exception as error:
             raise GenerationFailedError() from error
 

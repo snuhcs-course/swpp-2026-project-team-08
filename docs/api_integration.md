@@ -258,7 +258,7 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
 - 홈에서 `POST /suggestions`를 본문 없이 보내면 서버는 추천 한 장을 `PENDING`으로 저장하고 `201`로 반환한다.
   - 프로필에 알레르기 응답이 없으면 `409 PROFILE_REQUIRED`, 음식이 포함된 저장 식사가 없으면 `409 MEAL_HISTORY_REQUIRED`다.
     `ALLERGY.NONE`은 알레르기 응답에 해당한다.
-  - 홈 추천 생성기 미연결은 `503 HOME_SUGGESTION_GENERATOR_UNAVAILABLE`, 생성 실패는 `502 GENERATION_FAILED`다.
+  - 홈 추천은 고정 예시인 `Mashed potato with carrot`을 반환한다. 생성 실패는 `502 GENERATION_FAILED`다.
 - 생성(`POST /meals/{id}/suggestions`)의 대상은 음식 단위다: `{"targets": [{"food_id": "…"}]}`. `ingredient_id`를 보내면 422다.
   - 식후 리뷰가 없는 식사는 `409 REVIEW_REQUIRED`, 리뷰하지 않은 음식이나 이 식사에 없는 음식은 `422 INVALID_SUGGESTION_TARGET`이다.
   - 아이의 제한은 프로필의 `restrictions`(`ALLERGY.NONE` 제외)다. 프로필이 없으면 `409 PROFILE_REQUIRED`다.

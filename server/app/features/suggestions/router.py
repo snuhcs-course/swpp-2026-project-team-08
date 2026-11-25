@@ -29,7 +29,6 @@ from app.features.suggestions.dto import (
     SuggestionGenerateRequest,
     SuggestionResponse,
 )
-from app.features.suggestions.home_generation import HomeSuggestionGeneratorUnavailableError
 from app.features.suggestions.service import (
     FoodRecommendationService,
     GenerationFailedError,
@@ -107,9 +106,6 @@ async def list_saved(
         ProfileRequiredError: ErrorSpec(status_code=409, error_code="PROFILE_REQUIRED"),
         MealHistoryRequiredError: ErrorSpec(status_code=409, error_code="MEAL_HISTORY_REQUIRED"),
         GenerationFailedError: ErrorSpec(status_code=502, error_code="GENERATION_FAILED"),
-        HomeSuggestionGeneratorUnavailableError: ErrorSpec(
-            status_code=503, error_code="HOME_SUGGESTION_GENERATOR_UNAVAILABLE"
-        ),
     }
 )
 async def generate(

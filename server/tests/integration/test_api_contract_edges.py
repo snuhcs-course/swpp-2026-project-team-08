@@ -175,6 +175,26 @@ async def test_home_generation_requires_an_allergy_answer_and_the_users_own_meal
     assert generator.await_args.kwargs["user_id"] == int(generated.json()["user_id"])
 
 
+async def test_home_returns_the_example_card_without_a_source(api_client, session_factory):
+    owner = await login(api_client, "home@example.com")
+    await save_profile(api_client, owner)
+    await save_meal(api_client, owner, "2026-10-20")
+    response = await api_client.post("/api/v1/suggestions", headers=owner)
+    assert response.status_code == 201, response.text
+    card = response.json()
+    assert card["food_name"] == "Mashed potato with carrot"
+    assert card["what_to_try"] == "Offer mashed potato with carrot"
+    assert card["ingredients"] == ["Potato", "Carrot"]
+    assert card["cooking_method"] == "MASHED"
+    assert card["why_this_may_help"] and card["serving_tip"] and card["causes"]
+    assert (
+        card["status"] == "PENDING" and card["meal_id"] is None and card["origin_food_id"] is None
+    )
+    async with session_factory() as session:
+        stored = (await session.scalars(select(FoodRecommendation))).one()
+        assert str(stored.id) == card["id"] and stored.food_name == card["food_name"]
+
+
 async def test_failed_generation_never_stores_a_partial_card(
     api_client, session_factory, monkeypatch
 ):
@@ -182,10 +202,6 @@ async def test_failed_generation_never_stores_a_partial_card(
     await save_profile(api_client, owner)
     await save_meal(api_client, owner, "2026-10-20")
     path = "/api/v1/suggestions"
-    unavailable = await api_client.post(path, headers=owner)
-    assert unavailable.status_code == 503
-    assert unavailable.json()["error_code"] == "HOME_SUGGESTION_GENERATOR_UNAVAILABLE"
-
     generator = install_home_generator(monkeypatch)
     complete = generator.return_value
     failures = [

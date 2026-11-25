@@ -1,19 +1,18 @@
 # AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-# Changed: 홈 추천 생성기의 호출과 결과 형식 정의
+# Changed: 홈 추천 결과 형식과 감자·당근 예시 카드 정의
 
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import AppError
-from app.models.meal_enums import MealCookingMethodInput
+from app.models.meal_enums import MealCookingMethod, MealCookingMethodInput
 
 NonBlankText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 
 class HomeSuggestionResult(BaseModel):
-    """생성기가 안전성 검사를 마치고 서비스에 전달하는 추천 한 장."""
+    """홈에 표시할 추천 한 장."""
 
     model_config = ConfigDict(extra="forbid", revalidate_instances="always")
 
@@ -26,10 +25,17 @@ class HomeSuggestionResult(BaseModel):
     causes: NonBlankText
 
 
-class HomeSuggestionGeneratorUnavailableError(AppError):
-    pass
-
-
 async def generate_home_suggestion(session: AsyncSession, *, user_id: int) -> HomeSuggestionResult:
-    """보호자의 기록을 읽어 홈 추천 한 장을 생성할 워크플로 연결점."""
-    raise HomeSuggestionGeneratorUnavailableError()
+    """홈 추천 흐름에서 사용하는 디자인 예시 카드."""
+    return HomeSuggestionResult(
+        food_name="Mashed potato with carrot",
+        what_to_try="Offer mashed potato with carrot",
+        why_this_may_help="Carrot adds a new flavor while the mash keeps a consistent texture.",
+        ingredients=["Potato", "Carrot"],
+        serving_tip=(
+            "Cook the potato and carrot until soft. "
+            "Mash to the same texture and serve a small portion separately."
+        ),
+        cooking_method=MealCookingMethod.MASHED,
+        causes="A change in flavor with a consistent texture.",
+    )

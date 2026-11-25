@@ -1,11 +1,13 @@
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 리뷰 완료·홈 갱신·Retry·실패 후 편집과 초안 실패 후 제출 흐름 검증
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식후 검토 저장 및 완료 화면 이동 검증
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, waitFor, act, deferred, storage } = require('../../helpers/meal-checkin-screen.cjs');
 const { completionFixture, expectedReview } = require('../../fixtures/after-meal-completion.cjs');
 const { reviewResponse } = require('../../fixtures/server-meal.cjs');
-const { suggestionResponse } = require('../../fixtures/server-suggestion.cjs');
 const { saveAfterMealDraft, readAfterMealDraft } = require('../../../src/data/storage/afterMealReviewStorage.ts');
 const draftKey = 'nurturebites.after-meal.1.10.draft.v1';
 
@@ -22,15 +24,11 @@ async function start(t) {
     }
   }
   await saveAfterMealDraft(draft);
-  const server = { meal: response, requests: [], next: null, suggestionsRead: [] };
-  const recommendations = [suggestionResponse({ meal_id: '10', origin_food_id: '2', what_to_try: 'Serve soup in a small cup' })];
+  const server = { meal: response, requests: [], next: null };
   const app = await mountMeal(t, { initialPath: '/home', respond: async (path, method, init) => {
     if (method === 'GET' && path === '/api/v1/meals') return Response.json([server.meal]);
     if (method === 'GET' && path === '/api/v1/meals/10') return Response.json(server.meal);
-    if (method === 'GET' && path === '/api/v1/meals/10/suggestions') {
-      server.suggestionsRead.push(path);
-      return Response.json(recommendations);
-    }
+    if (method === 'GET' && path === '/api/v1/meals/10/suggestions') return Response.json([]);
     if (method === 'PUT' && path === '/api/v1/meals/10/review') {
       const body = JSON.parse(init.body);
       server.requests.push(body);
@@ -98,7 +96,7 @@ async function expectComplete(app) {
   assert.equal(new URL(window.location.href).searchParams.get('mealId'), '10');
   for (const text of ['Rice', 'Soup', 'Lunch', '23 October 2026']) assert.ok(app.container.textContent.includes(text), text);
   expectPhotos(app);
-  assert.ok(control(app, 'button', 'Return to Home for now'));
+  assert.ok(control(app, 'button', 'Back to Home'));
 }
 async function expectSaving(app) {
   await waitFor(() => app.container.textContent.includes('Saving this review…'));
@@ -119,14 +117,14 @@ test('사진을 첨부한 리뷰에 답변·사유를 입력하고 Continue를 �
   assert.deepEqual(server.requests, [expectedReview()]);
   await act(async () => pending.resolve('success'));
   await expectComplete(app);
-  await click(control(app, 'button', 'Return to Home for now'));
+  await click(control(app, 'button', 'Back to Home'));
   await waitFor(() => app.pathname === '/home' && app.container.textContent.includes('Log new meal'));
   assert.equal(app.container.textContent.includes('Awaiting review'), false);
   assert.equal(server.meal.foods[0].outcome, 'EATEN');
   assert.equal(server.requests.length, 1);
 });
 
-test('서버 저장에 실패해도 사진·답변·사유가 유지되고, Retry에 성공하면 같은 식사의 완료 화면에서 해당 식사의 추천 화면으로 이동한다', async t => {
+test('서버 저장에 실패해도 사진·답변·사유가 유지되고, Retry에 성공하면 같은 식사의 완료 화면에서 저장한 추천 목록으로 이동한다', async t => {
   const { app, server } = await start(t);
   await enterReview(app);
   const before = await readAfterMealDraft('1', '10');
@@ -141,11 +139,8 @@ test('서버 저장에 실패해도 사진·답변·사유가 유지되고, Retr
   await click(control(app, 'button', 'Retry'));
   await expectComplete(app);
   assert.deepEqual(server.requests, [expectedReview(), expectedReview()]);
-  await click(control(app, 'button', 'View Meal Suggestions'));
-  await waitFor(() => app.pathname === '/recommendation/10' && app.container.textContent.includes('Serve soup in a small cup'));
-  assert.ok(control(app, 'heading', 'Recommendations for this meal'));
-  assert.ok(app.container.textContent.includes('Soup'));
-  assert.ok(server.suggestionsRead.length > 0);
+  await click(control(app, 'button', 'Saved Suggestions'));
+  await waitFor(() => app.pathname === '/section/ideas' && control(app, 'heading', 'Saved Suggestions'));
 });
 
 test('초안 자동 저장에 실패한 상태에서 Continue를 눌러도 현재 답변·사유를 서버에 제출하고 리뷰 완료 화면이 열린다', async t => {

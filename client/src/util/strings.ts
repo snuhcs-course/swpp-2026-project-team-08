@@ -38,6 +38,8 @@
 // Changed: 사진 교체 초기화 및 작성 중인 식사 재개 단계 안내
 // AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 식후 사진 교체 시트와 식전 사진 없음 안내
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식후 리뷰 완료 버튼 문구 정리
 
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
@@ -703,7 +705,7 @@ export const suggestionCopyFor = (language: Language) => suggestionCopy[language
 // Final ABC screens share these labels; persistent values remain language independent.
 const abcCopy = {
   en: {
-    saveCheckinHeader: 'Save check-in', mealSaveFailed: 'We couldn’t save your check-in', reviewSaveFailed: 'We couldn’t save your meal', entriesKept: 'Your entries are still here. Please try again.', saveWait: 'Please wait while we save this meal.', returnEdit: 'Return back to edit', retrySameMeal: 'Retry continues saving this same meal, not a new record. Your foods, confirmations and links are kept.', mealCheckinHeader: 'Meal check-in', reviewSavedHeader: 'Save After-meal Review', reviewSavedTitle: 'This Meal Review saved', returnHome: 'Return to Home for now', viewMealSuggestions: 'View Meal Suggestions', addFoodLabel: 'Add Food',
+    saveCheckinHeader: 'Save check-in', mealSaveFailed: 'We couldn’t save your check-in', reviewSaveFailed: 'We couldn’t save your meal', entriesKept: 'Your entries are still here. Please try again.', saveWait: 'Please wait while we save this meal.', returnEdit: 'Return back to edit', retrySameMeal: 'Retry continues saving this same meal, not a new record. Your foods, confirmations and links are kept.', mealCheckinHeader: 'Meal check-in', reviewSavedHeader: 'Save After-meal Review', reviewSavedTitle: 'This Meal Review saved', addFoodLabel: 'Add Food',
     ready: 'You’re ready to begin', readyFor: (name: string) => `Learn what food ${name} can explore`, next: 'Go to home', acceptance: 'Acceptance',
     acceptanceOptions: ['Unfamiliar', 'Often\nRejected', 'Often\nAccepted', 'Safe Food'] as const,
     acceptanceUnset: 'Not entered',
@@ -727,7 +729,7 @@ const abcCopy = {
   },
   ko: {
     linkStep: (step: number) => `2단계 중 ${step}단계`, savedEarlier: '이전에 저장함', selectedSuggestion: '선택한 추천', foodList: '음식 목록', selectMealFood: '추천을 적용한 음식을 선택해 주세요.',
-    saveCheckinHeader: '식사 기록 저장', mealSaveFailed: '식사 기록을 저장하지 못했어요', reviewSaveFailed: '식후 기록을 저장하지 못했어요', entriesKept: '입력한 내용을 확인하고 다시 시도해 주세요.', saveWait: '이 식사를 저장하는 동안 잠시 기다려 주세요.', returnEdit: '편집 화면으로 돌아가기', retrySameMeal: '다시 시도하면 같은 식사를 저장해요. 입력한 음식과 결과, 연결한 추천은 유지돼요.', mealCheckinHeader: '식사 기록', reviewSavedHeader: '식후 기록 저장', reviewSavedTitle: '식후 기록을 저장했어요', returnHome: '홈으로 돌아가기', viewMealSuggestions: '이 식사의 추천 보기', addFoodLabel: '음식 추가',
+    saveCheckinHeader: '식사 기록 저장', mealSaveFailed: '식사 기록을 저장하지 못했어요', reviewSaveFailed: '식후 기록을 저장하지 못했어요', entriesKept: '입력한 내용을 확인하고 다시 시도해 주세요.', saveWait: '이 식사를 저장하는 동안 잠시 기다려 주세요.', returnEdit: '편집 화면으로 돌아가기', retrySameMeal: '다시 시도하면 같은 식사를 저장해요. 입력한 음식과 결과, 연결한 추천은 유지돼요.', mealCheckinHeader: '식사 기록', reviewSavedHeader: '식후 기록 저장', reviewSavedTitle: '식후 기록을 저장했어요', addFoodLabel: '음식 추가',
     ready: '시작할 준비가 되었어요', readyFor: (_name: string) => '아이의 식사를 기록하고 새로운 음식을 살펴보세요', next: '홈으로 이동', acceptance: '평소에 얼마나 잘 먹나요?',
     acceptanceHint: '아이가 평소 이 음식을 얼마나 편하게 받아들이는지 선택해 주세요.',
     acceptanceOptions: ['낯선 음식', '자주\n거부해요', '자주\n먹어요', '익숙한 음식'] as const,

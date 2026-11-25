@@ -5,6 +5,8 @@
 
 # AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung
 # Changed: 통합 CLI의 교체·기록 보존과 최신 프롬프트의 영어 재료 목록 검증
+# AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+# Changed: 영어 재료 생성 검증과 저장된 홈 추천의 카탈로그 교체 후 보존 검증
 
 """영어 재료 파일, 카탈로그 조회, 추천 API를 실제 SQLite로 검증한다."""
 
@@ -17,7 +19,9 @@ from langchain_core.messages import HumanMessage
 from sqlalchemy import select
 
 from app.features.suggestions.catalog import load_catalog
+from app.features.suggestions.generator import generate_suggestions
 from app.features.suggestions.ingredients import ChildRestrictions
+from app.features.suggestions.workflow.state import FoodInput
 from app.models import Ingredient, IngredientRestriction
 from app.models.ingredient_enums import RestrictionDegree
 from app.models.restriction_enums import RestrictionType
@@ -26,7 +30,13 @@ from scripts.ingredient_catalog import load as load_ingredients
 from scripts.ingredient_catalog.load import read_catalog as read_catalog_files
 from tests.fixtures.meals import food_payload, meal_payload
 from tests.helpers.auth import auth_headers
-from tests.helpers.suggestions import batch, install_model, save_profile, seed_ingredient
+from tests.helpers.suggestions import (
+    batch,
+    install_home_generator,
+    install_model,
+    save_profile,
+    seed_ingredient,
+)
 
 NEVER = RestrictionDegree.NEVER
 EGGS = RestrictionType.ALLERGY_EGGS
@@ -230,23 +240,18 @@ async def test_영어_재료로_추천하고_교체_후에도_식사와_저장_�
     assert saved.status_code == 200
     meal = saved.json()
     meal_path = f"/api/v1/meals/{meal['id']}"
-    reviewed = await api_client.put(
-        meal_path + "/review",
-        headers=owner,
-        json={"food_results": [{"food_id": meal["foods"][0]["id"], "outcome": "TASTED"}]},
-    )
-    assert reviewed.status_code == 200
-    generated = await api_client.post(
-        meal_path + "/suggestions",
-        headers=owner,
-        json={"targets": [{"food_id": meal["foods"][0]["id"]}]},
-    )
-    assert generated.status_code == 201, generated.text
-    recommendation = generated.json()[0]
-    assert recommendation["ingredients"] == ["Rice"]
+    async with session_factory() as session:
+        catalog = await load_catalog(session, ChildRestrictions(frozenset({EGGS, DAIRY})))
+    result = await generate_suggestions([FoodInput(id="0", name="Rice bowl")], catalog, llm=model)
+    assert result[0].ingredients == ("Rice",)
     prompt = next(m.content for m in model.compose_inputs[0] if isinstance(m, HumanMessage))
     catalog_heading = "쓸 수 있는 재료 (세미콜론 ';'으로 구분, 이름 안의 쉼표는 이름의 일부):\n"
     assert prompt.split(catalog_heading)[1] == "Rice"
+
+    install_home_generator(monkeypatch)
+    generated = await api_client.post("/api/v1/suggestions", headers=owner)
+    assert generated.status_code == 201, generated.text
+    recommendation = generated.json()
     decision = await api_client.put(
         f"/api/v1/suggestions/{recommendation['id']}/decision",
         headers=owner,

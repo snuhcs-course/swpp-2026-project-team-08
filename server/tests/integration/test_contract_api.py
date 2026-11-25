@@ -9,14 +9,16 @@
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 영어 추천 카탈로그 fixture 적용
+# AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+# Changed: 홈 추천 한 장의 저장·식사 시도 연결 검증
 
-"""Integration: 실제 API·서비스·SQLite 연결. LLM만 가짜 모델로 대체한다."""
+"""Integration: 실제 API·서비스·SQLite 연결. 홈 추천 생성 결과를 주입한다."""
 
 import pytest
 from httpx import AsyncClient
 
 from tests.helpers.auth import auth_headers
-from tests.helpers.suggestions import batch, install_model, save_profile, seed_ingredient
+from tests.helpers.suggestions import install_home_generator, save_profile
 
 
 def food(name: str, *ingredients: str) -> dict:
@@ -37,11 +39,10 @@ def tries(meal: dict) -> list[dict]:
 async def test_meal_review_suggestion_and_history_flow(
     api_client: AsyncClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    install_model(monkeypatch, [batch("0", "1")])
+    generator = install_home_generator(monkeypatch)
     owner = await auth_headers(api_client, "owner@example.com")
     stranger = await auth_headers(api_client, "stranger@example.com")
     await save_profile(api_client, owner)
-    await seed_ingredient("Rice")
 
     saved = await api_client.put(
         "/api/v1/meals",
@@ -63,10 +64,6 @@ async def test_meal_review_suggestion_and_history_flow(
     assert (await api_client.get(f"/api/v1/meals/{meal_id}", headers=stranger)).status_code == 404
     assert (await api_client.get("/api/v1/meals", headers=stranger)).json() == []
 
-    generate_path = f"/api/v1/meals/{meal_id}/suggestions"
-    both = {"targets": [{"food_id": stir_fry["id"]}, {"food_id": rice["id"]}]}
-    unreviewed = await api_client.post(generate_path, headers=owner, json=both)
-    assert unreviewed.status_code == 409
     invalid_review = await api_client.put(
         f"/api/v1/meals/{meal_id}/review",
         headers=owner,
@@ -110,38 +107,29 @@ async def test_meal_review_suggestion_and_history_flow(
     assert replaced.status_code == 200, replaced.text
     assert replaced.json()["foods"][0]["ingredients"][0]["outcome"] is None
 
-    invalid = await api_client.post(
-        generate_path, headers=owner, json={"targets": [{"food_id": "9999"}]}
-    )
-    assert invalid.status_code == 422
-    generated = await api_client.post(generate_path, headers=owner, json=both)
+    generator.assert_not_awaited()
+    generated = await api_client.post("/api/v1/suggestions", headers=owner)
     assert generated.status_code == 201, generated.text
-    assert [item["status"] for item in generated.json()] == ["PENDING", "PENDING"]
-    first_id, second_id = [item["id"] for item in generated.json()]
-    assert (await api_client.get(generate_path, headers=owner)).json() == []
-    all_items = await api_client.get(f"{generate_path}?status=ALL", headers=owner)
-    assert len(all_items.json()) == 2
+    generator.assert_awaited_once()
+    card = generated.json()
+    assert card["meal_id"] is None and card["origin_food_id"] is None
+    assert card["food_name"] == "Rice cakes" and card["status"] == "PENDING"
+    suggestion_id = card["id"]
+    assert (await api_client.get("/api/v1/suggestions", headers=owner)).json() == []
 
     saved_suggestion = await api_client.put(
-        f"/api/v1/suggestions/{first_id}/decision",
+        f"/api/v1/suggestions/{suggestion_id}/decision",
         headers=owner,
         json={"status": "SAVED", "dismiss_reasons": []},
     )
     assert saved_suggestion.status_code == 200, saved_suggestion.text
     assert saved_suggestion.json()["saved_at"] is not None
-    dismissed = await api_client.put(
-        f"/api/v1/suggestions/{second_id}/decision",
-        headers=owner,
-        json={"status": "DISMISSED", "dismiss_reasons": ["TOO_MUCH_PREPARATION"]},
-    )
-    assert dismissed.status_code == 200
-    assert dismissed.json()["saved_at"] is None
     assert [
         item["id"] for item in (await api_client.get("/api/v1/suggestions", headers=owner)).json()
-    ] == [first_id]
+    ] == [suggestion_id]
     assert (
         await api_client.put(
-            f"/api/v1/suggestions/{first_id}/decision",
+            f"/api/v1/suggestions/{suggestion_id}/decision",
             headers=stranger,
             json={"status": "DISMISSED", "dismiss_reasons": ["ALREADY_TRIED"]},
         )
@@ -149,7 +137,7 @@ async def test_meal_review_suggestion_and_history_flow(
 
     # 저장한 추천을 다음 식사에서 시도하면 추천은 TRIED 가 되고 목록에도 남는다.
     next_food = food("당근", "당근")
-    next_food["food_recommendation_ids"] = [first_id]
+    next_food["food_recommendation_ids"] = [suggestion_id]
     applied = await api_client.put(
         "/api/v1/meals",
         headers=owner,
@@ -165,17 +153,17 @@ async def test_meal_review_suggestion_and_history_flow(
     history = await api_client.get("/api/v1/meals", headers=owner)
     assert [item["id"] for item in history.json()] == [applied_id, meal_id]
     attempt = tries(history.json()[0])[0]
-    assert attempt["food_recommendation_id"] == first_id
+    assert attempt["food_recommendation_id"] == suggestion_id
     assert attempt["recommendation"]["what_to_try"]
     listed = (await api_client.get("/api/v1/suggestions", headers=owner)).json()
-    assert [(item["id"], item["status"]) for item in listed] == [(first_id, "TRIED")]
+    assert [(item["id"], item["status"]) for item in listed] == [(suggestion_id, "TRIED")]
     for call in (
         api_client.put(
-            f"/api/v1/suggestions/{first_id}/decision",
+            f"/api/v1/suggestions/{suggestion_id}/decision",
             headers=owner,
             json={"status": "DISMISSED", "dismiss_reasons": ["DISLIKE"]},
         ),
-        api_client.delete(f"/api/v1/suggestions/{first_id}/decision", headers=owner),
+        api_client.delete(f"/api/v1/suggestions/{suggestion_id}/decision", headers=owner),
     ):
         conflict = await call
         assert conflict.status_code == 409
@@ -189,9 +177,9 @@ async def test_meal_review_suggestion_and_history_flow(
         await api_client.delete(f"/api/v1/meals/{applied_id}", headers=owner)
     ).status_code == 204
     listed = (await api_client.get("/api/v1/suggestions", headers=owner)).json()
-    assert [(item["id"], item["status"]) for item in listed] == [(first_id, "SAVED")]
+    assert [(item["id"], item["status"]) for item in listed] == [(suggestion_id, "SAVED")]
 
-    # 추천의 근거가 된 식사를 지우면 그 식사의 음식에서 나온 추천도 함께 사라진다.
+    # 홈 추천은 이전 식사를 삭제해도 저장 목록에 남는다.
     assert (await api_client.delete(f"/api/v1/meals/{meal_id}", headers=owner)).status_code == 204
     assert (await api_client.get(f"/api/v1/meals/{meal_id}", headers=owner)).status_code == 404
-    assert (await api_client.get("/api/v1/suggestions", headers=owner)).json() == []
+    assert (await api_client.get("/api/v1/suggestions", headers=owner)).json() == listed

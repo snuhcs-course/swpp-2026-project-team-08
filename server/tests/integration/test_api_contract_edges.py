@@ -290,18 +290,11 @@ async def test_saved_filter_decision_validation_and_undo(
     owner = await login(api_client, "owner@example.com")
     other = await login(api_client, "other@example.com")
     await save_profile(api_client, owner)
-    await seed_ingredient("Rice")
-    meal_id = await save_meal(api_client, owner, "2026-10-20")
-    assert (await review_meal(api_client, owner, meal_id)).status_code == 200
-
-    install_model(monkeypatch, [batch("0")])
-    created = await api_client.post(
-        f"/api/v1/meals/{meal_id}/suggestions",
-        headers=owner,
-        json={"targets": [{"food_id": await first_food_id(api_client, owner, meal_id)}]},
-    )
+    await save_meal(api_client, owner, "2026-10-20")
+    install_home_generator(monkeypatch)
+    created = await api_client.post("/api/v1/suggestions", headers=owner)
     assert created.status_code == 201, created.text
-    suggestion_id = created.json()[0]["id"]
+    suggestion_id = created.json()["id"]
     decision = f"/api/v1/suggestions/{suggestion_id}/decision"
     for body in (
         {"status": "DISMISSED", "dismiss_reasons": []},
@@ -342,8 +335,3 @@ async def test_saved_filter_decision_validation_and_undo(
     assert (await api_client.get("/api/v1/suggestions", headers=owner)).json() == []
     assert (await api_client.delete(decision, headers=owner)).json()["status"] == "PENDING"
     assert (await api_client.get("/api/v1/suggestions", headers=owner)).json() == []
-    # 목록 필터는 대문자만 받는다.
-    bad_filter = await api_client.get(
-        f"/api/v1/meals/{meal_id}/suggestions?status=all", headers=owner
-    )
-    assert bad_filter.status_code == 422

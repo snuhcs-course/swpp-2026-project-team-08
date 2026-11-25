@@ -1,4 +1,6 @@
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 거부 음식 프로필 저장
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 감각 프로필 저장
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 # AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
@@ -62,6 +64,9 @@ def _input(payload: OnboardingWriteRequest) -> OnboardingInput:
         if profile.sensory_textures is not None
         else None,
         sensory_note=profile.sensory_note,
+        refused_foods=tuple(item.model_dump(mode="json") for item in profile.refused_foods)
+        if profile.refused_foods is not None
+        else None,
     )
 
 
@@ -88,6 +93,7 @@ def _response(snapshot: OnboardingSnapshot) -> OnboardingResponse:
             ],
             sensory_textures=profile.sensory_textures or [],
             sensory_note=profile.sensory_note or "",
+            refused_foods=profile.refused_foods or [],
             updated_at=profile.updated_at,
         )
     return OnboardingResponse(

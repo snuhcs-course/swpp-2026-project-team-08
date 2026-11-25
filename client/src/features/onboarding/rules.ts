@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 거부 음식 온보딩
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 온보딩 단계 간소화 및 감각 프로필 순서
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -17,6 +19,8 @@
 
 import { emptyDraft, isStep, type OnboardingDraft, type OnboardingStep } from './types';
 import type { Language, SafeFood } from '../../types/profile';
+import { cookingMethodIds } from '../../types/recordValues';
+import { difficultyOptions, textureQuestions } from '../../util/difficultyOptions';
 import { isDietaryPattern } from '../../util/dietaryPattern';
 import { labelFor } from '../../util/strings';
 
@@ -77,6 +81,22 @@ export function matchingSafeFoods(draft: OnboardingDraft, language: Language): s
   }).map((food) => food.name);
 }
 
+function validRefusedFood(value: unknown, needsId: boolean): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const food = value as Record<string, unknown>;
+  if (typeof food.name !== 'string' || (needsId && (typeof food.id !== 'string' || !food.id || !food.name.trim()))) return false;
+  if (food.cookingMethod !== null && !(cookingMethodIds as readonly unknown[]).includes(food.cookingMethod)) return false;
+  if (!Array.isArray(food.reasons)) return false;
+  return food.reasons.every((reason: unknown) => {
+    if (!reason || typeof reason !== 'object') return false;
+    const item = reason as Record<string, unknown>;
+    if (typeof item.category !== 'string' || typeof item.value !== 'string') return false;
+    if (item.category === 'texture') return typeof item.subcategory === 'string'
+      && !!textureQuestions[item.subcategory]?.includes(item.value);
+    return item.subcategory === null && !!difficultyOptions[item.category as keyof typeof difficultyOptions]?.includes(item.value);
+  });
+}
+
 export function isDraft(value: unknown): value is OnboardingDraft {
   if (!value || typeof value !== 'object') return false;
   const draft = value as Record<string, unknown>;
@@ -96,6 +116,8 @@ export function isDraft(value: unknown): value is OnboardingDraft {
     && (draft.dietaryPattern == null || isDietaryPattern(draft.dietaryPattern))
     && Array.isArray(draft.sensoryTextures) && draft.sensoryTextures.every((item) => typeof item === 'string')
     && typeof draft.sensoryNote === 'string'
+    && Array.isArray(draft.refusedFoods) && draft.refusedFoods.every((item) => validRefusedFood(item, true))
+    && validRefusedFood(draft.refusedFoodInput, false)
     && typeof draft.noSafeFoods === 'boolean'
     && !!safeFoodInput && ['name', 'preparation', 'presentationNote'].every((key) => typeof safeFoodInput[key] === 'string');
 }
@@ -109,6 +131,8 @@ export function restoreDraft(value: unknown): OnboardingDraft | null {
     ...stored,
     dietaryPattern: stored.dietaryPattern ?? null,
     noSafeFoods: stored.noSafeFoods ?? false,
+    refusedFoods: stored.refusedFoods ?? [],
+    refusedFoodInput: stored.refusedFoodInput ?? { name: '', cookingMethod: null, reasons: [] },
     sensoryTextures: stored.sensoryTextures ?? [], sensoryNote: stored.sensoryNote ?? '',
     step: stored.step === 'restrictions' ? 'family' : stored.step === 'safe-foods' ? 'sensory' : isStep(stored.step) ? stored.step : 'family',
   };

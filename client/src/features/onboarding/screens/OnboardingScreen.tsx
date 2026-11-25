@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 거부 음식 온보딩
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 온보딩 단계 간소화 및 감각 프로필
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 제외된 온보딩 질문 제거; 동작별 버튼 문구 구분
@@ -38,6 +40,7 @@ import { OnboardingFlowView } from './OnboardingFlowView';
 import { ReviewStepView } from './ReviewStepView';
 import { SafeFoodsStepView } from './SafeFoodsStepView';
 import { reviewRows } from './reviewRows';
+import { RefusedFoodsStepView } from './RefusedFoodsStepView';
 import { SensoryStepView } from './SensoryStepView';
 
 const choiceSteps: ChoiceStep[] = [
@@ -167,6 +170,11 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         onAdd={() => model.addSafeFood(model.draft.safeFoodInput)}
       />
     );
+    if (step === 'refused-foods') return (
+      <RefusedFoodsStepView language={language} foods={model.draft.refusedFoods ?? []}
+        input={model.draft.refusedFoodInput} onChange={model.setRefusedFoodInput}
+        onAdd={model.addRefusedFood} onRemove={model.removeRefusedFood} />
+    );
     if (step === 'sensory') return (
       <SensoryStepView language={language} childName={model.draft.childName}
         textures={model.draft.sensoryTextures ?? []} note={model.draft.sensoryNote ?? ''}
@@ -208,7 +216,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
       saveStatus={model.saveStatus}
       submitting={submitting}
       canContinue={model.canContinue(step)}
-      continueLabel={language === 'ko'
+      continueLabel={step === 'refused-foods' && !(model.draft.refusedFoods ?? []).length ? s.refusedFoods.skip : language === 'ko'
         ? step === 'review' || (origin === 'child-profile' && step !== 'allergies')
           ? strings.ko.onboarding.looksGood
           : step === 'account' && !model.editing && !auth.session

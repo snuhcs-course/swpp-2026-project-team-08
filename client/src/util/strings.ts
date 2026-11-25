@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 거부 음식 문구
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각 프로필 저장 및 온보딩
 // AI-generated with GPT-6, 2026-11-24, reviewed by Seoyeon Heo
 // Changed: 식사 초안 삭제 및 실행 취소
@@ -57,6 +59,7 @@ const en = {
     notEntered: 'Not entered', none: 'None', all: 'All',
     close: 'Close', back: 'Go back', home: 'Home', language: '한국어', empty: 'No records yet',
   },
+  refusedFoods: { title: (name: string) => `${name}’s Refused foods`, description: (name: string) => `Add foods that ${name} has refused before, and the reason if identifiable. We can take these into account when generating suggestions.`, review: 'Refused foods', addFood: 'Add Refused Food', reasons: 'Reasons for Refusal', category: 'Select category', subcategory: 'Select texture characteristic', value: 'value', skip: 'Skip' },
   sensory: { title: 'Sensory Profile', question: (name: string) => `Are there certain textures ${name} is sensitive to?`, category: 'texture category', value: 'value', before: 'foods with', especially: ', especially', after: 'trait causes refusal.', add: '+ Add', other: 'If there are any other sensory traits you would like us to notice, please write below.', note: 'Value', remove: 'Remove' },
   onboarding: {
     progress: (step: number, total: number) => `STEP ${step} OF ${total}`,
@@ -330,6 +333,7 @@ const ko = {
     close: '닫기', back: '뒤로', home: '홈', language: 'English',
     loadFailed: '정보를 불러오지 못했어요. 다시 시도해 주세요.', empty: '아직 기록이 없어요',
   },
+  refusedFoods: { title: (name: string) => `${name}의 거부 음식`, description: (name: string) => `${name}가 거부한 음식과 알고 있는 이유를 추가해 주세요. 추천을 생성할 때 참고해요.`, review: '거부 음식', addFood: '거부 음식 추가', reasons: '거부 이유', category: '유형 선택', subcategory: '식감 특성 선택', value: '특징', skip: '건너뛰기' },
   sensory: { title: '감각 프로필', question: (name: string) => `${name}에게 민감한 식감이 있나요?`, category: '식감 유형', value: '특징', before: '음식의', especially: ', 특히', after: '특징을 거부해요.', add: '+ 추가', other: '알려주고 싶은 다른 감각 특성이 있다면 적어 주세요.', note: '내용', remove: '삭제' },
   onboarding: {
     progress: (step: number, total: number) => `${total}단계 중 ${step}단계`,

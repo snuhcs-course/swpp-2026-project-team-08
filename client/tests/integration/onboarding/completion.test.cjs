@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
-// Changed: 감각 프로필 및 필수 알레르기 완료 검증
+// Changed: 감각·거부 음식 및 필수 알레르기 완료 검증
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Verify reset discards pending autosaves and current onboarding fixtures
@@ -40,7 +40,7 @@ function noneResponse() {
 const expectedNoneRequest = {
   profile: {
     child_name: 'Child 1', age_group: 'AGE_4_5', restrictions: ['ALLERGY.NONE', 'VEGETARIAN.EGGS'],
-    dietary_pattern: null, sensory_textures: [], sensory_note: '', safe_foods: null,
+    dietary_pattern: null, sensory_textures: [], sensory_note: '', refused_foods: [], safe_foods: null,
   },
   consents: [
     { kind: 'ACCOUNT_PRIVACY', granted: true },
@@ -52,7 +52,7 @@ const expectedNoneProfile = {
   id: '1', caregiverName: 'Parent', caregiverEmail: 'parent@example.com', childName: 'Child 1',
   ageRange: 'AGE_4_5', consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
   allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'],
-  dietaryPattern: null, sensoryTextures: [], sensoryNote: '', noSafeFoods: true, safeFoods: [], updatedAt: '2026-10-23T00:00:00Z',
+  dietaryPattern: null, sensoryTextures: [], sensoryNote: '', refusedFoods: [], noSafeFoods: true, safeFoods: [], updatedAt: '2026-10-23T00:00:00Z',
 };
 function control(app, role, label) {
   const matches = [...app.container.querySelectorAll(`[role="${role}"]`)]
@@ -106,7 +106,7 @@ test('완료하면 선택한 답변과 음식 상세를 저장하고 홈에서 �
     profile: {
       child_name: 'Child 1', age_group: 'AGE_4_5',
       restrictions: ['ALLERGY.PEANUTS', 'DIETARY_APPROACH.GLUTEN_FREE', 'VEGETARIAN.EGGS'],
-      dietary_pattern: 'PESCATARIAN', sensory_textures: [], sensory_note: '',
+      dietary_pattern: 'PESCATARIAN', sensory_textures: [], sensory_note: '', refused_foods: [],
       safe_foods: [{ name: 'Apple', preparation: 'Sliced', presentation_note: 'Blue bowl' }],
     },
     consents: [
@@ -160,7 +160,7 @@ test('완료 후 앱을 다시 열어 프로필을 조회하면 저장한 자녀
     profile: {
       child_name: '하루', age_group: 'AGE_6_8',
       restrictions: ['ALLERGY.PEANUTS', 'DIETARY_APPROACH.GLUTEN_FREE', 'VEGETARIAN.EGGS'],
-      dietary_pattern: 'PESCATARIAN', sensory_textures: [], sensory_note: '',
+      dietary_pattern: 'PESCATARIAN', sensory_textures: [], sensory_note: '', refused_foods: [],
       safe_foods: [{ name: 'Apple', preparation: 'Sliced', presentation_note: 'Blue bowl' }],
     },
     consents: expectedNoneRequest.consents.map(consent => ({ ...consent, granted: true })),
@@ -297,5 +297,21 @@ test('완료 실패 시 회전을 멈추고 답변을 유지하며 Retry 중 다
   assert.deepEqual(app.profile, expectedNoneProfile);
   assert.deepEqual(await readProfile(), expectedNoneProfile);
   assert.equal(await readDraft(), null);
+  assertCompleted(app);
+});
+
+test('거부 음식과 이유가 제출되고 저장된 프로필에 복원된다', async t => {
+  const food = { id: 'food-1', name: 'Apple', cookingMethod: 'pan_fried',
+    reasons: [{ category: 'texture', subcategory: 'hardness', value: 'hard' }] };
+  const response = profileResponse();
+  response.profile.safe_foods = null;
+  response.profile.refused_foods = [{ id: 'food-1', name: 'Apple', cooking_method: 'PAN_FRIED',
+    reasons: ['TEXTURE.HARDNESS.HARD'] }];
+  const app = await mountCompletion(t, completeAnswers({ refusedFoods: [food] }), () => Response.json(response));
+  await click(button(app, 'Looks good'));
+  await waitFor(() => app.current.hasDraft === false);
+  assert.deepEqual(app.submissions[0].profile.refused_foods, response.profile.refused_foods);
+  assert.deepEqual(app.profile.refusedFoods, [food]);
+  assert.deepEqual((await readProfile()).refusedFoods, [food]);
   assertCompleted(app);
 });

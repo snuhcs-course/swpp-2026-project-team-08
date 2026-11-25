@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 거부 음식 추천 문맥 반영
 # AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
 # Changed: 아이가 잘 먹는 음식(safe food, 과거 EATEN 음식)을 읽는 로더 추가
 
@@ -17,8 +19,9 @@ from app.features.suggestions.workflow.state import (
     FamiliarEatenFood,
     FamiliarFoods,
     FamiliarSafeFood,
+    RefusedFood,
 )
-from app.models import Meal, MealFood, MealFoodIngredient, UserProfileSafeFood
+from app.models import Meal, MealFood, MealFoodIngredient, UserProfile, UserProfileSafeFood
 from app.models.meal_enums import EatingOutcome
 
 # 프롬프트가 커지지 않도록 읽는 개수를 제한한다.
@@ -88,7 +91,17 @@ async def load_familiar_foods(
         for ingredient in ingredient_rows:
             ingredient_names[ingredient.meal_food_id].append(ingredient.name)
 
+    profile = await session.get(UserProfile, user_id)
+    refused = (profile.refused_foods or [])[:30] if profile else []
     return FamiliarFoods(
+        refused_foods=tuple(
+            RefusedFood(
+                name=item["name"],
+                cooking_method=item["cooking_method"],
+                reasons=tuple(item["reasons"]),
+            )
+            for item in refused
+        ),
         safe_foods=tuple(
             FamiliarSafeFood(
                 name=row.name,

@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 거부 음식 온보딩
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각 프로필 저장 및 온보딩
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
@@ -37,6 +39,9 @@ export type OnboardingContextValue = {
   removeSafeFood: (id: string) => void;
   setNoSafeFoods: (value: boolean) => void;
   setSensory: (textures: string[], note: string) => void;
+  setRefusedFoodInput: (input: OnboardingDraft['refusedFoodInput']) => void;
+  addRefusedFood: () => void;
+  removeRefusedFood: (id: string) => void;
   setStep: (step: OnboardingStep) => void;
   startEdit: () => void;
   startProfileEdit: () => void;

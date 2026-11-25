@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 거부 음식 API 변환
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각 프로필 저장 및 온보딩
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
@@ -11,6 +13,8 @@
 
 import { apiRequest } from '../network/apiClient';
 import { isUserId, type AuthUser } from '../storage/authStorage';
+import { fromDifficultyReason, toDifficultyReason } from '../dto/difficultyReasons';
+import { cookingMethodIds } from '../../types/recordValues';
 import { dietaryPatternIds } from '../../types/dietaryPattern';
 import type { ChildProfile } from '../../types/profile';
 import { fromApiEnum, nullable, toApiEnum } from '../dto/values';
@@ -32,6 +36,7 @@ type ProfileResponse = {
   }[] | null;
   sensory_textures?: string[];
   sensory_note?: string;
+  refused_foods?: { id: string; name: string; cooking_method: string | null; reasons: string[] }[];
   updated_at: string;
 };
 
@@ -77,6 +82,18 @@ function parseResponse(value: unknown): OnboardingResponse {
   }
   if ((profile.sensory_textures !== undefined && (!Array.isArray(profile.sensory_textures) || !profile.sensory_textures.every((item: unknown) => typeof item === 'string')))
     || (profile.sensory_note !== undefined && typeof profile.sensory_note !== 'string')) throw new Error('Invalid sensory profile');
+  if (profile.refused_foods !== undefined) {
+    if (!Array.isArray(profile.refused_foods) || !profile.refused_foods.every((food: unknown) =>
+      record(food) && typeof food.id === 'string' && typeof food.name === 'string'
+      && (food.cooking_method === null || typeof food.cooking_method === 'string')
+      && Array.isArray(food.reasons) && food.reasons.every((reason: unknown) => typeof reason === 'string'))) {
+      throw new Error('Invalid refused foods');
+    }
+    for (const food of profile.refused_foods) {
+      nullable(food.cooking_method, (value) => fromApiEnum(value, cookingMethodIds));
+      food.reasons.forEach(fromDifficultyReason);
+    }
+  }
   // 모르는 값이 오면 오류로 처리한다.
   nullable(profile.dietary_pattern, (value) => fromApiEnum(value, dietaryPatternIds));
   return value as OnboardingResponse;
@@ -109,6 +126,9 @@ export function toOnboardingWrite(profile: ChildProfile) {
         (value) => toApiEnum(value, dietaryPatternIds)),
       sensory_textures: profile.sensoryTextures ?? [],
       sensory_note: profile.sensoryNote ?? '',
+      refused_foods: (profile.refusedFoods ?? []).map(food => ({ id: food.id, name: food.name,
+        cooking_method: nullable(food.cookingMethod, value => toApiEnum(value, cookingMethodIds)),
+        reasons: food.reasons.map(toDifficultyReason) })),
       safe_foods: profile.noSafeFoods ? null : profile.safeFoods.map((food) => ({
         name: food.name,
         preparation: food.preparation.trim() || null,
@@ -150,6 +170,9 @@ export function fromOnboardingResponse(
     dietaryPattern: nullable(source.dietary_pattern,
       (value) => fromApiEnum(value, dietaryPatternIds)),
     sensoryTextures: source.sensory_textures ?? [], sensoryNote: source.sensory_note ?? '',
+    refusedFoods: (source.refused_foods ?? []).map(food => ({ id: food.id, name: food.name,
+      cookingMethod: nullable(food.cooking_method, value => fromApiEnum(value, cookingMethodIds)),
+      reasons: food.reasons.map(fromDifficultyReason) })),
     noSafeFoods: source.safe_foods === null,
     safeFoods: (source.safe_foods ?? []).map((food) => ({
       id: food.id, name: food.name, preparation: food.preparation ?? '',
@@ -176,6 +199,9 @@ export async function writeOnboarding(profile: ChildProfile): Promise<Onboarding
   if (JSON.stringify(response.profile.sensory_textures ?? []) !== JSON.stringify(profile.sensoryTextures ?? [])
     || (response.profile.sensory_note ?? '') !== (profile.sensoryNote ?? '')) {
     throw new Error('Sensory profile was not saved');
+  }
+  if (JSON.stringify(response.profile.refused_foods ?? []) !== JSON.stringify(toOnboardingWrite(profile).profile.refused_foods)) {
+    throw new Error('Refused foods were not saved');
   }
   if (saved !== (profile.dietaryPattern ?? null)) {
     throw new Error('Dietary pattern was not saved');

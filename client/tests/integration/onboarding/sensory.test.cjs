@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
-// Changed: 감각 프로필 입력 및 초안 복원 검증
+// Changed: 감각 프로필과 거부 음식 단계 이동 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { act, waitFor, mountDietaryPattern } = require('../../helpers/onboarding-screen.cjs');
@@ -9,7 +9,7 @@ function button(app, label) {
   return [...app.container.querySelectorAll('[role="button"]')].find(el =>
     (el.getAttribute('aria-label') ?? el.textContent) === label);
 }
-test('sensory profile precedes review and selected texture is saved', async t => {
+test('sensory profile precedes refused foods and selected texture is saved', async t => {
   const app = await mountDietaryPattern(t);
   await act(async () => button(app, 'Continue').click());
   await waitFor(() => app.pathname === '/onboarding/sensory');
@@ -21,7 +21,7 @@ test('sensory profile precedes review and selected texture is saved', async t =>
   assert.deepEqual(app.current.draft.sensoryTextures, ['hardness.hard']);
   await waitFor(async () => (await readDraft()).sensoryTextures?.[0] === 'hardness.hard');
   await act(async () => button(app, 'Continue').click());
-  await waitFor(() => app.pathname === '/onboarding/review');
+  await waitFor(() => app.pathname === '/onboarding/refused-foods');
   assert.equal(app.submissions.length, 0);
   await act(async () => button(app, 'Previous').click());
   await waitFor(() => app.pathname === '/onboarding/sensory');

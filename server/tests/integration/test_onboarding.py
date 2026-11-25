@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
-# Changed: 감각 프로필 계약과 저장 검증
+# Changed: 감각 프로필과 거부 음식 계약 검증
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 # AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
@@ -44,6 +44,7 @@ async def test_onboarding_round_trip_and_idempotent_consents(api_client: AsyncCl
         "safe_foods",
         "sensory_textures",
         "sensory_note",
+        "refused_foods",
         "updated_at",
     }
     assert [food["name"] for food in profile["safe_foods"]] == ["감자", "쌀밥"]
@@ -307,3 +308,40 @@ async def test_sensory_profile_round_trip_and_legacy_write(api_client: AsyncClie
     assert (
         await api_client.put("/api/v1/onboarding", headers=headers, json=body)
     ).status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_refused_foods_round_trip_legacy_write_and_validation(
+    api_client: AsyncClient,
+) -> None:
+    headers = await auth_headers(api_client, "refused@example.com")
+    body = request_body()
+    foods = [
+        {
+            "id": "food-1",
+            "name": "Apple",
+            "cooking_method": "PAN_FRIED",
+            "reasons": ["TEXTURE.HARDNESS.HARD", "TASTE.SOUR"],
+        },
+        {"id": "food-2", "name": "Pear", "cooking_method": None, "reasons": []},
+    ]
+    body["profile"]["refused_foods"] = foods
+    result = await api_client.put("/api/v1/onboarding", headers=headers, json=body)
+    assert result.status_code == 200, result.text
+    assert result.json()["profile"]["refused_foods"] == foods
+    assert (await api_client.get("/api/v1/onboarding", headers=headers)).json()["profile"][
+        "refused_foods"
+    ] == foods
+    legacy = await api_client.put("/api/v1/onboarding", headers=headers, json=request_body())
+    assert legacy.json()["profile"]["refused_foods"] == foods
+    body["profile"]["refused_foods"] = [{**foods[0], "reasons": ["TEXTURE.HARDNESS.CRUNCHY"]}]
+    assert (
+        await api_client.put("/api/v1/onboarding", headers=headers, json=body)
+    ).status_code == 422
+    body["profile"]["refused_foods"] = [foods[0], foods[0]]
+    assert (
+        await api_client.put("/api/v1/onboarding", headers=headers, json=body)
+    ).status_code == 422
+    body["profile"]["refused_foods"] = []
+    cleared = await api_client.put("/api/v1/onboarding", headers=headers, json=body)
+    assert cleared.status_code == 200 and cleared.json()["profile"]["refused_foods"] == []

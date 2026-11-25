@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 거부 음식 추천 문맥 반영
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 # Changed: ingredients 구조 bootstrap
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
@@ -86,11 +88,21 @@ class FamiliarEatenFood:
 
 
 @dataclass(frozen=True)
+class RefusedFood:
+    """Caregiver-reported refusal in the recorded preparation."""
+
+    name: str
+    cooking_method: str | None = None
+    reasons: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class FamiliarFoods:
     """아이가 잘 먹는다고 기록된 음식들. 새 제안을 익숙한 것과 이어 주는 데 쓴다."""
 
     safe_foods: tuple[FamiliarSafeFood, ...] = ()
     eaten_foods: tuple[FamiliarEatenFood, ...] = ()
+    refused_foods: tuple[RefusedFood, ...] = ()
 
 
 @dataclass(frozen=True)

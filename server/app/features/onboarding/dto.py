@@ -1,4 +1,6 @@
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 거부 음식 프로필 저장
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 감각 프로필 저장
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 # AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
@@ -21,6 +23,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, StrictBool, field_validator, model_validator
 
 from app.models.difficulty_enums import DifficultyReason
+from app.models.meal_enums import MealCookingMethodInput
 from app.models.restriction_enums import RestrictionType
 from app.models.user_consent_enums import UserConsentKind
 from app.models.user_profile_enums import AgeGroup, DietaryPattern
@@ -55,6 +58,28 @@ class SafeFoodWriteDto(StrictDto):
         return value
 
 
+class RefusedFoodDto(StrictDto):
+    id: str
+    name: str
+    cooking_method: MealCookingMethodInput | None
+    reasons: list[DifficultyReason]
+
+    @field_validator("id", "name")
+    @classmethod
+    def nonblank(cls, value: str) -> str:
+        value = value.strip()
+        if not value or len(value) > 200:
+            raise ValueError("value must be between 1 and 200 characters")
+        return value
+
+    @field_validator("reasons")
+    @classmethod
+    def unique_reasons(cls, value: list[DifficultyReason]) -> list[DifficultyReason]:
+        if len(value) != len(set(value)):
+            raise ValueError("duplicate reasons")
+        return value
+
+
 class ProfileWriteDto(StrictDto):
     child_name: str
     age_group: AgeGroup
@@ -63,8 +88,18 @@ class ProfileWriteDto(StrictDto):
     dietary_pattern: DietaryPattern | None
     sensory_textures: list[str] | None = None
     sensory_note: str | None = None
+    refused_foods: list[RefusedFoodDto] | None = None
     # null: 명시적 없음, []: 미응답, 비어 있지 않은 목록: 답변
     safe_foods: list[SafeFoodWriteDto] | None
+
+    @field_validator("refused_foods")
+    @classmethod
+    def unique_refused_food_ids(
+        cls, value: list[RefusedFoodDto] | None
+    ) -> list[RefusedFoodDto] | None:
+        if value is not None and len({item.id for item in value}) != len(value):
+            raise ValueError("duplicate refused food ids")
+        return value
 
     @field_validator("sensory_textures")
     @classmethod
@@ -140,6 +175,7 @@ class UserProfileDto(StrictDto):
     safe_foods: list[SafeFoodDto] | None
     sensory_textures: list[str]
     sensory_note: str
+    refused_foods: list[RefusedFoodDto]
     updated_at: datetime
 
 

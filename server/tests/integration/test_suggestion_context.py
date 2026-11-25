@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 거부 음식 추천 문맥 검증
 # AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
 # Changed: 추천 생성 입력에 safe food, 과거 EATEN 음식, 재료별 리뷰가 실리는지 검증 추가
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
@@ -233,3 +235,30 @@ async def test_generation_works_when_nothing_is_known_about_what_the_child_eats_
     prompt = user_prompt(model)
     assert "아이가 평소 잘 먹는 음식" not in prompt
     assert EATEN_HEADING not in prompt
+
+
+@pytest.mark.asyncio
+async def test_refused_foods_are_included_in_suggestion_context(
+    api_client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    model = install_model(monkeypatch, [batch("0")])
+    owner = await auth_headers(api_client, "refused-context@example.com")
+    payload = request_body()
+    payload["profile"]["refused_foods"] = [
+        {
+            "id": "one",
+            "name": "Apple",
+            "cooking_method": "STEAMED",
+            "reasons": ["TEXTURE.HARDNESS.HARD"],
+        }
+    ]
+    response = await api_client.put("/api/v1/onboarding", headers=owner, json=payload)
+    assert response.status_code == 200, response.text
+    await seed_ingredient("Rice")
+    meal = await save_meal(api_client, owner, "2026-10-20", food("Carrot", "Rice"))
+    await review_meal(api_client, owner, meal, {"outcome": "UNTOUCHED"})
+    await generate(api_client, owner, meal, 0)
+    prompt = user_prompt(model)
+    assert "아이가 거부한 음식 (보호자 기록)" in prompt
+    assert "Apple" in prompt and "식감이 딱딱하고 단단해서" in prompt
+    assert "TEXTURE.HARDNESS.HARD" not in prompt

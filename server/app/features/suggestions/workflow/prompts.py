@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 거부 음식 추천 문맥 반영
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 # Changed: add suggestion LLM workflow
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
@@ -27,6 +29,7 @@ from app.features.suggestions.workflow.state import (
     FamiliarSafeFood,
     FoodInput,
     IngredientResult,
+    RefusedFood,
     ValidationProblem,
 )
 
@@ -51,7 +54,9 @@ SYSTEM_PROMPT = """당신은 편식하는 아이를 둔 보호자를 돕는 식�
    - rejected_suggestion: 보호자가 거절한 기존 제안과 제외 이유.
 2. 아이가 평소 잘 먹는 음식: 보호자가 적은 safe food와 과거 식사에서 잘 먹은 음식입니다.
    기록은 적힌 조리·제공 형태에만 해당합니다.
-3. 쓸 수 있는 재료: 이 아이가 쓸 수 있는 재료 이름 목록입니다. 항상 마지막 구역입니다.
+3. 아이가 거부한 음식: 보호자가 기록한 거부 음식과 그 조리법·이유입니다.
+   알려진 형태에 대한 참고 정보이며, 알레르기나 영구적인 금지로 해석하지 않습니다.
+4. 쓸 수 있는 재료: 이 아이가 쓸 수 있는 재료 이름 목록입니다. 항상 마지막 구역입니다.
 
 ## 제안하는 방법
 1. 어려워한 이유는 제안의 출발점입니다. 주어진 이유 중 하나 이상을 골라, 그 이유를 직접 줄이는
@@ -154,6 +159,15 @@ def _describe_eaten_food(food: FamiliarEatenFood) -> str:
     return "- " + ", ".join(parts)
 
 
+def _describe_refused_food(food: RefusedFood) -> str:
+    parts = [food.name]
+    if food.cooking_method:
+        parts.append(f"cooking_method: {describe_cooking_method(food.cooking_method)}")
+    if food.reasons:
+        parts.append(f"difficulty_reasons: {_describe_reasons(food.reasons)}")
+    return "- " + ", ".join(parts)
+
+
 def _familiar_sections(familiar: FamiliarFoods) -> str:
     """아이가 잘 먹는 음식 구역. 기록이 없으면 빈 문자열이다."""
     sections = []
@@ -164,6 +178,9 @@ def _familiar_sections(familiar: FamiliarFoods) -> str:
         lines = "\n".join(_describe_eaten_food(food) for food in familiar.eaten_foods)
         heading = "과거 식사에서 아이가 잘 먹은 음식 (식후 리뷰에 '잘 먹었다'로 기록)"
         sections.append(f"{heading}:\n{lines}")
+    if familiar.refused_foods:
+        lines = "\n".join(_describe_refused_food(food) for food in familiar.refused_foods)
+        sections.append(f"아이가 거부한 음식 (보호자 기록):\n{lines}")
     return "".join(f"{section}\n\n" for section in sections)
 
 

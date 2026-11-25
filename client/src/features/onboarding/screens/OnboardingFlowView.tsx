@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 거부 음식 온보딩
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각 프로필 표시 및 식생활 유형 질문 제거
 // AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
 // Changed: Dietary Pattern 선택 및 저장; 동작별 버튼 문구 구분; 공통 진행 바 사용
@@ -48,7 +50,7 @@ export function OnboardingFlowView({
   onRetrySave: () => void;
 }) {
   const s = copyFor(language);
-  const title = step === 'sensory' ? s.sensory.title : step === 'safe-foods'
+  const title = step === 'refused-foods' ? s.refusedFoods.title(childName || s.onboarding.childFallback) : step === 'sensory' ? s.sensory.title : step === 'safe-foods'
     ? s.onboarding.safeFoodsTitle(childName || s.onboarding.childFallback)
     : step === 'review'
       ? s.onboarding.reviewTitle(childName || s.onboarding.childFallback)
@@ -71,7 +73,7 @@ export function OnboardingFlowView({
           </View>
           <ProgressBar variant="continuous" current={stepIndex + 1} total={stepCount}
             style={styles.track} fillStyle={styles.fill} accessible={false} />
-          {step !== 'sensory' && step !== 'family' && <Text style={styles.subtitle}>{step === 'safe-foods' ? s.onboarding.safeFoodsDescription(childName || s.onboarding.childFallback) : s.onboarding.subtitles[step]}</Text>}
+          {step !== 'sensory' && step !== 'family' && <Text style={styles.subtitle}>{step === 'refused-foods' ? s.refusedFoods.description(childName || s.onboarding.childFallback) : step === 'safe-foods' ? s.onboarding.safeFoodsDescription(childName || s.onboarding.childFallback) : s.onboarding.subtitles[step]}</Text>}
         </View>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           {content}

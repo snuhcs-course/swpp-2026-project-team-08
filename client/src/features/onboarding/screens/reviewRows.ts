@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 거부 음식 온보딩
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 온보딩 단계 간소화
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -32,5 +34,6 @@ export function reviewRows(draft: OnboardingDraft, language: Language): ReviewRo
     { step: 'child', title: s.onboarding.reviewChild, value: `${draft.childName || s.common.notEntered} · ${selectedValue('age', draft.ageRange)}` },
     { step: 'allergies', title: s.onboarding.reviewSafety, value: `${s.onboarding.reviewAllergies}: ${listValue('allergies', draft.allergies)}` },
     { step: 'family', title: s.onboarding.reviewFamily, value: dietaryPatternLabel(draft.dietaryPattern, language) },
+    { step: 'refused-foods', title: s.refusedFoods.review, value: (draft.refusedFoods ?? []).map(food => food.name).join(', ') || s.common.notEntered },
   ];
 }

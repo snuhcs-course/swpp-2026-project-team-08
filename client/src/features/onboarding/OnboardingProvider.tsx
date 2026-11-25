@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 거부 음식 온보딩
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각 프로필 저장 및 온보딩
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 온보딩 초안 복원, 계정 입력 초기화 및 초기화 후 자동 저장 수정; Dietary Pattern
@@ -148,13 +150,28 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const setSensory = useCallback((sensoryTextures: string[], sensoryNote: string) => {
     setDraft((current) => ({ ...current, sensoryTextures, sensoryNote }));
   }, []);
+  const setRefusedFoodInput = useCallback((input: OnboardingDraft['refusedFoodInput']) => {
+    setDraft((current) => ({ ...current, refusedFoodInput: input }));
+  }, []);
+  const addRefusedFood = useCallback(() => {
+    setDraft((current) => {
+      const name = current.refusedFoodInput.name.trim();
+      if (!name || name.length > 200) return current;
+      return { ...current, refusedFoods: [...(current.refusedFoods ?? []), {
+        ...current.refusedFoodInput, name, id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      }], refusedFoodInput: { name: '', cookingMethod: null, reasons: [] } };
+    });
+  }, []);
+  const removeRefusedFood = useCallback((id: string) => {
+    setDraft((current) => ({ ...current, refusedFoods: (current.refusedFoods ?? []).filter((food) => food.id !== id) }));
+  }, []);
   const setStep = useCallback((step: OnboardingStep) => {
     setDraft((current) => ({ ...current, step }));
   }, []);
   const draftFromProfile = useCallback((step: OnboardingStep): OnboardingDraft | null => {
     if (!profile) return null;
     const { id: _id, updatedAt: _updatedAt, ...values } = profile;
-    return { ...values, noSafeFoods: values.noSafeFoods ?? false, step, safeFoodInput: { name: '', preparation: '', presentationNote: '' } };
+    return { ...values, noSafeFoods: values.noSafeFoods ?? false, step, safeFoodInput: { name: '', preparation: '', presentationNote: '' }, refusedFoodInput: { name: '', cookingMethod: null, reasons: [] } };
   }, [profile]);
   const startEdit = useCallback(() => {
     if (editing) return;
@@ -182,7 +199,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     finishing.current = true;
     try {
       await persist(draft);
-      const { step: _step, safeFoodInput: _safeFoodInput, ...values } = draft;
+      const { step: _step, safeFoodInput: _safeFoodInput, refusedFoodInput: _refusedFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,
         safeFoods: draft.noSafeFoods ? [] : draft.safeFoods,
@@ -227,7 +244,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     finishing.current = true;
     try {
       await persist(draft);
-      const { step: _step, safeFoodInput: _safeFoodInput, ...values } = draft;
+      const { step: _step, safeFoodInput: _safeFoodInput, refusedFoodInput: _refusedFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,
         safeFoods: draft.noSafeFoods ? [] : draft.safeFoods,
@@ -252,7 +269,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     ready: ready && status !== 'loading', loadError: loadError || status === 'error',
     draft, password, saveStatus, editing, hasDraft,
     setPassword, setField, setConsent, toggleList,
-    addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setSensory, setStep,
+    addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setSensory, setRefusedFoodInput, addRefusedFood, removeRefusedFood, setStep,
     startEdit, startProfileEdit, cancelEdit, applyEdit, resetLocal,
     retrySave, retryLoad, finish, canContinue: (step) => (step === 'review' || step === 'sensory') ? canFinish(draft)
       : step === 'account' && (editing || !!auth.session) ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)

@@ -9,6 +9,8 @@
 // Changed: 채식 단계로 의미 변경, 카탈로그 검색·직접 입력 제거
 // AI-generated with Claude Sonnet 5.5, 2026-11-03, reviewed by Jaemin Kim
 // Changed: 채식 단계를 식생활 유형 단계(family)로 되돌려 반영
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 온보딩 연령 선택지 조정
 
 import Feather from '@expo/vector-icons/Feather';
 import { Text, View } from 'react-native';
@@ -63,7 +65,7 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
       <Text style={styles.fieldHint}>{guidance.childName}</Text>
       <Text style={styles.sectionLabel}>{s.onboarding.ageRange}</Text>
       <DropdownChoice
-        options={optionsFor('age', language)}
+        options={optionsFor('age', language).filter((option) => option.id !== 'AGE_13_PLUS')}
         value={values.ageRange}
         onChange={(value) => onSetField('ageRange', value)}
         placeholder={s.onboarding.ageRange}

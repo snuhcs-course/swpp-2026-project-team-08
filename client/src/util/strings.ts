@@ -47,7 +47,7 @@
 // AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 식후 사진 교체 시트와 식전 사진 없음 안내
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
-// Changed: 사용자 지정 사유 문구
+// Changed: 사용자 지정 사유 및 연령 선택 문구
 
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
@@ -613,7 +613,7 @@ const options: Record<OptionGroup, Option[]> = {
   age: [
     ['UNDER_2', 'Under 2 years', '2세 미만'], ['AGE_2_3', '2-3 years', '2–3세'],
     ['AGE_4_5', '4-5 years', '4–5세'], ['AGE_6_8', '6-8 years', '6–8세'],
-    ['AGE_9_12', '9-12 years', '9–12세'], ['AGE_13_PLUS', '13+ years', '13세 이상'],
+    ['AGE_9_12', '9-10 years', '9–10세'], ['AGE_13_PLUS', '13+ years', '13세 이상'],
   ].map(([id, en, ko]) => ({ id, label: { en, ko } })),
   allergies: [
     ['PEANUTS', 'Peanuts', '땅콩'], ['TREE_NUTS', 'Tree nuts', '견과류'],

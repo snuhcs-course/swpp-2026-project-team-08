@@ -9,7 +9,7 @@
 // AI-generated with GPT-6, 2026-11-23, reviewed by Haechan Jung
 // Changed: 기기 저장 결과와 무관하게 식사 목록·초안 캐시 갱신
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 사용하지 않는 홈 전용 캐시 무효화 제거
+// Changed: 식사 저장 시 연결된 홈 추천 카드의 시도 상태 갱신
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { updateReviewMealFoods } from '../api/mealFoodsApi';
@@ -18,8 +18,10 @@ import { writeMeal } from '../api/mealWriteApi';
 import { toLegacyMeal } from '../dto/mealLegacyDto';
 import { readMealDraft, readMeals, saveMeal } from '../storage/mealStorage';
 import type { FoodItem } from '../../types/meal';
+import type { Suggestion } from '../../types/suggestionRecord';
 import { mealKeys, mealLogKeys } from './mealQueryKeys';
 import { checkinReferenceKeys } from './checkinReferenceQueries';
+import { suggestionKey } from './suggestionQueries';
 
 export { mealKeys } from './mealQueryKeys';
 
@@ -75,6 +77,10 @@ export function useSaveMeal() {
     mutationFn: writeMeal,
     retry: false,
     onSuccess: (meal) => {
+      for (const link of meal.suggestionLinks ?? []) {
+        client.setQueryData<Suggestion>(suggestionKey(meal.childId, link.suggestionId),
+          card => card && { ...card, status: 'tried' });
+      }
       // 기기 사본은 별도로 저장하며, 실패해도 서버 저장 성공을 취소하지 않는다.
       void saveMeal(meal).finally(() => {
         void client.invalidateQueries({ queryKey: ['meals', meal.childId] });

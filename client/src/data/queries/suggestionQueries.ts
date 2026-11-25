@@ -5,12 +5,19 @@
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 홈 새로고침을 위한 사용자별 추천 캐시 키 추가
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 생성·재생성 요청과 결정 후 저장 목록 갱신
+// Changed: 홈 추천 카드의 생성·결정 상태 공유와 오프라인 요청 실패 처리
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { DismissReason, Suggestion } from '../../types/suggestionRecord';
 import { decideSuggestion, generateSuggestion, removeSavedSuggestion, undoSuggestion } from '../api/suggestionApi';
 import { checkinReferenceKeys } from './checkinReferenceQueries';
+
+export const suggestionKey = (userId: string, id: string | null) => ['suggestion', userId, id] as const;
+
+// 홈 추천 한 장의 최신 상태는 추천 생성·결정 응답과 식사 저장 성공으로 갱신한다.
+export function useCurrentSuggestion(userId: string, id: string | null) {
+  return useQuery<Suggestion>({ queryKey: suggestionKey(userId, id), queryFn: skipToken }).data ?? null;
+}
 
 export function useRemoveSavedSuggestion(userId: string) {
   const client = useQueryClient();
@@ -28,12 +35,14 @@ export function useRemoveSavedSuggestion(userId: string) {
 
 export function useSuggestionActions(userId: string) {
   const client = useQueryClient();
+  const updateCard = (item: Suggestion) => client.setQueryData(suggestionKey(userId, item.id), item);
   const refreshSaved = () => {
     void client.invalidateQueries({ queryKey: checkinReferenceKeys.savedSuggestions(userId) });
   };
   const generate = useMutation({
     mutationFn: (regenerationRequestId: string | undefined) =>
       generateSuggestion(userId, regenerationRequestId),
+    onSuccess: ({ suggestion }) => { updateCard(suggestion); },
     networkMode: 'always',
     retry: false,
   });
@@ -41,11 +50,16 @@ export function useSuggestionActions(userId: string) {
     mutationFn: ({ id, status, reasons }: {
       id: string; status: 'saved' | 'dismissed'; reasons?: DismissReason[];
     }) => decideSuggestion(userId, id, status, reasons),
-    onSuccess: refreshSaved,
+    onSuccess: item => {
+      updateCard(item);
+      refreshSaved();
+    },
+    networkMode: 'always',
     retry: false,
   });
   const undo = useMutation({
     mutationFn: (id: string) => undoSuggestion(userId, id),
+    networkMode: 'always',
     retry: false,
     onMutate: async (id) => {
       const savedKey = checkinReferenceKeys.savedSuggestions(userId);
@@ -60,6 +74,7 @@ export function useSuggestionActions(userId: string) {
       }
     },
     onSuccess: (item) => {
+      updateCard(item);
       client.setQueryData<Suggestion[]>(checkinReferenceKeys.savedSuggestions(userId),
         (old) => old?.filter((entry) => entry.id !== item.id));
     },

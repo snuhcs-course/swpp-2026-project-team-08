@@ -13,13 +13,13 @@
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 거절 직후 추가 생성 선택 단계와 실패 복구
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 생성·결정·재생성과 저장 성공 후 체크인 연결
+// Changed: 홈 추천 생성·재생성과 식사에 연결한 카드의 되돌리기 제한
 
 import { uuid } from 'expo';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { isRegenerationLimitError } from '../../../data/api/suggestionApi';
-import { useSuggestionActions } from '../../../data/queries/suggestionQueries';
+import { useCurrentSuggestion, useSuggestionActions } from '../../../data/queries/suggestionQueries';
 import type { DismissReason, Suggestion } from '../../../types/suggestionRecord';
 
 function nextKstMidnight() {
@@ -32,7 +32,8 @@ function nextKstMidnight() {
 
 export function useRecommendationFlow(userId: string) {
   const { generate, decide, undo } = useSuggestionActions(userId);
-  const [current, setCurrent] = useState<Suggestion | null>(null);
+  const [currentId, setCurrentId] = useState<string | null>(null);
+  const current = useCurrentSuggestion(userId, currentId);
   const [limitResetsAt, setLimitResetsAt] = useState<number | null>(null);
   const inFlight = useRef(false);
   const { mutate: generateOne } = generate;
@@ -51,7 +52,7 @@ export function useRecommendationFlow(userId: string) {
     inFlight.current = true;
     generateOne(requestId, {
       onSuccess: ({ suggestion, remainingRegenerations }) => {
-        setCurrent(suggestion);
+        setCurrentId(suggestion.id);
         setLimitResetsAt(remainingRegenerations === 0 ? nextKstMidnight() : null);
       },
       onError: error => {
@@ -77,11 +78,10 @@ export function useRecommendationFlow(userId: string) {
     reasons: DismissReason[] = [],
     onSuccess?: (item: Suggestion) => void,
   ) => {
-    if (!current || current.status === status || inFlight.current) return;
+    if (!current || current.status === 'tried' || current.status === status || inFlight.current) return;
     inFlight.current = true;
     const callbacks = {
       onSuccess: (item: Suggestion) => {
-        setCurrent(item);
         generate.reset();
         onSuccess?.(item);
       },

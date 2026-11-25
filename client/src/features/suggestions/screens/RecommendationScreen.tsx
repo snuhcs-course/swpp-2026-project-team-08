@@ -11,11 +11,11 @@
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 추가 추천 선택 화면 연결 및 Skip 버튼 제거
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 카드의 저장·제외 버튼 이름, 재생성과 Use now 체크인 연결
+// Changed: 홈 추천의 결정·재생성·체크인 연결과 시도한 카드의 되돌리기 숨김
 
 import { Image } from 'expo-image';
-import { Redirect, router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { Redirect, router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { BackHandler, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../../../components/AppButton';
@@ -39,19 +39,19 @@ function RecommendationContent({ userId }: { userId: string }) {
   const saveAndOpenCheckin = () => model.changeDecision('saved', [], savedSuggestion => {
     router.push({ pathname: '/meal-checkin', params: { tryingSuggestionId: savedSuggestion.id } });
   });
-  const back = () => {
+  const back = useCallback(() => {
     if (model.busy) return;
     if (current?.status === 'pending' && reasons) setReasons(null);
     else router.dismissTo('/home');
-  };
-  useEffect(() => {
+  }, [model.busy, current?.status, reasons]);
+  useFocusEffect(useCallback(() => {
     const listener = BackHandler.addEventListener('hardwareBackPress', () => {
       back();
       return true;
     });
     return () => listener.remove();
-  });
-  const saved = current?.status === 'saved';
+  }, [back]));
+  const saved = current?.status === 'saved' || current?.status === 'tried';
   if (current && current.status !== 'pending') return <SafeAreaView style={s.root} edges={['top', 'bottom']}>
     <AppHeader title={c.title} backLabel={c.backHome} onBack={back} disabled={model.busy} />
     <ScrollView contentContainerStyle={s.completed}>
@@ -78,13 +78,13 @@ function RecommendationContent({ userId }: { userId: string }) {
         </View>
       </View>
     </ScrollView>
-    <Pressable accessibilityRole="button" accessibilityLabel={c.undoLast}
+    {current.status !== 'tried' && <Pressable accessibilityRole="button" accessibilityLabel={c.undoLast}
       disabled={model.busy} style={s.completionUndo} onPress={() => {
         setReasons(null);
         model.changeDecision('pending');
       }}>
       <Text style={s.undoLabel}>{c.undoLast}</Text>
-    </Pressable>
+    </Pressable>}
   </SafeAreaView>;
 
   return <SafeAreaView style={s.root} edges={['top', 'bottom']}>

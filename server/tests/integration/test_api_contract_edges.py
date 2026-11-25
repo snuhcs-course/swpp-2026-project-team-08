@@ -12,18 +12,19 @@
 # AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
 # Changed: 영어 추천 fixture와 공용 재료 적재 상태 테이블 계약
 # AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-# Changed: 홈 추천 생성·저장·실패 처리와 제외 사유 유무 검증
+# Changed: 홈 추천 생성·제외와 재생성 요청 중복·일일 한도 검증
 
 """Contract edge cases for authenticated meals, reviews, and suggestions."""
 
-from datetime import timedelta
+from datetime import datetime, timedelta
+from uuid import uuid4
 
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 
 from app.core.database import Base
-from app.core.timezone import now_kst
+from app.core.timezone import KST, now_kst
 from app.features.suggestions.generator import GenerationRejectedError
 from app.features.suggestions.workflow.jev import JevError
 from app.main import app
@@ -212,6 +213,63 @@ async def test_failed_generation_never_stores_a_partial_card(
         assert (await session.scalars(select(FoodRecommendation.id))).all() == [
             int(created.json()["id"])
         ]
+
+
+async def test_regeneration_limit_resets_at_kst_midnight(api_client, monkeypatch):
+    owner = await login(api_client, "owner@example.com")
+    await save_profile(api_client, owner)
+    await save_meal(api_client, owner, "2026-10-20")
+    generator = install_home_generator(monkeypatch)
+    now = datetime(2026, 11, 25, 23, 59, 59, tzinfo=KST)
+    monkeypatch.setattr("app.features.suggestions.service.now_kst", lambda: now)
+    path = "/api/v1/suggestions"
+
+    for remaining in range(9, -1, -1):
+        payload = {"regeneration_request_id": str(uuid4())}
+        created = await api_client.post(path, headers=owner, json=payload)
+        assert created.status_code == 201, created.text
+        assert created.json()["remaining_regenerations"] == remaining
+
+    next_request = {"regeneration_request_id": str(uuid4())}
+    limited = await api_client.post(path, headers=owner, json=next_request)
+    assert limited.status_code == 429
+    assert limited.json()["error_code"] == "REGENERATION_LIMIT_REACHED"
+    replay = await api_client.post(path, headers=owner, json=payload)
+    assert replay.json()["id"] == created.json()["id"]
+    assert replay.json()["remaining_regenerations"] == 0
+    assert generator.await_count == 10
+
+    initial = await api_client.post(path, headers=owner)
+    assert initial.status_code == 201 and initial.json()["remaining_regenerations"] == 0
+    now += timedelta(seconds=1)
+    replay = await api_client.post(path, headers=owner, json=payload)
+    assert replay.json()["id"] == created.json()["id"]
+    assert replay.json()["remaining_regenerations"] == 10
+    fresh = await api_client.post(path, headers=owner, json=next_request)
+    assert fresh.status_code == 201 and fresh.json()["remaining_regenerations"] == 9
+    assert generator.await_count == 12
+
+
+async def test_failed_regeneration_can_retry_and_accounts_can_reuse_request_ids(
+    api_client, monkeypatch
+):
+    owner = await login(api_client, "owner@example.com")
+    other = await login(api_client, "other@example.com")
+    for headers in (owner, other):
+        await save_profile(api_client, headers)
+        await save_meal(api_client, headers, "2026-10-20")
+    generator = install_home_generator(monkeypatch)
+    generator.side_effect = [TimeoutError(), generator.return_value, generator.return_value]
+    path = "/api/v1/suggestions"
+    payload = {"regeneration_request_id": str(uuid4())}
+
+    failed = await api_client.post(path, headers=owner, json=payload)
+    assert failed.status_code == 502
+    retried = await api_client.post(path, headers=owner, json=payload)
+    separate = await api_client.post(path, headers=other, json=payload)
+    for response in (retried, separate):
+        assert response.status_code == 201 and response.json()["remaining_regenerations"] == 9
+    assert retried.json()["id"] != separate.json()["id"]
 
 
 @pytest.mark.asyncio

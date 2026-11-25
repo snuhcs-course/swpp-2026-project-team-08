@@ -16,25 +16,33 @@
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 이력을 보존하는 저장 목록 제거와 재저장
 # AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-# Changed: 홈 추천 한 장 생성·저장과 기존 추천의 조회·결정 지원
+# Changed: 홈 추천 생성·조회·결정과 재생성 요청 중복·일일 한도 처리
 
 """인증된 사용자의 음식 추천을 만들고 조회하고 결정한다."""
 
 import asyncio
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
+from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
-from app.core.timezone import now_kst
+from app.core.timezone import KST, now_kst
 from app.features.suggestions.home_generation import (
     HomeSuggestionResult,
     generate_home_suggestion,
 )
-from app.models import FoodRecommendation, FoodRecommendationRetry, Meal, MealFood, UserProfile
+from app.models import (
+    FoodRecommendation,
+    FoodRecommendationRetry,
+    Meal,
+    MealFood,
+    User,
+    UserProfile,
+)
 from app.models.food_recommendation_enums import (
     FoodRecommendationDismissReason,
     FoodRecommendationStatus,
@@ -43,6 +51,7 @@ from app.models.restriction_enums import RestrictionType
 
 # 보관 해제하지 않은 저장·시도 상태의 추천을 목록에 표시한다.
 LISTED_STATUSES = (FoodRecommendationStatus.SAVED, FoodRecommendationStatus.TRIED)
+DAILY_REGENERATION_LIMIT = 10
 
 
 class SuggestionNotFoundError(AppError):
@@ -65,6 +74,10 @@ class GenerationFailedError(AppError):
     pass
 
 
+class DailyRegenerationLimitError(AppError):
+    pass
+
+
 @dataclass(frozen=True)
 class RecommendationRecord:
     """추천과 과거 추천에 연결된 원본 식사·추천 ID."""
@@ -78,7 +91,26 @@ class FoodRecommendationService:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def generate(self, *, user_id: int) -> RecommendationRecord:
+    async def generate(
+        self, *, user_id: int, regeneration_request_id: UUID | None = None
+    ) -> tuple[RecommendationRecord, int]:
+        if regeneration_request_id is not None:
+            # 같은 보호자의 재생성만 직렬화하고 다른 테이블의 사용자 외래 키 참조는 허용한다.
+            await self._session.execute(
+                select(User.id).where(User.id == user_id).with_for_update(key_share=True)
+            )
+            existing = await self._session.scalar(
+                select(FoodRecommendation).where(
+                    FoodRecommendation.user_id == user_id,
+                    FoodRecommendation.regeneration_request_id == regeneration_request_id,
+                )
+            )
+            remaining = await self._remaining_regenerations(user_id, now_kst().date())
+            if existing is not None:
+                return RecommendationRecord(existing, meal_id=None), remaining
+            if remaining <= 0:
+                raise DailyRegenerationLimitError()
+
         restrictions = await self._session.scalar(
             select(UserProfile.restrictions).where(UserProfile.user_id == user_id)
         )
@@ -96,10 +128,33 @@ class FoodRecommendationService:
         except Exception as error:
             raise GenerationFailedError() from error
 
-        item = FoodRecommendation(user_id=user_id, **result.model_dump())
+        created_at = now_kst()
+        remaining = await self._remaining_regenerations(user_id, created_at.date())
+        if regeneration_request_id is not None:
+            # 생성 도중 자정이 지나면 저장일의 한도를 적용한다.
+            if remaining <= 0:
+                raise DailyRegenerationLimitError()
+            remaining -= 1
+        item = FoodRecommendation(
+            user_id=user_id,
+            regeneration_request_id=regeneration_request_id,
+            created_at=created_at,
+            **result.model_dump(),
+        )
         self._session.add(item)
         await self._session.flush()
-        return RecommendationRecord(item, meal_id=None)
+        return RecommendationRecord(item, meal_id=None), remaining
+
+    async def _remaining_regenerations(self, user_id: int, day: date) -> int:
+        start = datetime.combine(day, time.min, tzinfo=KST)
+        usage = select(func.count(FoodRecommendation.id)).where(
+            FoodRecommendation.user_id == user_id,
+            FoodRecommendation.regeneration_request_id.is_not(None),
+            FoodRecommendation.created_at >= start,
+            FoodRecommendation.created_at < start + timedelta(days=1),
+        )
+        used = (await self._session.scalars(usage)).one()
+        return DAILY_REGENERATION_LIMIT - used
 
     @staticmethod
     def _recommendations(user_id: int):

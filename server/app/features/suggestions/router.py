@@ -8,7 +8,7 @@
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 기록과 독립된 저장 목록 제거 API
 # AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-# Changed: 홈 추천 한 장 생성과 원본 음식 유무에 관계없는 추천 응답
+# Changed: 홈 추천 한 장 생성과 재생성 한도 응답, 원본 음식 없는 추천 지원
 
 """인증된 사용자의 음식 추천 API."""
 
@@ -25,9 +25,11 @@ from app.features.auth.dependencies import CurrentUser
 from app.features.suggestions.dto import (
     SuggestionDecisionRequest,
     SuggestionGenerateRequest,
+    SuggestionGenerateResponse,
     SuggestionResponse,
 )
 from app.features.suggestions.service import (
+    DailyRegenerationLimitError,
     FoodRecommendationService,
     GenerationFailedError,
     MealHistoryRequiredError,
@@ -90,18 +92,27 @@ async def list_saved(
     ]
 
 
-@router.post("/suggestions", status_code=status.HTTP_201_CREATED, response_model=SuggestionResponse)
+@router.post("/suggestions", status_code=status.HTTP_201_CREATED)
 @error_specs(
     {
         ProfileRequiredError: ErrorSpec(status_code=409, error_code="PROFILE_REQUIRED"),
         MealHistoryRequiredError: ErrorSpec(status_code=409, error_code="MEAL_HISTORY_REQUIRED"),
         GenerationFailedError: ErrorSpec(status_code=502, error_code="GENERATION_FAILED"),
+        DailyRegenerationLimitError: ErrorSpec(
+            status_code=429, error_code="REGENERATION_LIMIT_REACHED"
+        ),
     }
 )
 async def generate(
     current_user: CurrentUser, service: Service, payload: SuggestionGenerateRequest | None = None
-) -> SuggestionResponse:
-    return response(await service.generate(user_id=current_user.id))
+) -> SuggestionGenerateResponse:
+    record, remaining = await service.generate(
+        user_id=current_user.id,
+        regeneration_request_id=payload.regeneration_request_id if payload else None,
+    )
+    return SuggestionGenerateResponse(
+        **response(record).model_dump(), remaining_regenerations=remaining
+    )
 
 
 @router.put("/suggestions/{suggestion_id}/decision", response_model=SuggestionResponse)

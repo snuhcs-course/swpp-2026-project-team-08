@@ -4,7 +4,7 @@
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 생성 대상의 거절 추천 ID와 추가 추천 상태 응답
 # AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-# Changed: 홈 추천 생성 요청·원본 정보·음식명 응답과 사유 없는 제외 지원
+# Changed: 홈 추천 생성·재생성 요청과 응답, 사유 없는 제외 지원
 
 """추천 요청과 응답의 모양.
 
@@ -14,6 +14,7 @@
 
 from datetime import datetime
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -48,6 +49,12 @@ class SuggestionResponse(BaseModel):
 
 class SuggestionGenerateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+    regeneration_request_id: UUID | None = None
+
+
+class SuggestionGenerateResponse(SuggestionResponse):
+    remaining_regenerations: int
 
 
 class SuggestionDecisionRequest(BaseModel):

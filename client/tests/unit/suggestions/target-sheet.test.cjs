@@ -6,7 +6,7 @@
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: Unit 테스트를 담당 기능·공통 컴포넌트 폴더로 이동
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 카드에 저장된 음식명을 사용하는 기존 추천 화면 검증
+// Changed: 기존 카드 음식명과 대상 선택만 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -42,7 +42,7 @@ test('Choose targets opens with all foods and current selections even when no ta
   const selections = [targetOptions[0].target];
   const updates = [];
   const item = { id: '901', foodId: '1', foodName: 'Food 1' };
-  model = { regenerationPrompt: null, regeneratingId: null, regenerationErrorId: null, source: { data: { mealDate: '2026-11-02', mealType: 'lunch', foods: targetOptions.map(option => ({ id: option.target.foodId, name: option.name })) } },
+  model = { source: { data: { mealDate: '2026-11-02', mealType: 'lunch', foods: targetOptions.map(option => ({ id: option.target.foodId, name: option.name })) } },
     suggestions: {}, items: [item], current: item, visibleTargets: selections, availableTargets: [], targetOptions,
     busy: false, generating: false, selectTargets: targets => updates.push(targets) };
   const route = RecommendationScreen({ mealId: '10' });
@@ -64,25 +64,4 @@ test('Choose targets opens with all foods and current selections even when no ta
   model = { ...model, busy: true };
   await h.rerender();
   assert.equal(chooser().props.disabled, true);
-});
-
-test('dismissal choice precedes completion and survives background refresh failure', async t => {
-  const item = { id: '901', foodId: '1', foodName: 'Rice', status: 'dismissed', canRegenerate: true, dismissReasons: ['dislike'] };
-  model = {
-    source: { data: { mealDate: '2026-11-09', mealType: 'lunch', foods: [{ id: '1', name: 'Renamed rice' }] }, isError: true },
-    suggestions: { data: [item], isError: true }, items: [item], current: null,
-    targetOptions: [], visibleTargets: [], regenerationPrompt: item,
-    regeneratingId: null, regenerationErrorId: item.id, busy: false, generating: false,
-  };
-  const route = RecommendationScreen({ mealId: '10' });
-  const h = await renderHook(t, () => route.type(route.props));
-  assert.equal(elements(h.current).some(node => node.props?.children === suggestionCopyFor('en').allDone), false);
-  const prompt = elements(h.current).find(node => node.props?.foodName === 'Rice');
-  assert.deepEqual(prompt.props.reasons, ['dislike']);
-  assert.equal(prompt.props.failed, true);
-  assert.equal(prompt.props.busy, false);
-  model = { ...model, regenerationPrompt: null };
-  await h.rerender();
-  assert.ok(elements(h.current).some(node => node.props?.children === suggestionCopyFor('en').allDone));
-  assert.equal(elements(h.current).some(node => node.props?.foodName === 'Rice'), false);
 });

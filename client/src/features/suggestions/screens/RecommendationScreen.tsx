@@ -11,7 +11,7 @@
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 추가 추천 선택 화면 연결 및 Skip 버튼 제거
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 추천 카드 제목을 추천 음식명으로 표시
+// Changed: 카드 음식명을 표시하고 거절 후 음식별 추가 추천 선택 제거
 
 import { AppHeader } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
@@ -24,7 +24,6 @@ import { useProfile } from '../../../providers/ProfileProvider';
 import { useAuth } from '../../../providers/AuthProvider';
 import type { DismissReason, SuggestionTarget } from '../../../types/suggestionRecord';
 import { suggestionCopyFor, copyFor } from '../../../util/strings';
-import { RegenerationPrompt } from '../components/RegenerationPrompt';
 import { RecommendationStateCard } from '../components/RecommendationStateCard';
 import { RecommendationCard } from '../components/RecommendationCard';
 import { ChangeFoodsSheet } from '../components/ChangeFoodsSheet';
@@ -44,8 +43,7 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
   const current = model.current;
   const backMeal = () => router.replace({ pathname: '/meal/[mealId]', params: { mealId } });
   const back = () => {
-    if (model.busy && !model.regeneratingId) return;
-    if (model.regeneratingId) { backMeal(); return; }
+    if (model.busy) return;
     if (sheet) { setSheet(false); return; }
     if (reject) { setReject(false); setReasons([]); return; }
     if (model.items.length && !current && model.canUndo) { void model.undo(); return; }
@@ -77,7 +75,7 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
   />;
   const loadFailed = (model.source.isError && !meal)
     || (model.suggestions.isError && !model.suggestions.data);
-  const completed = model.items.length > 0 && !current && !model.regenerationPrompt && !model.generating
+  const completed = model.items.length > 0 && !current && !model.generating
     && !model.generationFailed && !model.source.isPending && !model.suggestions.isPending
     && !loadFailed;
   if (completed) return <SafeAreaView style={s.root} edges={['top', 'bottom']}>
@@ -132,14 +130,7 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
           if (model.generationFailed && model.visibleTargets.length) void model.selectTargets(model.visibleTargets);
           else void model.refresh();
         }} />
-      ) : model.regenerationPrompt ? <RegenerationPrompt
-        foodName={model.regenerationPrompt.foodName}
-        reasons={model.regenerationPrompt.dismissReasons} language={language}
-        busy={model.busy} generating={model.regeneratingId !== null}
-        failed={model.regenerationErrorId === model.regenerationPrompt.id}
-        onGenerate={() => { void model.regenerate(model.regenerationPrompt!.id); }}
-        onContinue={model.continueAfterDismissal}
-      /> : current ? (
+      ) : current ? (
         reject ? <View style={s.cardStack}>
           <View style={[s.stackLayer, s.stackBack]} />
           <View style={[s.stackLayer, s.stackMiddle]} />
@@ -185,7 +176,7 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
           onPress={() => setSheet(true)} />}
       </View>}
     </ScrollView>
-    {((current && !reject) || model.regenerationPrompt) && <View style={s.recommendationFooter}>
+    {current && !reject && <View style={s.recommendationFooter}>
       <View style={s.actionStatus}>
         <Text accessibilityRole={model.failed ? 'alert' : undefined}
           accessibilityLiveRegion="polite" style={[s.statusMessage, model.failed && s.error]}>

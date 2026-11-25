@@ -9,7 +9,7 @@
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 앞 카드는 수평으로 두고 뒤 카드 두 장을 반대 방향으로 배치
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 출처 날짜가 없는 저장 카드도 화살표 오른쪽 정렬
+// Changed: 음식별 추가 추천 선택 스타일 제거
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
@@ -17,9 +17,6 @@ import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
 
 export const suggestionStyles = StyleSheet.create({
-  regenerationBody: { gap: 18, paddingVertical: 12 },
-  regenerationActions: { flexDirection: 'row', gap: 12 },
-  regenerationButton: { flex: 1, paddingHorizontal: 8 },
   root: { flex: 1, backgroundColor: colors.homeBackground },
   content: { padding: 24, gap: 18, flexGrow: 1 },
   title: { fontFamily: fonts.poppinsSemiBold, fontSize: 20, color: colors.homeText },

@@ -41,18 +41,6 @@ export function useMealSuggestionActions(userId: string, mealId: string) {
       client.setQueryData<Suggestion[]>(key, (old) => [...created, ...(old ?? []).filter(item => !created.some(next => next.id === item.id))]);
     },
   });
-  const regenerate = useMutation({
-    mutationFn: (item: { id: string; foodId: string }) => generateMealSuggestions(userId, mealId, [{
-      foodId: item.foodId, rejectedSuggestionId: item.id,
-    }]),
-    retry: false,
-    onSuccess: async ([created]) => {
-      await client.cancelQueries({ queryKey: key });
-      client.setQueryData<Suggestion[]>(key, (old) => [created, ...(old ?? [])
-        .filter(item => item.id !== created.id)
-        .map(item => item.id === created.replacementForId ? { ...item, canRegenerate: false } : item)]);
-    },
-  });
   const decide = useMutation({
     mutationFn: ({ id, status, reasons }: {
       id: string; status: 'saved' | 'dismissed'; reasons?: DismissReason[];
@@ -85,5 +73,5 @@ export function useMealSuggestionActions(userId: string, mealId: string) {
     },
     onSettled: refreshSaved,
   });
-  return { generate, regenerate, decide, undo };
+  return { generate, decide, undo };
 }

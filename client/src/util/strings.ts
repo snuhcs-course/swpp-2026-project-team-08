@@ -39,7 +39,7 @@
 // AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 식후 사진 교체 시트와 식전 사진 없음 안내
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 식후 리뷰 완료 버튼 문구 정리
+// Changed: 식후 리뷰 완료 이동 및 음식별 추가 추천 문구 정리
 
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
@@ -650,9 +650,6 @@ const suggestionCopy = {
     selectTargetsPrompt: 'Choose a food or reviewed ingredient to generate suggestions.',
     reviewRequired: 'Save the after-meal review before generating suggestions.',
     generating: 'Finding a next step…',
-    regenerationQuestion: 'Would you like another suggestion for this food?',
-    continueWithoutRegeneration: 'Continue',
-    regenerate: 'Regenerate', regenerationFailed: 'Could not generate another suggestion. Please retry.',
     what: 'What to try', why: 'Why this may help', serving: 'Serving tip', foodDetails: 'FOOD DETAILS',
     ingredients: 'Ingredients', cooking: 'Cooking method',
     cookingMethods: cookingMethodLabels.en,
@@ -678,9 +675,6 @@ const suggestionCopy = {
     selectTargetsPrompt: '추천받을 음식이나 식후 기록을 남긴 재료를 선택해 주세요.',
     reviewRequired: '추천을 받으려면 먼저 식후 기록을 저장해 주세요.',
     generating: '추천을 만들고 있어요…',
-    regenerationQuestion: '이 음식의 다른 추천을 받아볼까요?',
-    continueWithoutRegeneration: '계속하기',
-    regenerate: '새 추천 받기', regenerationFailed: '다른 추천을 만들지 못했어요. 다시 시도해 주세요.',
     what: '시도해 볼 방법', why: '도움이 될 수 있는 이유', serving: '준비 방법', foodDetails: '음식 정보',
     ingredients: '재료', cooking: '조리 방법',
     cookingMethods: cookingMethodLabels.ko,

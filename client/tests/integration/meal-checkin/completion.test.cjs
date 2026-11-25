@@ -3,7 +3,7 @@
 // AI-generated with GPT-6.2 Astra, GPT-6, 2026-11-23, reviewed by Haechan Jung
 // Changed: 식후 사진 확인의 식전 사진 표시와 기기 식사 목록 저장 실패 후 새 식사 시작 검증
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 원본 없는 추천을 시도한 뒤 저장 목록에서 음식명과 시도 기록 확인
+// Changed: 원본 없는 추천 연결 및 체크인 뒤 식사별 추천 조회 제거
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, input, click, enter, waitFor, act, deferred, modal, waitForModal,
@@ -35,7 +35,6 @@ async function start(t, { empty = false, linked = false, single = false, photo =
       if (linked) sources.suggestions[0].status = 'TRIED';
       return Response.json(response);
     }
-    if (method === 'GET' && path === '/api/v1/meals/900/suggestions') return Response.json([]);
     if (method === 'GET' && path === '/api/v1/meals/900' && server.saved) {
       server.details.push(path);
       return Response.json(response);

@@ -8,6 +8,8 @@
 // Changed: 서버 식사 저장 성공과 기기 사본 저장 실패 분리
 // AI-generated with GPT-6, 2026-11-23, reviewed by Haechan Jung
 // Changed: 기기 저장 결과와 무관하게 식사 목록·초안 캐시 갱신
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 사용하지 않는 홈 전용 캐시 무효화 제거
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { updateReviewMealFoods } from '../api/mealFoodsApi';
@@ -16,7 +18,6 @@ import { writeMeal } from '../api/mealWriteApi';
 import { toLegacyMeal } from '../dto/mealLegacyDto';
 import { readMealDraft, readMeals, saveMeal } from '../storage/mealStorage';
 import type { FoodItem } from '../../types/meal';
-import { homeKeys } from './homeQueries';
 import { mealKeys, mealLogKeys } from './mealQueryKeys';
 import { checkinReferenceKeys } from './checkinReferenceQueries';
 
@@ -82,9 +83,6 @@ export function useSaveMeal() {
         // 기기 저장 실패로 식사 재제출을 요구하지 않는다.
       });
       void client.invalidateQueries({ queryKey: mealKeys.detail(meal.childId, meal.id) });
-      void client.invalidateQueries({
-        queryKey: homeKeys.byChild(meal.childId),
-      });
       void client.invalidateQueries({ queryKey: mealLogKeys.all(meal.childId) });
       void client.invalidateQueries({ queryKey: checkinReferenceKeys.meals(meal.childId) });
     },

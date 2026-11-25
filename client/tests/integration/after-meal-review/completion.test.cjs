@@ -28,7 +28,6 @@ async function start(t) {
   const app = await mountMeal(t, { initialPath: '/home', respond: async (path, method, init) => {
     if (method === 'GET' && path === '/api/v1/meals') return Response.json([server.meal]);
     if (method === 'GET' && path === '/api/v1/meals/10') return Response.json(server.meal);
-    if (method === 'GET' && path === '/api/v1/meals/10/suggestions') return Response.json([]);
     if (method === 'PUT' && path === '/api/v1/meals/10/review') {
       const body = JSON.parse(init.body);
       server.requests.push(body);

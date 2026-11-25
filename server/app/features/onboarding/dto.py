@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 감각 프로필 저장
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 # AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
@@ -13,10 +15,12 @@
 허용 값 밖의 값과 정의하지 않은 필드는 422 로 거절된다.
 """
 
+import re
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, StrictBool, field_validator, model_validator
 
+from app.models.difficulty_enums import DifficultyReason
 from app.models.restriction_enums import RestrictionType
 from app.models.user_consent_enums import UserConsentKind
 from app.models.user_profile_enums import AgeGroup, DietaryPattern
@@ -57,8 +61,28 @@ class ProfileWriteDto(StrictDto):
     restrictions: list[RestrictionType]
     # 식생활 유형. null 은 미응답이다. 필드는 생략할 수 없다.
     dietary_pattern: DietaryPattern | None
+    sensory_textures: list[str] | None = None
+    sensory_note: str | None = None
     # null: 명시적 없음, []: 미응답, 비어 있지 않은 목록: 답변
     safe_foods: list[SafeFoodWriteDto] | None
+
+    @field_validator("sensory_textures")
+    @classmethod
+    def valid_sensory_textures(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return value
+        if len(value) != len(set(value)):
+            raise ValueError("duplicate sensory textures")
+        for item in value:
+            parts = item.split(".")
+            if len(parts) != 2:
+                raise ValueError("invalid sensory texture")
+            codes = [re.sub(r"(?<!^)(?=[A-Z])", "_", part).upper() for part in parts]
+            try:
+                DifficultyReason("TEXTURE." + ".".join(codes))
+            except ValueError as exc:
+                raise ValueError("invalid sensory texture") from exc
+        return value
 
     @field_validator("child_name")
     @classmethod
@@ -114,6 +138,8 @@ class UserProfileDto(StrictDto):
     restrictions: list[RestrictionType]
     dietary_pattern: DietaryPattern | None
     safe_foods: list[SafeFoodDto] | None
+    sensory_textures: list[str]
+    sensory_note: str
     updated_at: datetime
 
 

@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 감각 프로필 저장 및 온보딩
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
@@ -28,6 +30,8 @@ type ProfileResponse = {
     preparation: string | null;
     presentation_note: string | null;
   }[] | null;
+  sensory_textures?: string[];
+  sensory_note?: string;
   updated_at: string;
 };
 
@@ -71,6 +75,8 @@ function parseResponse(value: unknown): OnboardingResponse {
       && (food.presentation_note === null || typeof food.presentation_note === 'string'))) {
     throw new Error('Invalid onboarding profile details');
   }
+  if ((profile.sensory_textures !== undefined && (!Array.isArray(profile.sensory_textures) || !profile.sensory_textures.every((item: unknown) => typeof item === 'string')))
+    || (profile.sensory_note !== undefined && typeof profile.sensory_note !== 'string')) throw new Error('Invalid sensory profile');
   // 모르는 값이 오면 오류로 처리한다.
   nullable(profile.dietary_pattern, (value) => fromApiEnum(value, dietaryPatternIds));
   return value as OnboardingResponse;
@@ -101,6 +107,8 @@ export function toOnboardingWrite(profile: ChildProfile) {
       ],
       dietary_pattern: nullable(profile.dietaryPattern ?? null,
         (value) => toApiEnum(value, dietaryPatternIds)),
+      sensory_textures: profile.sensoryTextures ?? [],
+      sensory_note: profile.sensoryNote ?? '',
       safe_foods: profile.noSafeFoods ? null : profile.safeFoods.map((food) => ({
         name: food.name,
         preparation: food.preparation.trim() || null,
@@ -141,6 +149,7 @@ export function fromOnboardingResponse(
     vegetarianRestrictions: fromRestrictionTypes('vegetarian', source.restrictions),
     dietaryPattern: nullable(source.dietary_pattern,
       (value) => fromApiEnum(value, dietaryPatternIds)),
+    sensoryTextures: source.sensory_textures ?? [], sensoryNote: source.sensory_note ?? '',
     noSafeFoods: source.safe_foods === null,
     safeFoods: (source.safe_foods ?? []).map((food) => ({
       id: food.id, name: food.name, preparation: food.preparation ?? '',
@@ -163,6 +172,10 @@ export async function writeOnboarding(profile: ChildProfile): Promise<Onboarding
     && nullable(response.profile.dietary_pattern, (value) => fromApiEnum(value, dietaryPatternIds));
   if (!response.profile || (response.profile.safe_foods === null) !== !!profile.noSafeFoods) {
     throw new Error('Safe foods answer was not saved');
+  }
+  if (JSON.stringify(response.profile.sensory_textures ?? []) !== JSON.stringify(profile.sensoryTextures ?? [])
+    || (response.profile.sensory_note ?? '') !== (profile.sensoryNote ?? '')) {
+    throw new Error('Sensory profile was not saved');
   }
   if (saved !== (profile.dietaryPattern ?? null)) {
     throw new Error('Dietary pattern was not saved');

@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 감각 프로필 저장 및 온보딩
 // AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
 // Changed: Dietary Pattern 선택 및 저장; 동작별 버튼 문구 구분; 공통 진행 바 사용
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -46,7 +48,7 @@ export function OnboardingFlowView({
   onRetrySave: () => void;
 }) {
   const s = copyFor(language);
-  const title = step === 'safe-foods'
+  const title = step === 'sensory' ? s.sensory.title : step === 'safe-foods'
     ? s.onboarding.safeFoodsTitle(childName || s.onboarding.childFallback)
     : step === 'review'
       ? s.onboarding.reviewTitle(childName || s.onboarding.childFallback)
@@ -55,7 +57,7 @@ export function OnboardingFlowView({
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <AppHeader title={title} />
-        <View style={topBarStyles.details}>
+        <View style={[topBarStyles.details, step === 'sensory' && { paddingBottom: 6 }]}>
           <View style={styles.progressRow}>
             <Text style={styles.progressText}>{s.onboarding.progress(stepIndex + 1, stepCount)}</Text>
             <View style={styles.headerRight}>
@@ -69,7 +71,7 @@ export function OnboardingFlowView({
           </View>
           <ProgressBar variant="continuous" current={stepIndex + 1} total={stepCount}
             style={styles.track} fillStyle={styles.fill} accessible={false} />
-          <Text style={styles.subtitle}>{step === "safe-foods" ? s.onboarding.safeFoodsDescription(childName || s.onboarding.childFallback) : s.onboarding.subtitles[step]}</Text>
+          {step !== 'sensory' && <Text style={styles.subtitle}>{step === 'safe-foods' ? s.onboarding.safeFoodsDescription(childName || s.onboarding.childFallback) : s.onboarding.subtitles[step]}</Text>}
         </View>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           {content}

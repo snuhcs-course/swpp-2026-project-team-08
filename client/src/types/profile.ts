@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 감각 프로필 저장 및 온보딩
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
@@ -38,5 +40,7 @@ export type ChildProfile = {
   dietaryPattern?: DietaryPattern | null;
   safeFoods: SafeFood[];
   noSafeFoods?: boolean;
+  sensoryTextures?: string[];
+  sensoryNote?: string;
   updatedAt: string;
 };

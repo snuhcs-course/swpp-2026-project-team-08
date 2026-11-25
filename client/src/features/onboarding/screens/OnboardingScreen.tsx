@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
-// Changed: 온보딩 단계 간소화
+// Changed: 온보딩 단계 간소화 및 감각 프로필
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 제외된 온보딩 질문 제거; 동작별 버튼 문구 구분
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
@@ -38,6 +38,7 @@ import { OnboardingFlowView } from './OnboardingFlowView';
 import { ReviewStepView } from './ReviewStepView';
 import { SafeFoodsStepView } from './SafeFoodsStepView';
 import { reviewRows } from './reviewRows';
+import { SensoryStepView } from './SensoryStepView';
 
 const choiceSteps: ChoiceStep[] = [
   'child', 'allergies', 'restrictions', 'family',
@@ -165,6 +166,11 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         onInputChange={model.setSafeFoodInput}
         onAdd={() => model.addSafeFood(model.draft.safeFoodInput)}
       />
+    );
+    if (step === 'sensory') return (
+      <SensoryStepView language={language} childName={model.draft.childName}
+        textures={model.draft.sensoryTextures ?? []} note={model.draft.sensoryNote ?? ''}
+        onChange={model.setSensory} />
     );
     if (step === 'review') return (
       <ReviewStepView

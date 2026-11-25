@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 감각 프로필 저장
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 # AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
@@ -43,6 +45,8 @@ class OnboardingInput:
     dietary_pattern: DietaryPattern | None
     safe_foods: tuple[SafeFoodInput, ...] | None
     consents: tuple[ConsentInput, ...]
+    sensory_textures: tuple[str, ...] | None = None
+    sensory_note: str | None = None
 
 
 @dataclass(frozen=True)
@@ -92,6 +96,10 @@ class OnboardingService:
         profile.restrictions = [item.value for item in data.restrictions]
         profile.dietary_pattern = data.dietary_pattern
         profile.no_safe_foods = data.safe_foods is None
+        if data.sensory_textures is not None:
+            profile.sensory_textures = list(data.sensory_textures)
+        if data.sensory_note is not None:
+            profile.sensory_note = data.sensory_note
         # 안전 음식만 바뀌어도 프로필의 수정 시각이 갱신되도록 직접 지정한다.
         profile.updated_at = now_kst()
         await self._session.flush()

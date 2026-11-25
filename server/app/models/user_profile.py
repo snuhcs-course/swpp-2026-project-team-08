@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 감각 프로필 저장
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 # AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim
 # Changed: 제한 상태 컬럼을 restrictions 목록으로 합치고 age_group 을 StrEnum 으로 변경
@@ -45,6 +47,8 @@ class UserProfile(Base):
     no_safe_foods: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default=false(), nullable=False
     )
+    sensory_textures: Mapped[list[str] | None] = mapped_column(StringList, nullable=True)
+    sensory_note: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False
     )

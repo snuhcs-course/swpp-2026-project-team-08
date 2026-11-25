@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 감각 프로필 계약과 저장 검증
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 # AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
@@ -40,6 +42,8 @@ async def test_onboarding_round_trip_and_idempotent_consents(api_client: AsyncCl
         "restrictions",
         "dietary_pattern",
         "safe_foods",
+        "sensory_textures",
+        "sensory_note",
         "updated_at",
     }
     assert [food["name"] for food in profile["safe_foods"]] == ["감자", "쌀밥"]
@@ -283,3 +287,23 @@ async def test_old_lowercase_values_are_rejected(api_client: AsyncClient) -> Non
     fields = {tuple(item["loc"]) for item in response.json()["details"]["fields"]}
     assert ("body", "profile", "age_group") in fields
     assert ("body", "consents", 0, "kind") in fields
+
+
+@pytest.mark.asyncio
+async def test_sensory_profile_round_trip_and_legacy_write(api_client: AsyncClient) -> None:
+    headers = await auth_headers(api_client, "sensory@example.com")
+    body = request_body()
+    body["profile"]["sensory_textures"] = ["hardness.hard", "stickiness.nonSticky"]
+    body["profile"]["sensory_note"] = "Avoid mixed textures"
+    result = await api_client.put("/api/v1/onboarding", headers=headers, json=body)
+    assert result.status_code == 200, result.text
+    profile = (await api_client.get("/api/v1/onboarding", headers=headers)).json()["profile"]
+    assert profile["sensory_textures"] == body["profile"]["sensory_textures"]
+    assert profile["sensory_note"] == "Avoid mixed textures"
+    legacy = await api_client.put("/api/v1/onboarding", headers=headers, json=request_body())
+    assert legacy.json()["profile"]["sensory_textures"] == profile["sensory_textures"]
+    assert legacy.json()["profile"]["sensory_note"] == profile["sensory_note"]
+    body["profile"]["sensory_textures"] = ["hardness.crunchy"]
+    assert (
+        await api_client.put("/api/v1/onboarding", headers=headers, json=body)
+    ).status_code == 422

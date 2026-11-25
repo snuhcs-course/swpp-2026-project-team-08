@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 감각 프로필 마이그레이션 연결 검증
 # AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 # Changed: 화면 디자인 및 식사 흐름 개선
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
@@ -32,7 +34,8 @@ MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0030_merge_ingredient_catalog"]
+    assert scripts.get_heads() == ["0031_sensory_profile"]
+    assert scripts.get_revision("0031_sensory_profile").down_revision == "0030_merge_ingredient_catalog"
     assert set(scripts.get_revision("0030_merge_ingredient_catalog").down_revision) == {
         "0027_ingredient_catalog_state",
         "0029_optional_meal_setting",

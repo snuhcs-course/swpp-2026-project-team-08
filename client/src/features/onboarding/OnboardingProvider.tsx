@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 감각 프로필 저장 및 온보딩
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 온보딩 초안 복원, 계정 입력 초기화 및 초기화 후 자동 저장 수정; Dietary Pattern
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
@@ -143,6 +145,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const setNoSafeFoods = useCallback((value: boolean) => {
     setDraft((current) => ({ ...current, noSafeFoods: value }));
   }, []);
+  const setSensory = useCallback((sensoryTextures: string[], sensoryNote: string) => {
+    setDraft((current) => ({ ...current, sensoryTextures, sensoryNote }));
+  }, []);
   const setStep = useCallback((step: OnboardingStep) => {
     setDraft((current) => ({ ...current, step }));
   }, []);
@@ -247,9 +252,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     ready: ready && status !== 'loading', loadError: loadError || status === 'error',
     draft, password, saveStatus, editing, hasDraft,
     setPassword, setField, setConsent, toggleList,
-    addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setStep,
+    addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setSensory, setStep,
     startEdit, startProfileEdit, cancelEdit, applyEdit, resetLocal,
-    retrySave, retryLoad, finish, canContinue: (step) => step === 'review' ? canFinish(draft)
+    retrySave, retryLoad, finish, canContinue: (step) => (step === 'review' || step === 'sensory') ? canFinish(draft)
       : step === 'account' && (editing || !!auth.session) ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)
         : canContinue(step, draft, password),
   }}>{children}</OnboardingContext.Provider>;

@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
-// Changed: 온보딩 단계 간소화
+// Changed: 온보딩 단계 간소화 및 감각 프로필 순서
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
@@ -94,6 +94,8 @@ export function isDraft(value: unknown): value is OnboardingDraft {
     && ['allergies', 'restrictions', 'vegetarianRestrictions', 'safeFoods']
       .every((key) => Array.isArray(draft[key]))
     && (draft.dietaryPattern == null || isDietaryPattern(draft.dietaryPattern))
+    && Array.isArray(draft.sensoryTextures) && draft.sensoryTextures.every((item) => typeof item === 'string')
+    && typeof draft.sensoryNote === 'string'
     && typeof draft.noSafeFoods === 'boolean'
     && !!safeFoodInput && ['name', 'preparation', 'presentationNote'].every((key) => typeof safeFoodInput[key] === 'string');
 }
@@ -107,7 +109,8 @@ export function restoreDraft(value: unknown): OnboardingDraft | null {
     ...stored,
     dietaryPattern: stored.dietaryPattern ?? null,
     noSafeFoods: stored.noSafeFoods ?? false,
-    step: stored.step === 'restrictions' ? 'family' : stored.step === 'safe-foods' ? 'review' : isStep(stored.step) ? stored.step : 'family',
+    sensoryTextures: stored.sensoryTextures ?? [], sensoryNote: stored.sensoryNote ?? '',
+    step: stored.step === 'restrictions' ? 'family' : stored.step === 'safe-foods' ? 'sensory' : isStep(stored.step) ? stored.step : 'family',
   };
   if (!isDraft(draft)) return null;
   return Object.fromEntries(

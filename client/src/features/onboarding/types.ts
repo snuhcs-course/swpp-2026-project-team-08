@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
-// Changed: 온보딩 단계 간소화
+// Changed: 온보딩 단계 간소화 및 감각 프로필 순서
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
@@ -14,7 +14,7 @@
 import type { ChildProfile } from '../../types/profile';
 
 export const steps = [
-  'account', 'consent', 'child', 'allergies', 'family', 'review',
+  'account', 'consent', 'child', 'allergies', 'family', 'sensory', 'review',
 ] as const;
 
 export type OnboardingStep = (typeof steps)[number] | 'restrictions' | 'safe-foods';
@@ -30,7 +30,7 @@ export function emptyDraft(): OnboardingDraft {
     step: 'account', caregiverName: '', caregiverEmail: '', childName: '', ageRange: '',
     consent: { accountPrivacy: false, photoAnalysis: false, aiTraining: false },
     allergies: [], restrictions: [], vegetarianRestrictions: [], dietaryPattern: null,
-    safeFoods: [], noSafeFoods: false,
+    safeFoods: [], noSafeFoods: false, sensoryTextures: [], sensoryNote: '',
     safeFoodInput: { name: '', preparation: '', presentationNote: '' },
   };
 }

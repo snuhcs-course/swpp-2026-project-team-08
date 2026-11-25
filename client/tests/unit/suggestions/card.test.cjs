@@ -5,6 +5,8 @@
 // Runs the real card and React hooks; native views and animation completion are controlled.
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: Unit 테스트를 담당 기능·공통 컴포넌트 폴더로 이동
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 추천 자체의 음식명이 카드 앞면에 표시되는지 검증
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -54,7 +56,7 @@ mockModules(name => {
 const { RecommendationCard } = require('../../../src/features/suggestions/components/RecommendationCard.tsx');
 const defaults = {
   item: {
-    id: '1', foodSnapshot: { name: 'Bread', ingredients: [] },
+    id: '1', foodName: 'Bread', ingredients: [],
     whatToTry: 'Offer a small piece.', whyThisMayHelp: 'A familiar texture.',
     servingTip: 'Use a separate spot on the plate.',
   },
@@ -90,6 +92,8 @@ beforeEach(() => { animations.length = 0; });
 test('both card sides keep text outside 3D transforms throughout repeated flips', async t => {
   const card = await renderHook(t, props => RecommendationCard(props), { props: defaults });
   const initialBody = body(card.current);
+  const header = content(card.current).props.children[0].props.children[1];
+  assert.equal(header.props.children[1].props.children, 'Bread');
   assertTextOutside3D(card.current);
   assert.equal(contentOpacity(card.current), 1);
   assert.equal(showingDetails(card.current), false);

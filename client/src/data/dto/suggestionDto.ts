@@ -6,6 +6,8 @@
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 기존 추천 조리법 통합값을 미입력으로 변환
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 추천 음식명과 선택적 원본 ID 읽기
 
 import type {
   DismissReason,
@@ -40,8 +42,9 @@ export function toSuggestion(value: unknown): Suggestion {
     replacementForId: dto.replacement_for_id === undefined ? null : nullable(dto.replacement_for_id, id),
     id: id(dto.id),
     userId: id(dto.user_id),
-    mealId: id(dto.meal_id),
-    foodId: id(dto.origin_food_id),
+    mealId: nullable(dto.meal_id, id),
+    foodId: nullable(dto.origin_food_id, id),
+    foodName: text(dto.food_name),
     whatToTry: text(dto.what_to_try),
     whyThisMayHelp: text(dto.why_this_may_help),
     servingTip: nullable(dto.serving_tip, text),

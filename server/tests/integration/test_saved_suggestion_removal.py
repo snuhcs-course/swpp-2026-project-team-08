@@ -2,6 +2,8 @@
 # Changed: 저장 목록 제거와 시도 기록 보존 검증
 # AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung
 # Changed: 영어 추천 fixture와 카탈로그·가짜 판정기의 재료명 일치
+# AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+# Changed: 원본 없는 추천의 저장·조회·제외·되돌리기와 목록 제거 검증
 
 """실제 API·SQLite로 보관 해제, 재저장, 권한과 시도 이력을 검증한다."""
 
@@ -9,7 +11,7 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import FoodRecommendation, FoodRecommendationTry
+from app.models import FoodRecommendation, FoodRecommendationRetry, FoodRecommendationTry
 from app.models.food_recommendation_enums import FoodRecommendationFeedback
 from tests.fixtures.meals import food_payload, meal_payload
 from tests.helpers.auth import auth_headers
@@ -65,6 +67,60 @@ async def record_try(client, owner, item):
     response = await client.put("/api/v1/meals", headers=owner, json=meal_payload(food))
     assert response.status_code == 200, response.text
     return response.json()
+
+
+async def test_saved_suggestions_with_and_without_a_source(api_client, session_factory):
+    owner = await auth_headers(api_client, "saved-suggestions@example.com")
+    meal = (
+        await api_client.put(
+            "/api/v1/meals", headers=owner, json=meal_payload(food_payload("Rice"))
+        )
+    ).json()
+    source_id = int(meal["foods"][0]["id"])
+    async with session_factory.begin() as session:
+        cards = [
+            FoodRecommendation(
+                user_id=int(meal["user_id"]),
+                origin_food_id=origin_id,
+                food_name=name,
+                what_to_try="Serve a small portion",
+                why_this_may_help="A familiar texture",
+                ingredients=[name],
+                cooking_method="STEAMED",
+                causes="Texture",
+            )
+            for origin_id, name in [(source_id, "Soft rice"), (None, "Steamed potato")]
+        ]
+        session.add_all(cards)
+        await session.flush()
+        legacy_id, home_id = [str(card.id) for card in cards]
+
+    await save(api_client, owner, {"id": legacy_id})
+    await save(api_client, owner, {"id": home_id})
+    listed = (await api_client.get("/api/v1/suggestions", headers=owner)).json()
+    assert [
+        (row["id"], row["food_name"], row["meal_id"], row["origin_food_id"]) for row in listed
+    ] == [
+        (home_id, "Steamed potato", None, None),
+        (legacy_id, "Soft rice", meal["id"], str(source_id)),
+    ]
+
+    path = f"/api/v1/suggestions/{home_id}"
+    stranger = await auth_headers(api_client, "other-suggestions@example.com")
+    assert (await api_client.delete(path + "/saved", headers=stranger)).status_code == 404
+    assert (await api_client.delete(path + "/saved", headers=owner)).status_code == 204
+    assert (await api_client.get("/api/v1/suggestions", headers=owner)).json() == listed[1:]
+    dismissed = await api_client.put(
+        path + "/decision",
+        headers=owner,
+        json={"status": "DISMISSED", "dismiss_reasons": ["DISLIKE"]},
+    )
+    assert dismissed.json()["dismiss_reasons"] == ["DISLIKE"]
+    undone = await api_client.delete(path + "/decision", headers=owner)
+    assert undone.json()["status"] == "PENDING"
+    assert undone.json()["dismiss_reasons"] == []
+    async with session_factory() as session:
+        assert await session.scalar(select(FoodRecommendationRetry)) is None
 
 
 @pytest.mark.parametrize("tried", [False, True], ids=["저장된_추천", "시도한_추천"])

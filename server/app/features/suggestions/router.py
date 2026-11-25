@@ -7,6 +7,8 @@
 # Changed: 기존 생성 API에서 선택적 추가 추천 처리
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 기록과 독립된 저장 목록 제거 API
+# AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+# Changed: 원본 음식 유무에 관계없이 추천 음식명 반환
 
 """인증된 사용자의 음식 추천 API."""
 
@@ -66,8 +68,9 @@ def response(record: RecommendationRecord) -> SuggestionResponse:
         can_regenerate=record.can_regenerate,
         replacement_for_id=str(record.replacement_for_id) if record.replacement_for_id else None,
         user_id=str(item.user_id),
-        origin_food_id=str(item.origin_food_id),
-        meal_id=str(record.meal_id),
+        origin_food_id=str(item.origin_food_id) if item.origin_food_id is not None else None,
+        meal_id=str(record.meal_id) if record.meal_id is not None else None,
+        food_name=item.food_name,
         what_to_try=item.what_to_try,
         why_this_may_help=item.why_this_may_help,
         serving_tip=item.serving_tip,

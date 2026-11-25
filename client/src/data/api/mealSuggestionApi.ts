@@ -5,23 +5,26 @@
 // Changed: 음식별 추가 추천 요청과 결과 검증
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 추천 결정 취소와 저장 목록 제거 API 분리
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식사별 조회에서 원본 음식 ID 확인
 
 import type { DismissReason, Suggestion, SuggestionTarget } from '../../types/suggestionRecord';
 import { toSuggestion, toSuggestionDecision, toSuggestionGenerate } from '../dto/suggestionDto';
 import { apiRequest } from '../network/apiClient';
 
-function suggestionList(value: unknown, mealId: string, userId: string): Suggestion[] {
+function suggestionList(value: unknown, mealId: string, userId: string) {
   if (!Array.isArray(value)) throw new Error('Invalid suggestion list');
   const items = value.map(toSuggestion);
-  if (items.some((item) => item.mealId !== mealId || item.userId !== userId)) {
-    throw new Error('Mismatched suggestion owner');
+  if (!items.every((item): item is Suggestion & { foodId: string } =>
+    item.mealId === mealId && item.userId === userId && item.foodId !== null)) {
+    throw new Error('Mismatched meal suggestion');
   }
   return items;
 }
 
 export async function listMealSuggestions(
   userId: string, mealId: string, signal?: AbortSignal,
-): Promise<Suggestion[]> {
+) {
   const value = await apiRequest<unknown>(
     `/api/v1/meals/${encodeURIComponent(mealId)}/suggestions?status=ALL`, { signal },
   );
@@ -30,7 +33,7 @@ export async function listMealSuggestions(
 
 export async function generateMealSuggestions(
   userId: string, mealId: string, targets: SuggestionTarget[],
-): Promise<Suggestion[]> {
+) {
   const value = await apiRequest<unknown>(
     `/api/v1/meals/${encodeURIComponent(mealId)}/suggestions`,
     { method: 'POST', body: JSON.stringify(toSuggestionGenerate(targets)) },

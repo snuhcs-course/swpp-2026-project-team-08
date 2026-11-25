@@ -5,6 +5,8 @@
 // Changed: 추가 추천 상태를 포함한 대상 선택 화면 검증
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: Unit 테스트를 담당 기능·공통 컴포넌트 폴더로 이동
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 카드에 저장된 음식명을 사용하는 기존 추천 화면 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -39,7 +41,7 @@ test('Choose targets opens with all foods and current selections even when no ta
   const targetOptions = ['1', '2'].map(foodId => ({ target: { foodId, ingredientId: null }, name: `Food ${foodId}`, detail: '' }));
   const selections = [targetOptions[0].target];
   const updates = [];
-  const item = { id: '901', foodId: '1', ingredientId: null, foodSnapshot: { name: 'Food 1' } };
+  const item = { id: '901', foodId: '1', foodName: 'Food 1' };
   model = { regenerationPrompt: null, regeneratingId: null, regenerationErrorId: null, source: { data: { mealDate: '2026-11-02', mealType: 'lunch', foods: targetOptions.map(option => ({ id: option.target.foodId, name: option.name })) } },
     suggestions: {}, items: [item], current: item, visibleTargets: selections, availableTargets: [], targetOptions,
     busy: false, generating: false, selectTargets: targets => updates.push(targets) };
@@ -65,9 +67,9 @@ test('Choose targets opens with all foods and current selections even when no ta
 });
 
 test('dismissal choice precedes completion and survives background refresh failure', async t => {
-  const item = { id: '901', foodId: '1', status: 'dismissed', canRegenerate: true, dismissReasons: ['dislike'] };
+  const item = { id: '901', foodId: '1', foodName: 'Rice', status: 'dismissed', canRegenerate: true, dismissReasons: ['dislike'] };
   model = {
-    source: { data: { mealDate: '2026-11-09', mealType: 'lunch', foods: [{ id: '1', name: 'Rice' }] }, isError: true },
+    source: { data: { mealDate: '2026-11-09', mealType: 'lunch', foods: [{ id: '1', name: 'Renamed rice' }] }, isError: true },
     suggestions: { data: [item], isError: true }, items: [item], current: null,
     targetOptions: [], visibleTargets: [], regenerationPrompt: item,
     regeneratingId: null, regenerationErrorId: item.id, busy: false, generating: false,

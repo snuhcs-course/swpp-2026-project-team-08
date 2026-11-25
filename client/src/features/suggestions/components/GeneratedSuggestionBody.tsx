@@ -5,19 +5,14 @@
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 추천 조리법 공통 표시명과 미입력 표시
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 원본 식사에서 추천 음식명을 찾는 함수 제거
 
 import { Text, View } from 'react-native';
 import type { Language } from '../../../types/profile';
 import type { Suggestion } from '../../../types/suggestionRecord';
 import { suggestionCopyFor } from '../../../util/strings';
 import { suggestionStyles as s } from '../screens/suggestionStyles';
-
-/** 서버 추천에는 음식 이름이 없으므로 추천의 근거가 된 음식을 원본 식사에서 찾는다. */
-export function suggestionTargetName(
-  item: Suggestion, meal: { foods: { id: string; name: string }[] } | undefined,
-): string {
-  return meal?.foods.find((food) => food.id === item.foodId)?.name ?? '';
-}
 
 export function GeneratedSuggestionBody({ item, language, details = false }: {
   item: Suggestion; language: Language; details?: boolean;

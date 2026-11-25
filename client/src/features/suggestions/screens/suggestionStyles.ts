@@ -8,6 +8,8 @@
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 앞 카드는 수평으로 두고 뒤 카드 두 장을 반대 방향으로 배치
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 출처 날짜가 없는 저장 카드도 화살표 오른쪽 정렬
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
@@ -29,8 +31,8 @@ export const suggestionStyles = StyleSheet.create({
   savedFoodName: { flexShrink: 1, fontFamily: fonts.poppinsSemiBold, fontSize: 16, lineHeight: 22, color: colors.homeText },
   savedTriedLabel: { fontFamily: fonts.poppinsRegular, fontSize: 12, lineHeight: 16, color: colors.suggestionTried },
   savedPreview: { fontFamily: fonts.poppinsRegular, fontSize: 14, lineHeight: 18, color: colors.homeText },
-  savedCardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  savedDate: { flexShrink: 1, fontFamily: fonts.poppinsMedium, fontSize: 12, lineHeight: 18, color: colors.suggestionMuted },
+  savedCardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 8 },
+  savedDate: { flex: 1, fontFamily: fonts.poppinsMedium, fontSize: 12, lineHeight: 18, color: colors.suggestionMuted },
   recommendationFooter: { paddingHorizontal: 24, paddingBottom: 20, gap: 10 },
   recommendationContent: { flexGrow: 1, ...topBarStyles.content, paddingBottom: 16, gap: 20 },
   mealContextDate: { fontFamily: fonts.poppinsMedium, fontSize: 16, lineHeight: 21, color: colors.homeText },

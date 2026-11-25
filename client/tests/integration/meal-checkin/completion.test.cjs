@@ -2,6 +2,8 @@
 // Changed: 식사 저장·재시도·Tried·기기 저장 실패 및 새 식사 시작·사진 첨부 완료 흐름 검증
 // AI-generated with GPT-6.2 Astra, GPT-6, 2026-11-23, reviewed by Haechan Jung
 // Changed: 식후 사진 확인의 식전 사진 표시와 기기 식사 목록 저장 실패 후 새 식사 시작 검증
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 원본 없는 추천을 시도한 뒤 저장 목록에서 음식명과 시도 기록 확인
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, input, click, enter, waitFor, act, deferred, modal, waitForModal,
@@ -16,6 +18,7 @@ async function start(t, { empty = false, linked = false, single = false, photo =
   const original = completionDraft({ empty, photo });
   await saveMealDraft(original);
   const sources = linked ? sourceResponses() : { suggestions: [], meals: [] };
+  if (linked) Object.assign(sources.suggestions[0], { meal_id: null, origin_food_id: null });
   const response = completionResponse({ linked, single, photo });
   const server = { requests: [], details: [], next: null, saved: false };
   const app = await mountMeal(t, { ...sources, respond: async (path, method, init) => {
@@ -161,11 +164,13 @@ test('추천을 연결한 식사 저장을 서버가 거절하면 입력이 유�
     .find(node => node.textContent.startsWith('Potato mash'));
   assert.ok(suggestion);
   assert.ok(suggestion.textContent.includes('Tried'));
+  assert.ok(!suggestion.textContent.includes('2026-10-21'));
   const other = [...app.container.querySelectorAll('[role="button"]')]
     .find(node => node.textContent.startsWith('Soft carrot'));
   assert.ok(other && !other.textContent.includes('Tried'));
   await click(suggestion);
   await waitForModal('Potato mash');
+  assert.ok(!modal().container.textContent.includes('2026-10-21'));
   assert.ok(control(modal(), 'button', 'Nov 16, 2026 · Dinner'));
   await click(control(modal(), 'button', 'Nov 16, 2026 · Dinner'));
   await waitFor(() => app.pathname === '/meal/900' && app.container.textContent.includes('Carrot rice'));

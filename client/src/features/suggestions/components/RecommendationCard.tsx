@@ -7,6 +7,8 @@
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 앞쪽 텍스트 카드는 수평으로 두고 배경 카드 기울기 유지
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 카드 양면에 추천 자체의 음식명 표시
 
 import { ProgressBar } from '../../../components/ProgressBar';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -20,8 +22,6 @@ import { suggestionStyles as s } from '../screens/suggestionStyles';
 
 type Props = {
   item: Suggestion;
-  /** 추천의 근거가 된 음식 이름 */
-  foodName: string;
   language: Language;
   index: number;
   total: number;
@@ -146,7 +146,7 @@ export function RecommendationCard(p: Props) {
               style={s.progress} fillStyle={s.fill} accessible={false} />
             <View style={s.row}>
               <Text style={s.cardPosition}>{c.count(p.index, p.total)}</Text>
-              <Text style={s.cardFoodName}>{p.foodName}</Text>
+              <Text style={s.cardFoodName}>{p.item.foodName}</Text>
             </View>
           </>}
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
@@ -159,7 +159,7 @@ export function RecommendationCard(p: Props) {
             >
               {details && <>
                 <Text style={s.infoLabel}>{c.foodDetails}</Text>
-                <Text style={[s.heading, { marginBottom: 12 }]}>{p.foodName}</Text>
+                <Text style={[s.heading, { marginBottom: 12 }]}>{p.item.foodName}</Text>
               </>}
               <GeneratedSuggestionBody item={p.item} language={p.language} details={details} />
             </Pressable>

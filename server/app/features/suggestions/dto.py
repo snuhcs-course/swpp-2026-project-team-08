@@ -3,6 +3,8 @@
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 생성 대상의 거절 추천 ID와 추가 추천 상태 응답
+# AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+# Changed: 추천 음식명과 선택적 원본 식사·음식 ID 응답
 
 """추천 요청과 응답의 모양.
 
@@ -44,8 +46,9 @@ class SuggestionResponse(BaseModel):
     id: BigintId
     user_id: BigintId
     # 추천의 근거가 된 음식과 그 음식이 속한 식사
-    origin_food_id: BigintId
-    meal_id: BigintId
+    origin_food_id: BigintId | None
+    meal_id: BigintId | None
+    food_name: str
     what_to_try: str
     why_this_may_help: str
     serving_tip: str | None

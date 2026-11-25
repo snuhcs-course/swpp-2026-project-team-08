@@ -10,6 +10,8 @@
 
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 추가 추천 선택 화면 연결 및 Skip 버튼 제거
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 추천 카드 제목을 추천 음식명으로 표시
 
 import { AppHeader } from '../../../components/AppHeader';
 import { Redirect, router } from 'expo-router';
@@ -24,7 +26,6 @@ import type { DismissReason, SuggestionTarget } from '../../../types/suggestionR
 import { suggestionCopyFor, copyFor } from '../../../util/strings';
 import { RegenerationPrompt } from '../components/RegenerationPrompt';
 import { RecommendationStateCard } from '../components/RecommendationStateCard';
-import { suggestionTargetName } from '../components/GeneratedSuggestionBody';
 import { RecommendationCard } from '../components/RecommendationCard';
 import { ChangeFoodsSheet } from '../components/ChangeFoodsSheet';
 import { useRecommendationFlow } from '../hooks/useRecommendationFlow';
@@ -132,7 +133,7 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
           else void model.refresh();
         }} />
       ) : model.regenerationPrompt ? <RegenerationPrompt
-        foodName={suggestionTargetName(model.regenerationPrompt, meal)}
+        foodName={model.regenerationPrompt.foodName}
         reasons={model.regenerationPrompt.dismissReasons} language={language}
         busy={model.busy} generating={model.regeneratingId !== null}
         failed={model.regenerationErrorId === model.regenerationPrompt.id}
@@ -144,7 +145,7 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
           <View style={[s.stackLayer, s.stackMiddle]} />
           <View style={[s.stackFace, s.dismissCard]}>
             <Text style={s.muted}>
-              {suggestionTargetName(current, meal)}
+              {current.foodName}
             </Text>
             <Text style={s.heading}>{c.dismissTitle}</Text>
             {model.failed && <Text accessibilityRole="alert" style={s.error}>{c.saveFailed}</Text>}
@@ -173,7 +174,6 @@ function RecommendationContent({ userId, mealId }: { userId: string; mealId: str
           </View>
         </View> : <RecommendationCard
           key={current.id} item={current} language={language}
-          foodName={suggestionTargetName(current, meal)}
           index={model.items.findIndex((item) => item.id === current.id) + 1}
           total={model.items.length} disabled={model.busy}
           onSave={() => { void model.decide('saved'); }}

@@ -6,6 +6,8 @@
 // Changed: 추천의 근거 음식 이름을 원본 식사에서 찾음
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 식후 리뷰 목록의 모델 변환 제거 및 공통 추천 진입 규칙·조회 연결
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 홈의 저장 추천에 추천 음식명 표시
 
 import { useCallback, useEffect, useState } from 'react';
 import { useSavedSuggestionsForCheckin } from '../../../data/queries/checkinReferenceQueries';
@@ -14,7 +16,6 @@ import { useMealDraft } from '../../../data/queries/mealQueries';
 import { useHomeMealSuggestions } from '../../../data/queries/homeQueries';
 import { toLegacyMeal } from '../../../data/dto/mealLegacyDto';
 import type { ChildProfile } from '../../../types/profile';
-import { suggestionTargetName } from '../../suggestions/components/GeneratedSuggestionBody';
 import { getSuggestionTargetFoodIds, shouldShowSuggestionMeal } from '../../../rules/mealSuggestionEntry';
 
 export function useHome(profile: ChildProfile) {
@@ -45,7 +46,7 @@ export function useHome(profile: ChildProfile) {
   });
   const suggestions = (saved.data ?? []).map((item) => ({
     id: item.id,
-    title: suggestionTargetName(item, details.find((meal) => meal.id === item.mealId)),
+    title: item.foodName,
     description: item.whatToTry,
   }));
   return {

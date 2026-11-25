@@ -6,6 +6,8 @@
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 기존 추천의 조리법 미입력 허용
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 추천 음식명과 선택적 원본 식사·음식 ID 정의
 
 import type { CookingMethod, Id, TimestampString } from './recordValues';
 
@@ -36,14 +38,14 @@ export type SuggestionMealLink = {
   suggestion: LinkedSuggestion;
 };
 
-/** 추천은 음식 단위다. `foodId` 는 추천의 근거가 된 음식이다. */
 export type Suggestion = {
   canRegenerate?: boolean;
   replacementForId?: Id | null;
   id: Id;
   userId: Id;
-  mealId: Id;
-  foodId: Id;
+  mealId: Id | null;
+  foodId: Id | null;
+  foodName: string;
   whatToTry: string;
   whyThisMayHelp: string;
   servingTip: string | null;

@@ -16,7 +16,7 @@
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 이력을 보존하는 저장 목록 제거와 재저장
 # AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-# Changed: 식사별 추천 생성 시 원본 음식명 저장
+# Changed: 추천 음식명 저장과 원본 음식 없는 추천의 조회·결정 지원
 
 """인증된 사용자의 음식 추천을 만들고 조회하고 결정한다."""
 
@@ -88,10 +88,10 @@ class GenerationFailedError(AppError):
 
 @dataclass(frozen=True)
 class RecommendationRecord:
-    """추천과, 그 추천의 근거 음식이 속한 식사의 id."""
+    """추천과 연결된 원본 식사 및 재생성 정보."""
 
     item: FoodRecommendation
-    meal_id: int
+    meal_id: int | None
     can_regenerate: bool = False
     replacement_for_id: int | None = None
 
@@ -107,7 +107,7 @@ class FoodRecommendationService:
             return []
         stmt = (
             select(FoodRecommendation, MealFood.meal_id)
-            .join(MealFood, FoodRecommendation.origin_food_id == MealFood.id)
+            .outerjoin(MealFood, FoodRecommendation.origin_food_id == MealFood.id)
             .where(
                 FoodRecommendation.user_id == user_id,
                 FoodRecommendation.status.in_(LISTED_STATUSES),
@@ -351,6 +351,7 @@ class FoodRecommendationService:
         if (
             status == FoodRecommendationStatus.DISMISSED
             and item.status != FoodRecommendationStatus.DISMISSED
+            and item.origin_food_id is not None
         ):
             first_id = await self._session.scalar(
                 select(FoodRecommendation.id)
@@ -398,22 +399,17 @@ class FoodRecommendationService:
         return ChildRestrictions(types=frozenset(types - {RestrictionType.ALLERGY_NONE}))
 
     async def _owned(self, user_id: int, suggestion_id: int) -> FoodRecommendation:
-        food_id = await self._session.scalar(
-            select(FoodRecommendation.origin_food_id).where(
-                FoodRecommendation.id == suggestion_id, FoodRecommendation.user_id == user_id
-            )
-        )
-        if food_id is None:
-            raise SuggestionNotFoundError()
-        await self._session.scalar(
-            select(MealFood)
-            .where(MealFood.id == food_id)
-            .with_for_update()
-            .execution_options(populate_existing=True)
+        owned = (FoodRecommendation.id == suggestion_id, FoodRecommendation.user_id == user_id)
+        # 원본 음식이 있으면 식사별 생성과 같은 순서로 음식부터 잠근다.
+        await self._session.execute(
+            select(MealFood.id)
+            .join(FoodRecommendation, FoodRecommendation.origin_food_id == MealFood.id)
+            .where(*owned)
+            .with_for_update(of=MealFood)
         )
         item = await self._session.scalar(
             select(FoodRecommendation)
-            .where(FoodRecommendation.id == suggestion_id, FoodRecommendation.user_id == user_id)
+            .where(*owned)
             .with_for_update()
             .execution_options(populate_existing=True)
         )
@@ -429,17 +425,19 @@ class FoodRecommendationService:
         return item
 
     async def _record(self, item: FoodRecommendation) -> RecommendationRecord:
+        if item.origin_food_id is None:
+            return RecommendationRecord(item, meal_id=None)
         meal_id = await self._session.scalar(
             select(MealFood.meal_id).where(MealFood.id == item.origin_food_id)
         )
-        return (await self._with_retry_state([RecommendationRecord(item, int(meal_id))]))[0]
+        return (await self._with_retry_state([RecommendationRecord(item, meal_id)]))[0]
 
     async def _with_retry_state(
         self, records: list[RecommendationRecord]
     ) -> list[RecommendationRecord]:
-        if not records:
-            return []
-        food_ids = {record.item.origin_food_id for record in records}
+        food_ids = {r.item.origin_food_id for r in records if r.item.origin_food_id is not None}
+        if not food_ids:
+            return records
         rows = (
             await self._session.execute(
                 select(FoodRecommendationRetry, MealFood.outcome)

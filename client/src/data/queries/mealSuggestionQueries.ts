@@ -4,6 +4,8 @@
 // Changed: 기록을 보존하는 저장 목록 제거와 늦은 조회 응답 취소
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 홈 새로고침을 위한 사용자별 추천 캐시 키 추가
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식사별 재생성에 필요한 추천·음식 ID 전달
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { DismissReason, Suggestion, SuggestionTarget } from '../../types/suggestionRecord';
@@ -54,7 +56,7 @@ export function useMealSuggestionActions(userId: string, mealId: string) {
     },
   });
   const regenerate = useMutation({
-    mutationFn: (item: Suggestion) => generateMealSuggestions(userId, mealId, [{
+    mutationFn: (item: { id: string; foodId: string }) => generateMealSuggestions(userId, mealId, [{
       foodId: item.foodId, rejectedSuggestionId: item.id,
     }]),
     retry: false,

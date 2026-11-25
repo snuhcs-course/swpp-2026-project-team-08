@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 자녀 프로필 요약 구성
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각 프로필 요약 및 편집
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
@@ -22,8 +24,8 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { styles } from './myPageStyles';
 
 export function MyPageView({
-  language, languageError, childName, ageLabel, sensoryProfile, caregiver, deleteError,
-  confirm, busy, onViewProfile, onSensoryProfile, onCaregiver, onLogOut, onDelete, onConfirm, onCancelConfirm,
+  language, languageError, childName, ageLabel, caregiver, deleteError,
+  confirm, busy, onViewProfile, onCaregiver, onLogOut, onDelete, onConfirm, onCancelConfirm,
 }: {
   language: Language;
   languageError: boolean;
@@ -32,12 +34,10 @@ export function MyPageView({
   childName: string;
   ageLabel: string;
   caregiver: string;
-  sensoryProfile: string;
   deleteError: boolean;
   confirm: 'logout' | 'delete' | null;
   busy: boolean;
   onViewProfile: () => void;
-  onSensoryProfile: () => void;
   onCaregiver: () => void;
   onLogOut: () => void;
   onDelete: () => void;
@@ -61,14 +61,6 @@ export function MyPageView({
               <Text style={styles.childAge}>{ageLabel}</Text>
             </View>
             <Text style={styles.link}>{m.viewProfile} {'>'}</Text>
-          </View>
-        </Pressable>
-        <Pressable accessibilityRole="button" onPress={onSensoryProfile} style={styles.card}>
-          <View style={styles.summaryRow}>
-            <View style={styles.summaryIcon}><Feather name="activity" size={16} color={colors.homePrimary} /></View>
-            <View style={styles.summaryCopy}><Text style={styles.summaryTitle}>{copyFor(language).sensory.title}</Text>
-              <Text style={styles.summaryBody}>{sensoryProfile}</Text></View>
-            <Feather name="external-link" size={16} color={colors.homeMuted} />
           </View>
         </Pressable>
         <Text style={styles.sectionLabel}>{m.settings}</Text>

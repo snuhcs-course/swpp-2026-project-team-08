@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 자녀 프로필 요약 구성
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각 프로필 요약 및 편집
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
@@ -21,7 +23,8 @@ import type { OnboardingStep } from '../../onboarding/types';
 import { useAccountSession } from '../hooks/useAccountSession';
 import { sensoryProfileSummary } from '../../../util/sensoryProfile';
 import { dietaryPatternLabel } from '../../../util/dietaryPattern';
-import { safeFoodSummary, safetySummary } from '../rules';
+import { refusedFoodSummary } from '../../../util/refusedFoodSummary';
+import { safetySummary } from '../rules';
 import { ChildProfileView } from './ChildProfileView';
 
 export function ChildProfileScreen() {
@@ -71,7 +74,7 @@ export function ChildProfileScreen() {
       allergies={safetySummary(profile.allergies, profile.restrictions, appProfile.language)}
       dietaryPattern={dietaryPatternLabel(profile.dietaryPattern, appProfile.language)}
       sensoryProfile={sensoryProfileSummary(profile.sensoryTextures, profile.sensoryNote, appProfile.language)}
-      safeFoods={safeFoodSummary(profile.safeFoods, appProfile.language, profile.noSafeFoods)}
+      refusedFoods={refusedFoodSummary(profile.refusedFoods, appProfile.language)}
       saving={saving}
       saveError={saveError}
       deleteError={account.deleteError}
@@ -90,7 +93,7 @@ export function ChildProfileScreen() {
       onAllergies={() => openOnboarding('allergies')}
       onDietaryPattern={() => openOnboarding('family')}
       onSensoryProfile={() => openOnboarding('sensory')}
-      onSafeFoods={() => openOnboarding('safe-foods')}
+      onRefusedFoods={() => openOnboarding('refused-foods')}
       onLogOut={account.onLogOut}
       onDelete={account.onDelete}
       onConfirm={account.onConfirm}

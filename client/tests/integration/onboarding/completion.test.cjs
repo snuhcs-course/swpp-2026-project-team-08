@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 자녀 프로필 거부 음식 요약 검증
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각·거부 음식 및 필수 알레르기 완료 검증
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
@@ -182,7 +184,8 @@ test('완료 후 앱을 다시 열어 프로필을 조회하면 저장한 자녀
   assert.equal(button(reopened, 'Edit').parentElement.textContent, '하루6-8 yearsEdit');
   assert.ok(button(reopened, 'Allergies & RestrictionsPeanuts, Gluten-free'));
   assert.ok(button(reopened, 'Dietary PatternPescatarian'));
-  assert.ok(button(reopened, 'Safe FoodsApple (Sliced, Blue bowl)'));
+  assert.ok(button(reopened, 'Refused foodsNot entered'));
+  assert.equal(reopened.container.textContent.includes('Safe Foods'), false);
   assert.deepEqual(reopened.profile, {
     ...expectedNoneProfile, childName: '하루', ageRange: 'AGE_6_8',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: true },

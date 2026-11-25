@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 자녀 프로필 감각 요약 이동 검증
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각 프로필 요약과 편집 흐름 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -44,55 +46,16 @@ test('review sensory card opens the editor and returns with updated notes', asyn
   assert.deepEqual(app.current.draft.sensoryTextures, ['hardness.hard']);
 });
 
-test('My Page sensory card opens editor and saving updates profile summary', async t => {
-  const original = response();
-  const app = await mountDraft(t, undefined, { completion: true, initialPath: '/profile',
-    loadProfile: () => Response.json(original),
-    submit: body => Response.json({ ...original, profile: { ...original.profile,
-      sensory_textures: body.profile.sensory_textures, sensory_note: body.profile.sensory_note,
-      refused_foods: body.profile.refused_foods } }),
-  });
-  await waitFor(() => app.container.textContent.includes('How hard it feels: Hard'));
-  const sensoryCard = [...app.container.querySelectorAll('[role="button"]')].find(el => el.textContent.includes('Sensory Profile'));
-  assert.ok(sensoryCard);
-  await click(sensoryCard);
-  await waitFor(() => app.pathname === '/onboarding/sensory');
-  await changeNote(app, 'Prefers smooth foods');
-  await click(control(app, 'button', 'Continue'));
-  await waitFor(() => app.pathname === '/profile');
-  assert.equal(app.profile.sensoryNote, 'Prefers smooth foods');
-  assert.ok(app.container.textContent.includes('Prefers smooth foods'));
-  assert.deepEqual(app.submissions[0].profile.sensory_textures, ['hardness.hard']);
-});
-
-test('a failed sensory edit keeps the draft and existing profile for retry', async t => {
+test('child profile sensory card preserves a failed edit and saves on retry', async t => {
   const original = response();
   let fails = true;
   const app = await mountDraft(t, undefined, { completion: true, initialPath: '/profile',
     loadProfile: () => Response.json(original),
-    submit: body => fails ? Response.json({}, { status: 503 }) : Response.json({ ...original,
-      profile: { ...original.profile, sensory_note: body.profile.sensory_note,
-        sensory_textures: body.profile.sensory_textures, refused_foods: body.profile.refused_foods } }),
+    submit: body => fails ? Response.json({}, { status: 503 }) : Response.json({ ...original, profile: { ...original.profile,
+      sensory_textures: body.profile.sensory_textures, sensory_note: body.profile.sensory_note,
+      refused_foods: body.profile.refused_foods } }),
   });
-  await waitFor(() => app.container.textContent.includes('Sensory Profile'));
-  await click([...app.container.querySelectorAll('[role="button"]')].find(el => el.textContent.includes('Sensory Profile')));
-  await waitFor(() => app.pathname === '/onboarding/sensory');
-  await changeNote(app, 'Updated note');
-  await click(control(app, 'button', 'Continue'));
-  await waitFor(() => app.current.saveStatus === 'error');
-  assert.equal(app.profile.sensoryNote, 'Avoid mixed textures');
-  assert.equal(app.current.draft.sensoryNote, 'Updated note');
-  fails = false;
-  await click(control(app, 'button', 'Continue'));
-  await waitFor(() => app.pathname === '/profile');
-  assert.equal(app.profile.sensoryNote, 'Updated note');
-  await app.unmount();
-  await act(async () => {});
-});
-
-test('child profile sensory edit can be canceled without changing the profile', async t => {
-  const app = await mountDraft(t, undefined, { completion: true, initialPath: '/profile',
-    loadProfile: () => Response.json(response()) });
+  assert.equal(app.container.textContent.includes('Sensory Profile'), false);
   await click(control(app, 'button', 'Child 14-5 yearsView profile >'));
   await waitFor(() => app.pathname === '/child-profile');
   await waitFor(() => app.container.textContent.includes('How hard it feels: Hard'));
@@ -100,11 +63,24 @@ test('child profile sensory edit can be canceled without changing the profile', 
   assert.ok(sensoryCard);
   await click(sensoryCard);
   await waitFor(() => app.pathname === '/onboarding/sensory');
+  await changeNote(app, 'Prefers smooth foods');
+  await click(control(app, 'button', 'Continue'));
+  await waitFor(() => app.current.saveStatus === 'error');
+  assert.equal(app.profile.sensoryNote, 'Avoid mixed textures');
+  assert.equal(app.current.draft.sensoryNote, 'Prefers smooth foods');
+  fails = false;
+  await click(control(app, 'button', 'Continue'));
+  await waitFor(() => app.pathname === '/child-profile');
+  assert.equal(app.profile.sensoryNote, 'Prefers smooth foods');
+  assert.ok(app.container.textContent.includes('Prefers smooth foods'));
+  assert.deepEqual(app.submissions[0].profile.sensory_textures, ['hardness.hard']);
+  await click([...app.container.querySelectorAll('[role="button"]')].find(el => el.textContent.includes('Sensory Profile')));
+  await waitFor(() => app.pathname === '/onboarding/sensory');
   await changeNote(app, 'Unsaved');
   await click(control(app, 'button', 'Previous'));
   await waitFor(() => app.pathname === '/child-profile');
-  assert.equal(app.profile.sensoryNote, 'Avoid mixed textures');
-  assert.equal(app.submissions.length, 0);
+  assert.equal(app.profile.sensoryNote, 'Prefers smooth foods');
+  assert.equal(app.submissions.length, 2);
   await app.unmount();
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 100)); });
 });

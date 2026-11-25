@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 자녀 프로필 요약 구성
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각 프로필 요약 및 편집
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
@@ -23,10 +25,10 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { styles } from './myPageStyles';
 
 export function ChildProfileView({
-  language, editing, childName, ageRange, allergies, dietaryPattern, sensoryProfile, safeFoods,
+  language, editing, childName, ageRange, allergies, dietaryPattern, sensoryProfile, refusedFoods,
   saving, saveError, deleteError, confirm, busy,
   onBack, onEdit, onSave, onName, onAge,
-  onAllergies, onDietaryPattern, onSensoryProfile, onSafeFoods, onLogOut, onDelete, onConfirm, onCancelConfirm,
+  onAllergies, onDietaryPattern, onSensoryProfile, onRefusedFoods, onLogOut, onDelete, onConfirm, onCancelConfirm,
 }: {
   language: Language;
   editing: boolean;
@@ -34,7 +36,7 @@ export function ChildProfileView({
   ageRange: string;
   allergies: string;
   dietaryPattern: string;
-  safeFoods: string;
+  refusedFoods: string;
   sensoryProfile: string;
   saving: boolean;
   saveError: boolean;
@@ -48,7 +50,7 @@ export function ChildProfileView({
   onAge: (value: string) => void;
   onAllergies: () => void;
   onDietaryPattern: () => void;
-  onSafeFoods: () => void;
+  onRefusedFoods: () => void;
   onSensoryProfile: () => void;
   onLogOut: () => void;
   onDelete: () => void;
@@ -105,7 +107,7 @@ export function ChildProfileView({
         <SummaryCard icon="shield" title={m.allergies} body={allergies} onPress={onAllergies} />
         <SummaryCard icon="users" title={m.dietaryPattern} body={dietaryPattern} onPress={onDietaryPattern} />
         <SummaryCard icon="activity" title={copy.sensory.title} body={sensoryProfile} onPress={onSensoryProfile} />
-        <SummaryCard icon="heart" title={m.safeFoods} body={safeFoods} onPress={onSafeFoods} />
+        <SummaryCard icon="thumbs-down" title={copy.refusedFoods.review} body={refusedFoods} onPress={onRefusedFoods} />
       </ScrollView>
       {!editing ? (
         <View style={styles.footer}>
@@ -190,7 +192,7 @@ function AgeDropdown({
 function SummaryCard({
   icon, title, body, onPress,
 }: {
-  icon: 'shield' | 'users' | 'heart' | 'activity';
+  icon: 'shield' | 'users' | 'thumbs-down' | 'activity';
   title: string;
   body: string;
   onPress: () => void;

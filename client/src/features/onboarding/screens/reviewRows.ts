@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 자녀 프로필 요약 구성
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각 프로필 요약 및 편집
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 거부 음식 온보딩
@@ -16,6 +18,7 @@
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 // Changed: 명시적 음식 없음과 제공 설명 및 식이 제한 응답 상태 요약
 
+import { refusedFoodSummary } from '../../../util/refusedFoodSummary';
 import { sensoryProfileSummary } from '../../../util/sensoryProfile';
 import { dietaryPatternLabel } from '../../../util/dietaryPattern';
 import type { Language } from '../../../types/profile';
@@ -38,6 +41,6 @@ export function reviewRows(draft: OnboardingDraft, language: Language): ReviewRo
     { step: 'allergies', title: s.onboarding.reviewSafety, value: `${s.onboarding.reviewAllergies}: ${listValue('allergies', draft.allergies)}` },
     { step: 'family', title: s.onboarding.reviewFamily, value: dietaryPatternLabel(draft.dietaryPattern, language) },
     { step: 'sensory', title: s.sensory.title, value: sensoryProfileSummary(draft.sensoryTextures, draft.sensoryNote, language) },
-    { step: 'refused-foods', title: s.refusedFoods.review, value: (draft.refusedFoods ?? []).map(food => food.name).join(', ') || s.common.notEntered },
+    { step: 'refused-foods', title: s.refusedFoods.review, value: refusedFoodSummary(draft.refusedFoods, language) },
   ];
 }

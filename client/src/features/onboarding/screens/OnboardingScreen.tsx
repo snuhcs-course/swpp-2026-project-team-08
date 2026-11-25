@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 자녀 프로필 요약 구성
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 거부 음식 온보딩
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 온보딩 단계 간소화 및 감각 프로필
@@ -216,7 +218,8 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
       saveStatus={model.saveStatus}
       submitting={submitting}
       canContinue={model.canContinue(step)}
-      continueLabel={step === 'refused-foods' && !(model.draft.refusedFoods ?? []).length ? s.refusedFoods.skip : language === 'ko'
+      continueLabel={step === 'refused-foods' && origin === 'child-profile' ? s.myPage.save
+        : step === 'refused-foods' && !origin && !(model.draft.refusedFoods ?? []).length ? s.refusedFoods.skip : language === 'ko'
         ? step === 'review' || (origin === 'child-profile' && step !== 'allergies')
           ? strings.ko.onboarding.looksGood
           : step === 'account' && !model.editing && !auth.session

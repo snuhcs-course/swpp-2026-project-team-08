@@ -13,9 +13,9 @@
 """
 
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Literal
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.models.food_recommendation_enums import (
     FoodRecommendationDismissReason,
@@ -26,22 +26,7 @@ from app.models.meal_enums import MealCookingMethod
 BigintId = str
 
 
-def _bigint_id(value: str) -> str:
-    if int(value) > 2**63 - 1:
-        raise ValueError("id exceeds BIGINT")
-    return value
-
-
-EntityId = Annotated[
-    str, Field(max_length=19, pattern=r"^[1-9][0-9]*$"), AfterValidator(_bigint_id)
-]
-
-# 추천을 보여 줄 상태를 고르는 조회용 값이다. ALL 은 enum 값이 아니다.
-ListFilter = Literal["SAVED", "ALL"]
-
-
 class SuggestionResponse(BaseModel):
-    can_regenerate: bool = False
     replacement_for_id: BigintId | None = None
     id: BigintId
     user_id: BigintId
@@ -59,28 +44,6 @@ class SuggestionResponse(BaseModel):
     dismiss_reasons: list[FoodRecommendationDismissReason]
     saved_at: datetime | None
     created_at: datetime
-
-
-class SuggestionTarget(BaseModel):
-    """추천 대상 음식과, 추가 생성을 요청할 때만 지정하는 거절한 추천 ID."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    food_id: EntityId
-    rejected_suggestion_id: EntityId | None = None
-
-
-class MealSuggestionGenerateRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    targets: list[SuggestionTarget] = Field(min_length=1)
-
-    @model_validator(mode="after")
-    def unique_targets(self) -> "MealSuggestionGenerateRequest":
-        ids = [item.food_id for item in self.targets]
-        if len(ids) != len(set(ids)):
-            raise ValueError("targets must be unique")
-        return self
 
 
 class SuggestionGenerateRequest(BaseModel):

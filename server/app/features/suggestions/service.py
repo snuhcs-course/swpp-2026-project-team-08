@@ -379,24 +379,6 @@ class FoodRecommendationService:
         dismiss_reasons: list[FoodRecommendationDismissReason],
     ) -> RecommendationRecord:
         item = await self._owned_for_decision(user_id, suggestion_id)
-        if (
-            status == FoodRecommendationStatus.DISMISSED
-            and item.status != FoodRecommendationStatus.DISMISSED
-            and item.origin_food_id is not None
-        ):
-            first_id = await self._session.scalar(
-                select(FoodRecommendation.id)
-                .where(FoodRecommendation.origin_food_id == item.origin_food_id)
-                .order_by(FoodRecommendation.id)
-                .limit(1)
-            )
-            if (
-                item.id == first_id
-                and await self._session.get(FoodRecommendationRetry, item.origin_food_id) is None
-            ):
-                self._session.add(
-                    FoodRecommendationRetry(food_id=item.origin_food_id, dismissed_id=item.id)
-                )
         item.status = status
         item.dismiss_reasons = [reason.value for reason in dismiss_reasons]
         item.saved_at = now_kst() if status == FoodRecommendationStatus.SAVED else None

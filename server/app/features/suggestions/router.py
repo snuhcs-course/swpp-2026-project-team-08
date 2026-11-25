@@ -15,7 +15,7 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query, Response, status
+from fastapi import APIRouter, Depends, Path, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.errors import ErrorMappedRoute, ErrorSpec, error_specs
@@ -23,8 +23,6 @@ from app.core.database import get_session
 from app.core.errors import AppError
 from app.features.auth.dependencies import CurrentUser
 from app.features.suggestions.dto import (
-    ListFilter,
-    MealSuggestionGenerateRequest,
     SuggestionDecisionRequest,
     SuggestionGenerateRequest,
     SuggestionResponse,
@@ -32,22 +30,15 @@ from app.features.suggestions.dto import (
 from app.features.suggestions.service import (
     FoodRecommendationService,
     GenerationFailedError,
-    InvalidSuggestionTargetError,
     MealHistoryRequiredError,
     ProfileRequiredError,
     RecommendationRecord,
-    RecommendationRetryUnavailableError,
     RecommendationTriedError,
-    ReviewRequiredError,
-    SourceMealNotFoundError,
     SuggestionNotFoundError,
 )
 
 router = APIRouter(tags=["suggestions"], route_class=ErrorMappedRoute)
 Id = Annotated[int, Path(ge=1, le=2**63 - 1)]
-SOURCE_ERRORS: dict[type[AppError], ErrorSpec] = {
-    SourceMealNotFoundError: ErrorSpec(status_code=404, error_code="MEAL_NOT_FOUND"),
-}
 SUGGESTION_ERRORS: dict[type[AppError], ErrorSpec] = {
     SuggestionNotFoundError: ErrorSpec(status_code=404, error_code="SUGGESTION_NOT_FOUND"),
     RecommendationTriedError: ErrorSpec(status_code=409, error_code="RECOMMENDATION_ALREADY_TRIED"),
@@ -67,7 +58,6 @@ def response(record: RecommendationRecord) -> SuggestionResponse:
     item = record.item
     return SuggestionResponse(
         id=str(item.id),
-        can_regenerate=record.can_regenerate,
         replacement_for_id=str(record.replacement_for_id) if record.replacement_for_id else None,
         user_id=str(item.user_id),
         origin_food_id=str(item.origin_food_id) if item.origin_food_id is not None else None,
@@ -112,64 +102,6 @@ async def generate(
     current_user: CurrentUser, service: Service, payload: SuggestionGenerateRequest | None = None
 ) -> SuggestionResponse:
     return response(await service.generate(user_id=current_user.id))
-
-
-@router.get("/meals/{meal_id}/suggestions", response_model=list[SuggestionResponse])
-@error_specs(SOURCE_ERRORS)
-async def list_for_meal(
-    meal_id: Id,
-    current_user: CurrentUser,
-    service: Service,
-    status_filter: Annotated[ListFilter, Query(alias="status")] = "SAVED",
-) -> list[SuggestionResponse]:
-    return [
-        response(record)
-        for record in await service.list_for_meal(
-            user_id=current_user.id, meal_id=meal_id, include_all=status_filter == "ALL"
-        )
-    ]
-
-
-@router.post(
-    "/meals/{meal_id}/suggestions",
-    status_code=status.HTTP_201_CREATED,
-    response_model=list[SuggestionResponse],
-)
-@error_specs(
-    {
-        **SOURCE_ERRORS,
-        RecommendationRetryUnavailableError: ErrorSpec(
-            status_code=409, error_code="RECOMMENDATION_RETRY_UNAVAILABLE"
-        ),
-        ReviewRequiredError: ErrorSpec(status_code=409, error_code="REVIEW_REQUIRED"),
-        ProfileRequiredError: ErrorSpec(status_code=409, error_code="PROFILE_REQUIRED"),
-        InvalidSuggestionTargetError: ErrorSpec(
-            status_code=422, error_code="INVALID_SUGGESTION_TARGET"
-        ),
-        GenerationFailedError: ErrorSpec(status_code=502, error_code="GENERATION_FAILED"),
-    }
-)
-async def generate_for_meal(
-    meal_id: Id,
-    payload: MealSuggestionGenerateRequest,
-    current_user: CurrentUser,
-    service: Service,
-) -> list[SuggestionResponse]:
-    food_ids = [int(item.food_id) for item in payload.targets]
-    rejected_suggestions = {
-        int(item.food_id): int(item.rejected_suggestion_id)
-        for item in payload.targets
-        if item.rejected_suggestion_id is not None
-    }
-    return [
-        response(record)
-        for record in await service.generate_for_meal(
-            user_id=current_user.id,
-            meal_id=meal_id,
-            food_ids=food_ids,
-            rejected_suggestions=rejected_suggestions,
-        )
-    ]
 
 
 @router.put("/suggestions/{suggestion_id}/decision", response_model=SuggestionResponse)

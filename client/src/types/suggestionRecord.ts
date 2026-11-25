@@ -7,7 +7,7 @@
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 기존 추천의 조리법 미입력 허용
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 추천 음식명과 선택적 원본 식사·음식 ID 정의
+// Changed: 추천 음식명과 선택적 원본 ID 정의 및 식사별 생성 대상 제거
 
 import type { CookingMethod, Id, TimestampString } from './recordValues';
 
@@ -39,8 +39,6 @@ export type SuggestionMealLink = {
 };
 
 export type Suggestion = {
-  canRegenerate?: boolean;
-  replacementForId?: Id | null;
   id: Id;
   userId: Id;
   mealId: Id | null;
@@ -58,9 +56,4 @@ export type Suggestion = {
   dismissReasons: DismissReason[];
   savedAt: TimestampString | null;
   createdAt: TimestampString;
-};
-
-export type SuggestionTarget = {
-  foodId: Id;
-  rejectedSuggestionId?: Id;
 };

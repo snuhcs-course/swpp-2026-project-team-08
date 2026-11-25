@@ -5,7 +5,12 @@
 # Changed: 영어 추천 카탈로그 fixture 적용
 # AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
 # Changed: 가짜 판정기를 설치하는 install_judge 헬퍼 추가
+# AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+# Changed: 홈 추천 한 장의 생성 결과 대역 추가
+
 """Explicit LLM responses and DB seeds for API integration; the real graph/validation still run."""
+
+from unittest.mock import AsyncMock
 
 from httpx import AsyncClient
 
@@ -74,3 +79,19 @@ async def seed_ingredient(
 async def save_profile(client: AsyncClient, headers: dict[str, str]) -> None:
     response = await client.put("/api/v1/onboarding", headers=headers, json=request_body())
     assert response.status_code == 200, response.text
+
+
+def install_home_generator(monkeypatch):
+    generator = AsyncMock(
+        return_value={
+            "food_name": "Rice cakes",
+            "what_to_try": "Offer one small rice cake.",
+            "why_this_may_help": "Rice is familiar.",
+            "ingredients": ["Rice"],
+            "serving_tip": "Steam until soft.",
+            "cooking_method": "STEAMED",
+            "causes": "Soft textures are familiar.",
+        }
+    )
+    monkeypatch.setattr("app.features.suggestions.service.generate_home_suggestion", generator)
+    return generator

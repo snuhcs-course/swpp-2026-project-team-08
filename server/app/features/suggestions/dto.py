@@ -4,7 +4,7 @@
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 생성 대상의 거절 추천 ID와 추가 추천 상태 응답
 # AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-# Changed: 추천 음식명과 선택적 원본 식사·음식 ID 응답
+# Changed: 홈 추천의 생성 요청과 선택적 원본 정보·음식명 응답
 
 """추천 요청과 응답의 모양.
 
@@ -70,17 +70,21 @@ class SuggestionTarget(BaseModel):
     rejected_suggestion_id: EntityId | None = None
 
 
-class SuggestionGenerateRequest(BaseModel):
+class MealSuggestionGenerateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     targets: list[SuggestionTarget] = Field(min_length=1)
 
     @model_validator(mode="after")
-    def unique_targets(self) -> "SuggestionGenerateRequest":
+    def unique_targets(self) -> "MealSuggestionGenerateRequest":
         ids = [item.food_id for item in self.targets]
         if len(ids) != len(set(ids)):
             raise ValueError("targets must be unique")
         return self
+
+
+class SuggestionGenerateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
 
 
 class SuggestionDecisionRequest(BaseModel):

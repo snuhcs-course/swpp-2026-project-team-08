@@ -8,7 +8,7 @@
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 기록과 독립된 저장 목록 제거 API
 # AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-# Changed: 원본 음식 유무에 관계없이 추천 음식명 반환
+# Changed: 홈 추천 한 장 생성과 원본 음식 유무에 관계없는 추천 응답
 
 """인증된 사용자의 음식 추천 API."""
 
@@ -24,14 +24,17 @@ from app.core.errors import AppError
 from app.features.auth.dependencies import CurrentUser
 from app.features.suggestions.dto import (
     ListFilter,
+    MealSuggestionGenerateRequest,
     SuggestionDecisionRequest,
     SuggestionGenerateRequest,
     SuggestionResponse,
 )
+from app.features.suggestions.home_generation import HomeSuggestionGeneratorUnavailableError
 from app.features.suggestions.service import (
     FoodRecommendationService,
     GenerationFailedError,
     InvalidSuggestionTargetError,
+    MealHistoryRequiredError,
     ProfileRequiredError,
     RecommendationRecord,
     RecommendationRetryUnavailableError,
@@ -98,6 +101,23 @@ async def list_saved(
     ]
 
 
+@router.post("/suggestions", status_code=status.HTTP_201_CREATED, response_model=SuggestionResponse)
+@error_specs(
+    {
+        ProfileRequiredError: ErrorSpec(status_code=409, error_code="PROFILE_REQUIRED"),
+        MealHistoryRequiredError: ErrorSpec(status_code=409, error_code="MEAL_HISTORY_REQUIRED"),
+        GenerationFailedError: ErrorSpec(status_code=502, error_code="GENERATION_FAILED"),
+        HomeSuggestionGeneratorUnavailableError: ErrorSpec(
+            status_code=503, error_code="HOME_SUGGESTION_GENERATOR_UNAVAILABLE"
+        ),
+    }
+)
+async def generate(
+    current_user: CurrentUser, service: Service, payload: SuggestionGenerateRequest | None = None
+) -> SuggestionResponse:
+    return response(await service.generate(user_id=current_user.id))
+
+
 @router.get("/meals/{meal_id}/suggestions", response_model=list[SuggestionResponse])
 @error_specs(SOURCE_ERRORS)
 async def list_for_meal(
@@ -133,9 +153,9 @@ async def list_for_meal(
         GenerationFailedError: ErrorSpec(status_code=502, error_code="GENERATION_FAILED"),
     }
 )
-async def generate(
+async def generate_for_meal(
     meal_id: Id,
-    payload: SuggestionGenerateRequest,
+    payload: MealSuggestionGenerateRequest,
     current_user: CurrentUser,
     service: Service,
 ) -> list[SuggestionResponse]:
@@ -147,7 +167,7 @@ async def generate(
     }
     return [
         response(record)
-        for record in await service.generate(
+        for record in await service.generate_for_meal(
             user_id=current_user.id,
             meal_id=meal_id,
             food_ids=food_ids,

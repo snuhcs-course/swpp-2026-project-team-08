@@ -16,7 +16,7 @@
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 이력을 보존하는 저장 목록 제거와 재저장
 # AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-# Changed: 추천 음식명 저장과 원본 음식 없는 추천의 조회·결정 지원
+# Changed: 홈 추천 한 장 생성·저장과 기존 추천의 조회·결정 지원
 
 """인증된 사용자의 음식 추천을 만들고 조회하고 결정한다."""
 
@@ -34,6 +34,11 @@ from app.features.meals.queries import meal_records, owned_meal
 from app.features.suggestions.catalog import load_catalog
 from app.features.suggestions.familiar import load_familiar_foods
 from app.features.suggestions.generator import generate_suggestions
+from app.features.suggestions.home_generation import (
+    HomeSuggestionGeneratorUnavailableError,
+    HomeSuggestionResult,
+    generate_home_suggestion,
+)
 from app.features.suggestions.ingredients import ChildRestrictions
 from app.features.suggestions.workflow.restrictions import describe_restrictions
 from app.features.suggestions.workflow.state import (
@@ -42,7 +47,7 @@ from app.features.suggestions.workflow.state import (
     IngredientResult,
     RejectedSuggestion,
 )
-from app.models import FoodRecommendation, FoodRecommendationRetry, MealFood, UserProfile
+from app.models import FoodRecommendation, FoodRecommendationRetry, Meal, MealFood, UserProfile
 from app.models.food_recommendation_enums import (
     FoodRecommendationDismissReason,
     FoodRecommendationStatus,
@@ -74,6 +79,10 @@ class ProfileRequiredError(AppError):
     pass
 
 
+class MealHistoryRequiredError(AppError):
+    pass
+
+
 class RecommendationTriedError(AppError):
     pass
 
@@ -99,6 +108,31 @@ class RecommendationRecord:
 class FoodRecommendationService:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def generate(self, *, user_id: int) -> RecommendationRecord:
+        restrictions = await self._session.scalar(
+            select(UserProfile.restrictions).where(UserProfile.user_id == user_id)
+        )
+        if not restrictions or not any(
+            kind in restrictions for kind in RestrictionType if kind.category == "ALLERGY"
+        ):
+            raise ProfileRequiredError()
+        meal_foods = select(MealFood.id).join(Meal).where(Meal.user_id == user_id)
+        if not await self._session.scalar(select(meal_foods.exists())):
+            raise MealHistoryRequiredError()
+        try:
+            async with asyncio.timeout(10):
+                generated = await generate_home_suggestion(self._session, user_id=user_id)
+            result = HomeSuggestionResult.model_validate(generated)
+        except HomeSuggestionGeneratorUnavailableError:
+            raise
+        except Exception as error:
+            raise GenerationFailedError() from error
+
+        item = FoodRecommendation(user_id=user_id, **result.model_dump())
+        self._session.add(item)
+        await self._session.flush()
+        return RecommendationRecord(item, meal_id=None)
 
     async def list_saved(
         self, *, user_id: int, after_meal_date: date | None
@@ -150,7 +184,7 @@ class FoodRecommendationService:
             ]
         )
 
-    async def generate(
+    async def generate_for_meal(
         self,
         *,
         user_id: int,

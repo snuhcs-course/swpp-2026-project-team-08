@@ -11,6 +11,8 @@
 
 # AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
 # Changed: 영어 추천 fixture와 공용 재료 적재 상태 테이블 계약
+# AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+# Changed: 홈 추천 생성 조건과 한 장 저장·실패 원자성 검증
 
 """Contract edge cases for authenticated meals, reviews, and suggestions."""
 
@@ -18,17 +20,22 @@ from datetime import timedelta
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
 
 from app.core.database import Base
 from app.core.timezone import now_kst
+from app.features.suggestions.generator import GenerationRejectedError
+from app.features.suggestions.workflow.jev import JevError
 from app.features.suggestions.workflow.nodes import MAX_ATTEMPTS
 from app.main import app
+from app.models import FoodRecommendation, UserProfile
 from app.models.ingredient_enums import RestrictionDegree
 from tests.fixtures.reviews import review_payload
 from tests.helpers.auth import auth_headers as login
 from tests.helpers.suggestions import (
     PROFILE_RESTRICTIONS,
     batch,
+    install_home_generator,
     install_model,
     save_profile,
     seed_ingredient,
@@ -132,6 +139,74 @@ async def test_meal_history_review_replacement_and_ownership(api_client: AsyncCl
     assert detail["after_photo_uri"] == "after.jpg"
     assert [food["outcome"] for food in detail["foods"]] == ["TASTED"]
     assert "review" not in detail
+
+
+async def test_home_generation_requires_an_allergy_answer_and_the_users_own_meal(
+    api_client, session_factory, monkeypatch
+):
+    path = "/api/v1/suggestions"
+    owner = await login(api_client, "owner@example.com")
+    other = await login(api_client, "other@example.com")
+    await save_meal(api_client, other, "2026-10-20")
+    assert (await api_client.post(path)).status_code == 401
+    assert (await api_client.post(path, headers=owner)).json()["error_code"] == "PROFILE_REQUIRED"
+    await save_profile(api_client, owner)
+    assert (await api_client.post(path, headers=owner)).json()[
+        "error_code"
+    ] == "MEAL_HISTORY_REQUIRED"
+
+    meal_id = await save_meal(api_client, owner, "2026-10-20")
+    async with session_factory.begin() as session:
+        profile = await session.scalar(select(UserProfile))
+        profile.restrictions = ["VEGETARIAN.DAIRY"]
+    assert (await api_client.post(path, headers=owner)).json()["error_code"] == "PROFILE_REQUIRED"
+    async with session_factory.begin() as session:
+        profile = await session.scalar(select(UserProfile))
+        profile.restrictions = ["ALLERGY.NONE"]
+
+    generator = install_home_generator(monkeypatch)
+    for payload in ({"meal_id": meal_id}, {"targets": [{"food_id": "1"}]}, {"food_name": "client"}):
+        assert (await api_client.post(path, headers=owner, json=payload)).status_code == 422
+    generator.assert_not_awaited()
+    generated = await api_client.post(path, headers=owner)
+    assert generated.status_code == 201, generated.text
+    assert generated.json()["status"] == "PENDING"
+    generator.assert_awaited_once()
+    assert generator.await_args.kwargs["user_id"] == int(generated.json()["user_id"])
+
+
+async def test_failed_generation_never_stores_a_partial_card(
+    api_client, session_factory, monkeypatch
+):
+    owner = await login(api_client, "failure@example.com")
+    await save_profile(api_client, owner)
+    await save_meal(api_client, owner, "2026-10-20")
+    path = "/api/v1/suggestions"
+    unavailable = await api_client.post(path, headers=owner)
+    assert unavailable.status_code == 503
+    assert unavailable.json()["error_code"] == "HOME_SUGGESTION_GENERATOR_UNAVAILABLE"
+
+    generator = install_home_generator(monkeypatch)
+    complete = generator.return_value
+    failures = [
+        {**complete, "food_name": " "},
+        TimeoutError(),
+        GenerationRejectedError([]),
+        JevError("judge unavailable"),
+    ]
+    generator.side_effect = [*failures, complete]
+    for _ in failures:
+        failed = await api_client.post(path, headers=owner)
+        assert failed.status_code == 502 and failed.json()["error_code"] == "GENERATION_FAILED"
+    async with session_factory() as session:
+        assert (await session.scalars(select(FoodRecommendation))).all() == []
+    created = await api_client.post(path, headers=owner)
+    assert created.status_code == 201, created.text
+    assert {key: created.json()[key] for key in complete} == complete
+    async with session_factory() as session:
+        assert (await session.scalars(select(FoodRecommendation.id))).all() == [
+            int(created.json()["id"])
+        ]
 
 
 @pytest.mark.asyncio

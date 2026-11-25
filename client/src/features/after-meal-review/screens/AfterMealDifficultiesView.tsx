@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 어려움 사유 입력 포커스 전달
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
@@ -6,7 +8,8 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 기타 유형 입력
 
-import { StyleSheet, Text, View } from 'react-native';
+import type { ComponentRef } from 'react';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { DifficultyEditor } from '../components/DifficultyEditor';
 import { colors } from '../../../util/colors';
 import { fonts } from '../../../util/fonts';
@@ -16,7 +19,7 @@ import type { ReviewViewProps } from './reviewViewTypes';
 type Props = Pick<ReviewViewProps,
   'meal' | 'draft' | 'language' | 'difficultyTargets' | 'difficultyForms' | 'onDifficultyInput' | 'onAddDifficulty' | 'onRemoveDifficulty'>;
 
-export function AfterMealDifficultiesView({ p }: { p: Props }) {
+export function AfterMealDifficultiesView({ p, onNoteFocus }: { p: Props; onNoteFocus: (input: ComponentRef<typeof TextInput> | null) => void }) {
   const s = copyFor(p.language);
   const m = s.afterMealReview;
   const a = abcCopyFor(p.language);
@@ -38,6 +41,7 @@ export function AfterMealDifficultiesView({ p }: { p: Props }) {
             options={form.options}
             canAdd={form.canAdd}
             showNote={form.showNote}
+            onNoteFocus={onNoteFocus}
             labels={{
               categoryPlaceholder: m.selectCategory,
               valuePlaceholder: m.selectValue,

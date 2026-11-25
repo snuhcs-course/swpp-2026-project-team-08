@@ -1,8 +1,10 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 거부 사유 입력 시 키보드 위로 스크롤
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 거부 음식 입력 화면
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 거부 음식 기타 사유 입력
-import { useState } from 'react';
+import { useContext, useRef, useState, type ComponentRef } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
 import { DropdownChoice } from '../../../components/DropdownChoice';
@@ -16,6 +18,7 @@ import { fonts } from '../../../util/fonts';
 import { abcCopyFor, copyFor } from '../../../util/strings';
 import type { OnboardingDraft } from '../types';
 import { styles as onboardingStyles } from './onboardingStyles';
+import { OnboardingInputFocusContext } from './OnboardingFlowView';
 
 export function RefusedFoodsStepView({ language, foods, input, onChange, onAdd, onRemove }: {
   language: Language; foods: RefusedFood[]; input: OnboardingDraft['refusedFoodInput'];
@@ -23,6 +26,8 @@ export function RefusedFoodsStepView({ language, foods, input, onChange, onAdd, 
   onAdd: () => void; onRemove: (id: string) => void;
 }) {
   const s = copyFor(language);
+  const noteRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const revealInput = useContext(OnboardingInputFocusContext);
   const labels = abcCopyFor(language);
   const [category, setCategory] = useState<DifficultyCategory | ''>('');
   const [subcategory, setSubcategory] = useState('');
@@ -68,7 +73,9 @@ export function RefusedFoodsStepView({ language, foods, input, onChange, onAdd, 
             <DropdownChoice options={values.map(id => ({ id, label: valueLabels[id] ?? id }))}
               value={value} placeholder={s.refusedFoods.value} onChange={setValue} />
           </View>}
-          {chosenValue === 'other' && <TextInput accessibilityLabel={s.afterMealReview.note}
+          {chosenValue === 'other' && <TextInput ref={noteRef} accessibilityLabel={s.afterMealReview.note}
+            onFocus={() => { if (noteRef.current) revealInput(noteRef.current); }}
+            onBlur={() => revealInput(null)}
             placeholder={s.afterMealReview.note} placeholderTextColor={colors.onboardingMuted}
             value={note} onChangeText={setNote} multiline maxLength={2000} style={styles.note} />}
           {input.reasons.map(item => <Pressable key={`${item.category}.${item.subcategory}.${item.value}.${item.note ?? ''}`} accessibilityRole="button"

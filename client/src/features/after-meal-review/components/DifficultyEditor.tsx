@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 어려움 사유 입력 포커스 전달
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: 네이티브 어려움 선택기·글자 확대 및 추가 버튼 디자인 통일
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; align picker chevrons with the right inset
@@ -17,7 +19,7 @@
 import { DifficultyReasonTag } from '../../../components/DifficultyReasonTag';
 import { UiAssetIcon, type UiAssetIconName } from "../../../components/UiAssetIcon";
 import { MealFlowButton } from "../../../components/MealFlowButton";
-import { useState } from "react";
+import { useRef, useState, type ComponentRef } from "react";
 import { NativeDropdown } from "../../../components/NativeDropdown";
 import {
   Platform,
@@ -100,6 +102,7 @@ export function DifficultyEditor({
   onSubcategory,
   onValue,
   onNote,
+  onNoteFocus,
   onAdd,
   onRemove,
 }: {
@@ -117,9 +120,11 @@ export function DifficultyEditor({
   onSubcategory: (value: string) => void;
   onValue: (value: string) => void;
   onNote: (value: string) => void;
+  onNoteFocus: (input: ComponentRef<typeof TextInput> | null) => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
 }) {
+  const noteRef = useRef<ComponentRef<typeof TextInput>>(null);
   const [menu, setMenu] = useState<"category" | "value" | "question" | null>(
     null,
   );
@@ -196,6 +201,9 @@ export function DifficultyEditor({
       )}
       {showNote && (
         <TextInput
+          ref={noteRef}
+          onFocus={() => onNoteFocus(noteRef.current)}
+          onBlur={() => onNoteFocus(null)}
           accessibilityLabel={labels.note}
           placeholder={labels.note}
           placeholderTextColor={colors.mealReviewMuted}

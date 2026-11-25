@@ -7,10 +7,12 @@
 // Changed: 최초 생성 재요청 시 기존 카드 상태 재사용 검증
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 추천 API 검증 이동 및 생성 실패 시 입력 보존 중복 검증 통합
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 홈 추천 한 장의 요청·본문 검증 및 결정 계약 확인
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
-const { suggestionResponse } = require('../../fixtures/server-suggestion.cjs');
+const { suggestionResponse, homeSuggestionResponse } = require('../../fixtures/server-suggestion.cjs');
 
 let request;
 
@@ -21,6 +23,8 @@ const restoreMocks = mockModules((name) => {
 });
 
 const api = require('../../../src/data/api/mealSuggestionApi.ts');
+
+const homeApi = require('../../../src/data/api/suggestionApi.ts');
 
 const { reviewedSuggestionTargets, unGeneratedTargets } = require('../../../src/features/suggestions/rules.ts');
 
@@ -65,6 +69,46 @@ test('generation rejects a response that does not match the requested foods', as
   assert.equal((await api.generateMealSuggestions('1', '8', [{ foodId: '2' }]))[0].status, 'saved');
 });
 
+test('홈 추천 요청은 식사나 음식 ID 없이 현재 아이의 카드 한 장을 받는다', async t => {
+  const controller = new AbortController();
+  t.mock.method(AbortSignal, 'timeout', milliseconds => {
+    assert.equal(milliseconds, 10_000);
+    return controller.signal;
+  });
+  request = async (path, init) => {
+    assert.equal(path, '/api/v1/suggestions');
+    assert.equal(init.method, 'POST');
+    assert.equal(init.body, undefined);
+    assert.equal(init.signal, controller.signal);
+    return homeSuggestionResponse();
+  };
+  const item = await homeApi.generateSuggestion('1');
+  assert.equal(item.status, 'pending');
+  assert.equal(item.foodName, 'Rice');
+  assert.equal(item.mealId, null);
+  assert.equal(item.foodId, null);
+  assert.deepEqual(item.ingredients, ['Potato']);
+  assert.equal(item.cookingMethod, 'steamed');
+  assert.equal(item.causes, homeSuggestionResponse().causes);
+});
+
+test('현재 아이의 완전한 새 카드 하나만 표시한다', async () => {
+  for (const fields of [
+    { user_id: '2' }, { meal_id: '8' }, { origin_food_id: '2' }, { status: 'SAVED' },
+    { status: 'pending' }, { cooking_method: 'steamed' }, { origin_food_id: undefined },
+    { cooking_method: null }, { ingredients: 'Potato' }, { ingredients: [] }, { ingredients: [' '] },
+    { causes: undefined }, { serving_tip: null }, { food_name: '' }, { what_to_try: ' ' },
+    { why_this_may_help: ' ' },
+  ]) {
+    request = async () => (homeSuggestionResponse(fields));
+    await assert.rejects(homeApi.generateSuggestion('1'), undefined, JSON.stringify(fields));
+  }
+  for (const value of [null, [], [homeSuggestionResponse()]]) {
+    request = async () => value;
+    await assert.rejects(homeApi.generateSuggestion('1'));
+  }
+});
+
 test('saved, dismissed, and undo decisions use the v1 decision route', async () => {
   request = async (path, init) => {
     assert.equal(path, '/api/v1/suggestions/31/decision');
@@ -72,7 +116,7 @@ test('saved, dismissed, and undo decisions use the v1 decision route', async () 
     assert.deepEqual(JSON.parse(init.body), { status: 'DISMISSED', dismiss_reasons: ['ALREADY_TRIED'] });
     return { ...suggestion, status: 'DISMISSED', dismiss_reasons: ['ALREADY_TRIED'] };
   };
-  const dismissed = await api.decideMealSuggestion('1', '31', 'dismissed', ['already_tried']);
+  const dismissed = await homeApi.decideSuggestion('1', '31', 'dismissed', ['already_tried']);
   assert.equal(dismissed.status, 'dismissed');
   assert.deepEqual(dismissed.dismissReasons, ['already_tried']);
   request = async (path, init) => {
@@ -80,8 +124,8 @@ test('saved, dismissed, and undo decisions use the v1 decision route', async () 
     assert.equal(init.method, 'DELETE');
     return suggestion;
   };
-  assert.equal((await api.undoMealSuggestion('1', '31')).status, 'pending');
-  await assert.rejects(api.decideMealSuggestion('1', '31', 'dismissed'), /Invalid suggestion decision/);
+  assert.equal((await homeApi.undoSuggestion('1', '31')).status, 'pending');
+  await assert.rejects(homeApi.decideSuggestion('1', '31', 'dismissed'), /Invalid suggestion decision/);
 });
 
 test('every dismiss reason maps to a server value and old values are rejected', async () => {
@@ -95,12 +139,12 @@ test('every dismiss reason maps to a server value and old values are rejected', 
       assert.deepEqual(JSON.parse(init.body).dismiss_reasons, [value]);
       return { ...suggestion, status: 'DISMISSED', dismiss_reasons: [value] };
     };
-    const result = await api.decideMealSuggestion('1', '31', 'dismissed', [reason]);
+    const result = await homeApi.decideSuggestion('1', '31', 'dismissed', [reason]);
     assert.deepEqual(result.dismissReasons, [reason]);
   }
-  await assert.rejects(api.decideMealSuggestion('1', '31', 'dismissed', ['restriction_conflict']));
+  await assert.rejects(homeApi.decideSuggestion('1', '31', 'dismissed', ['restriction_conflict']));
   request = async () => ({ ...suggestion, status: 'DISMISSED', dismiss_reasons: ['restriction_conflict'] });
-  await assert.rejects(api.decideMealSuggestion('1', '31', 'dismissed', ['restriction']));
+  await assert.rejects(homeApi.decideSuggestion('1', '31', 'dismissed', ['restriction']));
 });
 
 test('responses with old lowercase values or the old shape are rejected', async () => {

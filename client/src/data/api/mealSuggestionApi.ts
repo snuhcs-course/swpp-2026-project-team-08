@@ -8,8 +8,8 @@
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
 // Changed: 식사별 조회에서 원본 음식 ID 확인
 
-import type { DismissReason, Suggestion, SuggestionTarget } from '../../types/suggestionRecord';
-import { toSuggestion, toSuggestionDecision, toSuggestionGenerate } from '../dto/suggestionDto';
+import type { Suggestion, SuggestionTarget } from '../../types/suggestionRecord';
+import { toSuggestion, toSuggestionGenerate } from '../dto/suggestionDto';
 import { apiRequest } from '../network/apiClient';
 
 function suggestionList(value: unknown, mealId: string, userId: string) {
@@ -52,36 +52,4 @@ export async function generateMealSuggestions(
     }
   }
   return items;
-}
-
-export async function decideMealSuggestion(
-  userId: string, suggestionId: string, status: 'saved' | 'dismissed',
-  reasons: DismissReason[] = [],
-): Promise<Suggestion> {
-  const item = toSuggestion(await apiRequest<unknown>(
-    `/api/v1/suggestions/${encodeURIComponent(suggestionId)}/decision`,
-    { method: 'PUT', body: JSON.stringify(toSuggestionDecision(status, reasons)) },
-  ));
-  if (item.userId !== userId || item.id !== suggestionId || item.status !== status) {
-    throw new Error('Mismatched suggestion');
-  }
-  return item;
-}
-
-export async function undoMealSuggestion(
-  userId: string, suggestionId: string,
-): Promise<Suggestion> {
-  const item = toSuggestion(await apiRequest<unknown>(
-    `/api/v1/suggestions/${encodeURIComponent(suggestionId)}/decision`, { method: 'DELETE' },
-  ));
-  if (item.userId !== userId || item.id !== suggestionId || item.status !== 'pending') {
-    throw new Error('Mismatched suggestion undo');
-  }
-  return item;
-}
-
-export async function removeSavedSuggestion(suggestionId: string): Promise<void> {
-  await apiRequest<void>(
-    `/api/v1/suggestions/${encodeURIComponent(suggestionId)}/saved`, { method: 'DELETE' },
-  );
 }

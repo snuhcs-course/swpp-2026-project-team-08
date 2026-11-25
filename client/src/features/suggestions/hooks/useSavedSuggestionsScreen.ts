@@ -1,10 +1,12 @@
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 저장 목록 제거 성공 전 상세 유지 및 중복 요청 차단
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 공통 추천 요청에서 저장 목록 제거
 
 import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { useSavedSuggestionsForCheckin, useMealsForCheckin } from '../../../data/queries/checkinReferenceQueries';
-import { useRemoveSavedSuggestion } from '../../../data/queries/mealSuggestionQueries';
+import { useRemoveSavedSuggestion } from '../../../data/queries/suggestionQueries';
 
 export function useSavedSuggestionsScreen(userId: string, initialId: string) {
   const saved = useSavedSuggestionsForCheckin(userId);

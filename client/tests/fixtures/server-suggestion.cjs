@@ -1,7 +1,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 음식 단위 추천 서버 응답 픽스처 추가
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 공통 추천 응답에 카드 음식명 추가
+// Changed: 원본 식사가 있는 추천과 홈 생성 응답 제공
 function suggestionResponse(overrides = {}) {
   return {
     id: '31', user_id: '1', origin_food_id: '2', meal_id: '8', food_name: 'Rice',
@@ -11,4 +11,9 @@ function suggestionResponse(overrides = {}) {
     ...overrides,
   };
 }
-module.exports = { suggestionResponse };
+function homeSuggestionResponse(overrides = {}) {
+  return suggestionResponse({
+    meal_id: null, origin_food_id: null, serving_tip: 'Offer a small portion.', ...overrides,
+  });
+}
+module.exports = { suggestionResponse, homeSuggestionResponse };

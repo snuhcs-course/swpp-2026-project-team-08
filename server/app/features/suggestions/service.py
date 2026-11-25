@@ -15,6 +15,8 @@
 # Changed: 아이의 제한 설명을 추천 생성기에 전달
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 이력을 보존하는 저장 목록 제거와 재저장
+# AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+# Changed: 식사별 추천 생성 시 원본 음식명 저장
 
 """인증된 사용자의 음식 추천을 만들고 조회하고 결정한다."""
 
@@ -322,6 +324,7 @@ class FoodRecommendationService:
             recommendation = FoodRecommendation(
                 user_id=user_id,
                 origin_food_id=food_id,
+                food_name=by_id[food_id].food.name,
                 what_to_try=content.what_to_try,
                 why_this_may_help=content.why_this_may_help,
                 serving_tip=content.serving_tip,

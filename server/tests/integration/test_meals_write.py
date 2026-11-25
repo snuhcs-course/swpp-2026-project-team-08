@@ -7,6 +7,8 @@
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
 # AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 # Changed: 개별 조리법 저장·수정과 이전 통합값 조회 검증
+# AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+# Changed: 식사 기록 테스트의 추천에 음식명 지정
 
 """인증된 식사 저장·수정·리뷰·삭제와 추천 시도 연결."""
 
@@ -94,6 +96,7 @@ async def seed_recommendation(
         recommendation = FoodRecommendation(
             user_id=user_id,
             origin_food_id=origin.id,
+            food_name=origin.name,
             what_to_try="감자 조리법 바꾸기",
             why_this_may_help="새로운 식감 제공",
             ingredients=["감자"],

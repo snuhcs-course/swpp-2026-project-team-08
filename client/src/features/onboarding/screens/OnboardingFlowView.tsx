@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
-// Changed: 감각 프로필 저장 및 온보딩
+// Changed: 감각 프로필 표시 및 식생활 유형 질문 제거
 // AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
 // Changed: Dietary Pattern 선택 및 저장; 동작별 버튼 문구 구분; 공통 진행 바 사용
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -71,7 +71,7 @@ export function OnboardingFlowView({
           </View>
           <ProgressBar variant="continuous" current={stepIndex + 1} total={stepCount}
             style={styles.track} fillStyle={styles.fill} accessible={false} />
-          {step !== 'sensory' && <Text style={styles.subtitle}>{step === 'safe-foods' ? s.onboarding.safeFoodsDescription(childName || s.onboarding.childFallback) : s.onboarding.subtitles[step]}</Text>}
+          {step !== 'sensory' && step !== 'family' && <Text style={styles.subtitle}>{step === 'safe-foods' ? s.onboarding.safeFoodsDescription(childName || s.onboarding.childFallback) : s.onboarding.subtitles[step]}</Text>}
         </View>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           {content}

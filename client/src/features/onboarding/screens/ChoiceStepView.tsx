@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 식생활 유형 없음 선택지 우선 표시
 // This Code is generated with AI
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
@@ -74,7 +76,8 @@ export function ChoiceStepView({ step, values, language, onSetField, onToggleLis
     <View>
       <Text style={[styles.fieldHint, styles.dietaryPatternHelper]}>{s.onboarding.dietaryPattern.helper(name)}</Text>
       <View accessibilityRole="radiogroup">
-        {s.onboarding.dietaryPattern.options.map((option) => <ChoiceRow
+        {[...s.onboarding.dietaryPattern.options].sort((a, b) =>
+          Number(b.id === 'no_specific_pattern') - Number(a.id === 'no_specific_pattern')).map((option) => <ChoiceRow
           key={option.id}
           label={option.label}
           subtitle={option.description}

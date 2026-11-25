@@ -100,7 +100,7 @@ const en = {
     safeFoodPreparationExample: 'e.g. sliced, mashed, warmed', safeFoodPresentationExample: 'e.g. blue bowl, cut into coins',
     safeFoodsDescription: (name: string) => `Add foods that ${name} reliably accepts in a familiar form. We can use these foods as familiar starting points when suggesting something new`, safeFoodFormHint: (name: string) => `Add details for a food ${name} can reliably accept.`, multipleInput: 'multiple input available',
     dietaryPattern: {
-      helper: (name: string) => `Choose the option that best describes the diet your family follows for ${name}. Each option explains which foods it includes. This is about your dietary choices, not foods ${name} currently likes or dislikes.`,
+      helper: (name: string) => `Choose the option that best describes the diet your family follows for ${name}.`,
       caution: 'We’ll try to follow this dietary pattern when suggesting meals, but it may not be fully reflected in every suggestion.',
       notAnswered: 'Not answered',
       options: [

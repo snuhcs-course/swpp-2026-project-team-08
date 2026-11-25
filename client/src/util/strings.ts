@@ -39,7 +39,7 @@
 // AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 식후 사진 교체 시트와 식전 사진 없음 안내
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 식후 리뷰 완료 이동 및 추천 한 장 안내
+// Changed: 홈 추천 진입·카드 문구 및 저장한 추천 목록 이동
 
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
@@ -208,7 +208,9 @@ const en = {
     logMeal: 'Log this meal', noRecommendations: 'No saved suggestions yet', calendar: 'Meal Log Calendar', profileTitle: 'Profile',
     caregiver: 'Caregiver', child: 'Child', editProfile: 'Edit profile',
     refreshFailed: 'Could not load your records.',
-    viewSuggestion: 'View Suggestion', suggestionsLoadFailed: 'Could not load meal suggestions.',
+    getSuggestion: 'Get a suggestion',
+    suggestionNeedsAllergies: 'Answer the food allergy question in your profile to get a suggestion.',
+    suggestionNeedsMeal: 'Log a meal with at least one food to get a suggestion.',
   },
   mealLog: {
     title: 'Meal History',
@@ -479,7 +481,9 @@ const ko = {
     logMeal: '식사 기록하기', noRecommendations: '아직 저장된 추천이 없어요.', calendar: '식사 기록 달력', profileTitle: '프로필',
     caregiver: '보호자', child: '아이', editProfile: '프로필 수정',
     refreshFailed: '기록을 불러오지 못했어요.',
-    viewSuggestion: '추천 보기', suggestionsLoadFailed: '식사 추천을 불러오지 못했어요.',
+    getSuggestion: '추천받기',
+    suggestionNeedsAllergies: '추천을 받으려면 프로필에서 식품 알레르기 질문에 답해 주세요.',
+    suggestionNeedsMeal: '추천을 받으려면 음식이 한 가지 이상 포함된 식사를 기록해 주세요.',
   },
   mealLog: {
     title: '식사 기록',

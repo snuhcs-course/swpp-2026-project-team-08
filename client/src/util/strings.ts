@@ -39,7 +39,7 @@
 // AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 식후 사진 교체 시트와 식전 사진 없음 안내
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 식후 리뷰 완료 이동 및 음식별 추가 추천 문구 정리
+// Changed: 식후 리뷰 완료 이동 및 추천 한 장 안내
 
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
@@ -643,12 +643,10 @@ const cookingMethodLabels = {
 
 const suggestionCopy = {
   en: {
-    generatingDetail: 'Using your meal review to find something to try next.', generationTitle: 'Couldn’t load suggestions', generationDetail: 'Something went wrong. Please try again in a moment.',
-    emptyDetail: 'Save a suggestion after reviewing a meal. It will appear here when you need it.',
-    undoLast: '↶ Undo last action', chooseFoods: (count: number) => `Choose suggestion targets · ${count} selected`,
-    title: 'Recommendations for this meal', targets: 'Suggestion targets', changeFoods: 'Choose targets',
-    selectTargetsPrompt: 'Choose a food or reviewed ingredient to generate suggestions.',
-    reviewRequired: 'Save the after-meal review before generating suggestions.',
+    generatingDetail: 'Using your child’s profile and meal history to find a suggestion.', generationTitle: 'Couldn’t load the suggestion', generationDetail: 'Something went wrong. Please try again in a moment.',
+    emptyDetail: 'Save a suggestion from Home to find it here.',
+    undoLast: '↶ Undo last action',
+    title: 'Suggestion',
     generating: 'Finding a next step…',
     what: 'What to try', why: 'Why this may help', serving: 'Serving tip', foodDetails: 'FOOD DETAILS',
     ingredients: 'Ingredients', cooking: 'Cooking method',
@@ -656,24 +654,22 @@ const suggestionCopy = {
     tapDetails: 'Tap for food details', tapFront: 'Tap to see suggestion',
     save: 'Save suggestion', dismiss: 'Dismiss suggestion', dismissTitle: 'What does not work for you?',
     reasons: { restriction: 'This conflicts with an allergy or required restriction', dislike: 'My child dislikes this food or form', not_fit: 'This does not fit our food preferences', too_much_preparation: 'Too much preparation', ingredient_hard_to_get: 'The ingredient is hard to get', already_tried: 'We already tried this' },
-    skipReason: 'Skip', done: 'Done', undo: '↶ Undo',
+    done: 'Done',
     savedNotice: '✓ Saved to suggestions', dismissedNotice: 'Suggestion dismissed',
-    saveFailed: "Changes couldn't be saved. Please try again.", allDone: 'All Suggestions Reviewed!',
-    allDoneBody: 'Your saved suggestions are ready whenever you want to try them.', savedTitle: 'Saved Suggestions',
-    savedIntro: 'Suggestions you can come back to', backMeal: 'Back to Meal', empty: 'No saved suggestions yet',
+    saveFailed: "Changes couldn't be saved. Please try again.",
+    savedTitle: 'Saved Suggestions',
+    savedIntro: 'Suggestions you can come back to', backHome: 'Back to Home', empty: 'No saved suggestions yet',
     history: 'View Meal History', remove: 'Remove', removedNotice: 'Suggestion removed from saved.',
     recordTry: 'Record a Try', tried: 'Tried',
     unavailable: 'This suggestion is no longer saved.', trying: 'Trying this suggestion', swipeSave: 'Keep swiping to save', swipeDismiss: 'Keep swiping to dismiss', count: (n: number, total: number) => `${n} of ${total}`,
-    update: 'Update suggestions', close: 'Close', cancel: 'Cancel', back: 'Back', retry: 'Retry',
+    close: 'Close', cancel: 'Cancel', back: 'Back', retry: 'Retry',
     noDetails: 'Not entered', loadFailed: 'Suggestions could not be loaded. Please try again.',
   },
   ko: {
-    generatingDetail: '식후 기록을 바탕으로 시도해 볼 방법을 찾고 있어요.', generationTitle: '추천을 불러오지 못했어요', generationDetail: '잠시 후 다시 시도해 주세요.',
-    emptyDetail: '식후 기록을 마친 뒤 추천을 저장하면 여기서 다시 볼 수 있어요.',
-    undoLast: '↶ 마지막 동작 되돌리기', chooseFoods: (count: number) => `추천 대상 선택 · ${count}개 선택됨`,
-    title: '이 식사의 추천', targets: '추천 대상', changeFoods: '대상 선택',
-    selectTargetsPrompt: '추천받을 음식이나 식후 기록을 남긴 재료를 선택해 주세요.',
-    reviewRequired: '추천을 받으려면 먼저 식후 기록을 저장해 주세요.',
+    generatingDetail: '아이의 프로필과 식사 기록을 바탕으로 추천을 찾고 있어요.', generationTitle: '추천을 불러오지 못했어요', generationDetail: '잠시 후 다시 시도해 주세요.',
+    emptyDetail: '홈에서 받은 추천을 저장하면 여기서 다시 볼 수 있어요.',
+    undoLast: '↶ 마지막 동작 되돌리기',
+    title: '추천',
     generating: '추천을 만들고 있어요…',
     what: '시도해 볼 방법', why: '도움이 될 수 있는 이유', serving: '준비 방법', foodDetails: '음식 정보',
     ingredients: '재료', cooking: '조리 방법',
@@ -681,15 +677,15 @@ const suggestionCopy = {
     tapDetails: '눌러서 음식 정보 보기', tapFront: '눌러서 추천으로 돌아가기',
     save: '추천 저장', dismiss: '추천 제외', dismissTitle: '어떤 점이 맞지 않나요?',
     reasons: { restriction: '알레르기나 식이 제한과 맞지 않아요', dislike: '아이가 이 음식이나 모양을 싫어해요', not_fit: '우리 가족의 음식 취향과 맞지 않아요', too_much_preparation: '준비할 것이 너무 많아요', ingredient_hard_to_get: '재료를 구하기 어려워요', already_tried: '이미 시도했어요' },
-    skipReason: '건너뛰기', done: '추천 제외하기', undo: '↶ 되돌리기',
+    done: '추천 제외하기',
     savedNotice: '✓ 추천을 저장했어요', dismissedNotice: '추천을 제외했어요',
-    saveFailed: '변경을 저장하지 못했어요. 다시 시도해 주세요.', allDone: '추천을 모두 확인했어요',
-    allDoneBody: '저장한 추천은 언제든 다시 볼 수 있어요.', savedTitle: '저장된 추천',
-    savedIntro: '다시 살펴볼 수 있는 추천이에요', backMeal: '식사로 돌아가기', empty: '아직 저장된 추천이 없어요',
+    saveFailed: '변경을 저장하지 못했어요. 다시 시도해 주세요.',
+    savedTitle: '저장된 추천',
+    savedIntro: '다시 살펴볼 수 있는 추천이에요', backHome: '홈으로 돌아가기', empty: '아직 저장된 추천이 없어요',
     history: '식사 기록 보기', remove: '저장 해제', removedNotice: '저장 목록에서 추천을 제거했어요.',
     recordTry: '시도 기록', tried: '시도함',
     unavailable: '더 이상 저장된 추천이 아니에요.', trying: '이 추천을 시도하는 식사', swipeSave: '더 밀면 저장해요', swipeDismiss: '더 밀면 제외해요', count: (n: number, total: number) => `${total}개 중 ${n}번째`,
-    update: '추천받기', close: '닫기', cancel: '취소', back: '뒤로', retry: '다시 시도',
+    close: '닫기', cancel: '취소', back: '뒤로', retry: '다시 시도',
     noDetails: '입력하지 않음', loadFailed: '추천을 불러오지 못했어요. 다시 시도해 주세요.',
   },
 };

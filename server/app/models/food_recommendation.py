@@ -3,7 +3,7 @@
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 상태와 별개로 저장 목록 제거 시각 관리
 # AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-# Changed: 추천 음식명 필수 저장과 원본 음식 없는 추천 허용
+# Changed: 추천 음식명 필수 저장, 원본 음식 없는 추천 허용, 재생성 요청 ID 저장
 
 """음식명과 다음 식사에서 시도할 방법을 담은 추천.
 
@@ -11,8 +11,20 @@
 """
 
 from datetime import datetime
+from uuid import UUID
 
-from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Identity, Integer, Text, text
+from sqlalchemy import (
+    BigInteger,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Identity,
+    Index,
+    Integer,
+    Text,
+    Uuid,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base, StringList
@@ -23,6 +35,14 @@ from app.models.meal_enums import MealCookingMethod
 
 class FoodRecommendation(Base):
     __tablename__ = "food_recommendations"
+    __table_args__ = (
+        Index(
+            "uq_recommendation_regeneration_request",
+            "user_id",
+            "regeneration_request_id",
+            unique=True,
+        ),
+    )
 
     id: Mapped[int] = mapped_column(
         BigInteger().with_variant(Integer, "sqlite"), Identity(), primary_key=True
@@ -41,6 +61,7 @@ class FoodRecommendation(Base):
         index=True,
     )
     food_name: Mapped[str] = mapped_column(Text, nullable=False)
+    regeneration_request_id: Mapped[UUID | None] = mapped_column(Uuid())
     what_to_try: Mapped[str] = mapped_column(Text, nullable=False)
     why_this_may_help: Mapped[str] = mapped_column(Text, nullable=False)
     serving_tip: Mapped[str | None] = mapped_column(Text, nullable=True)

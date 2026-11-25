@@ -1,5 +1,5 @@
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 추천 제외 사유와 완료 화면에서 재생성·재시도·한도·홈 복귀 검증
+// Changed: 추천 카드의 버튼 이름, 제외 사유와 완료 화면의 재생성·재시도·한도·홈 복귀 검증
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -50,6 +50,8 @@ test('재생성 응답을 잃으면 같은 요청으로 새 카드를 복구하�
     }
   } });
   await waitFor(() => control(app, 'button', 'Dismiss suggestion'));
+  assert.equal(control(app, 'button', 'Dismiss suggestion').textContent, 'Dismiss');
+  assert.equal(control(app, 'button', 'Save suggestion').textContent, 'Save');
   await click(control(app, 'button', 'Dismiss suggestion'));
   await click(control(app, 'checkbox', 'My child dislikes this food or form'));
   await click(control(app, 'button', 'Done'));

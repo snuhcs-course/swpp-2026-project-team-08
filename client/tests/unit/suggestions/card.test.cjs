@@ -6,7 +6,7 @@
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: Unit 테스트를 담당 기능·공통 컴포넌트 폴더로 이동
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 추천 한 장의 음식명·순서와 카드 동작 검증
+// Changed: 홈 추천의 양면별 내용과 카드 동작 검증
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -56,7 +56,7 @@ mockModules(name => {
 const { RecommendationCard } = require('../../../src/features/suggestions/components/RecommendationCard.tsx');
 const defaults = {
   item: {
-    id: '1', foodName: 'Bread', ingredients: [],
+    id: '1', foodName: 'Bread', ingredients: ['Flour', 'Water'],
     whatToTry: 'Offer a small piece.', whyThisMayHelp: 'A familiar texture.',
     servingTip: 'Use a separate spot on the plate.',
   },
@@ -68,7 +68,7 @@ const surface = tree => face(tree).props.children[0];
 const content = tree => face(tree).props.children[1];
 const body = tree => content(tree).props.children[1];
 const flipButton = tree => content(tree).props.children[2];
-const showingDetails = tree => body(tree).props.children.props.children[1].props.details;
+const showingDetails = tree => body(tree).props.children.props.accessibilityLabel === 'Tap to see suggestion';
 const flatten = styles => Object.assign({}, ...[styles].flat(Infinity).filter(Boolean));
 function assertTextOutside3D(tree, inside3D = false) {
   if (Array.isArray(tree)) {
@@ -92,9 +92,6 @@ beforeEach(() => { animations.length = 0; });
 test('both card sides keep text outside 3D transforms throughout repeated flips', async t => {
   const card = await renderHook(t, props => RecommendationCard(props), { props: defaults });
   const initialBody = body(card.current);
-  const header = content(card.current).props.children[0];
-  assert.equal(header.props.children[0].props.children, '1 of 1');
-  assert.equal(header.props.children[1].props.children, 'Bread');
   assertTextOutside3D(card.current);
   assert.equal(contentOpacity(card.current), 1);
   assert.equal(showingDetails(card.current), false);
@@ -106,6 +103,12 @@ test('both card sides keep text outside 3D transforms throughout repeated flips'
     const outgoing = animations.at(-1);
     await act(async () => outgoing.complete());
     assert.equal(showingDetails(card.current), details);
+    assert.equal(content(card.current).props.children[0].props.children, '1 of 1');
+    const [heading, sections] = body(card.current).props.children.props.children;
+    assert.equal(heading.props.children, details ? 'Preparation tip' : 'Bread');
+    assert.deepEqual(sections.map(section => section.props.children.map(text => text.props.children)), details
+      ? [['Ingredient', 'Flour, Water'], ['Preparation method', defaults.item.servingTip]]
+      : [['What to try', defaults.item.whatToTry], ['Why this may help', defaults.item.whyThisMayHelp]]);
     assertTextOutside3D(card.current);
     assert.equal(contentOpacity(card.current), 0);
     await act(async () => animations.at(-1).complete());

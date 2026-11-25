@@ -9,7 +9,7 @@
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 앞 카드는 수평으로 두고 뒤 카드 두 장을 반대 방향으로 배치
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 저장 카드 화살표와 홈 추천의 Use now·저장·제외 완료 화면 배치
+// Changed: 저장 카드 화살표와 홈 추천 양면·하단 버튼·완료 화면 배치
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
@@ -32,11 +32,15 @@ export const suggestionStyles = StyleSheet.create({
   recommendationFooter: { paddingHorizontal: 24, paddingBottom: 20, gap: 10 },
   recommendationContent: { flexGrow: 1, ...topBarStyles.content, paddingBottom: 16, gap: 20 },
   undoLabel: { fontFamily: fonts.poppinsSemiBold, fontSize: 14, lineHeight: 19, color: colors.homePrimary },
-  recommendationActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' },
-  useNowAction: { width: 118, flexShrink: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  recommendationActions: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-around' },
+  labeledAction: { alignItems: 'center', gap: 6 },
+  actionCircle: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
+  actionCaption: { fontFamily: fonts.poppinsRegular, fontSize: 11, lineHeight: 16, color: colors.suggestionMuted },
+  saveCaption: { color: colors.homePrimary },
+  useNowAction: { width: 118, flexShrink: 1, minHeight: 56, alignItems: 'center', justifyContent: 'center' },
   useNowLabel: { fontFamily: fonts.poppinsSemiBold, fontSize: 13, lineHeight: 20, color: colors.homePrimary },
-  dismissAction: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.homeBorder, backgroundColor: colors.surface },
-  saveAction: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.homePrimary },
+  dismissAction: { backgroundColor: colors.reviewBackground },
+  saveAction: { backgroundColor: colors.homePrimary },
   heading: { fontFamily: fonts.poppinsSemiBold, fontSize: 16, lineHeight: 21, color: colors.homeText },
   text: { fontFamily: fonts.poppinsRegular, fontSize: 14, lineHeight: 19, color: colors.homeText },
   muted: {
@@ -104,10 +108,13 @@ export const suggestionStyles = StyleSheet.create({
   hidden: { display: 'none' },
   cardStack: { height: 406, flexShrink: 1, minHeight: 280, marginTop: 6, marginBottom: 8 },
   stackFace: { flex: 1, borderRadius: 24, borderWidth: 1, borderColor: colors.suggestionCardBorder, backgroundColor: colors.surface, paddingHorizontal: 18, paddingVertical: 16, gap: 10, shadowColor: colors.homeText, shadowOpacity: 0.07, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
-  cardPosition: { fontFamily: fonts.poppinsSemiBold, fontSize: 12, lineHeight: 18, color: colors.suggestionMuted },
-  cardFoodName: { flex: 1, fontFamily: fonts.poppinsMedium, fontSize: 12, lineHeight: 18, color: colors.homeText, textAlign: 'right' },
+  cardPosition: { fontFamily: fonts.poppinsRegular, fontSize: 12, lineHeight: 18, color: colors.suggestionMuted },
+  cardTitle: { marginTop: 10, fontFamily: fonts.interBold, fontSize: 20, lineHeight: 26, color: colors.homeText },
+  cardSection: { marginTop: 12, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 18, gap: 10, backgroundColor: colors.reviewBackground },
+  cardSectionLabel: { fontFamily: fonts.poppinsSemiBold, fontSize: 15, lineHeight: 20, color: colors.reviewLabel },
+  cardActionText: { fontFamily: fonts.interBold, fontSize: 19, lineHeight: 31, color: colors.homeText },
+  cardBodyText: { fontFamily: fonts.interMedium, fontSize: 15, lineHeight: 24, color: colors.navyDecoration },
   ingredientChip: { borderRadius: 119, paddingHorizontal: 8, paddingVertical: 5, backgroundColor: colors.successSurface, borderWidth: 1, borderColor: colors.suggestionIngredientBorder },
-  infoLabel: { fontFamily: fonts.poppinsSemiBold, fontSize: 12, lineHeight: 18, color: colors.homePrimary, marginBottom: 24 },
   centeredText: { textAlign: 'center' },
   stateCard: { alignItems: 'center', justifyContent: 'center', padding: 24, gap: 20 },
   stateIcon: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.suggestionChipSurface },

@@ -11,7 +11,7 @@
 <!-- AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim -->
 <!-- Changed: 가드레일 판정 설명 추가 -->
 <!-- AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung -->
-<!-- Changed: 홈 추천 입력, 독립된 재생성 결과와 보호자별 일일 한도 정의 -->
+<!-- Changed: 홈 추천 입력, 독립된 재생성 결과와 일일 한도 정의 및 워크플로 설명 정리 -->
 
 # 추천 정책
 
@@ -34,8 +34,8 @@
 판정 모델에 보내, 제안의 재료마다와 제안 문장 전체가 아이의 알레르기·식이 제한에 어긋날 확률을 확인한다.
 확률이 임계값 이상이면 다시 쓰게 하고, 재시도를 다 쓰거나 판정 호출이 실패하면 제안을 만들지 않는다.
 판정은 확률적이므로 재료 카탈로그 검사를 대체하지 않고 더한다.
-현재 식사별 추천 경로의 [`workflow/prompts.py`](../app/features/suggestions/workflow/prompts.py)는 음식별 제안 하나 생성을
-지시한다. 사용자 프롬프트는 다음을 전달한다.
+추천 워크플로의 [`workflow/prompts.py`](../app/features/suggestions/workflow/prompts.py)는 요청한 음식마다
+제안 하나를 생성하도록 지시한다. 사용자 프롬프트는 다음을 전달한다.
 
 - 요청한 음식의 이름·재료·조리 방법과 식후 결과(`outcome`), 어려워한 이유(`difficulty_reasons`),
   따로 리뷰한 재료의 결과와 이유. 제안은 주어진 이유 중 하나 이상을 직접 줄이는 변화를 담는다.

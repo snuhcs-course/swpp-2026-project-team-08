@@ -8,7 +8,7 @@
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 앞쪽 텍스트 카드는 수평으로 두고 배경 카드 기울기 유지
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 추천 한 장에 자체 음식명과 앞·뒷면 표시
+// Changed: 홈 추천의 음식명·추천 이유와 재료·준비 방법을 카드 양면에 표시
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Pressable, ScrollView, Text, View } from 'react-native';
@@ -16,7 +16,6 @@ import type { Suggestion } from '../../../types/suggestionRecord';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { suggestionCopyFor } from '../../../util/strings';
-import { GeneratedSuggestionBody } from './GeneratedSuggestionBody';
 import { suggestionStyles as s } from '../screens/suggestionStyles';
 
 type Props = {
@@ -34,6 +33,9 @@ export function RecommendationCard(p: Props) {
   const [flipping, setFlipping] = useState(false);
   const flipInProgress = useRef(false);
   const c = suggestionCopyFor(p.language);
+  const sections = details
+    ? [[c.ingredient, p.item.ingredients.join(', ')], [c.preparationMethod, p.item.servingTip]]
+    : [[c.what, p.item.whatToTry], [c.why, p.item.whyThisMayHelp]];
   useEffect(() => {
     if (!flipping) return;
     let active = true;
@@ -95,7 +97,7 @@ export function RecommendationCard(p: Props) {
     setFlipping(true);
   };
   return (
-    <View style={s.cardStack}>
+    <View style={[s.cardStack, { flexGrow: 1 }]}>
       <Animated.View
         {...pan.panHandlers}
         style={{ flex: 1, transform: [{ translateX: x }] }}
@@ -136,10 +138,7 @@ export function RecommendationCard(p: Props) {
             extrapolate: 'clamp',
           }),
         }}>
-          {!details && <View style={s.row}>
-            <Text style={s.cardPosition}>{c.count}</Text>
-            <Text style={s.cardFoodName}>{p.item.foodName}</Text>
-          </View>}
+          <Text style={s.cardPosition}>{c.count}</Text>
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
             <Pressable
               accessibilityRole="button"
@@ -148,11 +147,11 @@ export function RecommendationCard(p: Props) {
               onPress={flip}
               style={{ flexGrow: 1 }}
             >
-              {details && <>
-                <Text style={s.infoLabel}>{c.foodDetails}</Text>
-                <Text style={[s.heading, { marginBottom: 12 }]}>{p.item.foodName}</Text>
-              </>}
-              <GeneratedSuggestionBody item={p.item} language={p.language} details={details} />
+              <Text style={s.cardTitle}>{details ? c.preparationTip : p.item.foodName}</Text>
+              {sections.map(([label, value], index) => <View key={label} style={s.cardSection}>
+                <Text style={s.cardSectionLabel}>{label}</Text>
+                <Text style={!details && index === 0 ? s.cardActionText : s.cardBodyText}>{value}</Text>
+              </View>)}
             </Pressable>
           </ScrollView>
           <Pressable accessibilityRole="button" disabled={p.disabled || flipping} onPress={flip}>

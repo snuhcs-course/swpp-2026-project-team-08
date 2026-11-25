@@ -11,7 +11,7 @@
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 추가 추천 선택 화면 연결 및 Skip 버튼 제거
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 카드의 저장·제외·재생성과 Use now 체크인 연결
+// Changed: 홈 추천 카드의 저장·제외 버튼 이름, 재생성과 Use now 체크인 연결
 
 import { Image } from 'expo-image';
 import { Redirect, router } from 'expo-router';
@@ -126,15 +126,19 @@ function RecommendationContent({ userId }: { userId: string }) {
       {model.decisionFailed && <Text accessibilityRole="alert" style={s.error}>{c.saveFailed}</Text>}
       <View style={s.recommendationActions}>
         <Pressable accessibilityRole="button" accessibilityLabel={c.dismiss} disabled={model.busy}
-          style={[s.dismissAction, model.busy && s.disabled]}
-          onPress={() => setReasons([])}><UiAssetIcon name="suggestion-dismiss" /></Pressable>
+          style={[s.labeledAction, model.busy && s.disabled]} onPress={() => setReasons([])}>
+          <View style={[s.actionCircle, s.dismissAction]}><UiAssetIcon name="suggestion-dismiss" /></View>
+          <Text style={s.actionCaption}>{c.dismissCaption}</Text>
+        </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel={c.useNow} disabled={model.busy}
           style={[s.useNowAction, model.busy && s.disabled]} onPress={saveAndOpenCheckin}>
           <Text style={s.useNowLabel}>{c.useNow}</Text>
         </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel={c.save} disabled={model.busy}
-          style={[s.saveAction, model.busy && s.disabled]}
-          onPress={() => model.changeDecision('saved')}><UiAssetIcon name="suggestion-save" /></Pressable>
+          style={[s.labeledAction, model.busy && s.disabled]} onPress={() => model.changeDecision('saved')}>
+          <View style={[s.actionCircle, s.saveAction]}><UiAssetIcon name="suggestion-save" /></View>
+          <Text style={[s.actionCaption, s.saveCaption]}>{c.saveCaption}</Text>
+        </Pressable>
       </View>
     </View>}
   </SafeAreaView>;

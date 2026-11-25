@@ -6,16 +6,24 @@
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 추천 결정 취소와 저장 목록 제거 API 분리
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 한 장 생성 및 추천 결정 요청
+// Changed: 홈 추천 생성·재생성, 남은 재생성 횟수 확인 및 추천 결정 요청
 
 import type { DismissReason, Suggestion } from '../../types/suggestionRecord';
 import { toSuggestion, toSuggestionDecision } from '../dto/suggestionDto';
-import { apiRequest } from '../network/apiClient';
+import { object } from '../dto/values';
+import { ApiError, apiRequest } from '../network/apiClient';
 
-export async function generateSuggestion(userId: string): Promise<Suggestion> {
-  const item = toSuggestion(await apiRequest<unknown>('/api/v1/suggestions', {
+export function isRegenerationLimitError(error: unknown): boolean {
+  return error instanceof ApiError && error.errorCode === 'REGENERATION_LIMIT_REACHED';
+}
+
+export async function generateSuggestion(userId: string, regenerationRequestId?: string) {
+  const dto = object(await apiRequest<unknown>('/api/v1/suggestions', {
     method: 'POST', signal: AbortSignal.timeout(10_000),
+    body: regenerationRequestId === undefined ? undefined
+      : JSON.stringify({ regeneration_request_id: regenerationRequestId }),
   }));
+  const item = toSuggestion(dto);
   if (item.userId !== userId || item.mealId !== null || item.foodId !== null || item.status !== 'pending') {
     throw new Error('Mismatched generated suggestion');
   }
@@ -24,7 +32,12 @@ export async function generateSuggestion(userId: string): Promise<Suggestion> {
     || !item.ingredients.length || item.ingredients.some(name => !name.trim())) {
     throw new Error('Incomplete generated suggestion');
   }
-  return item;
+  const remainingRegenerations = dto.remaining_regenerations;
+  if (typeof remainingRegenerations !== 'number'
+    || !Number.isSafeInteger(remainingRegenerations) || remainingRegenerations < 0) {
+    throw new Error('Invalid remaining regenerations');
+  }
+  return { suggestion: item, remainingRegenerations };
 }
 
 export async function decideSuggestion(

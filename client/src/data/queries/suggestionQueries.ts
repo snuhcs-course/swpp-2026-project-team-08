@@ -5,7 +5,7 @@
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 홈 새로고침을 위한 사용자별 추천 캐시 키 추가
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 생성·결정과 저장 목록 갱신
+// Changed: 홈 추천 생성·재생성 요청과 결정 후 저장 목록 갱신
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { DismissReason, Suggestion } from '../../types/suggestionRecord';
@@ -32,7 +32,8 @@ export function useSuggestionActions(userId: string) {
     void client.invalidateQueries({ queryKey: checkinReferenceKeys.savedSuggestions(userId) });
   };
   const generate = useMutation({
-    mutationFn: () => generateSuggestion(userId),
+    mutationFn: (regenerationRequestId: string | undefined) =>
+      generateSuggestion(userId, regenerationRequestId),
     networkMode: 'always',
     retry: false,
   });

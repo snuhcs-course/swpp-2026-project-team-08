@@ -8,7 +8,7 @@
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 추천 API 검증 이동 및 생성 실패 시 입력 보존 중복 검증 통합
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 한 장의 요청·본문 검증 및 사유 없는 제외 계약 확인
+// Changed: 홈 추천 생성·재생성 요청과 잔여 횟수, 사유 없는 제외 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -41,7 +41,8 @@ test('홈 추천 요청은 식사나 음식 ID 없이 현재 아이의 카드 �
     assert.equal(init.signal, controller.signal);
     return suggestion;
   };
-  const item = await api.generateSuggestion('1');
+  const { suggestion: item, remainingRegenerations } = await api.generateSuggestion('1');
+  assert.equal(remainingRegenerations, 10);
   assert.equal(item.status, 'pending');
   assert.equal(item.foodName, 'Rice');
   assert.equal(item.mealId, null);
@@ -51,13 +52,26 @@ test('홈 추천 요청은 식사나 음식 ID 없이 현재 아이의 카드 �
   assert.equal(item.causes, suggestion.causes);
 });
 
+test('재생성 요청은 요청 ID를 보내고 마지막 회차의 남은 횟수 0을 읽는다', async () => {
+  const requestId = '255c24cf-b7a4-4341-b6f0-4644142ccc58';
+  request = async (path, init) => {
+    assert.equal(path, '/api/v1/suggestions');
+    assert.equal(init.method, 'POST');
+    assert.deepEqual(JSON.parse(init.body), { regeneration_request_id: requestId });
+    return homeSuggestionResponse({ remaining_regenerations: 0 });
+  };
+  const result = await api.generateSuggestion('1', requestId);
+  assert.equal(result.remainingRegenerations, 0);
+});
+
 test('현재 아이의 완전한 새 카드 하나만 표시한다', async () => {
   for (const fields of [
     { user_id: '2' }, { meal_id: '8' }, { origin_food_id: '2' }, { status: 'SAVED' },
     { status: 'pending' }, { cooking_method: 'steamed' }, { origin_food_id: undefined },
     { cooking_method: null }, { ingredients: 'Potato' }, { ingredients: [] }, { ingredients: [' '] },
     { causes: undefined }, { serving_tip: null }, { food_name: '' }, { what_to_try: ' ' },
-    { why_this_may_help: ' ' },
+    { why_this_may_help: ' ' }, { remaining_regenerations: undefined },
+    { remaining_regenerations: -1 }, { remaining_regenerations: 0.5 }, { remaining_regenerations: '1' },
   ]) {
     request = async () => ({ ...suggestion, ...fields });
     await assert.rejects(api.generateSuggestion('1'), undefined, JSON.stringify(fields));

@@ -13,13 +13,16 @@
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 추천 생성 대상·중복 방지·실패 복구 검증 분리
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 한 장 생성·명시적 재시도·결정 중복 방지 검증
+// Changed: 홈 추천 생성·재시도·결정 중복 방지와 재생성 기기 환경 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
 const { homeSuggestionResponse } = require('../../fixtures/server-suggestion.cjs');
 const { React, act, renderHook, waitFor, deferred } = require('../../helpers/react-harness.cjs');
-require('../../helpers/native-boundaries.cjs').nativeBoundaries();
+require('../../helpers/native-boundaries.cjs').nativeBoundaries(name => {
+  if (name === 'expo') return { uuid: { v4: require('node:crypto').randomUUID } };
+  if (name === 'react-native') return { AppState: { addEventListener: () => ({ remove() {} }) } };
+});
 const { useRecommendationFlow } = require('../../../src/features/suggestions/hooks/useRecommendationFlow.ts');
 
 function generate(t, response) {

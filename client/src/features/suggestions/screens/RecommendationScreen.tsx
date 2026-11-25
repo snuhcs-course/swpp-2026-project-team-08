@@ -11,8 +11,9 @@
 // AI-generated with GPT-6, 2026-11-13, reviewed by Haechan Jung
 // Changed: 추가 추천 선택 화면 연결 및 Skip 버튼 제거
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 한 장 표시, 사유 선택·건너뛰기와 결정 되돌리기
+// Changed: 홈 추천 한 장 표시, 저장·제외 완료 화면에서 재생성·나가기
 
+import { Image } from 'expo-image';
 import { Redirect, router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { BackHandler, Pressable, ScrollView, Text, View } from 'react-native';
@@ -47,16 +48,32 @@ function RecommendationContent({ userId }: { userId: string }) {
     });
     return () => listener.remove();
   });
+  const saved = current?.status === 'saved';
   if (current && current.status !== 'pending') return <SafeAreaView style={s.root} edges={['top', 'bottom']}>
+    <AppHeader title={c.title} backLabel={c.backHome} onBack={back} disabled={model.busy} />
     <ScrollView contentContainerStyle={s.completed}>
-      <View style={s.completionBadge}><UiAssetIcon name="suggestion-complete" /></View>
-      <Text style={s.completionTitle}>{current.status === 'saved' ? c.savedNotice : c.dismissedNotice}</Text>
-      <View style={s.completionActions}>
-        <AppButton variant="suggestion" disabled={model.busy} label={c.savedTitle}
-          onPress={() => router.replace({ pathname: '/section/[name]', params: { name: 'ideas' } })} />
-        <AppButton variant="suggestion" secondary disabled={model.busy} label={c.backHome} onPress={back} />
+      <View style={[s.completionCard, saved ? s.savedBackground : s.dismissedBackground]}>
+        <Image source={saved ? require('../../../../assets/ui/suggestion-saved-badge.svg')
+          : require('../../../../assets/ui/suggestion-dismissed-badge.svg')}
+          style={saved ? s.savedBadge : s.dismissedBadge} contentFit="contain" />
+        <Text style={s.completionTitle}>{saved ? c.savedNotice : c.dismissedNotice}</Text>
+        {saved && <Text style={s.completionDetail}>{c.savedLocation}</Text>}
+        {!saved && current.dismissReasons.length > 0 && <View style={s.completionReasons}>
+          <Text style={s.reasonHeading}>{c.because}</Text>
+          {current.dismissReasons.map(reason =>
+            <Text key={reason} style={[s.text, s.centeredText]}>{c.reasons[reason]}</Text>)}
+        </View>}
+        <View style={s.completionActions}>
+          {model.decisionFailed && <Text accessibilityRole="alert" style={s.error}>{c.saveFailed}</Text>}
+          {model.regenerationFailed && <Text accessibilityRole="alert" style={s.error}>{c.generationTitle}</Text>}
+          <Text style={[s.muted, s.centeredText]}>{model.regenerationLimited ? c.dailyLimit : c.regenerateHint}</Text>
+          <AppButton variant="suggestion" disabled={model.busy || model.regenerationLimited}
+            label={model.regenerating ? c.generating : model.regenerationFailed ? c.retry : c.regenerate}
+            onPress={() => { setReasons(null); model.regenerate(); }} />
+          <AppButton variant="suggestion" secondary style={s.leaveButton} labelStyle={s.leaveLabel}
+            disabled={model.busy} label={c.leave} onPress={back} />
+        </View>
       </View>
-      {model.decisionFailed && <Text accessibilityRole="alert" style={s.error}>{c.saveFailed}</Text>}
     </ScrollView>
     <Pressable accessibilityRole="button" accessibilityLabel={c.undoLast}
       disabled={model.busy} style={s.completionUndo} onPress={() => {

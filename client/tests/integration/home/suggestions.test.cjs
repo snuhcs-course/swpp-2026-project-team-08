@@ -1,14 +1,14 @@
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 홈 추천 조회·실패 복구·캐시 공유와 사용자 전환 검증
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 진입·중복 탭·재진입·부족한 정보·조회 실패 검증
+// Changed: 홈 추천 생성 응답과 진입·중복 탭·재진입·입력 부족·조회 실패 검증
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, act, waitFor, deferred } = require('../../helpers/meal-checkin-screen.cjs');
 const { mealResponse } = require('../../fixtures/server-meal.cjs');
 const { profileResponse } = require('../../fixtures/account-profile.cjs');
-const { suggestionResponse } = require('../../fixtures/server-suggestion.cjs');
+const { homeSuggestionResponse } = require('../../fixtures/server-suggestion.cjs');
 
 const getSuggestion = app => control(app, 'button', 'Get a suggestion');
 
@@ -18,8 +18,7 @@ test('홈 추천 버튼은 식후 리뷰 전에도 추천 한 장을 열고 홈�
     if (path === '/api/v1/suggestions' && method === 'POST') {
       assert.equal(init.body, undefined);
       requests++;
-      return Response.json(suggestionResponse({ id: String(requests), meal_id: null, origin_food_id: null,
-        food_name: 'Potato mash', serving_tip: 'Serve it warm.' }));
+      return Response.json(homeSuggestionResponse({ id: String(requests), food_name: 'Potato mash' }));
     }
   } });
   await waitFor(() => app.container.textContent.includes('Awaiting review'));

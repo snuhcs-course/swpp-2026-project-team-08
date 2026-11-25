@@ -9,7 +9,7 @@
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 앞 카드는 수평으로 두고 뒤 카드 두 장을 반대 방향으로 배치
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 저장 카드 화살표 정렬과 식사별 추천 전용 스타일 정리
+// Changed: 저장 카드 화살표와 홈 추천의 저장·제외 완료 화면 배치
 
 import { topBarStyles } from '../../../components/AppHeader';
 import { StyleSheet } from 'react-native';
@@ -114,10 +114,19 @@ export const suggestionStyles = StyleSheet.create({
   loadingSegment: { width: 72, height: 6, borderRadius: 3, backgroundColor: colors.homePrimary },
   emptyState: { alignItems: 'center', gap: 20, paddingHorizontal: 16, paddingVertical: 110 },
   fullWidth: { alignSelf: 'stretch' },
-  completed: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', gap: 20, paddingHorizontal: 40, paddingVertical: 24 },
-  completionBadge: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.suggestionChipSurface },
-  completionTitle: { maxWidth: 260, fontFamily: fonts.poppinsSemiBold, fontSize: 22, lineHeight: 33, color: colors.homeText, textAlign: 'center' },
-  completionActions: { alignSelf: 'stretch', gap: 18 },
+  completed: { paddingHorizontal: 16, paddingTop: 44, paddingBottom: 24 },
+  completionCard: { minHeight: 493, borderRadius: 24, paddingTop: 36, paddingHorizontal: 24, paddingBottom: 48, alignItems: 'center', backgroundColor: colors.afterMealBackground, shadowColor: colors.homeText, shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 8 }, elevation: 3 },
+  savedBackground: { backgroundImage: `radial-gradient(ellipse at 50% 16%, ${colors.saveSavedHalo}, ${colors.afterMealBackground} 62%)` },
+  dismissedBackground: { backgroundImage: `radial-gradient(ellipse at 50% 16%, ${colors.saveErrorHalo}, ${colors.afterMealBackground} 62%)` },
+  savedBadge: { width: 133, height: 98, marginBottom: 14 },
+  dismissedBadge: { width: 88, height: 88, marginBottom: 24 },
+  completionTitle: { fontFamily: fonts.interBold, fontSize: 22, lineHeight: 31, color: colors.homeText, textAlign: 'center' },
+  completionDetail: { fontFamily: fonts.interRegular, fontSize: 14, lineHeight: 21, color: colors.suggestionMuted, textAlign: 'center', marginTop: 12 },
+  completionReasons: { alignSelf: 'stretch', gap: 5, marginTop: 18, padding: 12, borderRadius: 16, backgroundColor: colors.surface },
+  reasonHeading: { fontFamily: fonts.interMedium, fontSize: 13, textAlign: 'center', color: colors.error },
+  completionActions: { alignSelf: 'stretch', flexGrow: 1, justifyContent: 'flex-end', gap: 8, paddingTop: 20 },
+  leaveButton: { backgroundColor: 'transparent', borderWidth: 0 },
+  leaveLabel: { color: colors.homePrimary },
   completionUndo: { paddingHorizontal: 24, paddingBottom: 40 },
   dismissCard: { transform: [], backgroundColor: colors.suggestionDismissSurface },
   checkbox: { width: 20, height: 20, borderRadius: 5, borderWidth: 1, borderColor: colors.homeBorder, alignItems: 'center', justifyContent: 'center' },

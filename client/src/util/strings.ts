@@ -39,7 +39,7 @@
 // AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 식후 사진 교체 시트와 식전 사진 없음 안내
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천 진입·카드·제외 사유 건너뛰기 및 저장 목록 문구
+// Changed: 홈 추천 진입·카드·저장 목록과 결정 후 재생성 문구
 
 import type { Language } from '../types/profile';
 import type { CookingMethod } from '../types/recordValues';
@@ -659,7 +659,10 @@ const suggestionCopy = {
     save: 'Save suggestion', dismiss: 'Dismiss suggestion', dismissTitle: 'What does not work for you?',
     reasons: { restriction: 'This conflicts with an allergy or required restriction', dislike: 'My child dislikes this food or form', not_fit: 'This does not fit our food preferences', too_much_preparation: 'Too much preparation', ingredient_hard_to_get: 'The ingredient is hard to get', already_tried: 'We already tried this' },
     done: 'Done',
-    savedNotice: '✓ Saved to suggestions', dismissedNotice: 'Suggestion dismissed',
+    savedNotice: 'Suggestion saved', dismissedNotice: 'Suggestion dismissed',
+    savedLocation: 'You can find this suggestion in Saved Suggestions.', because: 'Because',
+    regenerate: 'Regenerate', regenerateHint: 'You can regenerate another suggestion.', leave: 'Leave',
+    dailyLimit: 'You’ve used all 10 regenerations today. Try again after midnight (KST).',
     saveFailed: "Changes couldn't be saved. Please try again.",
     savedTitle: 'Saved Suggestions',
     savedIntro: 'Suggestions you can come back to', backHome: 'Back to Home', empty: 'No saved suggestions yet',
@@ -682,7 +685,10 @@ const suggestionCopy = {
     save: '추천 저장', dismiss: '추천 제외', dismissTitle: '어떤 점이 맞지 않나요?',
     reasons: { restriction: '알레르기나 식이 제한과 맞지 않아요', dislike: '아이가 이 음식이나 모양을 싫어해요', not_fit: '우리 가족의 음식 취향과 맞지 않아요', too_much_preparation: '준비할 것이 너무 많아요', ingredient_hard_to_get: '재료를 구하기 어려워요', already_tried: '이미 시도했어요' },
     done: '추천 제외하기',
-    savedNotice: '✓ 추천을 저장했어요', dismissedNotice: '추천을 제외했어요',
+    savedNotice: '추천을 저장했어요', dismissedNotice: '추천을 제외했어요',
+    savedLocation: '저장된 추천 목록에서 이 추천을 다시 볼 수 있어요.', because: '제외 이유',
+    regenerate: '새 추천 받기', regenerateHint: '다른 추천을 한 장 더 받을 수 있어요.', leave: '나가기',
+    dailyLimit: '오늘은 새 추천 10회를 모두 사용했어요. 한국 시간 자정부터 다시 받을 수 있어요.',
     saveFailed: '변경을 저장하지 못했어요. 다시 시도해 주세요.',
     savedTitle: '저장된 추천',
     savedIntro: '다시 살펴볼 수 있는 추천이에요', backHome: '홈으로 돌아가기', empty: '아직 저장된 추천이 없어요',

@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 계정 전환 초안 보관 및 복원
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 거부 음식 온보딩
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각 프로필 저장 및 온보딩
@@ -23,7 +25,8 @@
 // Changed: 익숙한 음식 중복 추가 방지
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
+import { archiveDraft, clearArchivedDraft, clearDraft, readArchivedDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
+import { readSession } from '../../data/storage/authStorage';
 import { useAuth } from '../../providers/AuthProvider';
 import { useProfile } from '../../providers/ProfileProvider';
 import type { ChildProfile, SafeFood } from '../../types/profile';
@@ -53,7 +56,17 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (status === 'loading' || ready) return;
     let active = true;
-    readDraft()
+    (async () => {
+      const current = await readDraft();
+      if (current != null || !auth.session?.user.id) return current;
+      const archived = await readArchivedDraft(auth.session.user.id);
+      if (archived == null) return null;
+      if (!restoreDraft(archived)) throw new Error('Archived draft is invalid');
+      await saveDraft(archived);
+      try { await clearArchivedDraft(auth.session.user.id); }
+      catch (error) { await clearDraft(); throw error; }
+      return archived;
+    })()
       .then((storedDraft) => {
         if (!active) return;
         const restored = restoreDraft(storedDraft);
@@ -84,6 +97,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     const { user } = auth.session;
     setDraft((current) => ({
       ...current,
+      step: current.step === 'account' ? 'consent' : current.step,
       caregiverName: user.fullName,
       caregiverEmail: user.email,
     }));
@@ -233,6 +247,41 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       setSaveStatus('saved');
     } finally { finishing.current = false; }
   }, []);
+  const archiveForAccountSwitch = useCallback(async () => {
+    const userId = auth.session?.user.id;
+    if (!userId || finishing.current) throw new Error('Account is unavailable');
+    finishing.current = true;
+    try {
+      await saveGate.current.discard(async () => {
+        await archiveDraft(userId, draft);
+        await clearDraft();
+      });
+      const next = emptyDraft();
+      clearedDraft.current = next;
+      accountFieldsInitialized.current = false;
+      setDraft(next);
+      setPassword('');
+      setEditing(false);
+      setHasDraft(false);
+      setSaveStatus('saved');
+    } finally { finishing.current = false; }
+  }, [auth.session, draft]);
+  const restoreAfterSignIn = useCallback(async () => {
+    const user = (await readSession())?.user;
+    if (!user) throw new Error('Account is unavailable');
+    const stored = await readArchivedDraft(user.id);
+    if (stored == null) return;
+    const restored = restoreDraft(stored);
+    if (!restored) throw new Error('Archived draft is invalid');
+    await saveDraft(restored);
+    try { await clearArchivedDraft(user.id); }
+    catch (error) { await clearDraft(); throw error; }
+    clearedDraft.current = null;
+    accountFieldsInitialized.current = true;
+    setDraft(restored);
+    setHasDraft(true);
+    setSaveStatus('saved');
+  }, []);
   const retrySave = useCallback(() => persist(draft), [draft, persist]);
   const retryLoad = useCallback(() => {
     skipFirstSave.current = true;
@@ -270,7 +319,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     draft, password, saveStatus, editing, hasDraft,
     setPassword, setField, setConsent, toggleList,
     addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setSensory, setRefusedFoodInput, addRefusedFood, removeRefusedFood, setStep,
-    startEdit, startProfileEdit, cancelEdit, applyEdit, resetLocal,
+    startEdit, startProfileEdit, cancelEdit, applyEdit, resetLocal, archiveForAccountSwitch, restoreAfterSignIn,
     retrySave, retryLoad, finish, canContinue: (step) => (step === 'review' || step === 'sensory') ? canFinish(draft)
       : step === 'account' && (editing || !!auth.session) ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)
         : canContinue(step, draft, password),

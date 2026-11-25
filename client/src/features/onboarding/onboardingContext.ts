@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 계정 전환 초안 보관 명령
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 거부 음식 온보딩
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각 프로필 저장 및 온보딩
@@ -48,6 +50,8 @@ export type OnboardingContextValue = {
   cancelEdit: () => Promise<void>;
   applyEdit: () => Promise<boolean>;
   resetLocal: () => Promise<void>;
+  archiveForAccountSwitch: () => Promise<void>;
+  restoreAfterSignIn: () => Promise<void>;
   retrySave: () => Promise<void>;
   retryLoad: () => void;
   finish: () => Promise<boolean>;

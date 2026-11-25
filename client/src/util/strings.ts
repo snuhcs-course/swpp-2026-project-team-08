@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 다른 계정 로그인 문구
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 거부 음식 문구
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 감각 프로필 저장 및 온보딩
@@ -131,7 +133,7 @@ const en = {
     reviewNotAnswered: 'Not answered', reviewNone: 'None',
     conflict: 'A safe food name matches a listed restriction. Review it before relying on that food.',
     looksGood: 'Looks good',
-    start: 'Start setup', resume: 'Resume setup',
+    start: 'Start setup', resume: 'Resume setup', signInAnother: 'Or Sign in to another account',
     logIn: 'Log in', logOut: 'Log out',
     loginTitle: 'Welcome back',
     loginSubtitle: 'Log in with your caregiver account.',
@@ -406,7 +408,7 @@ const ko = {
     conflict: '익숙한 음식 이름이 식이 제한 항목과 겹쳐요. 해당 음식을 다시 확인해 주세요.',
     looksGood: '프로필 저장하기',
     createAccount: '계정 만들기', returnToReview: '확인 화면으로', cancelEdit: '수정 취소',
-    start: '설정 시작하기', resume: '설정 이어하기',
+    start: '설정 시작하기', resume: '설정 이어하기', signInAnother: '또는 다른 계정으로 로그인',
     logIn: '로그인', logOut: '로그아웃',
     loginTitle: '다시 오신 것을 환영해요',
     loginSubtitle: '보호자 계정으로 로그인해 주세요.',

@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 제거된 초안 단계의 감각 프로필 복원 검증
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 익숙한 음식 추가·삭제·선택 정보 초안 복원 검증
@@ -49,7 +51,7 @@ test('초안을 복원하면 빈 값·공백 계정 정보와 이후 단계의 �
     await saveDraft(draft);
     const harness = mount();
     const model = await harness.flush();
-    assert.deepEqual(model.draft, draft);
+    assert.deepEqual(model.draft, { ...draft, step: 'sensory' });
     assert.equal(model.hasDraft, true);
     assert.equal(model.canContinue('account'), false);
     harness.unmount();
@@ -108,4 +110,17 @@ test('프로필 수정 중 이메일을 지운 뒤 자녀 이름을 바꿔도 �
   model = await harness.flush();
   assert.equal(model.draft.caregiverEmail, '');
   assert.equal((await readDraft()).caregiverEmail, '');
+});
+
+test('계정 전환 중 앱이 종료되면 같은 계정에서 보관된 초안을 복원한다', async () => {
+  values.clear();
+  const { archiveDraft, readArchivedDraft } = require('../../../src/data/storage/onboardingDraftStorage.ts');
+  const draft = { ...emptyDraft(), step: 'child', childName: 'Child' };
+  await archiveDraft(account.user.id, draft);
+  const harness = mount();
+  const model = await harness.flush();
+  assert.deepEqual(model.draft, draft);
+  assert.deepEqual(await readDraft(), draft);
+  assert.equal(await readArchivedDraft(account.user.id), null);
+  harness.unmount();
 });

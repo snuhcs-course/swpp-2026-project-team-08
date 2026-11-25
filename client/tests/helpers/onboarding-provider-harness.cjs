@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 계정 초안 복원 테스트 경계
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 익숙한 음식 추가·삭제·선택 정보 초안 복원 검증
@@ -73,6 +75,7 @@ const originalLoad = Module._load;
 Module._load = function (name, ...args) {
   if (name === 'react') return react;
   if (name === 'react/jsx-runtime') return { jsx: (_type, props) => props.value };
+  if (name === '../../data/storage/authStorage') return { readSession: async () => activeHarness.auth.session };
   if (name === '../../providers/AuthProvider') return { useAuth: () => activeHarness.auth };
   if (name === '../../providers/ProfileProvider') return { useProfile: () => activeHarness.profileState };
   if (name === '@react-native-async-storage/async-storage') return {

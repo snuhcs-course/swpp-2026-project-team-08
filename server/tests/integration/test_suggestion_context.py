@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 제거에 따른 검증 갱신
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 거부 음식 추천 문맥 검증
 # AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
@@ -132,9 +134,6 @@ async def test_prompt_carries_reasons_safe_foods_and_past_eaten_foods(
     assert "TEXTURE.HARDNESS" not in prompt and "SMELL.SULFUR" not in prompt
     # 리뷰하지 않은 재료는 결과로 싣지 않는다.
     assert "감자 (outcome" not in prompt
-    # 프로필의 safe food 는 기록된 조리·제공 형태와 함께 실린다.
-    assert "- 감자, cooking: 푹 삶기, note: 작게 잘라 제공" in prompt
-    assert "- 쌀밥, cooking: 질게 짓기" in prompt
     # 과거 식사와 같은 식사에서 잘 먹은 음식도 실린다. 이번에 제안할 음식 자신은 뺀다.
     eaten = eaten_section(prompt)
     assert "- 계란찜, cooking_method: 찌기, ingredients: 달걀" in eaten
@@ -198,9 +197,6 @@ async def test_other_users_records_never_reach_the_prompt(
     stranger = await auth_headers(api_client, "stranger@example.com")
     await save_profile(api_client, owner)
     other = request_body()
-    other["profile"]["safe_foods"] = [
-        {"name": "남의 safe food", "preparation": None, "presentation_note": None}
-    ]
     assert (
         await api_client.put("/api/v1/onboarding", headers=stranger, json=other)
     ).status_code == 200
@@ -212,7 +208,6 @@ async def test_other_users_records_never_reach_the_prompt(
     await generate(api_client, owner, meal, 0)
 
     prompt = user_prompt(model)
-    assert "남의 safe food" not in prompt
     assert "남이 잘 먹은 음식" not in prompt
     assert EATEN_HEADING not in prompt
 
@@ -224,7 +219,6 @@ async def test_generation_works_when_nothing_is_known_about_what_the_child_eats_
     model = install_model(monkeypatch, [batch("0")])
     owner = await auth_headers(api_client, "owner@example.com")
     body = request_body()
-    body["profile"]["safe_foods"] = []
     assert (await api_client.put("/api/v1/onboarding", headers=owner, json=body)).status_code == 200
     await seed_ingredient("Rice")
     meal = await save_meal(api_client, owner, "2026-10-20", food("당근볶음", "당근"))

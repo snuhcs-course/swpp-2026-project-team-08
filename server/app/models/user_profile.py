@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 기능 제거
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 거부 음식 프로필 저장
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -15,7 +17,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Boolean, DateTime, Enum, ForeignKey, Integer, String, false
+from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base, StringList
@@ -44,10 +46,6 @@ class UserProfile(Base):
     dietary_pattern: Mapped[DietaryPattern | None] = mapped_column(
         Enum(DietaryPattern, native_enum=False, create_constraint=False, length=30),
         nullable=True,
-    )
-    # 빈 목록을 명시적 없음으로 추정하지 않는다.
-    no_safe_foods: Mapped[bool] = mapped_column(
-        Boolean, default=False, server_default=false(), nullable=False
     )
     sensory_textures: Mapped[list[str] | None] = mapped_column(StringList, nullable=True)
     sensory_note: Mapped[str | None] = mapped_column(String, nullable=True)

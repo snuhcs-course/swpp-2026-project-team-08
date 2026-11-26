@@ -1,3 +1,5 @@
+<!-- AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo -->
+<!-- Changed: Safe Food 제거 반영 -->
 <!-- AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo -->
 <!-- AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung -->
 <!-- Changed: 삭제한 실제 서버 테스트 실행 안내 제거 -->
@@ -8,7 +10,7 @@ NurtureBites is a meal tracker and planning app for caregivers of autistic child
 ## Features
 
 - **Caregiver accounts:** Sign up, log in, and keep access/refresh tokens in Expo SecureStore.
-- **Child profile onboarding:** Consent, child basics, allergies, dietary restrictions, family food groups, and Safe Foods. Progress auto-saves.
+- **Child profile onboarding:** Consent, child basics, allergies, dietary restrictions, dietary pattern, sensory preferences, and refused foods. Progress auto-saves.
 - **Meal check-in:** Log date, meal type, and place; optionally add a before-meal photo; enter served foods, ingredients, and preparation by hand. Unfinished drafts can be resumed.
 - **After-meal review:** Record each food as Eaten, Tasted, Untouched, or Unclear; optionally track ingredient outcomes and difficulty reasons; optionally add an after-meal photo.
 - **Home (Today):** Start a new meal, continue a draft, and pick up meals that still need an after-meal review.

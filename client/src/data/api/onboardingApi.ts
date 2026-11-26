@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: Safe Food 기능 제거
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 거부 음식 API 변환
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -28,12 +30,6 @@ type ProfileResponse = {
   age_group: string;
   restrictions: string[];
   dietary_pattern: string | null;
-  safe_foods: {
-    id: string;
-    name: string;
-    preparation: string | null;
-    presentation_note: string | null;
-  }[] | null;
   sensory_textures?: string[];
   sensory_note?: string;
   refused_foods?: { id: string; name: string; cooking_method: string | null; reasons: string[] }[];
@@ -69,15 +65,10 @@ function parseResponse(value: unknown): OnboardingResponse {
   const profile = value.profile;
   if (!record(profile) || !isUserId(profile.user_id) || typeof profile.child_name !== 'string'
     || typeof profile.age_group !== 'string' || typeof profile.updated_at !== 'string'
-    || !Array.isArray(profile.restrictions)
-    || (profile.safe_foods !== null && !Array.isArray(profile.safe_foods))) {
+    || !Array.isArray(profile.restrictions)) {
     throw new Error('Invalid onboarding profile');
   }
-  if (!profile.restrictions.every((item: unknown) => typeof item === 'string' && RESTRICTION_PATTERN.test(item))
-    || !(profile.safe_foods ?? []).every((food: unknown) => record(food) && isUserId(food.id)
-      && typeof food.name === 'string'
-      && (food.preparation === null || typeof food.preparation === 'string')
-      && (food.presentation_note === null || typeof food.presentation_note === 'string'))) {
+  if (!profile.restrictions.every((item: unknown) => typeof item === 'string' && RESTRICTION_PATTERN.test(item))) {
     throw new Error('Invalid onboarding profile details');
   }
   if ((profile.sensory_textures !== undefined && (!Array.isArray(profile.sensory_textures) || !profile.sensory_textures.every((item: unknown) => typeof item === 'string')))
@@ -129,11 +120,6 @@ export function toOnboardingWrite(profile: ChildProfile) {
       refused_foods: (profile.refusedFoods ?? []).map(food => ({ id: food.id, name: food.name,
         cooking_method: nullable(food.cookingMethod, value => toApiEnum(value, cookingMethodIds)),
         reasons: food.reasons.map(toDifficultyReason) })),
-      safe_foods: profile.noSafeFoods ? null : profile.safeFoods.map((food) => ({
-        name: food.name,
-        preparation: food.preparation.trim() || null,
-        presentation_note: food.presentationNote || null,
-      })),
     },
     consents: [
       { kind: 'ACCOUNT_PRIVACY', granted: profile.consent.accountPrivacy },
@@ -173,11 +159,6 @@ export function fromOnboardingResponse(
     refusedFoods: (source.refused_foods ?? []).map(food => ({ id: food.id, name: food.name,
       cookingMethod: nullable(food.cooking_method, value => fromApiEnum(value, cookingMethodIds)),
       reasons: food.reasons.map(fromDifficultyReason) })),
-    noSafeFoods: source.safe_foods === null,
-    safeFoods: (source.safe_foods ?? []).map((food) => ({
-      id: food.id, name: food.name, preparation: food.preparation ?? '',
-      presentationNote: food.presentation_note ?? '',
-    })),
     updatedAt: source.updated_at,
   };
 }
@@ -191,11 +172,9 @@ export async function writeOnboarding(profile: ChildProfile): Promise<Onboarding
     method: 'PUT',
     body: JSON.stringify(toOnboardingWrite(profile)),
   }));
+  if (!response.profile) throw new Error('Onboarding profile was not saved');
   const saved = response.profile
     && nullable(response.profile.dietary_pattern, (value) => fromApiEnum(value, dietaryPatternIds));
-  if (!response.profile || (response.profile.safe_foods === null) !== !!profile.noSafeFoods) {
-    throw new Error('Safe foods answer was not saved');
-  }
   if (JSON.stringify(response.profile.sensory_textures ?? []) !== JSON.stringify(profile.sensoryTextures ?? [])
     || (response.profile.sensory_note ?? '') !== (profile.sensoryNote ?? '')) {
     throw new Error('Sensory profile was not saved');

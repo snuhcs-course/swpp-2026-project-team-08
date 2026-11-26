@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: Safe Food 기능 제거
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 거부 음식 온보딩
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -18,13 +20,6 @@ import type { CookingMethod } from './recordValues';
 import type { DietaryPattern } from './dietaryPattern';
 
 export type Language = 'ko' | 'en';
-
-export type SafeFood = {
-  id: string;
-  name: string;
-  preparation: string;
-  presentationNote: string;
-};
 
 export type RefusedFood = {
   id: string;
@@ -49,8 +44,6 @@ export type ChildProfile = {
   // 채식 제한은 입력 화면이 없다. 서버에 이미 저장된 값이 저장할 때 사라지지 않도록 보존만 한다.
   vegetarianRestrictions: string[];
   dietaryPattern?: DietaryPattern | null;
-  safeFoods: SafeFood[];
-  noSafeFoods?: boolean;
   sensoryTextures?: string[];
   sensoryNote?: string;
   refusedFoods?: RefusedFood[];

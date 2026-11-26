@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: 현재 단계 이동 초안 검증
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 현재 온보딩 단계의 이전·다음 이동과 진행 표시 검증
 const { test } = require('node:test');
@@ -19,8 +21,6 @@ function answers(step) {
     restrictions: ['GLUTEN_FREE'], dietaryPattern: 'pescatarian',
     sensoryTextures: ['hardness.hard'], sensoryNote: 'Likes crisp food',
     refusedFoods: [{ id: 'peas', name: 'Peas', cookingMethod: null, reasons: [] }],
-    safeFoods: [{ id: 'apple', name: 'Apple', preparation: 'Sliced', presentationNote: 'Blue bowl' }],
-    safeFoodInput: { name: 'Banana', preparation: 'Mashed', presentationNote: 'Small plate' },
   };
 }
 async function assertScreen(app, step, expected) {

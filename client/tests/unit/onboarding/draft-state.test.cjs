@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: 현재 초안 구조 검증
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 초안 fixture 를 채식 제한 필드와 서버 연령 값으로 변경
@@ -31,7 +33,7 @@ const { isDraft, restoreDraft } = require('../../../src/features/onboarding/rule
 test('필수 필드가 없거나 동의·음식 입력 형식이 잘못되면 초안 검사를 통과하지 못한다', () => {
   assert.equal(isDraft(emptyDraft()), true);
   for (const invalid of [null, {}, { ...emptyDraft(), step: 'unknown' },
-    { ...emptyDraft(), consent: { accountPrivacy: 'true' } }, { ...emptyDraft(), safeFoodInput: null }]) {
+    { ...emptyDraft(), consent: { accountPrivacy: 'true' } }, { ...emptyDraft(), refusedFoodInput: null }]) {
     assert.equal(isDraft(invalid), false);
   }
 });
@@ -46,9 +48,7 @@ test('없음과 실제 선택을 구분하고 음식 목록·설명·작성 중 
     ...emptyDraft(), step: 'sensory', childName: '나루', ageRange: 'AGE_4_5',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
     allergies: ['EGGS', 'MILK_DAIRY'],
-    restrictions: ['none'], dietaryPattern: 'no_specific_pattern', noSafeFoods: true,
-    safeFoods: [{ id: 'apple', name: 'Apple', preparation: 'Sliced', presentationNote: 'Blue bowl' }],
-    safeFoodInput: { name: 'Banana', preparation: 'Mashed', presentationNote: 'Small plate' },
+    restrictions: ['none'], dietaryPattern: 'no_specific_pattern',
   };
   assert.deepEqual(restoreDraft(JSON.parse(JSON.stringify(draft))), draft);
 });
@@ -58,9 +58,8 @@ test('초안의 기본 구조·필드 형식이 잘못되면 복원하지 않는
   for (const invalid of [null, [], 'draft', {}, { ...draft, step: null },
     { ...draft, childName: 1 }, { ...draft, consent: { ...draft.consent, aiTraining: 'false' } },
     { ...draft, allergies: null }, { ...draft, restrictions: 'none' },
-    { ...draft, vegetarianRestrictions: {} }, { ...draft, safeFoods: {} },
-    { ...draft, dietaryPattern: 'unknown' }, { ...draft, noSafeFoods: 'true' },
-    { ...draft, safeFoodInput: { ...draft.safeFoodInput, presentationNote: null } },
+    { ...draft, vegetarianRestrictions: {} },
+    { ...draft, dietaryPattern: 'unknown' },
   ]) {
     assert.equal(restoreDraft(invalid), null, JSON.stringify(invalid));
   }

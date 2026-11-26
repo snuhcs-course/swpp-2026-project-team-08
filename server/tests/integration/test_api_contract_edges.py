@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 제거 계약 검증
 # AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
 # Changed: Register separate check-in ingredient storage in the schema contract
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
@@ -49,7 +51,6 @@ def test_only_current_tables_and_routes_are_registered() -> None:
         "users",
         "user_email_change_attempts",
         "user_profiles",
-        "user_profile_safe_foods",
         "user_consents",
     }
     assert not any(path.startswith("/api/v1/children/") for path in app.openapi()["paths"])

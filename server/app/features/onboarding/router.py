@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 기능 제거
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 거부 음식 프로필 저장
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -24,7 +26,6 @@ from app.features.auth.dependencies import CurrentUser
 from app.features.onboarding.dto import (
     OnboardingResponse,
     OnboardingWriteRequest,
-    SafeFoodDto,
     UserConsentDto,
     UserProfileDto,
 )
@@ -33,7 +34,6 @@ from app.features.onboarding.service import (
     OnboardingInput,
     OnboardingService,
     OnboardingSnapshot,
-    SafeFoodInput,
 )
 from app.models.restriction_enums import RestrictionType
 
@@ -53,12 +53,6 @@ def _input(payload: OnboardingWriteRequest) -> OnboardingInput:
         age_group=profile.age_group,
         restrictions=tuple(profile.restrictions),
         dietary_pattern=profile.dietary_pattern,
-        safe_foods=None
-        if profile.safe_foods is None
-        else tuple(
-            SafeFoodInput(item.name, item.preparation, item.presentation_note)
-            for item in profile.safe_foods
-        ),
         consents=tuple(ConsentInput(item.kind, item.granted) for item in payload.consents),
         sensory_textures=tuple(profile.sensory_textures)
         if profile.sensory_textures is not None
@@ -80,17 +74,6 @@ def _response(snapshot: OnboardingSnapshot) -> OnboardingResponse:
             age_group=profile.age_group,
             restrictions=[RestrictionType(item) for item in profile.restrictions],
             dietary_pattern=profile.dietary_pattern,
-            safe_foods=None
-            if profile.no_safe_foods
-            else [
-                SafeFoodDto(
-                    id=str(food.id),
-                    name=food.name,
-                    preparation=food.preparation,
-                    presentation_note=food.presentation_note,
-                )
-                for food in snapshot.safe_foods
-            ],
             sensory_textures=profile.sensory_textures or [],
             sensory_note=profile.sensory_note or "",
             refused_foods=profile.refused_foods or [],

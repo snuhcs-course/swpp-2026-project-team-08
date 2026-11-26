@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 기능 제거
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 거부 음식 추천 문맥 반영
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
@@ -67,18 +69,6 @@ class FoodInput:
 
 
 @dataclass(frozen=True)
-class FamiliarSafeFood:
-    """보호자가 프로필에 적은, 아이가 안정적으로 먹는 음식(safe food).
-
-    `preparation` 과 `presentation_note` 는 그 음식이 기록된 조리·제공 형태다.
-    """
-
-    name: str
-    preparation: str | None = None
-    presentation_note: str | None = None
-
-
-@dataclass(frozen=True)
 class FamiliarEatenFood:
     """과거 식사에서 아이가 먹은(`EATEN`) 것으로 리뷰된 음식."""
 
@@ -100,7 +90,6 @@ class RefusedFood:
 class FamiliarFoods:
     """아이가 잘 먹는다고 기록된 음식들. 새 제안을 익숙한 것과 이어 주는 데 쓴다."""
 
-    safe_foods: tuple[FamiliarSafeFood, ...] = ()
     eaten_foods: tuple[FamiliarEatenFood, ...] = ()
     refused_foods: tuple[RefusedFood, ...] = ()
 

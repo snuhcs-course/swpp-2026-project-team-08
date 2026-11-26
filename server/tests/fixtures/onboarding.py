@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 제거에 따른 검증 갱신
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with GPT-6, 2026-10-28, reviewed by Seoyeon Heo
 # Changed: Align onboarding fixture with supported food preferences
@@ -15,14 +17,6 @@ def request_body() -> dict:
             "age_group": "AGE_4_5",
             "restrictions": ["ALLERGY.EGGS", "VEGETARIAN.DAIRY"],
             "dietary_pattern": None,
-            "safe_foods": [
-                {
-                    "name": "감자",
-                    "preparation": "푹 삶기",
-                    "presentation_note": "작게 잘라 제공",
-                },
-                {"name": "쌀밥", "preparation": "질게 짓기", "presentation_note": None},
-            ],
         },
         "consents": [
             {"kind": "ACCOUNT_PRIVACY", "granted": True},

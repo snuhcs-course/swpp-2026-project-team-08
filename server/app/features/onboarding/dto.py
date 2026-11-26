@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 기능 제거
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 거부 음식 프로필 저장
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -36,31 +38,6 @@ class StrictDto(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class SafeFoodWriteDto(StrictDto):
-    """안전 음식 입력. id 는 서버가 발급하므로 받지 않는다.
-
-    제공 형태(preparation)와 추가 설명은 선택 자유 입력이다. 공백뿐인 제공 형태는 null 이다.
-    """
-
-    name: str
-    preparation: str | None
-    presentation_note: str | None
-
-    @field_validator("name")
-    @classmethod
-    def not_blank(cls, value: str) -> str:
-        if not value.strip():
-            raise ValueError("value must not be blank")
-        return value
-
-    @field_validator("preparation")
-    @classmethod
-    def blank_to_none(cls, value: str | None) -> str | None:
-        if value is None or not value.strip():
-            return None
-        return value
-
-
 class RefusedFoodDto(StrictDto):
     id: str
     name: str
@@ -92,8 +69,6 @@ class ProfileWriteDto(StrictDto):
     sensory_textures: list[str] | None = None
     sensory_note: str | None = None
     refused_foods: list[RefusedFoodDto] | None = None
-    # null: 명시적 없음, []: 미응답, 비어 있지 않은 목록: 답변
-    safe_foods: list[SafeFoodWriteDto] | None
 
     @field_validator("refused_foods")
     @classmethod
@@ -165,17 +140,12 @@ class OnboardingWriteRequest(StrictDto):
         return self
 
 
-class SafeFoodDto(SafeFoodWriteDto):
-    id: str
-
-
 class UserProfileDto(StrictDto):
     user_id: str
     child_name: str
     age_group: AgeGroup
     restrictions: list[RestrictionType]
     dietary_pattern: DietaryPattern | None
-    safe_foods: list[SafeFoodDto] | None
     sensory_textures: list[str]
     sensory_note: str
     refused_foods: list[RefusedFoodDto]

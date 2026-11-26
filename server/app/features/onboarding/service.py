@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 기능 제거
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 거부 음식 프로필 저장
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -15,22 +17,15 @@
 
 from dataclasses import dataclass
 
-from sqlalchemy import delete, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.timezone import now_kst
 from app.features.onboarding.consent_version import DOCUMENT_VERSION
-from app.models import UserConsent, UserProfile, UserProfileSafeFood
+from app.models import UserConsent, UserProfile
 from app.models.restriction_enums import RestrictionType
 from app.models.user_consent_enums import UserConsentKind
 from app.models.user_profile_enums import AgeGroup, DietaryPattern
-
-
-@dataclass(frozen=True)
-class SafeFoodInput:
-    name: str
-    preparation: str | None
-    presentation_note: str | None
 
 
 @dataclass(frozen=True)
@@ -45,7 +40,6 @@ class OnboardingInput:
     age_group: AgeGroup
     restrictions: tuple[RestrictionType, ...]
     dietary_pattern: DietaryPattern | None
-    safe_foods: tuple[SafeFoodInput, ...] | None
     consents: tuple[ConsentInput, ...]
     sensory_textures: tuple[str, ...] | None = None
     sensory_note: str | None = None
@@ -55,7 +49,6 @@ class OnboardingInput:
 @dataclass(frozen=True)
 class OnboardingSnapshot:
     profile: UserProfile | None
-    safe_foods: tuple[UserProfileSafeFood, ...]
     consents: tuple[UserConsent, ...]
 
 
@@ -65,18 +58,6 @@ class OnboardingService:
 
     async def read(self, user_id: int) -> OnboardingSnapshot:
         profile = await self._session.get(UserProfile, user_id)
-        safe_foods: tuple[UserProfileSafeFood, ...] = ()
-        if profile is not None:
-            # 순서는 저장하지 않는다. 저장한 순서대로 id 가 커지므로 id 순으로 읽는다.
-            safe_foods = tuple(
-                (
-                    await self._session.scalars(
-                        select(UserProfileSafeFood)
-                        .where(UserProfileSafeFood.user_id == user_id)
-                        .order_by(UserProfileSafeFood.id)
-                    )
-                ).all()
-            )
         rows = (
             await self._session.scalars(
                 select(UserConsent)
@@ -87,7 +68,7 @@ class OnboardingService:
         latest: dict[UserConsentKind, UserConsent] = {}
         for row in rows:
             latest.setdefault(row.kind, row)
-        return OnboardingSnapshot(profile, safe_foods, tuple(latest.values()))
+        return OnboardingSnapshot(profile, tuple(latest.values()))
 
     async def write(self, user_id: int, data: OnboardingInput) -> OnboardingSnapshot:
         profile = await self._session.get(UserProfile, user_id)
@@ -98,7 +79,6 @@ class OnboardingService:
         profile.age_group = data.age_group
         profile.restrictions = [item.value for item in data.restrictions]
         profile.dietary_pattern = data.dietary_pattern
-        profile.no_safe_foods = data.safe_foods is None
         if data.sensory_textures is not None:
             profile.sensory_textures = list(data.sensory_textures)
         if data.sensory_note is not None:
@@ -108,23 +88,6 @@ class OnboardingService:
         # 안전 음식만 바뀌어도 프로필의 수정 시각이 갱신되도록 직접 지정한다.
         profile.updated_at = now_kst()
         await self._session.flush()
-
-        # 안전 음식은 id 를 받지 않고 저장할 때마다 전체를 교체한다. 요청 순서대로 넣으므로
-        # id 도 그 순서로 커지고, 이 테이블을 참조하는 곳이 없어서 id 가 바뀌어도 문제가 없다.
-        await self._session.execute(
-            delete(UserProfileSafeFood).where(UserProfileSafeFood.user_id == user_id)
-        )
-        for food in data.safe_foods or ():
-            self._session.add(
-                UserProfileSafeFood(
-                    user_id=user_id,
-                    name=food.name,
-                    preparation=food.preparation,
-                    presentation_note=food.presentation_note,
-                )
-            )
-            # 한 행씩 flush 해서 요청 순서대로 id 가 발급되게 한다.
-            await self._session.flush()
 
         previous_consents = {row.kind: row for row in (await self.read(user_id)).consents}
         for consent in data.consents:

@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 기능 제거
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 거부 음식 추천 문맥 반영
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
@@ -26,7 +28,6 @@ from app.features.suggestions.workflow.reasons import describe_reason
 from app.features.suggestions.workflow.state import (
     FamiliarEatenFood,
     FamiliarFoods,
-    FamiliarSafeFood,
     FoodInput,
     IngredientResult,
     RefusedFood,
@@ -52,7 +53,7 @@ SYSTEM_PROMPT = """당신은 편식하는 아이를 둔 보호자를 돕는 식�
      "~해서" 문장이고 여러 개면 ' / '로 구분됩니다. 적힌 뜻 그대로만 읽고 덧붙이지 않습니다.
    - ingredient_results: 보호자가 재료별로 따로 기록한 outcome과 어려워한 이유.
    - rejected_suggestion: 보호자가 거절한 기존 제안과 제외 이유.
-2. 아이가 평소 잘 먹는 음식: 보호자가 적은 safe food와 과거 식사에서 잘 먹은 음식입니다.
+2. 아이가 평소 잘 먹는 음식: 과거 식사에서 잘 먹은 음식입니다.
    기록은 적힌 조리·제공 형태에만 해당합니다.
 3. 아이가 거부한 음식: 보호자가 기록한 거부 음식과 그 조리법·이유입니다.
    알려진 형태에 대한 참고 정보이며, 알레르기나 영구적인 금지로 해석하지 않습니다.
@@ -141,15 +142,6 @@ def _describe_ingredient_result(result: IngredientResult) -> str:
     return f"{result.name} ({detail})"
 
 
-def _describe_safe_food(food: FamiliarSafeFood) -> str:
-    parts = [food.name]
-    if food.preparation:
-        parts.append(f"cooking: {food.preparation}")
-    if food.presentation_note:
-        parts.append(f"note: {food.presentation_note}")
-    return "- " + ", ".join(parts)
-
-
 def _describe_eaten_food(food: FamiliarEatenFood) -> str:
     parts = [food.name]
     if food.cooking_method:
@@ -171,9 +163,6 @@ def _describe_refused_food(food: RefusedFood) -> str:
 def _familiar_sections(familiar: FamiliarFoods) -> str:
     """아이가 잘 먹는 음식 구역. 기록이 없으면 빈 문자열이다."""
     sections = []
-    if familiar.safe_foods:
-        lines = "\n".join(_describe_safe_food(food) for food in familiar.safe_foods)
-        sections.append(f"아이가 평소 잘 먹는 음식 (보호자가 적은 safe food):\n{lines}")
     if familiar.eaten_foods:
         lines = "\n".join(_describe_eaten_food(food) for food in familiar.eaten_foods)
         heading = "과거 식사에서 아이가 잘 먹은 음식 (식후 리뷰에 '잘 먹었다'로 기록)"

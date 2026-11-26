@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 제거에 따른 검증 갱신
 # AI-generated with Claude Sonnet 5.5, 2026-10-19, reviewed by Jaemin Kim
 # Changed: add suggestion LLM workflow
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
@@ -19,7 +21,6 @@ from app.features.suggestions.workflow.schemas import SuggestionDraft, Suggestio
 from app.features.suggestions.workflow.state import (
     FamiliarEatenFood,
     FamiliarFoods,
-    FamiliarSafeFood,
     FoodInput,
     IngredientResult,
 )
@@ -122,10 +123,6 @@ async def test_rejected_after_attempts_are_exhausted():
 
 
 FAMILIAR = FamiliarFoods(
-    safe_foods=(
-        FamiliarSafeFood("감자", preparation="푹 삶기", presentation_note="작게 잘라 제공"),
-        FamiliarSafeFood("쌀밥"),
-    ),
     eaten_foods=(
         FamiliarEatenFood("계란찜", cooking_method="STEAMED", ingredients=("달걀", "물")),
         FamiliarEatenFood("바나나"),
@@ -143,10 +140,6 @@ async def test_prompt_carries_the_foods_the_child_eats_well():
     await generate_suggestions(FOODS, CATALOG, familiar=FAMILIAR, llm=llm)
 
     prompt = prompt_of(llm)
-    assert "아이가 평소 잘 먹는 음식 (보호자가 적은 safe food):" in prompt
-    assert "- 감자, cooking: 푹 삶기, note: 작게 잘라 제공" in prompt
-    # 조리·제공 형태를 적지 않은 safe food 는 이름만 나온다.
-    assert "\n- 쌀밥\n" in prompt
     assert "과거 식사에서 아이가 잘 먹은 음식 (식후 리뷰에 '잘 먹었다'로 기록):" in prompt
     assert "- 계란찜, cooking_method: 찌기, ingredients: 달걀, 물" in prompt
     assert "\n- 바나나\n" in prompt

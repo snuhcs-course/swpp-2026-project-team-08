@@ -1,3 +1,5 @@
+<!-- AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo -->
+<!-- Changed: Safe Food 제거 반영 -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim -->
 <!-- Changed: DB 스키마 개편에 따른 클라이언트 API 연동 변경 정리 -->
 <!-- AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung -->
@@ -180,14 +182,6 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
   값은 `VEGAN` `LACTO_VEGETARIAN` `OVO_VEGETARIAN` `LACTO_OVO_VEGETARIAN` `PESCATARIAN` `FLEXITARIAN`
   `NO_SPECIFIC_PATTERN` 중 하나이며 `restrictions`와 별개다. 추천 생성에는 적용하지 않는다.
 - `age_group`은 2절의 `AgeGroup` 값을 쓴다.
-- `safe_foods`는 필수 필드다. `null`은 명시적 없음, `[]`는 미응답, 비어 있지 않은 배열은 음식 목록이다.
-  기존 클라이언트의 빈 배열은 미응답으로 유지한다. `preparation`은 자유 입력 제공 형태이며 `presentation_note`는 추가 설명이다.
-  서버는 `user_profiles.no_safe_foods`로 명시적 없음을 저장한다. 신규 클라이언트보다 서버 마이그레이션·API를 먼저 배포한다.
-  - 항목은 `name`, `preparation`, `presentation_note`만 보낸다. `name`은 필수이고 `preparation`(조리 방법)과
-    `presentation_note`는 선택이라 `null`을 보낼 수 있다. 공백뿐인 `preparation`은 `null`로 저장한다. **`id`는 보내지 않는다.** 서버가 저장할 때마다 목록 전체를
-    요청 순서대로 교체하고, 응답에 새로 발급한 `id`를 돌려준다. `id`가 저장마다 바뀔 수 있으므로 클라이언트는 이 `id`를 서버에
-    다시 보내거나 영구 키로 쓰지 않는다. 서버가 순서를 따로 보장하는 필드는 없지만 저장한 순서(`id` 순)로 돌려준다.
-  - 다른 사용자의 안전 음식을 가리키는 요청이 없어졌으므로 에러 코드 `SAFE_FOOD_NOT_FOUND`는 더 이상 나오지 않는다.
 
 ### 요청과 응답
 
@@ -198,8 +192,7 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
     "child_name": "아이",
     "age_group": "AGE_4_5",
     "restrictions": ["ALLERGY.EGGS", "VEGETARIAN.DAIRY"],
-    "dietary_pattern": null,
-    "safe_foods": [{ "name": "감자", "preparation": "푹 삶기", "presentation_note": null }]
+    "dietary_pattern": null
   },
   "consents": [
     { "kind": "ACCOUNT_PRIVACY", "granted": true },
@@ -209,7 +202,7 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
 }
 ```
 
-- 응답(`GET`, `PUT` 공통)의 `profile`은 같은 필드에 `user_id`, `updated_at`을 더하고, `safe_foods`의 각 항목에 서버가 발급한 `id`가 들어간다.
+- 응답(`GET`, `PUT` 공통)의 `profile`은 같은 필드에 `user_id`, `updated_at`을 더하고.
   프로필이 아직 없으면 `"profile": null`이다.
 - `consents`는 세 종류가 모두 한 번씩 있어야 하고 `ACCOUNT_PRIVACY`, `PHOTO_ANALYSIS`는 `granted`가 `true`여야 한다.
 - 이전 필드(`safety`, `food_preferences`, 안전 음식의 `status`와 `id`)를 보내면 **422 `VALIDATION_ERROR`**로 거절된다.
@@ -239,8 +232,6 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
   소문자 snake_case이고 `onboardingApi.ts`가 `fromApiEnum`/`toApiEnum`으로 서버 값과 바꾼다. 식생활 유형은 추천 제한이 아니다.
 - 채식 제한(`VEGETARIAN.*`, 프로필 필드 `vegetarianRestrictions`)은 입력 화면이 없다. 서버에 이미 저장된 값만 저장할 때 그대로
   다시 보내 보존한다. 채식 제한이 하나라도 있으면 `hasVerifiedNoRestrictions`는 거짓이다.
-- 안심 음식 단계도 선택 사항이다. `noSafeFoods`는 없어졌고 빈 목록이 "없음"이다. 안심 음식 `id`는 보내지 않는다.
-  조리 방법(`preparation`)은 선택 입력이라 비워 두면 `null`로 보내고, 받은 `null`은 빈 문자열로 복원한다.
 - 직접 입력(`other`)과 카탈로그 검색, 카탈로그 전용 선택지는 제거했다.
 - 이전 형식의 로컬 초안과 프로필 캐시는 필드 검증에서 걸러져 버려진다.
 

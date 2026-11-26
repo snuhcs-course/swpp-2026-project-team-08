@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: Safe Food 기능 제거
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 거부 음식 온보딩
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -19,12 +21,10 @@ export const steps = [
   'account', 'consent', 'child', 'allergies', 'family', 'sensory', 'refused-foods', 'review',
 ] as const;
 
-export type OnboardingStep = (typeof steps)[number] | 'restrictions' | 'safe-foods';
+export type OnboardingStep = (typeof steps)[number] | 'restrictions';
 
 export type OnboardingDraft = Omit<ChildProfile, 'id' | 'updatedAt'> & {
-  noSafeFoods: boolean;
   step: OnboardingStep;
-  safeFoodInput: { name: string; preparation: string; presentationNote: string };
   refusedFoodInput: Omit<NonNullable<ChildProfile['refusedFoods']>[number], 'id'>;
 };
 
@@ -33,14 +33,13 @@ export function emptyDraft(): OnboardingDraft {
     step: 'account', caregiverName: '', caregiverEmail: '', childName: '', ageRange: '',
     consent: { accountPrivacy: false, photoAnalysis: false, aiTraining: false },
     allergies: [], restrictions: [], vegetarianRestrictions: [], dietaryPattern: null,
-    safeFoods: [], noSafeFoods: false, sensoryTextures: [], sensoryNote: '',
-    safeFoodInput: { name: '', preparation: '', presentationNote: '' },
+    sensoryTextures: [], sensoryNote: '',
     refusedFoods: [], refusedFoodInput: { name: '', cookingMethod: null, reasons: [] },
   };
 }
 
 export function isStep(value: string): value is OnboardingStep {
-  return (steps as readonly string[]).includes(value) || value === 'restrictions' || value === 'safe-foods';
+  return (steps as readonly string[]).includes(value) || value === 'restrictions';
 }
 
 export function nextStep(step: OnboardingStep): OnboardingStep {

@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: Safe Food 기능 제거
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 계정 전환 초안 보관 및 복원
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -29,10 +31,10 @@ import { archiveDraft, clearArchivedDraft, clearDraft, readArchivedDraft, readDr
 import { readSession } from '../../data/storage/authStorage';
 import { useAuth } from '../../providers/AuthProvider';
 import { useProfile } from '../../providers/ProfileProvider';
-import type { ChildProfile, SafeFood } from '../../types/profile';
+import type { ChildProfile } from '../../types/profile';
 import { isDietaryPattern } from '../../util/dietaryPattern';
 import { createDraftSaveGate } from './draftSaveGate';
-import { canAddSafeFood, canContinue, canFinish, restoreDraft, toggleExclusive, validEmail } from './rules';
+import { canContinue, canFinish, restoreDraft, toggleExclusive, validEmail } from './rules';
 import { emptyDraft, type OnboardingDraft, type OnboardingStep } from './types';
 import { OnboardingContext, type ConsentField, type DraftField, type ListField, type SaveStatus } from './onboardingContext';
 
@@ -138,29 +140,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const toggleList = useCallback((field: ListField, value: string) => {
     setDraft((current) => ({ ...current, [field]: toggleExclusive(current[field], value) }));
   }, []);
-  const addSafeFood = useCallback((food: Omit<SafeFood, 'id'>) => {
-    if (!canAddSafeFood(food)) return;
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    setDraft((current) => current.noSafeFoods || !canAddSafeFood(food, current.safeFoods) ? current : ({
-      ...current,
-      safeFoods: [...current.safeFoods, {
-        id,
-        name: food.name.trim(),
-        preparation: food.preparation.trim(),
-        presentationNote: food.presentationNote.trim(),
-      }],
-      safeFoodInput: { name: '', preparation: '', presentationNote: '' },
-    }));
-  }, []);
-  const setSafeFoodInput = useCallback((field: keyof OnboardingDraft['safeFoodInput'], value: string) => {
-    setDraft((current) => current.noSafeFoods ? current : ({ ...current, safeFoodInput: { ...current.safeFoodInput, [field]: value } }));
-  }, []);
-  const removeSafeFood = useCallback((id: string) => {
-    setDraft((current) => current.noSafeFoods ? current : ({ ...current, safeFoods: current.safeFoods.filter((food) => food.id !== id) }));
-  }, []);
-  const setNoSafeFoods = useCallback((value: boolean) => {
-    setDraft((current) => ({ ...current, noSafeFoods: value }));
-  }, []);
   const setSensory = useCallback((sensoryTextures: string[], sensoryNote: string) => {
     setDraft((current) => ({ ...current, sensoryTextures, sensoryNote }));
   }, []);
@@ -185,7 +164,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const draftFromProfile = useCallback((step: OnboardingStep): OnboardingDraft | null => {
     if (!profile) return null;
     const { id: _id, updatedAt: _updatedAt, ...values } = profile;
-    return { ...values, noSafeFoods: values.noSafeFoods ?? false, step, safeFoodInput: { name: '', preparation: '', presentationNote: '' }, refusedFoodInput: { name: '', cookingMethod: null, reasons: [] } };
+    return { ...values, step, refusedFoodInput: { name: '', cookingMethod: null, reasons: [] } };
   }, [profile]);
   const startEdit = useCallback(() => {
     if (editing) return;
@@ -213,10 +192,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     finishing.current = true;
     try {
       await persist(draft);
-      const { step: _step, safeFoodInput: _safeFoodInput, refusedFoodInput: _refusedFoodInput, ...values } = draft;
+      const { step: _step, refusedFoodInput: _refusedFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,
-        safeFoods: draft.noSafeFoods ? [] : draft.safeFoods,
         id: profile?.id ?? auth.session?.user.id ?? `child-${Date.now()}`,
         updatedAt: new Date().toISOString(),
       };
@@ -293,10 +271,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     finishing.current = true;
     try {
       await persist(draft);
-      const { step: _step, safeFoodInput: _safeFoodInput, refusedFoodInput: _refusedFoodInput, ...values } = draft;
+      const { step: _step, refusedFoodInput: _refusedFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,
-        safeFoods: draft.noSafeFoods ? [] : draft.safeFoods,
         id: profile?.id ?? auth.session?.user.id ?? `child-${Date.now()}`,
         updatedAt: new Date().toISOString(),
       };
@@ -318,7 +295,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     ready: ready && status !== 'loading', loadError: loadError || status === 'error',
     draft, password, saveStatus, editing, hasDraft,
     setPassword, setField, setConsent, toggleList,
-    addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setSensory, setRefusedFoodInput, addRefusedFood, removeRefusedFood, setStep,
+    setSensory, setRefusedFoodInput, addRefusedFood, removeRefusedFood, setStep,
     startEdit, startProfileEdit, cancelEdit, applyEdit, resetLocal, archiveForAccountSwitch, restoreAfterSignIn,
     retrySave, retryLoad, finish, canContinue: (step) => (step === 'review' || step === 'sensory') ? canFinish(draft)
       : step === 'account' && (editing || !!auth.session) ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)

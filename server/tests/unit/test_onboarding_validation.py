@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 제거 계약 검증
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 # Changed: 제한 목록·안전 음식·대문자 enum 기준으로 DTO 검증 테스트 재작성
@@ -129,40 +131,6 @@ def test_restriction_type_exposes_its_category():
     assert RestrictionType.DIETARY_APPROACH_GLUTEN_FREE.category == "DIETARY_APPROACH"
 
 
-def test_safe_foods_may_be_empty():
-    body = request_body()
-    body["profile"]["safe_foods"] = []
-    assert OnboardingWriteRequest.model_validate(body).profile.safe_foods == []
-
-
-@pytest.mark.parametrize(
-    "food",
-    [
-        {"name": " ", "preparation": "삶기", "presentation_note": None},
-        {"name": "감자", "preparation": "삶기"},
-        {"name": "감자", "presentation_note": None},
-        {"id": "1", "name": "감자", "preparation": "삶기", "presentation_note": None},
-    ],
-    ids=["blank-name", "missing-note", "missing-preparation", "client-id-not-accepted"],
-)
-def test_invalid_safe_foods_are_rejected(food):
-    body = request_body()
-    body["profile"]["safe_foods"] = [food]
-    with pytest.raises(ValidationError):
-        OnboardingWriteRequest.model_validate(body)
-
-
-@pytest.mark.parametrize("preparation", [None, "", "  "], ids=["null", "empty", "blank"])
-def test_safe_food_preparation_is_optional_and_blank_becomes_null(preparation):
-    # 조리 방법은 선택 입력이다. 이전 계약은 공백을 거절했지만 이제 null 로 정규화한다.
-    body = request_body()
-    body["profile"]["safe_foods"] = [
-        {"name": "감자", "preparation": preparation, "presentation_note": None}
-    ]
-    food = OnboardingWriteRequest.model_validate(body).profile.safe_foods[0]
-    assert food.preparation is None
-
-
 def test_dietary_pattern_is_required_and_nullable():
     body = request_body()
     assert OnboardingWriteRequest.model_validate(body).profile.dietary_pattern is None
@@ -175,7 +143,7 @@ def test_dietary_pattern_is_required_and_nullable():
         OnboardingWriteRequest.model_validate(body)
 
 
-@pytest.mark.parametrize("field", ["safety", "food_preferences"])
+@pytest.mark.parametrize("field", ["safety", "food_preferences", "safe_foods"])
 def test_removed_profile_fields_are_rejected(field):
     body = request_body()
     body["profile"][field] = {}

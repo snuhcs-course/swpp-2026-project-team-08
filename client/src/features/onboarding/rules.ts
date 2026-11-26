@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: Safe Food 기능 제거
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 거부 음식 온보딩
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -20,11 +22,9 @@
 // Changed: 사용자 지정 사유 초안 검증
 
 import { emptyDraft, isStep, type OnboardingDraft, type OnboardingStep } from './types';
-import type { Language, SafeFood } from '../../types/profile';
 import { cookingMethodIds } from '../../types/recordValues';
 import { difficultyOptions, textureQuestions } from '../../util/difficultyOptions';
 import { isDietaryPattern } from '../../util/dietaryPattern';
-import { labelFor } from '../../util/strings';
 
 export function validEmail(value: string): boolean {
   return /\S+@\S+\.\S+/.test(value);
@@ -32,13 +32,6 @@ export function validEmail(value: string): boolean {
 
 export function validPassword(value: string): boolean {
   return value.length >= 8;
-}
-
-export function canAddSafeFood(input: OnboardingDraft['safeFoodInput'], foods: SafeFood[] = []): boolean {
-  return !!input.name.trim() && !foods.some((food) =>
-    food.name === input.name.trim()
-    && food.preparation === input.preparation.trim()
-    && food.presentationNote === input.presentationNote.trim());
 }
 
 export function toggleExclusive(values: string[], value: string, noneValue = 'none'): string[] {
@@ -57,7 +50,6 @@ export function canContinue(step: OnboardingStep, draft: OnboardingDraft, passwo
     case 'allergies': return draft.allergies.length > 0;
     case 'restrictions': return draft.restrictions.length > 0;
     case 'family': return draft.dietaryPattern == null || isDietaryPattern(draft.dietaryPattern);
-    case 'safe-foods': return draft.noSafeFoods || draft.safeFoods.length > 0;
     default: return true;
   }
 }
@@ -69,18 +61,6 @@ export function canFinish(draft: OnboardingDraft): boolean {
     && !!draft.childName.trim() && !!draft.ageRange
     && draft.allergies.length > 0
     && (draft.dietaryPattern == null || isDietaryPattern(draft.dietaryPattern));
-}
-
-export function matchingSafeFoods(draft: OnboardingDraft, language: Language): string[] {
-  if (draft.noSafeFoods) return [];
-  const restricted = [
-    ...draft.allergies.filter((item) => item !== 'none').flatMap((item) => [labelFor('allergies', item, language), labelFor('allergies', item, 'en')]),
-    ...draft.restrictions.filter((item) => item !== 'none').flatMap((item) => [labelFor('restrictions', item, language), labelFor('restrictions', item, 'en')]),
-  ].map((item) => item.toLocaleLowerCase());
-  return draft.safeFoods.filter((food) => {
-    const description = `${food.name} ${food.preparation}`.toLocaleLowerCase();
-    return restricted.some((item) => description.includes(item));
-  }).map((food) => food.name);
 }
 
 function validRefusedFood(value: unknown, needsId: boolean): boolean {
@@ -106,8 +86,6 @@ export function isDraft(value: unknown): value is OnboardingDraft {
   const draft = value as Record<string, unknown>;
   const consent = draft.consent && typeof draft.consent === 'object'
     ? draft.consent as Record<string, unknown> : null;
-  const safeFoodInput = draft.safeFoodInput && typeof draft.safeFoodInput === 'object'
-    ? draft.safeFoodInput as Record<string, unknown> : null;
   return typeof draft.step === 'string' && isStep(draft.step)
     && typeof draft.caregiverName === 'string'
     && typeof draft.caregiverEmail === 'string'
@@ -115,15 +93,13 @@ export function isDraft(value: unknown): value is OnboardingDraft {
     && typeof draft.ageRange === 'string'
     && !!consent && typeof consent.accountPrivacy === 'boolean'
     && typeof consent.photoAnalysis === 'boolean' && typeof consent.aiTraining === 'boolean'
-    && ['allergies', 'restrictions', 'vegetarianRestrictions', 'safeFoods']
+    && ['allergies', 'restrictions', 'vegetarianRestrictions']
       .every((key) => Array.isArray(draft[key]))
     && (draft.dietaryPattern == null || isDietaryPattern(draft.dietaryPattern))
     && Array.isArray(draft.sensoryTextures) && draft.sensoryTextures.every((item) => typeof item === 'string')
     && typeof draft.sensoryNote === 'string'
     && Array.isArray(draft.refusedFoods) && draft.refusedFoods.every((item) => validRefusedFood(item, true))
-    && validRefusedFood(draft.refusedFoodInput, false)
-    && typeof draft.noSafeFoods === 'boolean'
-    && !!safeFoodInput && ['name', 'preparation', 'presentationNote'].every((key) => typeof safeFoodInput[key] === 'string');
+    && validRefusedFood(draft.refusedFoodInput, false);
 }
 
 export function restoreDraft(value: unknown): OnboardingDraft | null {
@@ -134,7 +110,6 @@ export function restoreDraft(value: unknown): OnboardingDraft | null {
   const draft = {
     ...stored,
     dietaryPattern: stored.dietaryPattern ?? null,
-    noSafeFoods: stored.noSafeFoods ?? false,
     refusedFoods: stored.refusedFoods ?? [],
     refusedFoodInput: stored.refusedFoodInput ?? { name: '', cookingMethod: null, reasons: [] },
     sensoryTextures: stored.sensoryTextures ?? [], sensoryNote: stored.sensoryNote ?? '',

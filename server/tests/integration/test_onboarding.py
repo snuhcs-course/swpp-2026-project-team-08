@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 제거에 따른 검증 갱신
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 감각 프로필과 거부 음식 계약 검증
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
@@ -43,14 +45,11 @@ async def test_onboarding_round_trip_and_idempotent_consents(api_client: AsyncCl
         "age_group",
         "restrictions",
         "dietary_pattern",
-        "safe_foods",
         "sensory_textures",
         "sensory_note",
         "refused_foods",
         "updated_at",
     }
-    assert [food["name"] for food in profile["safe_foods"]] == ["감자", "쌀밥"]
-    assert all(food["id"].isdecimal() for food in profile["safe_foods"])
     assert len(body["consents"]) == 3
     assert {row["kind"] for row in body["consents"]} == {
         "ACCOUNT_PRIVACY",
@@ -83,38 +82,6 @@ async def test_onboarding_round_trip_and_idempotent_consents(api_client: AsyncCl
 
 
 @pytest.mark.asyncio
-async def test_safe_foods_are_replaced_in_request_order(api_client: AsyncClient) -> None:
-    headers = await auth_headers(api_client, "parent@example.com")
-    first = await api_client.put("/api/v1/onboarding", headers=headers, json=request_body())
-    first_foods = first.json()["profile"]["safe_foods"]
-    assert [food["name"] for food in first_foods] == ["감자", "쌀밥"]
-
-    # 순서를 바꾸고 하나를 더해 저장하면 요청 순서대로 돌아온다.
-    reordered = request_body()
-    reordered["profile"]["safe_foods"] = [
-        {"name": "쌀밥", "preparation": "질게 짓기", "presentation_note": None},
-        {"name": "감자", "preparation": "찌기", "presentation_note": "작게"},
-        {"name": "바나나", "preparation": "으깨기", "presentation_note": None},
-    ]
-    second = await api_client.put("/api/v1/onboarding", headers=headers, json=reordered)
-    assert second.status_code == 200, second.text
-    foods = second.json()["profile"]["safe_foods"]
-    assert [food["name"] for food in foods] == ["쌀밥", "감자", "바나나"]
-    assert foods[1]["preparation"] == "찌기"
-    assert (await api_client.get("/api/v1/onboarding", headers=headers)).json() == second.json()
-
-    # 빈 목록을 저장하면 안전 음식이 모두 없어진다.
-    cleared = request_body()
-    cleared["profile"]["safe_foods"] = []
-    removed = await api_client.put("/api/v1/onboarding", headers=headers, json=cleared)
-    assert removed.status_code == 200, removed.text
-    assert removed.json()["profile"]["safe_foods"] == []
-    assert (await api_client.get("/api/v1/onboarding", headers=headers)).json()["profile"][
-        "safe_foods"
-    ] == []
-
-
-@pytest.mark.asyncio
 async def test_onboarding_is_authenticated_and_isolated(api_client: AsyncClient) -> None:
     assert (await api_client.get("/api/v1/onboarding")).status_code == 401
     assert (await api_client.put("/api/v1/onboarding", json=request_body())).status_code == 401
@@ -127,21 +94,6 @@ async def test_onboarding_is_authenticated_and_isolated(api_client: AsyncClient)
         "profile": None,
         "consents": [],
     }
-
-    # 한 사용자의 저장이 다른 사용자의 안전 음식에 영향을 주지 않는다.
-    other = request_body()
-    other["profile"]["safe_foods"] = [
-        {"name": "고구마", "preparation": "굽기", "presentation_note": None}
-    ]
-    assert (
-        await api_client.put("/api/v1/onboarding", headers=second, json=other)
-    ).status_code == 200
-    assert [
-        food["name"]
-        for food in (await api_client.get("/api/v1/onboarding", headers=first)).json()["profile"][
-            "safe_foods"
-        ]
-    ] == ["감자", "쌀밥"]
 
 
 @pytest.mark.asyncio
@@ -216,31 +168,6 @@ async def test_dietary_pattern_field_is_required(api_client: AsyncClient) -> Non
     del payload["profile"]["dietary_pattern"]
     response = await api_client.put("/api/v1/onboarding", headers=headers, json=payload)
     assert response.status_code == 422
-
-
-@pytest.mark.asyncio
-async def test_safe_food_preparation_is_optional_and_blank_is_stored_as_null(
-    api_client: AsyncClient,
-) -> None:
-    headers = await auth_headers(api_client, "optional-food@example.com")
-    body = request_body()
-    body["profile"]["safe_foods"] = [
-        {"name": "감자", "preparation": None, "presentation_note": None},
-        {"name": "쌀밥", "preparation": "  ", "presentation_note": "작게"},
-        {"name": "바나나", "preparation": "으깨기", "presentation_note": None},
-    ]
-    saved = await api_client.put("/api/v1/onboarding", headers=headers, json=body)
-    assert saved.status_code == 200, saved.text
-    foods = saved.json()["profile"]["safe_foods"]
-    assert [food["preparation"] for food in foods] == [None, None, "으깨기"]
-    assert (await api_client.get("/api/v1/onboarding", headers=headers)).json() == saved.json()
-
-    # 이름은 여전히 필수다.
-    body["profile"]["safe_foods"][0]["name"] = " "
-    invalid = await api_client.put("/api/v1/onboarding", headers=headers, json=body)
-    assert invalid.status_code == 422
-    after = (await api_client.get("/api/v1/onboarding", headers=headers)).json()
-    assert [food["name"] for food in after["profile"]["safe_foods"]] == ["감자", "쌀밥", "바나나"]
 
 
 @pytest.mark.asyncio

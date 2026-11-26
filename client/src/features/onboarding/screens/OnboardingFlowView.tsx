@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: Safe Food 기능 제거
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 온보딩 주관식 입력 시 키보드 위로 스크롤
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -73,9 +75,7 @@ export function OnboardingFlowView({
     return () => subscription.remove();
   }, [step]);
   const s = copyFor(language);
-  const title = step === 'refused-foods' ? s.refusedFoods.title(childName || s.onboarding.childFallback) : step === 'sensory' ? s.sensory.title : step === 'safe-foods'
-    ? s.onboarding.safeFoodsTitle(childName || s.onboarding.childFallback)
-    : step === 'review'
+  const title = step === 'refused-foods' ? s.refusedFoods.title(childName || s.onboarding.childFallback) : step === 'sensory' ? s.sensory.title : step === 'review'
       ? s.onboarding.reviewTitle(childName || s.onboarding.childFallback)
       : s.onboarding.titles[step];
   return (
@@ -96,7 +96,7 @@ export function OnboardingFlowView({
           </View>
           <ProgressBar variant="continuous" current={stepIndex + 1} total={stepCount}
             style={styles.track} fillStyle={styles.fill} accessible={false} />
-          {step !== 'sensory' && step !== 'family' && <Text style={styles.subtitle}>{step === 'refused-foods' ? s.refusedFoods.description(childName || s.onboarding.childFallback) : step === 'safe-foods' ? s.onboarding.safeFoodsDescription(childName || s.onboarding.childFallback) : s.onboarding.subtitles[step]}</Text>}
+          {step !== 'sensory' && step !== 'family' && <Text style={styles.subtitle}>{step === 'refused-foods' ? s.refusedFoods.description(childName || s.onboarding.childFallback) : s.onboarding.subtitles[step]}</Text>}
         </View>
         <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}
           onScroll={event => { scrollOffset.current = event.nativeEvent.contentOffset.y; }} scrollEventThrottle={16}>

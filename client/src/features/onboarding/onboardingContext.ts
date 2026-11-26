@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: Safe Food 기능 제거
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 계정 전환 초안 보관 명령
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -16,7 +18,6 @@
 // Changed: 익숙한 음식 없음 선택 명령 추가
 
 import { createContext } from 'react';
-import type { SafeFood } from '../../types/profile';
 import type { OnboardingDraft, OnboardingStep } from './types';
 
 export type SaveStatus = 'saving' | 'saved' | 'error';
@@ -36,10 +37,6 @@ export type OnboardingContextValue = {
   setField: (field: DraftField, value: string) => void;
   setConsent: (field: ConsentField, value: boolean) => void;
   toggleList: (field: ListField, value: string) => void;
-  addSafeFood: (food: Omit<SafeFood, 'id'>) => void;
-  setSafeFoodInput: (field: keyof OnboardingDraft['safeFoodInput'], value: string) => void;
-  removeSafeFood: (id: string) => void;
-  setNoSafeFoods: (value: boolean) => void;
   setSensory: (textures: string[], note: string) => void;
   setRefusedFoodInput: (input: OnboardingDraft['refusedFoodInput']) => void;
   addRefusedFood: () => void;

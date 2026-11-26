@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 제거에 따른 검증 갱신
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
 # Changed: server bootstraping
 # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
@@ -30,7 +32,6 @@ from app.models import (
     UserConsent,
     UserEmailChangeAttempt,
     UserProfile,
-    UserProfileSafeFood,
 )
 from app.models.food_recommendation_enums import FoodRecommendationStatus
 from app.models.meal_enums import EatingOutcome, MealCookingMethod, MealSetting, MealType
@@ -487,7 +488,6 @@ async def test_delete_me_removes_user_and_all_owned_rows(api_client: AsyncClient
             )
         )
         await session.flush()
-        session.add(UserProfileSafeFood(user_id=user_id, name="밥", preparation="흰쌀밥"))
         session.add(
             UserConsent(
                 user_id=user_id,
@@ -520,7 +520,6 @@ async def test_delete_me_removes_user_and_all_owned_rows(api_client: AsyncClient
             FoodRecommendation,
             FoodRecommendationTry,
             UserProfile,
-            UserProfileSafeFood,
             UserConsent,
             UserEmailChangeAttempt,
         ):

@@ -1,3 +1,5 @@
+<!-- AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo -->
+<!-- Changed: Safe Food 제거 반영 -->
 <!-- AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung -->
 <!-- Changed: 커버리지 계층 정리 및 공통 테스트 설정 위치 반영 -->
 <!-- AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung -->
@@ -177,7 +179,7 @@ features/suggestions/
 ├── validation.py         # 결과 검증 — 순수 함수, 문제 목록을 반환
 ├── ingredients.py        # 재료 카탈로그 · 제한 판정 — 순수 함수
 ├── catalog.py            # DB에서 아이가 쓸 수 있는 재료 카탈로그를 읽는 로더
-├── familiar.py           # DB에서 아이가 잘 먹는 음식(safe food, 과거 EATEN 음식)을 읽는 로더
+├── familiar.py           # DB에서 과거 EATEN 음식을 읽는 로더
 └── workflow/
     ├── state.py          # InputState · OutputState · GraphState, 입출력 dataclass, 컨텍스트
     ├── nodes.py          # 노드 (얇게)

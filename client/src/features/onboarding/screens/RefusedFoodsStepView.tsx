@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: 삭제된 Safe Food 화면 잔여 정리
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 거부 사유 입력 시 키보드 위로 스크롤
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -43,15 +45,15 @@ export function RefusedFoodsStepView({ language, foods, input, onChange, onAdd, 
   const duplicate = !!reason && input.reasons.some(item => item.category === reason.category && item.subcategory === reason.subcategory && item.value === reason.value && item.note === reason.note);
   const reasonLabel = (item: Difficulty) => item.value === 'other' && item.note ? item.note : [categoryLabels[item.category], item.subcategory && subcategoryLabels[item.subcategory], item.category === 'notSure' ? '' : valueLabels[item.value] ?? item.value, item.note].filter(Boolean).join(' · ');
   return <View>
-    {foods.length > 0 && <View style={onboardingStyles.safeFoodChips}>{foods.map(food => <View key={food.id} style={onboardingStyles.safeFoodChip}>
-      <View style={onboardingStyles.safeFoodChipCopy}><Text style={onboardingStyles.safeFoodChipName}>{food.name}</Text>
-        {food.cookingMethod && <Text style={onboardingStyles.safeFoodChipDetails}>{labels.cookingMethods[food.cookingMethod]}</Text>}</View>
-      <Pressable accessibilityRole="button" accessibilityLabel={`${s.common.remove} ${food.name}`} onPress={() => onRemove(food.id)} style={onboardingStyles.safeFoodRemove}>
-        <Text style={onboardingStyles.safeFoodRemoveText}>×</Text></Pressable></View>)}</View>}
-    <View style={onboardingStyles.safeFoodForm}>
-      <Text style={onboardingStyles.safeFoodFormTitle}>{s.refusedFoods.addFood}</Text>
-      <View style={onboardingStyles.safeFoodFields}>
-        <FormField variant="safe" label={s.onboarding.foodName} placeholder={s.onboarding.safeFoodNameExample}
+    {foods.length > 0 && <View style={onboardingStyles.refusedFoodChips}>{foods.map(food => <View key={food.id} style={onboardingStyles.refusedFoodChip}>
+      <View style={onboardingStyles.refusedFoodChipCopy}><Text style={onboardingStyles.refusedFoodChipName}>{food.name}</Text>
+        {food.cookingMethod && <Text style={onboardingStyles.refusedFoodChipDetails}>{labels.cookingMethods[food.cookingMethod]}</Text>}</View>
+      <Pressable accessibilityRole="button" accessibilityLabel={`${s.common.remove} ${food.name}`} onPress={() => onRemove(food.id)} style={onboardingStyles.refusedFoodRemove}>
+        <Text style={onboardingStyles.refusedFoodRemoveText}>×</Text></Pressable></View>)}</View>}
+    <View style={onboardingStyles.refusedFoodForm}>
+      <Text style={onboardingStyles.refusedFoodFormTitle}>{s.refusedFoods.addFood}</Text>
+      <View style={onboardingStyles.refusedFoodFields}>
+        <FormField variant="safe" label={s.onboarding.foodName} placeholder={s.refusedFoods.foodNameExample}
           value={input.name} onChangeText={name => onChange({ ...input, name })} />
         <View><Text style={styles.label}>{labels.cooking} <Text style={styles.optional}>{s.onboarding.optional}</Text></Text>
           <DropdownChoice options={cookingMethodIds.map(id => ({ id, label: labels.cookingMethods[id] }))}

@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 기능 제거
 # AI-generated with Grok 4.6, 2026-10-18, reviewed by Doyeon Kim
 # Changed: 마이페이지·자녀 프로필 추가
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
@@ -20,7 +22,6 @@ from app.models import (
     UserConsent,
     UserEmailChangeAttempt,
     UserProfile,
-    UserProfileSafeFood,
 )
 
 
@@ -41,7 +42,6 @@ async def delete_user_owned_rows(session: AsyncSession, user_id: int) -> None:
     )
     await session.execute(delete(MealFood).where(MealFood.meal_id.in_(meal_ids)))
     await session.execute(delete(Meal).where(Meal.user_id == user_id))
-    await session.execute(delete(UserProfileSafeFood).where(UserProfileSafeFood.user_id == user_id))
     await session.execute(delete(UserProfile).where(UserProfile.user_id == user_id))
     await session.execute(delete(UserConsent).where(UserConsent.user_id == user_id))
     await session.execute(

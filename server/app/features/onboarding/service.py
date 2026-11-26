@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
-# Changed: Safe Food 기능 제거
+# Changed: Safe Food 제거 및 거부 음식 테이블 분리
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 거부 음식 프로필 저장
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -17,12 +17,12 @@
 
 from dataclasses import dataclass
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.timezone import now_kst
 from app.features.onboarding.consent_version import DOCUMENT_VERSION
-from app.models import UserConsent, UserProfile
+from app.models import UserConsent, UserProfile, UserProfileRefusedFood
 from app.models.restriction_enums import RestrictionType
 from app.models.user_consent_enums import UserConsentKind
 from app.models.user_profile_enums import AgeGroup, DietaryPattern
@@ -50,6 +50,7 @@ class OnboardingInput:
 class OnboardingSnapshot:
     profile: UserProfile | None
     consents: tuple[UserConsent, ...]
+    refused_foods: tuple[UserProfileRefusedFood, ...]
 
 
 class OnboardingService:
@@ -68,7 +69,14 @@ class OnboardingService:
         latest: dict[UserConsentKind, UserConsent] = {}
         for row in rows:
             latest.setdefault(row.kind, row)
-        return OnboardingSnapshot(profile, tuple(latest.values()))
+        foods = (
+            await self._session.scalars(
+                select(UserProfileRefusedFood)
+                .where(UserProfileRefusedFood.user_id == user_id)
+                .order_by(UserProfileRefusedFood.position)
+            )
+        ).all()
+        return OnboardingSnapshot(profile, tuple(latest.values()), tuple(foods))
 
     async def write(self, user_id: int, data: OnboardingInput) -> OnboardingSnapshot:
         profile = await self._session.get(UserProfile, user_id)
@@ -83,11 +91,26 @@ class OnboardingService:
             profile.sensory_textures = list(data.sensory_textures)
         if data.sensory_note is not None:
             profile.sensory_note = data.sensory_note
-        if data.refused_foods is not None:
-            profile.refused_foods = list(data.refused_foods)
-        # 안전 음식만 바뀌어도 프로필의 수정 시각이 갱신되도록 직접 지정한다.
+        # 프로필과 거부 음식의 수정 시각을 함께 갱신한다.
         profile.updated_at = now_kst()
         await self._session.flush()
+
+        if data.refused_foods is not None:
+            await self._session.execute(
+                delete(UserProfileRefusedFood).where(UserProfileRefusedFood.user_id == user_id)
+            )
+            for position, food in enumerate(data.refused_foods):
+                self._session.add(
+                    UserProfileRefusedFood(
+                        user_id=user_id,
+                        client_id=food["id"],
+                        position=position,
+                        name=food["name"],
+                        cooking_method=food["cooking_method"],
+                        reasons=food["reasons"],
+                    )
+                )
+            await self._session.flush()
 
         previous_consents = {row.kind: row for row in (await self.read(user_id)).consents}
         for consent in data.consents:

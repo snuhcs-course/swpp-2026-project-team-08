@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
-# Changed: Safe Food 기능 제거
+# Changed: Safe Food 제거 및 거부 음식 테이블 분리
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 거부 음식 프로필 저장
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -76,7 +76,15 @@ def _response(snapshot: OnboardingSnapshot) -> OnboardingResponse:
             dietary_pattern=profile.dietary_pattern,
             sensory_textures=profile.sensory_textures or [],
             sensory_note=profile.sensory_note or "",
-            refused_foods=profile.refused_foods or [],
+            refused_foods=[
+                {
+                    "id": food.client_id,
+                    "name": food.name,
+                    "cooking_method": food.cooking_method,
+                    "reasons": food.reasons,
+                }
+                for food in snapshot.refused_foods
+            ],
             updated_at=profile.updated_at,
         )
     return OnboardingResponse(

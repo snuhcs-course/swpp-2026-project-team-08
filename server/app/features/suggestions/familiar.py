@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
-# Changed: Safe Food 기능 제거
+# Changed: Safe Food 제거 및 거부 음식 테이블 분리
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 거부 음식 추천 문맥 반영
 # AI-generated with Claude Sonnet 5.5, 2026-11-04, reviewed by Jaemin Kim
@@ -21,7 +21,7 @@ from app.features.suggestions.workflow.state import (
     FamiliarFoods,
     RefusedFood,
 )
-from app.models import Meal, MealFood, MealFoodIngredient, UserProfile
+from app.models import Meal, MealFood, MealFoodIngredient, UserProfileRefusedFood
 from app.models.meal_enums import EatingOutcome
 
 # 프롬프트가 커지지 않도록 읽는 개수를 제한한다.
@@ -81,14 +81,20 @@ async def load_familiar_foods(
         for ingredient in ingredient_rows:
             ingredient_names[ingredient.meal_food_id].append(ingredient.name)
 
-    profile = await session.get(UserProfile, user_id)
-    refused = (profile.refused_foods or [])[:30] if profile else []
+    refused = (
+        await session.scalars(
+            select(UserProfileRefusedFood)
+            .where(UserProfileRefusedFood.user_id == user_id)
+            .order_by(UserProfileRefusedFood.position)
+            .limit(30)
+        )
+    ).all()
     return FamiliarFoods(
         refused_foods=tuple(
             RefusedFood(
-                name=item["name"],
-                cooking_method=item["cooking_method"],
-                reasons=tuple(item["reasons"]),
+                name=item.name,
+                cooking_method=item.cooking_method,
+                reasons=tuple(item.reasons),
             )
             for item in refused
         ),

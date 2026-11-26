@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
-# Changed: Safe Food 기능 제거
+# Changed: Safe Food 제거 및 거부 음식 테이블 분리
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 거부 음식 프로필 저장
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
@@ -49,7 +49,6 @@ class UserProfile(Base):
     )
     sensory_textures: Mapped[list[str] | None] = mapped_column(StringList, nullable=True)
     sensory_note: Mapped[str | None] = mapped_column(String, nullable=True)
-    refused_foods: Mapped[list[dict] | None] = mapped_column(StringList, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=now_kst, nullable=False
     )

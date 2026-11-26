@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
-# Changed: Safe Food 기능 제거
+# Changed: Safe Food 제거 및 거부 음식 테이블 분리
 # AI-generated with GPT-6, 2026-10-30, reviewed by Seoyeon Heo
 # Changed: Register meal ingredient model
 # AI-generated with Claude Sonnet 5.5, 2026-10-15, reviewed by Jaemin Kim
@@ -35,6 +35,7 @@ from app.models.user import User
 from app.models.user_consent import UserConsent
 from app.models.user_email_change_attempt import UserEmailChangeAttempt
 from app.models.user_profile import UserProfile
+from app.models.user_profile_refused_food import UserProfileRefusedFood
 
 __all__ = [
     "FoodRecommendation",
@@ -50,4 +51,5 @@ __all__ = [
     "UserConsent",
     "UserEmailChangeAttempt",
     "UserProfile",
+    "UserProfileRefusedFood",
 ]

@@ -1,5 +1,5 @@
 # AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
-# Changed: Safe Food 제거에 따른 검증 갱신
+# Changed: 거부 음식 저장 순서와 오류 보존 검증
 # AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 # Changed: 감각 프로필과 거부 음식 계약 검증
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
@@ -268,6 +268,10 @@ async def test_refused_foods_round_trip_legacy_write_and_validation(
     ] == foods
     legacy = await api_client.put("/api/v1/onboarding", headers=headers, json=request_body())
     assert legacy.json()["profile"]["refused_foods"] == foods
+    body["profile"]["refused_foods"] = list(reversed(foods))
+    reordered = await api_client.put("/api/v1/onboarding", headers=headers, json=body)
+    assert reordered.status_code == 200
+    assert reordered.json()["profile"]["refused_foods"] == list(reversed(foods))
     body["profile"]["refused_foods"] = [{**foods[0], "reasons": ["TEXTURE.HARDNESS.CRUNCHY"]}]
     assert (
         await api_client.put("/api/v1/onboarding", headers=headers, json=body)
@@ -276,6 +280,8 @@ async def test_refused_foods_round_trip_legacy_write_and_validation(
     assert (
         await api_client.put("/api/v1/onboarding", headers=headers, json=body)
     ).status_code == 422
+    after_invalid = await api_client.get("/api/v1/onboarding", headers=headers)
+    assert after_invalid.json()["profile"]["refused_foods"] == list(reversed(foods))
     body["profile"]["refused_foods"] = []
     cleared = await api_client.put("/api/v1/onboarding", headers=headers, json=body)
     assert cleared.status_code == 200 and cleared.json()["profile"]["refused_foods"] == []

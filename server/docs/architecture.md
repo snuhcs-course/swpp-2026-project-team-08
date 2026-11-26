@@ -1,5 +1,5 @@
 <!-- AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo -->
-<!-- Changed: Safe Food 제거 반영 -->
+<!-- Changed: Safe Food 제거와 거부 음식 저장 구조 -->
 <!-- AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung -->
 <!-- Changed: 커버리지 계층 정리 및 공통 테스트 설정 위치 반영 -->
 <!-- AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung -->
@@ -269,6 +269,11 @@ async def list_meal_logs(
 
 `CurrentUser`는 `features/auth/dependencies.py`에 있다. 토큰을 다루는 도구(`features/auth/security.py`)는 `auth`
 기능 안에만 두고, 다른 기능은 `CurrentUser`만 import해서 쓴다 (§3).
+
+## 자녀 프로필 저장
+
+거부 음식은 `user_profile_refused_foods`에 항목별로 저장한다. 사용자별 입력 ID와 순서를 보존하며,
+조리 방법과 거부 사유를 함께 저장한다. 온보딩 저장은 목록이 전달된 경우 전체를 교체하고 생략된 경우 유지한다.
 
 ## 재료 저장 경계
 

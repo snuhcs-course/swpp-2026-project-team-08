@@ -3,8 +3,9 @@
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 생성 대상의 거절 추천 ID와 추가 추천 상태 응답
-# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
-# Changed: 식사에 묶이지 않는 홈 화면 추천 응답으로 정리하고 생성 요청 본문 제거
+# AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+# Changed: 식사에 묶이지 않는 홈 화면 추천 응답으로 정리하고 생성 요청 본문 제거,
+# 이유 없는 거절 허용
 
 """추천 요청과 응답의 모양.
 
@@ -48,10 +49,9 @@ class SuggestionDecisionRequest(BaseModel):
 
     @model_validator(mode="after")
     def valid_reasons(self) -> "SuggestionDecisionRequest":
+        # 거절 이유는 선택이다. 보호자는 이유 없이 거절(Skip)할 수 있다.
         if self.status == FoodRecommendationStatus.SAVED and self.dismiss_reasons:
             raise ValueError("saved suggestions cannot have dismiss reasons")
-        if self.status == FoodRecommendationStatus.DISMISSED and not self.dismiss_reasons:
-            raise ValueError("dismissed suggestions need a reason")
         if len(self.dismiss_reasons) != len(set(self.dismiss_reasons)):
             raise ValueError("dismiss reasons must be unique")
         return self

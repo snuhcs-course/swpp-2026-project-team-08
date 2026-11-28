@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
 // Changed: Use now 저장·재시도와 체크인 취소·저장 후 되돌리기 검증
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 저장 실패 후 남은 카드를 추천 음식 이름으로 확인
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -36,7 +38,7 @@ test('Use now는 저장에 성공한 뒤에만 해당 추천으로 새 식사 �
 
   await act(async () => firstSave.resolve(Response.json({}, { status: 503 })));
   await waitFor(() => app.container.querySelector('[role="alert"]'));
-  assert.ok(app.container.textContent.includes(card.food_name));
+  assert.ok(app.container.textContent.includes(card.what_to_try));
   await click(control(app, 'button', 'Use now'));
   await waitFor(() => app.pathname === '/meal-checkin' && app.container.textContent.includes('Trying this suggestion'));
   assert.equal(new URL(window.location.href).searchParams.get('tryingSuggestionId'), card.id);

@@ -5,8 +5,8 @@
 # Changed: 영어 추천 카탈로그 fixture 적용
 # AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
 # Changed: 가짜 판정기를 설치하는 install_judge 헬퍼 추가
-# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
-# Changed: 음식 이름·재료·제공 방법 초안과 추천 세 개 묶음 헬퍼로 변경
+# AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+# Changed: 음식 이름·재료·제공 방법 초안과 추천 한 장 요청 헬퍼로 변경
 """Explicit LLM responses and DB seeds for API integration; the real graph/validation still run."""
 
 from httpx import AsyncClient
@@ -25,8 +25,8 @@ from tests.helpers.fake_judge import ScriptedJudge
 # tests/fixtures/onboarding.py 프로필의 제한.
 # 카탈로그 재료는 이 둘에 NEVER 판정이 있어야 쓸 수 있다.
 PROFILE_RESTRICTIONS = (RestrictionType.ALLERGY_EGGS, RestrictionType.VEGETARIAN_DAIRY)
-# 한 번의 요청으로 만드는 추천 개수(서비스의 SUGGESTION_COUNT)에 맞춘 기본 음식 이름.
-DEFAULT_FOOD_NAMES = ("Rice porridge", "Rice ball", "Rice cake")
+# 한 번의 요청으로 만드는 추천 개수(서비스의 SUGGESTION_COUNT = 1)에 맞춘 기본 음식 이름.
+DEFAULT_FOOD_NAMES = ("Rice porridge",)
 
 
 def suggestion_draft(what_to_try: str = "Rice porridge", **fields) -> SuggestionDraft:
@@ -53,7 +53,7 @@ def install_judge(monkeypatch, judge: ScriptedJudge) -> ScriptedJudge:
 
 
 def batch(*names: str) -> SuggestionsDraft:
-    """음식 이름마다 초안 하나를 담은 묶음. 이름을 주지 않으면 기본 추천 세 개다."""
+    """음식 이름마다 초안 하나를 담은 묶음. 이름을 주지 않으면 기본 추천 한 장이다."""
     return SuggestionsDraft(
         suggestions=[suggestion_draft(name) for name in names or DEFAULT_FOOD_NAMES]
     )
@@ -81,8 +81,8 @@ async def save_profile(client: AsyncClient, headers: dict[str, str]) -> None:
     assert response.status_code == 200, response.text
 
 
-async def request_suggestions(client: AsyncClient, headers: dict[str, str]) -> list[dict]:
-    """홈 화면 추천을 요청하고 성공(201) 응답의 추천 목록을 돌려준다."""
+async def request_suggestion(client: AsyncClient, headers: dict[str, str]) -> dict:
+    """홈 화면 추천 한 장을 요청하고 성공(201) 응답의 추천을 돌려준다."""
     response = await client.post("/api/v1/suggestions", headers=headers)
     assert response.status_code == 201, response.text
     return response.json()

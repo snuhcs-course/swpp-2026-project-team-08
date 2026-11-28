@@ -9,8 +9,8 @@
 
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 영어 추천 카탈로그 fixture 적용
-# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
-# Changed: 식사 리뷰 뒤 홈 화면 추천을 만들고, 식사 삭제와 무관하게 추천이 남는 흐름으로 변경
+# AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+# Changed: 식사 리뷰 뒤 홈 화면 추천을 한 장씩 만들고, 식사를 지워도 추천이 남는 흐름으로 변경
 
 """Integration: 실제 API·서비스·SQLite 연결. LLM만 가짜 모델로 대체한다."""
 
@@ -21,7 +21,7 @@ from tests.helpers.auth import auth_headers
 from tests.helpers.suggestions import (
     batch,
     install_model,
-    request_suggestions,
+    request_suggestion,
     save_profile,
     seed_ingredient,
 )
@@ -45,7 +45,7 @@ def tries(meal: dict) -> list[dict]:
 async def test_meal_review_suggestion_and_history_flow(
     api_client: AsyncClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    install_model(monkeypatch, [batch()])
+    install_model(monkeypatch, [batch("Rice porridge"), batch("Rice ball")])
     owner = await auth_headers(api_client, "owner@example.com")
     stranger = await auth_headers(api_client, "stranger@example.com")
     await save_profile(api_client, owner)
@@ -114,9 +114,10 @@ async def test_meal_review_suggestion_and_history_flow(
     assert replaced.status_code == 200, replaced.text
     assert replaced.json()["foods"][0]["ingredients"][0]["outcome"] is None
 
-    generated = await request_suggestions(api_client, owner)
-    assert [item["status"] for item in generated] == ["PENDING"] * 3
-    first_id, second_id = [item["id"] for item in generated[:2]]
+    # 홈 화면은 추천을 한 장씩 요청한다. 두 번 요청해 하나는 저장하고 하나는 거절한다.
+    generated = [await request_suggestion(api_client, owner) for _ in range(2)]
+    assert [item["status"] for item in generated] == ["PENDING", "PENDING"]
+    first_id, second_id = [item["id"] for item in generated]
     # 결정하지 않은 추천은 저장된 추천 목록에 나오지 않는다.
     assert (await api_client.get("/api/v1/suggestions", headers=owner)).json() == []
 

@@ -2,8 +2,8 @@
 # Changed: 저장 목록 제거와 시도 기록 보존 검증
 # AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung
 # Changed: 영어 추천 fixture와 카탈로그·가짜 판정기의 재료명 일치
-# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
-# Changed: 홈 화면 추천 생성으로 준비하고 전체 추천 상태는 DB 에서 확인
+# AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+# Changed: 홈 화면 추천을 한 장씩 생성해 준비하고 전체 추천 상태는 DB 에서 확인
 
 """실제 API·SQLite로 보관 해제, 재저장, 권한과 시도 이력을 검증한다."""
 
@@ -18,18 +18,19 @@ from tests.helpers.auth import auth_headers
 from tests.helpers.suggestions import (
     batch,
     install_model,
-    request_suggestions,
+    request_suggestion,
     save_profile,
     seed_ingredient,
 )
 
 
 async def prepare_suggestions(client, monkeypatch):
+    """추천 두 장을 한 장씩 요청해 만든다."""
     owner = await auth_headers(client, "saved-removal@example.com")
     await save_profile(client, owner)
     await seed_ingredient("Rice")
-    install_model(monkeypatch, [batch()])
-    return owner, await request_suggestions(client, owner)
+    install_model(monkeypatch, [batch("Rice porridge"), batch("Rice ball")])
+    return owner, [await request_suggestion(client, owner) for _ in range(2)]
 
 
 async def decisions(session_factory) -> list[tuple[int, str, list[str], object]]:
@@ -73,7 +74,7 @@ async def test_목록에서만_제거하고_추천과_시도_기록은_보존한
     api_client, monkeypatch, session_factory, tried
 ):
     owner, items = await prepare_suggestions(api_client, monkeypatch)
-    selected, other = [await save(api_client, owner, item) for item in items[:2]]
+    selected, other = [await save(api_client, owner, item) for item in items]
     if tried:
         trial_meal = await record_try(api_client, owner, selected)
         async with session_factory() as session:

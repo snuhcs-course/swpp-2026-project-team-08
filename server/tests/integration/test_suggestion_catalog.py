@@ -5,8 +5,8 @@
 
 # AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung
 # Changed: 통합 CLI의 교체·기록 보존과 최신 프롬프트의 영어 재료 목록 검증
-# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
-# Changed: 홈 화면 추천 생성 API로 추천을 만들도록 변경
+# AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+# Changed: 홈 화면 추천 한 장 생성 API로 추천을 만들도록 변경
 
 """영어 재료 파일, 카탈로그 조회, 추천 API를 실제 SQLite로 검증한다."""
 
@@ -31,7 +31,7 @@ from tests.helpers.auth import auth_headers
 from tests.helpers.suggestions import (
     batch,
     install_model,
-    request_suggestions,
+    request_suggestion,
     save_profile,
     seed_ingredient,
 )
@@ -244,7 +244,7 @@ async def test_영어_재료로_추천하고_교체_후에도_식사와_저장_�
         json={"food_results": [{"food_id": meal["foods"][0]["id"], "outcome": "TASTED"}]},
     )
     assert reviewed.status_code == 200
-    recommendation = (await request_suggestions(api_client, owner))[0]
+    recommendation = await request_suggestion(api_client, owner)
     assert recommendation["ingredients"] == ["Rice"]
     prompt = next(m.content for m in model.compose_inputs[0] if isinstance(m, HumanMessage))
     catalog_heading = "쓸 수 있는 재료 (세미콜론 ';'으로 구분, 이름 안의 쉼표는 이름의 일부):\n"

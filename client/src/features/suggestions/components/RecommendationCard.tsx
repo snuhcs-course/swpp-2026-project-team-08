@@ -9,6 +9,8 @@
 // Changed: 앞쪽 텍스트 카드는 수평으로 두고 배경 카드 기울기 유지
 // AI-generated with GPT-6, Claude Opus 5.5, 2026-11-28, reviewed by Haechan Jung, Jaemin Kim
 // Changed: 홈 추천 카드 앞면(Suggestion: 시도할 것·이유)과 뒷면(준비 팁: 재료·준비 방법) 표시
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 카드 뒷면 준비 방법을 서버의 preparation_method 필드로 표시
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Pressable, ScrollView, Text, View } from 'react-native';
@@ -34,7 +36,7 @@ export function RecommendationCard(p: Props) {
   const flipInProgress = useRef(false);
   const c = suggestionCopyFor(p.language);
   const sections = details
-    ? [[c.ingredient, p.item.ingredients.join(', ')], [c.preparationMethod, p.item.servingTip]]
+    ? [[c.ingredient, p.item.ingredients.join(', ')], [c.preparationMethod, p.item.preparationMethod]]
     : [[c.what, p.item.whatToTry], [c.why, p.item.whyThisMayHelp]];
   useEffect(() => {
     if (!flipping) return;

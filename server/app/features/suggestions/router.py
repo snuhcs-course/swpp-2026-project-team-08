@@ -7,8 +7,8 @@
 # Changed: 기존 생성 API에서 선택적 추가 추천 처리
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 기록과 독립된 저장 목록 제거 API
-# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
-# Changed: 식사 기준 생성·조회 API를 홈 화면 추천 생성 API로 대체
+# AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+# Changed: 식사 기준 생성·조회 API를 홈 화면 추천 한 장 생성 API로 대체
 
 """인증된 사용자의 음식 추천 API."""
 
@@ -81,7 +81,7 @@ async def list_saved(
 @router.post(
     "/suggestions",
     status_code=status.HTTP_201_CREATED,
-    response_model=list[SuggestionResponse],
+    response_model=SuggestionResponse,
 )
 @error_specs(
     {
@@ -89,8 +89,8 @@ async def list_saved(
         GenerationFailedError: ErrorSpec(status_code=502, error_code="GENERATION_FAILED"),
     }
 )
-async def generate(current_user: CurrentUser, service: Service) -> list[SuggestionResponse]:
-    return [response(item) for item in await service.generate(user_id=current_user.id)]
+async def generate(current_user: CurrentUser, service: Service) -> SuggestionResponse:
+    return response(await service.generate(user_id=current_user.id))
 
 
 @router.put("/suggestions/{suggestion_id}/decision", response_model=SuggestionResponse)

@@ -26,7 +26,7 @@ from tests.helpers.auth import auth_headers
 from tests.helpers.suggestions import (
     batch,
     install_model,
-    request_suggestions,
+    request_suggestion,
     save_profile,
     seed_ingredient,
 )
@@ -134,7 +134,7 @@ async def test_prompt_carries_age_reasons_and_what_the_child_eats_well(
         {"outcome": "TASTED", "difficulty_reasons": ["COLOR.GREEN"]},
     )
 
-    await request_suggestions(api_client, headers)
+    await request_suggestion(api_client, headers)
 
     prompt = user_prompt(model)
     assert "- 연령대: 만 4~5세" in prompt
@@ -168,7 +168,7 @@ async def test_unreviewed_foods_are_not_treated_as_difficult(
     headers = await owner(api_client)
     await save_meal(api_client, headers, "2026-10-20", food("당근볶음", "당근"))
 
-    await request_suggestions(api_client, headers)
+    await request_suggestion(api_client, headers)
 
     assert DIFFICULT_HEADING not in user_prompt(model)
 
@@ -185,7 +185,7 @@ async def test_same_named_foods_are_listed_once_with_the_latest_record(
     await reviewed_meal(api_client, headers, "2026-10-16", "UNTOUCHED", food("브로콜리", "쌀"))
     await reviewed_meal(api_client, headers, "2026-10-18", "TASTED", food(" 브로콜리 ", "쌀"))
 
-    await request_suggestions(api_client, headers)
+    await request_suggestion(api_client, headers)
 
     prompt = user_prompt(model)
     eaten = section(prompt, EATEN_HEADING)
@@ -209,7 +209,7 @@ async def test_only_the_most_recent_records_are_listed(
         await reviewed_meal(api_client, headers, "2026-10-16", outcome, food(f"{prefix} 중간 음식"))
         await reviewed_meal(api_client, headers, "2026-10-18", outcome, food(f"{prefix} 최근 음식"))
 
-    await request_suggestions(api_client, headers)
+    await request_suggestion(api_client, headers)
 
     prompt = user_prompt(model)
     for heading, prefix in ((EATEN_HEADING, "잘 먹은"), (DIFFICULT_HEADING, "못 먹은")):
@@ -222,26 +222,27 @@ async def test_only_the_most_recent_records_are_listed(
 async def test_history_carries_every_past_recommendation_and_dismiss_reasons(
     api_client: AsyncClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    model = install_model(monkeypatch, [batch(), batch("Rice salad", "Rice soup", "Fried rice")])
+    names = ("Rice porridge", "Rice ball", "Rice cake", "Rice salad")
+    model = install_model(monkeypatch, [batch(name) for name in names])
     headers = await owner(api_client)
-    first = await request_suggestions(api_client, headers)
-    dismissed = await api_client.put(
-        f"/api/v1/suggestions/{first[0]['id']}/decision",
+    dismissed, saved, _pending = [await request_suggestion(api_client, headers) for _ in range(3)]
+    response = await api_client.put(
+        f"/api/v1/suggestions/{dismissed['id']}/decision",
         headers=headers,
         json={"status": "DISMISSED", "dismiss_reasons": ["TOO_MUCH_PREPARATION", "DISLIKE"]},
     )
-    assert dismissed.status_code == 200, dismissed.text
-    saved = await api_client.put(
-        f"/api/v1/suggestions/{first[1]['id']}/decision",
+    assert response.status_code == 200, response.text
+    response = await api_client.put(
+        f"/api/v1/suggestions/{saved['id']}/decision",
         headers=headers,
         json={"status": "SAVED"},
     )
-    assert saved.status_code == 200, saved.text
+    assert response.status_code == 200, response.text
 
-    await request_suggestions(api_client, headers)
+    await request_suggestion(api_client, headers)
 
     assert HISTORY_HEADING not in user_prompt(model, 0)
-    history = section(user_prompt(model, 1), HISTORY_HEADING)
+    history = section(user_prompt(model, 3), HISTORY_HEADING)
     assert (
         "- Rice porridge, decision: 보호자가 거절했다, "
         "dismiss_reasons: 준비가 너무 번거로워서 / 아이가 싫어할 것 같아서"
@@ -254,7 +255,7 @@ async def test_history_carries_every_past_recommendation_and_dismiss_reasons(
 async def test_other_users_records_never_reach_the_prompt(
     api_client: AsyncClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    model = install_model(monkeypatch, [batch("Stranger dish 1", "Stranger dish 2", "X"), batch()])
+    model = install_model(monkeypatch, [batch("Stranger dish"), batch()])
     headers = await owner(api_client)
     stranger = await auth_headers(api_client, "stranger@example.com")
     other = request_body()
@@ -263,9 +264,9 @@ async def test_other_users_records_never_reach_the_prompt(
     ).status_code == 200
     await reviewed_meal(api_client, stranger, "2026-10-18", "EATEN", food("남이 잘 먹은 음식"))
     await reviewed_meal(api_client, stranger, "2026-10-18", "UNTOUCHED", food("남이 못 먹은 음식"))
-    await request_suggestions(api_client, stranger)
+    await request_suggestion(api_client, stranger)
 
-    await request_suggestions(api_client, headers)
+    await request_suggestion(api_client, headers)
 
     prompt = user_prompt(model, 1)
     for text in ("남이 잘 먹은 음식", "남이 못 먹은 음식", "Stranger dish"):
@@ -285,9 +286,9 @@ async def test_age_and_restrictions_alone_are_enough_to_recommend(
     ).status_code == 200
     await seed_ingredient("Rice")
 
-    created = await request_suggestions(api_client, headers)
+    created = await request_suggestion(api_client, headers)
 
-    assert len(created) == 3
+    assert created["what_to_try"] == "Rice porridge"
     prompt = user_prompt(model)
     assert "- 연령대: 만 4~5세" in prompt
     for heading in ("잘 먹지 못한 음식", "과거 식사에서", "아이가 거부한 음식", "지금까지"):
@@ -313,7 +314,7 @@ async def test_refused_foods_are_included_in_suggestion_context(
     assert response.status_code == 200, response.text
     await seed_ingredient("Rice")
 
-    await request_suggestions(api_client, headers)
+    await request_suggestion(api_client, headers)
 
     prompt = user_prompt(model)
     assert (

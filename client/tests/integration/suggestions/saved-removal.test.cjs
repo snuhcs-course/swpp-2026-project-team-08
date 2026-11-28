@@ -4,6 +4,8 @@
 // Changed: 저장 목록 삭제와 추천 시도·피드백 보존 검증 이동
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
 // Changed: 저장 목록 제거 후 추천 상태와 식사 기록 보존 검증
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 식사 시도의 추천 제공 팁을 추천 응답의 준비 방법과 맞춤
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -30,8 +32,9 @@ function setup(t, status = 'TRIED') {
   meal.foods[0].recommendation_tries = status === 'TRIED' ? [{
     id: '41', food_recommendation_id: '31', feedback: 'HELPFUL',
     created_at: '2026-11-18T00:00:00Z', updated_at: '2026-11-18T00:00:00Z',
+    // 식사 API 의 serving_tip 은 추천 응답의 preparation_method 와 같은 DB 값이다.
     recommendation: { what_to_try: tried.what_to_try,
-      why_this_may_help: tried.why_this_may_help, serving_tip: tried.serving_tip },
+      why_this_may_help: tried.why_this_may_help, serving_tip: tried.preparation_method },
   }] : [];
   const server = {
     items: [tried, another], visible: new Set(['31', '32']), meals: [meal],

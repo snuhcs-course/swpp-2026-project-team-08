@@ -7,37 +7,28 @@
 // Changed: 추천 결정 취소와 저장 목록 제거 API 분리
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
 // Changed: 홈 추천 생성·재생성, 남은 재생성 횟수 확인 및 추천 결정 요청
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 재생성 ID·한도 없이 추천 한 장을 생성하고 LLM 생성 시간에 맞춘 대기 시간 적용
 
 import type { DismissReason, Suggestion } from '../../types/suggestionRecord';
 import { toSuggestion, toSuggestionDecision } from '../dto/suggestionDto';
-import { object } from '../dto/values';
-import { ApiError, apiRequest } from '../network/apiClient';
+import { apiRequest } from '../network/apiClient';
 
-export function isRegenerationLimitError(error: unknown): boolean {
-  return error instanceof ApiError && error.errorCode === 'REGENERATION_LIMIT_REACHED';
-}
+// 서버는 추천 생성(LLM 호출과 가드레일 판정)을 최대 60초 기다린다. 응답 전달 여유를 더한다.
+const GENERATION_TIMEOUT_MS = 70_000;
 
-export async function generateSuggestion(userId: string, regenerationRequestId?: string) {
-  const dto = object(await apiRequest<unknown>('/api/v1/suggestions', {
-    method: 'POST', signal: AbortSignal.timeout(10_000),
-    body: regenerationRequestId === undefined ? undefined
-      : JSON.stringify({ regeneration_request_id: regenerationRequestId }),
+export async function generateSuggestion(userId: string): Promise<Suggestion> {
+  const item = toSuggestion(await apiRequest<unknown>('/api/v1/suggestions', {
+    method: 'POST', signal: AbortSignal.timeout(GENERATION_TIMEOUT_MS),
   }));
-  const item = toSuggestion(dto);
-  if (item.userId !== userId || item.mealId !== null || item.foodId !== null || item.status !== 'pending') {
+  if (item.userId !== userId || item.status !== 'pending') {
     throw new Error('Mismatched generated suggestion');
   }
-  if (!item.foodName.trim() || !item.whatToTry.trim() || !item.whyThisMayHelp.trim()
-    || !item.servingTip?.trim() || !item.cookingMethod || !item.causes.trim()
+  if (!item.whatToTry.trim() || !item.whyThisMayHelp.trim() || !item.preparationMethod?.trim()
     || !item.ingredients.length || item.ingredients.some(name => !name.trim())) {
     throw new Error('Incomplete generated suggestion');
   }
-  const remainingRegenerations = dto.remaining_regenerations;
-  if (typeof remainingRegenerations !== 'number'
-    || !Number.isSafeInteger(remainingRegenerations) || remainingRegenerations < 0) {
-    throw new Error('Invalid remaining regenerations');
-  }
-  return { suggestion: item, remainingRegenerations };
+  return item;
 }
 
 export async function decideSuggestion(

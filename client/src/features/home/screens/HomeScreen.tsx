@@ -6,6 +6,8 @@
 // Changed: 홈 추천 대기 목록과 추천 화면 이동 연결
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
 // Changed: 홈 추천 진입 및 필요한 정보 안내
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 식사 기록 없이도 홈 추천을 열 수 있도록 식사 기록 조건 제거
 
 import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
@@ -26,8 +28,8 @@ function HomeContent({ profile }: { profile: ChildProfile }) {
   const openingSuggestion = useRef(false);
   const [showRequirement, setShowRequirement] = useState(false);
   const s = copyFor(language).home;
-  const requirement = !profile.allergies.length ? s.suggestionNeedsAllergies
-    : home.hasRecordedFood === false ? s.suggestionNeedsMeal : null;
+  // 식사 기록이 없어도 연령대와 제한만으로 추천할 수 있다.
+  const requirement = !profile.allergies.length ? s.suggestionNeedsAllergies : null;
   useFocusEffect(useCallback(() => {
     openingSuggestion.current = false;
     setShowRequirement(false);
@@ -38,10 +40,10 @@ function HomeContent({ profile }: { profile: ChildProfile }) {
       <HomeView
         draft={home.draft}
         pendingMeals={home.pendingMeals}
-        suggestionDisabled={home.hasRecordedFood === undefined}
+        suggestionDisabled={false}
         suggestionRequirement={showRequirement ? requirement : null}
         onGetSuggestion={() => {
-          if (openingSuggestion.current || home.hasRecordedFood === undefined) return;
+          if (openingSuggestion.current) return;
           if (requirement) {
             setShowRequirement(true);
             return;

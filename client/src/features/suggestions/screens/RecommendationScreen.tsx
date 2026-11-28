@@ -12,6 +12,8 @@
 // Changed: 추가 추천 선택 화면 연결 및 Skip 버튼 제거
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
 // Changed: 홈 추천의 결정·재생성·체크인 연결과 시도한 카드의 되돌리기 숨김
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 재생성 일일 한도 제거, 거절 화면에 추천 음식 이름 표시
 
 import { Image } from 'expo-image';
 import { Redirect, router, useFocusEffect } from 'expo-router';
@@ -69,8 +71,8 @@ function RecommendationContent({ userId }: { userId: string }) {
         <View style={s.completionActions}>
           {model.decisionFailed && <Text accessibilityRole="alert" style={s.error}>{c.saveFailed}</Text>}
           {model.regenerationFailed && <Text accessibilityRole="alert" style={s.error}>{c.generationTitle}</Text>}
-          <Text style={[s.muted, s.centeredText]}>{model.regenerationLimited ? c.dailyLimit : c.regenerateHint}</Text>
-          <AppButton variant="suggestion" disabled={model.busy || model.regenerationLimited}
+          <Text style={[s.muted, s.centeredText]}>{c.regenerateHint}</Text>
+          <AppButton variant="suggestion" disabled={model.busy}
             label={model.regenerating ? c.generating : model.regenerationFailed ? c.retry : c.regenerate}
             onPress={() => { setReasons(null); model.regenerate(); }} />
           <AppButton variant="suggestion" secondary style={s.leaveButton} labelStyle={s.leaveLabel}
@@ -94,7 +96,7 @@ function RecommendationContent({ userId }: { userId: string }) {
         failed={model.generationFailed} onRetry={model.request} />}
       {current && reasons && <View style={s.cardStack}>
         <View style={[s.stackFace, s.dismissCard]}>
-          <Text style={s.muted}>{current.foodName}</Text>
+          <Text style={s.muted}>{current.whatToTry}</Text>
           <Text style={s.heading}>{c.dismissTitle}</Text>
           {model.decisionFailed && <Text accessibilityRole="alert" style={s.error}>{c.saveFailed}</Text>}
           <ScrollView contentContainerStyle={s.reasonList}>

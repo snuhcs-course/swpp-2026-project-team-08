@@ -13,8 +13,8 @@
 
 # AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
 # Changed: 영어 추천 fixture와 공용 재료 적재 상태 테이블 계약
-# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
-# Changed: 홈 화면 추천 생성 API의 실패 원자성·응답 필드·프로필 계약으로 변경
+# AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+# Changed: 홈 화면 추천 한 장 생성 API의 실패 원자성·응답 필드·프로필 계약과 이유 없는 거절
 
 """Contract edge cases for authenticated meals, reviews, and suggestions."""
 
@@ -34,7 +34,7 @@ from tests.helpers.suggestions import (
     PROFILE_RESTRICTIONS,
     batch,
     install_model,
-    request_suggestions,
+    request_suggestion,
     save_profile,
     seed_ingredient,
     stored_suggestion_names,
@@ -154,8 +154,8 @@ async def test_home_generation_failure_is_atomic_and_the_response_has_only_home_
         )
         assert removed.status_code in (404, 405), method
 
-    # 요청한 개수를 끝내 채우지 못하면 하나도 저장하지 않는다.
-    model = install_model(monkeypatch, [batch("Rice porridge")] * MAX_ATTEMPTS)
+    # 요청한 개수(한 장)를 끝내 맞추지 못하면 하나도 저장하지 않는다.
+    model = install_model(monkeypatch, [batch("Rice porridge", "Rice ball")] * MAX_ATTEMPTS)
     failed = await api_client.post(SUGGESTIONS, headers=owner)
     assert failed.status_code == 502
     assert failed.json()["error_code"] == "GENERATION_FAILED"
@@ -163,24 +163,23 @@ async def test_home_generation_failure_is_atomic_and_the_response_has_only_home_
     assert await stored_suggestion_names() == []
 
     install_model(monkeypatch, [batch()])
-    created = await request_suggestions(api_client, owner)
-    assert [item["what_to_try"] for item in created] == ["Rice porridge", "Rice ball", "Rice cake"]
-    for item in created:
-        assert set(item) == {
-            "id",
-            "user_id",
-            "what_to_try",
-            "why_this_may_help",
-            "ingredients",
-            "preparation_method",
-            "status",
-            "dismiss_reasons",
-            "saved_at",
-            "created_at",
-        }
-        assert item["status"] == "PENDING" and item["dismiss_reasons"] == []
-        assert item["ingredients"] == ["Rice"] and item["preparation_method"]
-    assert await stored_suggestion_names() == ["Rice porridge", "Rice ball", "Rice cake"]
+    created = await request_suggestion(api_client, owner)
+    assert set(created) == {
+        "id",
+        "user_id",
+        "what_to_try",
+        "why_this_may_help",
+        "ingredients",
+        "preparation_method",
+        "status",
+        "dismiss_reasons",
+        "saved_at",
+        "created_at",
+    }
+    assert created["what_to_try"] == "Rice porridge"
+    assert created["status"] == "PENDING" and created["dismiss_reasons"] == []
+    assert created["ingredients"] == ["Rice"] and created["preparation_method"]
+    assert await stored_suggestion_names() == ["Rice porridge"]
 
 
 @pytest.mark.asyncio
@@ -218,10 +217,9 @@ async def test_saved_filter_decision_validation_and_undo(
     await seed_ingredient("Rice")
 
     install_model(monkeypatch, [batch()])
-    suggestion_id = (await request_suggestions(api_client, owner))[0]["id"]
+    suggestion_id = (await request_suggestion(api_client, owner))["id"]
     decision = f"/api/v1/suggestions/{suggestion_id}/decision"
     for body in (
-        {"status": "DISMISSED", "dismiss_reasons": []},
         {"status": "SAVED", "dismiss_reasons": ["ALREADY_TRIED"]},
         {"status": "DISMISSED", "dismiss_reasons": ["already_tried"]},
         {"status": "DISMISSED", "dismiss_reasons": ["ALREADY_TRIED", "ALREADY_TRIED"]},
@@ -258,4 +256,11 @@ async def test_saved_filter_decision_validation_and_undo(
     assert dismissed.json()["saved_at"] is None
     assert (await api_client.get("/api/v1/suggestions", headers=owner)).json() == []
     assert (await api_client.delete(decision, headers=owner)).json()["status"] == "PENDING"
+    assert (await api_client.get("/api/v1/suggestions", headers=owner)).json() == []
+    # 이유 없이 거절(Skip)할 수 있다.
+    skipped = await api_client.put(
+        decision, headers=owner, json={"status": "DISMISSED", "dismiss_reasons": []}
+    )
+    assert skipped.status_code == 200, skipped.text
+    assert skipped.json()["status"] == "DISMISSED" and skipped.json()["dismiss_reasons"] == []
     assert (await api_client.get("/api/v1/suggestions", headers=owner)).json() == []

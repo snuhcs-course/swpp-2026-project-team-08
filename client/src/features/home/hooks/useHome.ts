@@ -8,6 +8,8 @@
 // Changed: 식후 리뷰 목록의 모델 변환 제거 및 공통 추천 진입 규칙·조회 연결
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
 // Changed: 홈 추천에 필요한 식사 기록 확인 및 저장 추천 음식명 표시
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 저장 추천을 음식 이름·이유로 표시하고 식사 기록 확인 제거
 
 import { useCallback, useEffect, useState } from 'react';
 import { useSavedSuggestionsForCheckin } from '../../../data/queries/checkinReferenceQueries';
@@ -36,13 +38,12 @@ export function useHome(profile: ChildProfile) {
   const storedMeals = details.map(toLegacyMeal);
   const suggestions = (saved.data ?? []).map((item) => ({
     id: item.id,
-    title: item.foodName,
-    description: item.whatToTry,
+    title: item.whatToTry,
+    description: item.whyThisMayHelp,
   }));
   return {
     now,
     pendingMeals: details.filter((item) => item.review === null),
-    hasRecordedFood: meals.data?.some((meal) => meal.foods.length > 0),
     storedMeals,
     draft: draft.data?.step !== 'complete' ? (draft.data ?? null) : null,
     lastSavedMealId: draft.data?.savedMealId ?? undefined,

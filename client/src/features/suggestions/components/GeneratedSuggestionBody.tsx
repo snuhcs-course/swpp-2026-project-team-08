@@ -7,6 +7,8 @@
 // Changed: 추천 조리법 공통 표시명과 미입력 표시
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
 // Changed: 저장된 추천 상세에 추천 행동·이유·제공 팁 표시
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 저장된 추천 상세에 시도할 것·이유·재료·준비 방법 네 항목 표시
 
 import { Text, View } from 'react-native';
 import type { Language } from '../../../types/profile';
@@ -21,7 +23,8 @@ export function GeneratedSuggestionBody({ item, language }: {
   const sections = [
     [c.what, item.whatToTry],
     [c.why, item.whyThisMayHelp],
-    [c.serving, item.servingTip ?? c.noDetails],
+    [c.ingredient, item.ingredients.join(', ') || c.noDetails],
+    [c.preparationMethod, item.preparationMethod ?? c.noDetails],
   ];
   return <View style={s.stack}>
     {sections.map(([title, body]) => <View key={title} style={s.section}>

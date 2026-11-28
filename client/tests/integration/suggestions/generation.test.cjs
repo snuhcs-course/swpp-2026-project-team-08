@@ -14,6 +14,8 @@
 // Changed: 추천 생성 대상·중복 방지·실패 복구 검증 분리
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
 // Changed: 홈 추천 생성·재시도·결정 중복 방지와 재생성 기기 환경 검증
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 추천 음식 이름 필드와 LLM 생성 대기 시간 기준으로 변경
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -46,7 +48,7 @@ test('화면에 진입하면 추천 한 장을 요청하고 다시 그려도 중
   await act(async () => pending.resolve(Response.json(homeSuggestionResponse())));
   await waitFor(() => hook.current.current?.status === 'pending');
   await hook.rerender();
-  assert.equal(hook.current.current.foodName, 'Rice');
+  assert.equal(hook.current.current.whatToTry, 'Try a little');
   assert.equal(post.mock.callCount(), 1);
 });
 
@@ -54,7 +56,7 @@ for (const failure of ['서버 오류', '시간 초과', '불완전한 카드'])
   test(`${failure} 후에는 명시적으로 재시도해야 새 카드가 표시된다`, async t => {
     const timeout = new AbortController();
     t.mock.method(AbortSignal, 'timeout', milliseconds => {
-      assert.equal(milliseconds, 10_000);
+      assert.equal(milliseconds, 70_000);
       return timeout.signal;
     });
     let retry = false;
@@ -64,7 +66,7 @@ for (const failure of ['서버 오류', '시간 초과', '불완전한 카드'])
         return new Promise((_, reject) => signal.addEventListener('abort', () => reject(signal.reason)));
       }
       if (failure === '서버 오류') return Response.json({ error_code: 'GENERATION_FAILED' }, { status: 503 });
-      return Response.json(homeSuggestionResponse({ food_name: '' }));
+      return Response.json(homeSuggestionResponse({ what_to_try: '' }));
     });
     const hook = await renderHook(t, () => useRecommendationFlow('1'));
     if (failure === '시간 초과') await act(async () => timeout.abort());

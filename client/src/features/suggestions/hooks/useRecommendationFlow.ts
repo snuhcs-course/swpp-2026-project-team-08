@@ -14,63 +14,39 @@
 // Changed: 거절 직후 추가 생성 선택 단계와 실패 복구
 // AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
 // Changed: 홈 추천 생성·재생성과 식사에 연결한 카드의 되돌리기 제한
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 재생성 요청 ID와 일일 한도 없이 추천을 한 장씩 생성·재생성
 
-import { uuid } from 'expo';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState } from 'react-native';
-import { isRegenerationLimitError } from '../../../data/api/suggestionApi';
 import { useCurrentSuggestion, useSuggestionActions } from '../../../data/queries/suggestionQueries';
 import type { DismissReason, Suggestion } from '../../../types/suggestionRecord';
-
-function nextKstMidnight() {
-  const now = new Date();
-  const midnight = new Date(now);
-  midnight.setUTCHours(15, 0, 0, 0); // 한국 시간 자정
-  if (midnight <= now) midnight.setUTCDate(midnight.getUTCDate() + 1);
-  return midnight.getTime();
-}
 
 export function useRecommendationFlow(userId: string) {
   const { generate, decide, undo } = useSuggestionActions(userId);
   const [currentId, setCurrentId] = useState<string | null>(null);
   const current = useCurrentSuggestion(userId, currentId);
-  const [limitResetsAt, setLimitResetsAt] = useState<number | null>(null);
+  // 마지막 생성 요청이 결정한 카드 다음의 새 추천(재생성)이었는지. 첫 생성 실패와 구분한다.
+  const [regenerationRequested, setRegenerationRequested] = useState(false);
   const inFlight = useRef(false);
   const { mutate: generateOne } = generate;
 
-  useEffect(() => {
-    if (limitResetsAt === null) return;
-    const timeout = setTimeout(() => setLimitResetsAt(null), limitResetsAt - Date.now());
-    const listener = AppState.addEventListener('change', state => {
-      if (state === 'active' && Date.now() >= limitResetsAt) setLimitResetsAt(null);
-    });
-    return () => { clearTimeout(timeout); listener.remove(); };
-  }, [limitResetsAt]);
-
-  const request = useCallback((requestId?: string) => {
+  const request = useCallback((regeneration: boolean) => {
     if (inFlight.current) return;
     inFlight.current = true;
-    generateOne(requestId, {
-      onSuccess: ({ suggestion, remainingRegenerations }) => {
-        setCurrentId(suggestion.id);
-        setLimitResetsAt(remainingRegenerations === 0 ? nextKstMidnight() : null);
-      },
-      onError: error => {
-        if (isRegenerationLimitError(error)) setLimitResetsAt(nextKstMidnight());
-      },
+    setRegenerationRequested(regeneration);
+    generateOne(undefined, {
+      onSuccess: suggestion => { setCurrentId(suggestion.id); },
       onSettled: () => { inFlight.current = false; },
     });
   }, [generateOne]);
-  useEffect(() => { request(); }, [request]);
+  useEffect(() => { request(false); }, [request]);
 
-  const regenerating = generate.isPending && generate.variables !== undefined;
-  const regenerationFailed = generate.isError && generate.variables !== undefined
-    && !isRegenerationLimitError(generate.error);
+  const regenerating = generate.isPending && regenerationRequested;
+  const regenerationFailed = generate.isError && regenerationRequested;
   const regenerate = () => {
-    if (!current || current.status === 'pending' || inFlight.current || limitResetsAt !== null) return;
+    if (!current || current.status === 'pending' || inFlight.current) return;
     undo.reset();
-    const retryId = regenerationFailed ? generate.variables : undefined;
-    request(retryId ?? uuid.v4());
+    request(true);
   };
 
   const changeDecision = (
@@ -92,9 +68,9 @@ export function useRecommendationFlow(userId: string) {
   };
 
   return {
-    current, request: () => request(), regenerate, changeDecision,
-    generationFailed: generate.isError && generate.variables === undefined,
-    regenerating, regenerationFailed, regenerationLimited: limitResetsAt !== null,
+    current, request: () => request(false), regenerate, changeDecision,
+    generationFailed: generate.isError && !regenerationRequested,
+    regenerating, regenerationFailed,
     busy: decide.isPending || undo.isPending || regenerating,
     decisionFailed: decide.isError || undo.isError,
   };

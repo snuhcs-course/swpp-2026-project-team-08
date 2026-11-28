@@ -15,8 +15,8 @@
 # Changed: 아이의 제한 설명을 추천 생성기에 전달
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 이력을 보존하는 저장 목록 제거와 재저장
-# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
-# Changed: 식후 음식별 생성·추가 생성을 프로필 기반 홈 화면 추천 생성으로 대체
+# AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+# Changed: 식후 음식별 생성·추가 생성을 프로필 기반 홈 화면 추천 한 장 생성으로 대체
 
 """인증된 사용자의 음식 추천을 만들고 조회하고 결정한다."""
 
@@ -45,8 +45,8 @@ from app.models.food_recommendation_enums import (
 from app.models.meal_enums import MealCookingMethod
 from app.models.restriction_enums import RestrictionType
 
-# 한 번의 요청으로 만드는 추천 개수.
-SUGGESTION_COUNT = 3
+# 한 번의 요청으로 만드는 추천 개수. 홈 화면은 추천을 한 장씩 요청한다.
+SUGGESTION_COUNT = 1
 # 추천 생성(LLM 호출과 가드레일 판정)을 기다리는 최대 시간(초).
 GENERATION_TIMEOUT_SECONDS = 60
 # 보관 해제하지 않은 저장·시도 상태의 추천을 목록에 표시한다.
@@ -91,8 +91,8 @@ class FoodRecommendationService:
         stmt = stmt.order_by(FoodRecommendation.created_at.desc(), FoodRecommendation.id.desc())
         return list((await self._session.scalars(stmt)).all())
 
-    async def generate(self, *, user_id: int) -> list[FoodRecommendation]:
-        """프로필과 기록을 읽어 추천 `SUGGESTION_COUNT`개를 만들고 저장한다.
+    async def generate(self, *, user_id: int) -> FoodRecommendation:
+        """프로필과 기록을 읽어 추천 한 장을 만들고 저장한다.
 
         생성·검증에 실패하면 아무것도 저장하지 않고 `GenerationFailedError` 를 던진다.
         """
@@ -130,23 +130,21 @@ class FoodRecommendationService:
             )
         ):
             raise GenerationFailedError()
-        created = [
-            FoodRecommendation(
-                user_id=user_id,
-                origin_food_id=None,
-                what_to_try=item.what_to_try,
-                why_this_may_help=item.why_this_may_help,
-                serving_tip=item.preparation_method,
-                ingredients=list(item.ingredients),
-                # 제거 예정 컬럼이라 NOT NULL 을 채우는 고정 값만 넣는다.
-                cooking_method=MealCookingMethod.OTHER,
-                causes="",
-                status=FoodRecommendationStatus.PENDING,
-                dismiss_reasons=[],
-            )
-            for item in generated
-        ]
-        self._session.add_all(created)
+        item = generated[0]
+        created = FoodRecommendation(
+            user_id=user_id,
+            origin_food_id=None,
+            what_to_try=item.what_to_try,
+            why_this_may_help=item.why_this_may_help,
+            serving_tip=item.preparation_method,
+            ingredients=list(item.ingredients),
+            # 제거 예정 컬럼이라 NOT NULL 을 채우는 고정 값만 넣는다.
+            cooking_method=MealCookingMethod.OTHER,
+            causes="",
+            status=FoodRecommendationStatus.PENDING,
+            dismiss_reasons=[],
+        )
+        self._session.add(created)
         await self._session.flush()
         return created
 

@@ -12,6 +12,8 @@
 // Changed: 식생활 유형 테스트 분리 및 화면 구성·진행 경계 보강 · 음식 없음 응답 반영
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 식생활 초기 표시·진행 조건·Review 요약 중복 검증 제거
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: Match dietary option ordering in the current screen
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -86,13 +88,13 @@ test('처음에는 선택 없이 일곱 식생활 유형과 설명·닉네임 �
   assert.match(helper.props.children, /Max/);
   assert.equal(choices.props.accessibilityRole, 'radiogroup');
   assert.deepEqual(rows.map(row => [row.key, row.props.label]), [
+    ['no_specific_pattern', 'No specific dietary pattern'],
     ['vegan', 'Vegan'],
     ['lacto_vegetarian', 'Lacto-vegetarian'],
     ['ovo_vegetarian', 'Ovo-vegetarian'],
     ['lacto_ovo_vegetarian', 'Lacto-ovo vegetarian'],
     ['pescatarian', 'Pescatarian'],
     ['flexitarian', 'Flexitarian'],
-    ['no_specific_pattern', 'No specific dietary pattern'],
   ]);
   assert.equal(rows.every(row => !row.props.selected), true);
   for (const row of rows) {

@@ -10,16 +10,19 @@
 // Changed: 온보딩 행동별 테스트 분리 및 경로 정리 · 음식 없음 응답 반영
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 계정 입력과 익숙한 음식 입력의 진행 조건 검증 분리
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: 삭제된 단계의 초안 복원 검증
 const { test } = require('node:test');
-
 const assert = require('node:assert/strict');
-
 require('../../helpers/register.cjs');
+const { emptyDraft, steps } = require('../../../src/features/onboarding/types.ts');
+const { restoreDraft } = require('../../../src/features/onboarding/rules.ts');
 
-const { emptyDraft } = require('../../../src/features/onboarding/types.ts');
-
-const { canContinue } = require('../../../src/features/onboarding/rules.ts');
-
-test('익숙한 음식에 답하지 않은 초안은 해당 단계 진행을 차단한다', () => {
-  assert.equal(canContinue('safe-foods', emptyDraft(), ''), false);
+test('기존 Safe Food 초안은 감각 단계로 복원하고 음식 정보는 제거한다', () => {
+  const draft = restoreDraft({ ...emptyDraft(), step: 'safe-foods',
+    noSafeFoods: false, safeFoods: [{ name: 'Apple' }], safeFoodInput: { name: 'Pear' } });
+  assert.equal(steps.includes('safe-foods'), false);
+  assert.equal(draft.step, 'sensory');
+  assert.equal('safeFoods' in draft, false);
+  assert.equal('safeFoodInput' in draft, false);
 });

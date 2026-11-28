@@ -3,6 +3,8 @@
 # Changed: 대문자 enum, 서버 발급 id, 난이도 사유 문자열 기준으로 DTO 검증 테스트 재작성
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 식사 생성·수정의 조리법 열 가지 입력 계약 검증
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 사용자 지정 사유 검증
 """Unit: meal DTO ranges and normalization. No DB or HTTP mocks needed."""
 
 import pytest
@@ -195,7 +197,7 @@ def test_difficulty_reasons_accept_every_defined_value():
     reasons = [item.value for item in DifficultyReason]
     assert len(reasons) == 77
     parsed = FoodReviewInput(food_id="1", outcome="EATEN", difficulty_reasons=reasons)
-    assert [item.value for item in parsed.difficulty_reasons] == reasons
+    assert parsed.difficulty_reasons == reasons
 
 
 @pytest.mark.parametrize(
@@ -218,3 +220,31 @@ def test_difficulty_reasons_reject_unknown_or_duplicate_values(reasons):
 def test_food_review_requires_an_uppercase_outcome(outcome):
     with pytest.raises(ValidationError):
         FoodReviewInput(food_id="1", outcome=outcome)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        'CUSTOM:["OTHER",null,"Too noisy"]',
+        'CUSTOM:["TASTE",null,"Unfamiliar taste"]',
+        'CUSTOM:["TEXTURE","hardness","Too firm"]',
+    ],
+)
+def test_custom_difficulty_reasons_round_trip(value):
+    parsed = FoodReviewInput(food_id="1", outcome="EATEN", difficulty_reasons=[value])
+    assert parsed.difficulty_reasons == [value]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        'CUSTOM:["OTHER",null," "]',
+        'CUSTOM:["TEXTURE","unknown","reason"]',
+        'CUSTOM:["TASTE","hardness","reason"]',
+        'CUSTOM:[[],null,"reason"]',
+        "CUSTOM:broken",
+    ],
+)
+def test_custom_difficulty_reasons_reject_invalid_values(value):
+    with pytest.raises(ValidationError):
+        FoodReviewInput(food_id="1", outcome="EATEN", difficulty_reasons=[value])

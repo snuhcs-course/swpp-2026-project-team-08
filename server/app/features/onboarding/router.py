@@ -1,3 +1,9 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 제거 및 거부 음식 테이블 분리
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 거부 음식 프로필 저장
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 감각 프로필 저장
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 # AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
@@ -20,7 +26,6 @@ from app.features.auth.dependencies import CurrentUser
 from app.features.onboarding.dto import (
     OnboardingResponse,
     OnboardingWriteRequest,
-    SafeFoodDto,
     UserConsentDto,
     UserProfileDto,
 )
@@ -29,7 +34,6 @@ from app.features.onboarding.service import (
     OnboardingInput,
     OnboardingService,
     OnboardingSnapshot,
-    SafeFoodInput,
 )
 from app.models.restriction_enums import RestrictionType
 
@@ -49,13 +53,14 @@ def _input(payload: OnboardingWriteRequest) -> OnboardingInput:
         age_group=profile.age_group,
         restrictions=tuple(profile.restrictions),
         dietary_pattern=profile.dietary_pattern,
-        safe_foods=None
-        if profile.safe_foods is None
-        else tuple(
-            SafeFoodInput(item.name, item.preparation, item.presentation_note)
-            for item in profile.safe_foods
-        ),
         consents=tuple(ConsentInput(item.kind, item.granted) for item in payload.consents),
+        sensory_textures=tuple(profile.sensory_textures)
+        if profile.sensory_textures is not None
+        else None,
+        sensory_note=profile.sensory_note,
+        refused_foods=tuple(item.model_dump(mode="json") for item in profile.refused_foods)
+        if profile.refused_foods is not None
+        else None,
     )
 
 
@@ -69,16 +74,16 @@ def _response(snapshot: OnboardingSnapshot) -> OnboardingResponse:
             age_group=profile.age_group,
             restrictions=[RestrictionType(item) for item in profile.restrictions],
             dietary_pattern=profile.dietary_pattern,
-            safe_foods=None
-            if profile.no_safe_foods
-            else [
-                SafeFoodDto(
-                    id=str(food.id),
-                    name=food.name,
-                    preparation=food.preparation,
-                    presentation_note=food.presentation_note,
-                )
-                for food in snapshot.safe_foods
+            sensory_textures=profile.sensory_textures or [],
+            sensory_note=profile.sensory_note or "",
+            refused_foods=[
+                {
+                    "id": food.client_id,
+                    "name": food.name,
+                    "cooking_method": food.cooking_method,
+                    "reasons": food.reasons,
+                }
+                for food in snapshot.refused_foods
             ],
             updated_at=profile.updated_at,
         )

@@ -5,6 +5,10 @@
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 추천 조리법 공통 표시명과 미입력 표시
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 저장된 추천 상세에 추천 행동·이유·제공 팁 표시
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 저장된 추천 상세에 시도할 것·이유·재료·준비 방법 네 항목 표시
 
 import { Text, View } from 'react-native';
 import type { Language } from '../../../types/profile';
@@ -12,28 +16,16 @@ import type { Suggestion } from '../../../types/suggestionRecord';
 import { suggestionCopyFor } from '../../../util/strings';
 import { suggestionStyles as s } from '../screens/suggestionStyles';
 
-/** 서버 추천에는 음식 이름이 없으므로 추천의 근거가 된 음식을 원본 식사에서 찾는다. */
-export function suggestionTargetName(
-  item: Suggestion, meal: { foods: { id: string; name: string }[] } | undefined,
-): string {
-  return meal?.foods.find((food) => food.id === item.foodId)?.name ?? '';
-}
-
-export function GeneratedSuggestionBody({ item, language, details = false }: {
-  item: Suggestion; language: Language; details?: boolean;
+export function GeneratedSuggestionBody({ item, language }: {
+  item: Suggestion; language: Language;
 }) {
   const c = suggestionCopyFor(language);
-  const sections = details
-    ? [
-        [c.ingredients, item.ingredients.join(', ') || c.noDetails],
-        [c.cooking, item.cookingMethod ? c.cookingMethods[item.cookingMethod] : c.noDetails],
-        [c.serving, item.servingTip ?? c.noDetails],
-      ]
-    : [
-        [c.what, item.whatToTry],
-        [c.why, item.whyThisMayHelp],
-        [c.serving, item.servingTip ?? c.noDetails],
-      ];
+  const sections = [
+    [c.what, item.whatToTry],
+    [c.why, item.whyThisMayHelp],
+    [c.ingredient, item.ingredients.join(', ') || c.noDetails],
+    [c.preparationMethod, item.preparationMethod ?? c.noDetails],
+  ];
   return <View style={s.stack}>
     {sections.map(([title, body]) => <View key={title} style={s.section}>
       <Text style={s.heading}>{title}</Text>

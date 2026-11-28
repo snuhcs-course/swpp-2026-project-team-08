@@ -4,9 +4,13 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 홈 추천 대기 목록과 추천 화면 이동 연결
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 홈 추천 진입 및 필요한 정보 안내
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 식사 기록 없이도 홈 추천을 열 수 있도록 식사 기록 조건 제거
 
 import { Redirect, router, useFocusEffect } from 'expo-router';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ChildProfile } from '../../../types/profile';
@@ -22,8 +26,13 @@ function HomeContent({ profile }: { profile: ChildProfile }) {
   const home = useHome(profile);
   const refresh = home.refresh;
   const openingSuggestion = useRef(false);
+  const [showRequirement, setShowRequirement] = useState(false);
+  const s = copyFor(language).home;
+  // 식사 기록이 없어도 연령대와 제한만으로 추천할 수 있다.
+  const requirement = !profile.allergies.length ? s.suggestionNeedsAllergies : null;
   useFocusEffect(useCallback(() => {
     openingSuggestion.current = false;
+    setShowRequirement(false);
     void refresh();
   }, [refresh]));
   return (
@@ -31,13 +40,16 @@ function HomeContent({ profile }: { profile: ChildProfile }) {
       <HomeView
         draft={home.draft}
         pendingMeals={home.pendingMeals}
-        suggestionMeals={home.suggestionMeals}
-        suggestionMealsLoading={home.suggestionMealsLoading}
-        suggestionMealsError={home.suggestionMealsError}
-        onViewSuggestions={(mealId) => {
+        suggestionDisabled={false}
+        suggestionRequirement={showRequirement ? requirement : null}
+        onGetSuggestion={() => {
           if (openingSuggestion.current) return;
+          if (requirement) {
+            setShowRequirement(true);
+            return;
+          }
           openingSuggestion.current = true;
-          router.push({ pathname: '/recommendation/[mealId]', params: { mealId } });
+          router.push('/recommendation');
         }}
         meals={home.storedMeals}
         onReviewMeal={(mealId) => router.push({ pathname: '/after-meal-review', params: { mealId } })}

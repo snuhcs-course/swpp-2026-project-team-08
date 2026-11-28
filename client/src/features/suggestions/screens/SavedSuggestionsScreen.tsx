@@ -4,6 +4,10 @@
 // Changed: 저장한 추천 탭 헤더의 뒤로가기 제거
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 저장 목록 제거 대기·실패 화면 유지와 성공 안내
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 저장 추천 음식명과 원본 식사가 있는 날짜 표시
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 저장 추천 제목을 추천 음식 이름으로, 미리보기를 추천 이유로 표시하고 원본 식사 날짜 제거
 
 import { AppHeader } from '../../../components/AppHeader';
 import { BottomSheet } from '../../../components/BottomSheet';
@@ -15,7 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../providers/AuthProvider';
 import { useProfile } from '../../../providers/ProfileProvider';
 import { copyFor, suggestionCopyFor } from '../../../util/strings';
-import { GeneratedSuggestionBody, suggestionTargetName } from '../components/GeneratedSuggestionBody';
+import { GeneratedSuggestionBody } from '../components/GeneratedSuggestionBody';
 import { useSavedSuggestionsScreen } from '../hooks/useSavedSuggestionsScreen';
 import { suggestionPreview } from '../rules';
 import { suggestionStyles as s } from './suggestionStyles';
@@ -25,7 +29,7 @@ function SavedContent({ userId, initialId = '' }: { userId: string; initialId?: 
   const { language } = useProfile();
   const c = suggestionCopyFor(language);
   const model = useSavedSuggestionsScreen(userId, initialId);
-  const { saved, meals, selectedId, selected, linkedMeals, removeFailed, sourceMeal } = model;
+  const { saved, meals, selectedId, selected, linkedMeals, removeFailed } = model;
   const pendingNavigation = useRef<{ kind: 'try' | 'meal'; id: string } | null>(null);
   useEffect(() => {
     const target = pendingNavigation.current;
@@ -60,21 +64,18 @@ function SavedContent({ userId, initialId = '' }: { userId: string; initialId?: 
         <Text accessibilityRole="alert" style={s.error}>{c.loadFailed}</Text>
         <AppButton label={c.retry} onPress={() => { void saved.refetch(); }} />
       </>}
-      {saved.isPending ? <ActivityIndicator /> : saved.data?.length ? saved.data.map((item) => {
-        const meal = sourceMeal(item.mealId);
-        return <Pressable key={item.id} accessibilityRole="button" disabled={model.removing}
+      {saved.isPending ? <ActivityIndicator /> : saved.data?.length ? saved.data.map((item) =>
+        <Pressable key={item.id} accessibilityRole="button" disabled={model.removing}
           onPress={() => model.setSelectedId(item.id)} style={s.savedCard}>
-          <View style={s.savedCardHeading}><Text style={s.savedFoodName}>{suggestionTargetName(item, meal)}</Text>
+          <View style={s.savedCardHeading}><Text style={s.savedFoodName}>{item.whatToTry}</Text>
             {!!(meals.data ?? []).find((value) => value.suggestionLinks.some((link) => link.suggestionId === item.id))
               && <View style={s.trialChip}><Text style={s.savedTriedLabel}>{c.tried}</Text></View>}
           </View>
-          <Text numberOfLines={1} style={s.savedPreview}>{suggestionPreview(item.whatToTry)}</Text>
+          <Text numberOfLines={1} style={s.savedPreview}>{suggestionPreview(item.whyThisMayHelp)}</Text>
           <View style={s.savedCardFooter}>
-            <Text style={s.savedDate}>{meal ? mealLabel(meal) : item.createdAt.slice(0, 10)}</Text>
             <UiAssetIcon name="suggestion-open" />
           </View>
-        </Pressable>;
-      }) : saved.data && <View style={s.emptyState}>
+        </Pressable>) : saved.data && <View style={s.emptyState}>
         <UiAssetIcon name="suggestion-empty" />
         <Text style={[s.heading, s.centeredText]}>{c.empty}</Text>
         <Text style={[s.savedIntro, s.centeredText]}>{c.emptyDetail}</Text>
@@ -83,9 +84,8 @@ function SavedContent({ userId, initialId = '' }: { userId: string; initialId?: 
       </View>}
     </ScrollView>
     {!!selectedId && <BottomSheet appearance="suggestion" height={544} dismissDisabled={model.removing}
-      title={selected ? suggestionTargetName(selected, sourceMeal(selected.mealId)) : c.savedTitle} closeLabel={c.close} onClose={close}
+      title={selected?.whatToTry ?? c.savedTitle} closeLabel={c.close} onClose={close}
       headerContent={selected && <View style={s.detailHeader}>
-        <Text style={s.muted}>{sourceMeal(selected.mealId) ? mealLabel(sourceMeal(selected.mealId)!) : selected.createdAt.slice(0, 10)}</Text>
         {linkedMeals.length > 0 && <ScrollView horizontal showsHorizontalScrollIndicator={false}
           style={s.trialScroll} contentContainerStyle={s.trialRow}>
           {linkedMeals.map((meal) => <Pressable key={meal.id} accessibilityRole="button"

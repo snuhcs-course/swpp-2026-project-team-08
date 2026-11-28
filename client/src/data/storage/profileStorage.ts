@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: Safe Food 기능 제거
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
@@ -20,8 +22,7 @@ export async function readProfile(): Promise<ChildProfile | null> {
     || typeof profile.caregiverEmail !== 'string' || typeof profile.childName !== 'string'
     || typeof profile.ageRange !== 'string' || typeof profile.updatedAt !== 'string'
     || !Array.isArray(profile.allergies) || !Array.isArray(profile.restrictions)
-    || (profile.noSafeFoods !== undefined && typeof profile.noSafeFoods !== 'boolean')
-    || !Array.isArray(profile.vegetarianRestrictions) || !Array.isArray(profile.safeFoods)) throw new Error('Invalid profile');
+    || !Array.isArray(profile.vegetarianRestrictions)) throw new Error('Invalid profile');
   return parsed as ChildProfile;
 }
 

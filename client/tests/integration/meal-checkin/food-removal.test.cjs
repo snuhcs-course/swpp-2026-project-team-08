@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 연결된 음식·마지막 음식·동명 음식의 삭제와 Undo 사용자 흐름 검증
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 저장 추천 응답을 음식 이름·이유·준비 방법 필드로 지정
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, waitFor } = require('../../helpers/meal-checkin-screen.cjs');
@@ -11,9 +13,11 @@ const cookingLabels = { steamed: 'Steamed', boiled: 'Boiled', raw: 'Raw' };
 
 async function mountFoods(t, original) {
   await saveMealDraft(original);
+  // 체크인 선택지의 제목·설명·준비 팁은 저장 추천의 음식 이름·이유·준비 방법이다.
   const suggestions = original.suggestionLinks.map(link => suggestionResponse({
-    id: link.suggestionId, status: 'SAVED', what_to_try: link.description,
-    serving_tip: link.servingTip, saved_at: '2026-11-16T00:00:00Z',
+    id: link.suggestionId, status: 'SAVED', what_to_try: link.title,
+    why_this_may_help: link.description, preparation_method: link.servingTip,
+    saved_at: '2026-11-16T00:00:00Z',
   }));
   const app = await mountMeal(t, { suggestions });
   const suggestionKey = checkinReferenceKeys.savedSuggestions('1');

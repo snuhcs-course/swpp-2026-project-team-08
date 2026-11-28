@@ -1,6 +1,8 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung
 // Changed: MyPage 언어 전환 연결 및 미사용 언어 코드 정리
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: Expo UI imports in isolated component tests
 const { createMemoryStorage } = require('./memory-storage.cjs');
 const { mockModules } = require('./mock-modules.cjs');
 
@@ -20,6 +22,9 @@ function nativeBoundaries(overrides = () => undefined) {
     if (name === '@react-native-async-storage/async-storage') return memory.storage;
     if (name === 'expo-secure-store') return secureStore;
     if (name === 'expo-constants') return {};
+    if (name === 'expo-image') return { Image: () => null };
+    if (name.startsWith('@expo/vector-icons/')) return () => null;
+    if (name === '@expo/vector-icons') return { Feather: () => null, Ionicons: () => null };
     return undefined;
   });
   return memory;

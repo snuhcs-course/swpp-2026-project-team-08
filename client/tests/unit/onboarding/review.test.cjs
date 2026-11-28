@@ -17,13 +17,15 @@
 // Changed: 음식 편집에서 저장 추천 연결 검증
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 // Changed: 검토 테스트 분리 및 요약·미응답·명시적 없음·원본 보존 검증
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: Cover sensory and refused-food review rows
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 require("../../helpers/register.cjs");
 const { emptyDraft } = require("../../../src/features/onboarding/types.ts");
 const { reviewRows } = require("../../../src/features/onboarding/screens/reviewRows.ts");
 
-test("현재 답변의 자녀 정보·제한·식생활·음식 상세를 네 카드에 표시하고 원본을 바꾸지 않는다", () => {
+test("현재 답변의 자녀·알레르기·식생활·감각·거부 음식 요약을 표시한다", () => {
   const draft = {
     ...emptyDraft(),
     childName: "하늘",
@@ -31,10 +33,8 @@ test("현재 답변의 자녀 정보·제한·식생활·음식 상세를 네 �
     allergies: ["PEANUTS", "EGGS"],
     restrictions: ["GLUTEN_FREE", "LACTOSE_FREE"],
     dietaryPattern: "pescatarian",
-    safeFoods: [
-      { id: "rice", name: "Rice", preparation: "Steamed", presentationNote: "Blue bowl" },
-      { id: "apple", name: "Apple", preparation: "Sliced", presentationNote: "White plate" },
-    ],
+    sensoryTextures: [], sensoryNote: "Likes crisp food",
+    refusedFoods: [{ id: "peas", name: "Peas", cookingMethod: null, reasons: [] }],
   };
   const before = structuredClone(draft);
   const rows = reviewRows(draft, "en");
@@ -42,16 +42,19 @@ test("현재 답변의 자녀 정보·제한·식생활·음식 상세를 네 �
     { step: "child", title: "Child basics", value: "하늘 · 4-5 years" },
     {
       step: "allergies", title: "Safety restrictions",
-      value: "Allergies: Peanuts, Eggs · Other dietary restrictions: Gluten-free, Lactose-free",
+      value: "Allergies: Peanuts, Eggs",
     },
     { step: "family", title: "Dietary Pattern", value: "Pescatarian" },
     {
-      step: "safe-foods", title: "Safe foods",
-      value: "Rice · Steamed · Blue bowl, Apple · Sliced · White plate",
+      step: "sensory", title: "Sensory Profile",
+      value: "Likes crisp food",
+    },
+    {
+      step: "refused-foods", title: "Refused foods",
+      value: "Peas",
     },
   ]);
-  assert.equal(reviewRows(draft, "ko")[1].value,
-    "알레르기: 땅콩, 달걀 · 기타 식이 제한: 글루텐 제한, 유당 제한");
+  assert.equal(reviewRows(draft, "ko")[1].value, "알레르기: 땅콩, 달걀");
   assert.deepEqual(draft, before);
 });
 
@@ -59,39 +62,33 @@ test("미응답 항목은 없음을 선택한 것으로 표시하지 않고 한�
   for (const [language, expected] of [
     ["ko", [
       "입력하지 않음 · 입력하지 않음",
-      "알레르기: 입력하지 않음 · 기타 식이 제한: 미응답",
-      "미응답", "입력하지 않음",
+      "알레르기: 입력하지 않음",
+      "미응답", "입력하지 않음", "입력하지 않음",
     ]],
     ["en", [
       "Not entered · Not entered",
-      "Allergies: Not entered · Other dietary restrictions: Not answered",
-      "Not answered", "Not entered",
+      "Allergies: Not entered",
+      "Not answered", "Not entered", "Not entered",
     ]],
   ]) {
     assert.deepEqual(reviewRows(emptyDraft(), language).map(row => row.value), expected);
   }
 });
 
-test("명시적으로 없음에 답한 제한·식생활·음식은 한·영 요약에서 미응답과 구분된다", () => {
+test("명시적으로 없음에 답한 알레르기·식생활은 미응답과 구분된다", () => {
   const draft = {
     ...emptyDraft(), allergies: ["none"], restrictions: ["none"],
     dietaryPattern: "no_specific_pattern", noSafeFoods: true,
   };
   for (const [language, expected] of [
-    ["ko", [
-      "알레르기: 해당 없음 · 기타 식이 제한: 없음",
-      "특정 식생활 유형 없음", "아직 익숙한 음식 없음",
-    ]],
-    ["en", [
-      "Allergies: None · Other dietary restrictions: None",
-      "No specific dietary pattern", "No Safe Foods Yet",
-    ]],
+    ["ko", ["알레르기: 해당 없음", "특정 식생활 유형 없음", "입력하지 않음", "입력하지 않음"]],
+    ["en", ["Allergies: None", "No specific dietary pattern", "Not entered", "Not entered"]],
   ]) {
     assert.deepEqual(reviewRows(draft, language).slice(1).map(row => row.value), expected);
   }
 });
 
-test("익숙한 음식 없음을 선택하면 보관 중인 음식 대신 없음만 요약하고 목록과 입력은 보존한다", () => {
+test("온보딩 요약은 제거된 익숙한 음식 목록을 표시하지 않고 원본을 보존한다", () => {
   const draft = {
     ...emptyDraft(), noSafeFoods: true,
     safeFoods: [
@@ -100,8 +97,8 @@ test("익숙한 음식 없음을 선택하면 보관 중인 음식 대신 없음
     safeFoodInput: { name: "Apple", preparation: "Sliced", presentationNote: "White plate" },
   };
   const before = structuredClone(draft);
-  for (const [language, expected] of [["ko", "아직 익숙한 음식 없음"], ["en", "No Safe Foods Yet"]]) {
-    assert.equal(reviewRows(draft, language)[3].value, expected);
+  for (const language of ["ko", "en"]) {
+    assert.equal(reviewRows(draft, language)[3].value, language === "ko" ? "입력하지 않음" : "Not entered");
     assert.deepEqual(draft, before);
   }
 });
@@ -117,6 +114,6 @@ test("음식 요약에는 추가한 음식과 작성한 설명만 표시하고 �
     safeFoodInput: { name: "Pear", preparation: "Warmed", presentationNote: "White plate" },
   };
   const before = structuredClone(draft);
-  assert.equal(reviewRows(draft, "en")[3].value, "Rice, Apple · Sliced, Banana · Blue bowl");
+  assert.equal(reviewRows(draft, "en")[3].value, "Not entered");
   assert.deepEqual(draft, before);
 });

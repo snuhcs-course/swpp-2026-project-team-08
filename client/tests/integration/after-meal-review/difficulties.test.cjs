@@ -1,5 +1,10 @@
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 어려움 대상·태그·입력·Skip 검증 및 결과에서 진행 후 왕복
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 사용자 지정 사유 입력 문구 검증
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식후 검토 완료 화면의 홈 이동 확인
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, waitFor, act } = require('../../helpers/meal-checkin-screen.cjs');
@@ -75,7 +80,7 @@ async function expectCannotAdd(app, name) {
   assert.deepEqual(tags(app, name), before);
 }
 async function typeNote(app, name, value) {
-  const field = editor(app, name).container.querySelector('textarea[aria-label="Optional note"]');
+  const field = editor(app, name).container.querySelector('textarea[aria-label="Please write the reason ..."]');
   assert.ok(field);
   await act(async () => {
     Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set.call(field, value);
@@ -144,7 +149,7 @@ test('Texture 세부 항목을 바꾸면 값을 다시 선택해야 추가할 �
   await typeNote(app, 'Rice', '  보라색 소스  ');
   assert.notEqual(control(editor(app, 'Rice'), 'button', '+ Add').getAttribute('aria-disabled'), 'true');
   await click(control(editor(app, 'Rice'), 'button', '+ Add'));
-  assert.deepEqual(tags(app, 'Rice'), ['Texture · How moist it feels: Dry', 'Colors: Other · 보라색 소스']);
+  assert.deepEqual(tags(app, 'Rice'), ['Texture · How moist it feels: Dry', '보라색 소스']);
   assert.equal(editor(app, 'Rice').container.querySelector('textarea'), null);
   assert.deepEqual(tags(app, 'Carrot in Rice'), []);
   assert.deepEqual(writes, []);
@@ -158,7 +163,7 @@ test('어려움을 입력하지 않고 Skip을 누르면 빈 이유 목록으로
   assert.equal(app.pathname, '/after-meal-review');
   assert.equal(new URL(window.location.href).searchParams.get('mealId'), '10');
   assert.ok(control(app, 'heading', 'Save After-meal Review'));
-  assert.ok(control(app, 'button', 'Return to Home for now'));
+  assert.ok(control(app, 'button', 'Back to Home'));
   assert.deepEqual(writes, [{
     after_photo_uri: null,
     food_results: [
@@ -167,4 +172,19 @@ test('어려움을 입력하지 않고 Skip을 누르면 빈 이유 목록으로
       { food_id: '2', outcome: 'UNCLEAR', difficulty_reasons: [], ingredient_outcomes: [] },
     ],
   }]);
+});
+
+
+test('Other category accepts multiple custom reasons and keeps them when changing category', async t => {
+  const { app } = await start(t);
+  await choose(app, 'Rice', 'Select category', 'Other');
+  await expectCannotAdd(app, 'Rice');
+  await typeNote(app, 'Rice', 'Looks unfamiliar');
+  await click(control(editor(app, 'Rice'), 'button', '+ Add'));
+  await typeNote(app, 'Rice', 'Too noisy');
+  await click(control(editor(app, 'Rice'), 'button', '+ Add'));
+  assert.deepEqual(tags(app, 'Rice'), ['Looks unfamiliar', 'Too noisy']);
+  await choose(app, 'Rice', 'Select category', 'Tastes');
+  assert.equal(editor(app, 'Rice').container.querySelector('textarea'), null);
+  assert.equal(tags(app, 'Rice').length, 2);
 });

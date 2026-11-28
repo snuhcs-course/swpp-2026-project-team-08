@@ -1,3 +1,11 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: Safe Food 기능 제거
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 계정 전환 초안 보관 및 복원
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 거부 음식 온보딩
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 감각 프로필 저장 및 온보딩
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 온보딩 초안 복원, 계정 입력 초기화 및 초기화 후 자동 저장 수정; Dietary Pattern
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
@@ -19,13 +27,14 @@
 // Changed: 익숙한 음식 중복 추가 방지
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { clearDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
+import { archiveDraft, clearArchivedDraft, clearDraft, readArchivedDraft, readDraft, saveDraft } from '../../data/storage/onboardingDraftStorage';
+import { readSession } from '../../data/storage/authStorage';
 import { useAuth } from '../../providers/AuthProvider';
 import { useProfile } from '../../providers/ProfileProvider';
-import type { ChildProfile, SafeFood } from '../../types/profile';
+import type { ChildProfile } from '../../types/profile';
 import { isDietaryPattern } from '../../util/dietaryPattern';
 import { createDraftSaveGate } from './draftSaveGate';
-import { canAddSafeFood, canContinue, canFinish, restoreDraft, toggleExclusive, validEmail } from './rules';
+import { canContinue, canFinish, restoreDraft, toggleExclusive, validEmail } from './rules';
 import { emptyDraft, type OnboardingDraft, type OnboardingStep } from './types';
 import { OnboardingContext, type ConsentField, type DraftField, type ListField, type SaveStatus } from './onboardingContext';
 
@@ -49,7 +58,17 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (status === 'loading' || ready) return;
     let active = true;
-    readDraft()
+    (async () => {
+      const current = await readDraft();
+      if (current != null || !auth.session?.user.id) return current;
+      const archived = await readArchivedDraft(auth.session.user.id);
+      if (archived == null) return null;
+      if (!restoreDraft(archived)) throw new Error('Archived draft is invalid');
+      await saveDraft(archived);
+      try { await clearArchivedDraft(auth.session.user.id); }
+      catch (error) { await clearDraft(); throw error; }
+      return archived;
+    })()
       .then((storedDraft) => {
         if (!active) return;
         const restored = restoreDraft(storedDraft);
@@ -80,6 +99,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     const { user } = auth.session;
     setDraft((current) => ({
       ...current,
+      step: current.step === 'account' ? 'consent' : current.step,
       caregiverName: user.fullName,
       caregiverEmail: user.email,
     }));
@@ -120,28 +140,23 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const toggleList = useCallback((field: ListField, value: string) => {
     setDraft((current) => ({ ...current, [field]: toggleExclusive(current[field], value) }));
   }, []);
-  const addSafeFood = useCallback((food: Omit<SafeFood, 'id'>) => {
-    if (!canAddSafeFood(food)) return;
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    setDraft((current) => current.noSafeFoods || !canAddSafeFood(food, current.safeFoods) ? current : ({
-      ...current,
-      safeFoods: [...current.safeFoods, {
-        id,
-        name: food.name.trim(),
-        preparation: food.preparation.trim(),
-        presentationNote: food.presentationNote.trim(),
-      }],
-      safeFoodInput: { name: '', preparation: '', presentationNote: '' },
-    }));
+  const setSensory = useCallback((sensoryTextures: string[], sensoryNote: string) => {
+    setDraft((current) => ({ ...current, sensoryTextures, sensoryNote }));
   }, []);
-  const setSafeFoodInput = useCallback((field: keyof OnboardingDraft['safeFoodInput'], value: string) => {
-    setDraft((current) => current.noSafeFoods ? current : ({ ...current, safeFoodInput: { ...current.safeFoodInput, [field]: value } }));
+  const setRefusedFoodInput = useCallback((input: OnboardingDraft['refusedFoodInput']) => {
+    setDraft((current) => ({ ...current, refusedFoodInput: input }));
   }, []);
-  const removeSafeFood = useCallback((id: string) => {
-    setDraft((current) => current.noSafeFoods ? current : ({ ...current, safeFoods: current.safeFoods.filter((food) => food.id !== id) }));
+  const addRefusedFood = useCallback(() => {
+    setDraft((current) => {
+      const name = current.refusedFoodInput.name.trim();
+      if (!name || name.length > 200) return current;
+      return { ...current, refusedFoods: [...(current.refusedFoods ?? []), {
+        ...current.refusedFoodInput, name, id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      }], refusedFoodInput: { name: '', cookingMethod: null, reasons: [] } };
+    });
   }, []);
-  const setNoSafeFoods = useCallback((value: boolean) => {
-    setDraft((current) => ({ ...current, noSafeFoods: value }));
+  const removeRefusedFood = useCallback((id: string) => {
+    setDraft((current) => ({ ...current, refusedFoods: (current.refusedFoods ?? []).filter((food) => food.id !== id) }));
   }, []);
   const setStep = useCallback((step: OnboardingStep) => {
     setDraft((current) => ({ ...current, step }));
@@ -149,7 +164,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const draftFromProfile = useCallback((step: OnboardingStep): OnboardingDraft | null => {
     if (!profile) return null;
     const { id: _id, updatedAt: _updatedAt, ...values } = profile;
-    return { ...values, noSafeFoods: values.noSafeFoods ?? false, step, safeFoodInput: { name: '', preparation: '', presentationNote: '' } };
+    return { ...values, step, refusedFoodInput: { name: '', cookingMethod: null, reasons: [] } };
   }, [profile]);
   const startEdit = useCallback(() => {
     if (editing) return;
@@ -177,10 +192,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     finishing.current = true;
     try {
       await persist(draft);
-      const { step: _step, safeFoodInput: _safeFoodInput, ...values } = draft;
+      const { step: _step, refusedFoodInput: _refusedFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,
-        safeFoods: draft.noSafeFoods ? [] : draft.safeFoods,
         id: profile?.id ?? auth.session?.user.id ?? `child-${Date.now()}`,
         updatedAt: new Date().toISOString(),
       };
@@ -211,6 +225,41 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       setSaveStatus('saved');
     } finally { finishing.current = false; }
   }, []);
+  const archiveForAccountSwitch = useCallback(async () => {
+    const userId = auth.session?.user.id;
+    if (!userId || finishing.current) throw new Error('Account is unavailable');
+    finishing.current = true;
+    try {
+      await saveGate.current.discard(async () => {
+        await archiveDraft(userId, draft);
+        await clearDraft();
+      });
+      const next = emptyDraft();
+      clearedDraft.current = next;
+      accountFieldsInitialized.current = false;
+      setDraft(next);
+      setPassword('');
+      setEditing(false);
+      setHasDraft(false);
+      setSaveStatus('saved');
+    } finally { finishing.current = false; }
+  }, [auth.session, draft]);
+  const restoreAfterSignIn = useCallback(async () => {
+    const user = (await readSession())?.user;
+    if (!user) throw new Error('Account is unavailable');
+    const stored = await readArchivedDraft(user.id);
+    if (stored == null) return;
+    const restored = restoreDraft(stored);
+    if (!restored) throw new Error('Archived draft is invalid');
+    await saveDraft(restored);
+    try { await clearArchivedDraft(user.id); }
+    catch (error) { await clearDraft(); throw error; }
+    clearedDraft.current = null;
+    accountFieldsInitialized.current = true;
+    setDraft(restored);
+    setHasDraft(true);
+    setSaveStatus('saved');
+  }, []);
   const retrySave = useCallback(() => persist(draft), [draft, persist]);
   const retryLoad = useCallback(() => {
     skipFirstSave.current = true;
@@ -222,10 +271,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     finishing.current = true;
     try {
       await persist(draft);
-      const { step: _step, safeFoodInput: _safeFoodInput, ...values } = draft;
+      const { step: _step, refusedFoodInput: _refusedFoodInput, ...values } = draft;
       const next: ChildProfile = {
         ...values,
-        safeFoods: draft.noSafeFoods ? [] : draft.safeFoods,
         id: profile?.id ?? auth.session?.user.id ?? `child-${Date.now()}`,
         updatedAt: new Date().toISOString(),
       };
@@ -247,9 +295,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     ready: ready && status !== 'loading', loadError: loadError || status === 'error',
     draft, password, saveStatus, editing, hasDraft,
     setPassword, setField, setConsent, toggleList,
-    addSafeFood, setSafeFoodInput, removeSafeFood, setNoSafeFoods, setStep,
-    startEdit, startProfileEdit, cancelEdit, applyEdit, resetLocal,
-    retrySave, retryLoad, finish, canContinue: (step) => step === 'review' ? canFinish(draft)
+    setSensory, setRefusedFoodInput, addRefusedFood, removeRefusedFood, setStep,
+    startEdit, startProfileEdit, cancelEdit, applyEdit, resetLocal, archiveForAccountSwitch, restoreAfterSignIn,
+    retrySave, retryLoad, finish, canContinue: (step) => (step === 'review' || step === 'sensory') ? canFinish(draft)
       : step === 'account' && (editing || !!auth.session) ? !!draft.caregiverName.trim() && validEmail(draft.caregiverEmail)
         : canContinue(step, draft, password),
   }}>{children}</OnboardingContext.Provider>;

@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
-// Changed: Ongoing Meal 왕복 및 사진 유무별 기본 앞뒤 이동·편집창 복귀 흐름 검증
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: Ongoing Meal 왕복 후 사진 건너뛰기와 입력 보존 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, input, click, enter, waitFor, modal, waitForModal, photoDevice }
@@ -143,7 +143,7 @@ test('기본 정보부터 음식 목록까지 진행한 뒤 초안을 다시 열
       await click(control(app, 'button', 'Continue to photo'));
       await click(button(app, 'Skip photo'));
       await expectScreen(app, 'Review food items');
-      await expectDraft(original, 'foods');
+      await expectDraft(withPhoto ? { ...original, photo: null } : original, 'foods');
       assert.ok(control(app, 'button', 'Apple'));
       assert.ok(control(app, 'button', 'Remove: Potato mash'));
     });

@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 어려움 선택지 공통화
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
@@ -10,13 +12,18 @@
 // Changed: 최종 저장에 추가 버튼을 누르지 않은 어려움 입력 반영
 // AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: Eaten의 선택적 어려움 입력과 이전 사진 비교 초안의 확인 화면 복원
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 사용자 지정 사유 복원과 중복 처리
 
+import { textureQuestions } from '../../util/difficultyOptions';
 import type { AfterMealReview, AfterMealReviewDraft, DifficultyCategory, DifficultyTag, FoodOutcome, Outcome, ReviewStep } from '../../types/afterMealReview';
 import type { FoodItem, Meal } from '../../types/meal';
 import type { Difficulty } from '../../types/reviewRecord';
 import type { MealDetail } from '../../types/mealRecord';
 import { ingredientId } from '../../rules/ingredientIds';
 import { foodFormKey } from '../../rules/recommendationSafety';
+
+export { difficultyOptions, textureQuestions } from '../../util/difficultyOptions';
 
 export function normalizeReviewStep(step: ReviewStep, afterPhoto: AfterMealReviewDraft['afterPhoto']): ReviewStep {
   if (step === 'compare' || step === 'comparing' || step === 'comparison-error') {
@@ -25,17 +32,6 @@ export function normalizeReviewStep(step: ReviewStep, afterPhoto: AfterMealRevie
   if (step === 'preview' && !afterPhoto?.uri) return 'photo';
   return step === 'suggestions' ? 'difficulties' : step;
 }
-
-export const difficultyOptions: Record<DifficultyCategory, readonly string[]> = {
-  texture: ['soft', 'firm', 'hard'],
-  tasteType: ['sweet', 'salty', 'sour', 'bitter', 'savory'],
-  smell: ['fruit', 'herb', 'mushroom', 'toasted', 'vanilla', 'dairy', 'meaty', 'sulfur', 'sea', 'fermented', 'spice', 'mint', 'smoke'],
-  color: ['red', 'yellow', 'green', 'brown', 'white', 'other'],
-  temperature: ['hot', 'warm', 'cool', 'room'],
-  pieceSize: ['fine', 'small', 'large'],
-  arrangement: ['even', 'uneven', 'clustered', 'other'],
-  notSure: ['notSure'],
-};
 
 export function reconcileOutcomes(previous: FoodOutcome[], foods: FoodItem[]): FoodOutcome[] {
   return foods.map((food) => {
@@ -80,7 +76,7 @@ function restoredDifficulties(targetId: string, tags: Difficulty[]): DifficultyT
       id: `${targetId}:${index}`,
       category: tag.category,
       value: separator < 0 ? tag.value : tag.value.slice(0, separator),
-      ...(separator < 0 ? {} : { note: tag.value.slice(separator + 2) }),
+      ...(tag.note ? { note: tag.note } : separator < 0 ? {} : { note: tag.value.slice(separator + 2) }),
       ...(tag.subcategory ? { subcategory: tag.subcategory } : {}),
     };
   });
@@ -208,8 +204,8 @@ export function addDifficulty(
     value: normalized,
     ...(normalizedNote ? { note: normalizedNote } : {}),
   };
-  const single = category === 'smell' || category === 'temperature' || category === 'notSure' || category === 'pieceSize' || category === 'arrangement';
-  const retained = single ? tags.filter((item) => item.category !== category) : tags;
+  const single = value !== 'other' && (category === 'smell' || category === 'temperature' || category === 'notSure' || category === 'pieceSize' || category === 'arrangement');
+  const retained = single ? tags.filter((item) => item.category !== category || item.value === 'other') : tags;
   return retained.some((item) => item.id === tag.id) ? retained : [...retained, tag];
 }
 
@@ -248,14 +244,7 @@ export function reviewFromDraft(draft: AfterMealReviewDraft, meal: Meal): AfterM
 }
 
 
-export const textureQuestions: Record<string, readonly string[]> = {
-  hardness: ['soft', 'firm', 'hard'], breaking: ['crumbly', 'crunchy', 'brittle'],
-  chewing: ['tender', 'chewy', 'tough'], stickiness: ['nonSticky', 'sticky', 'gummy'],
-  springiness: ['springy', 'rubbery'], thickness: ['fluid', 'thin', 'thick', 'viscous'],
-  moisture: ['dry', 'moist', 'juicy', 'wet'], oiliness: ['nonFatty', 'oily', 'greasy'],
-  graininess: ['grainy', 'gritty', 'sandy', 'mealy', 'powdery'], density: ['dense', 'airy'],
-  surface: ['smooth', 'rough', 'bumpy', 'crusty', 'fuzzy'], structure: ['fibrous', 'fleshy', 'layered', 'spongy'],
-};
+
 export function toggleIngredient(outcomes: FoodOutcome[], foodId: string, ingredientId: string): FoodOutcome[] {
   return outcomes.map((food) => food.foodId === foodId ? { ...food, ingredients: food.ingredients.map((ingredient) => ingredient.id === ingredientId ? { ...ingredient, selected: ingredient.selected === false } : ingredient) } : food);
 }

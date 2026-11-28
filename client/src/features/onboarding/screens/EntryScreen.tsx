@@ -1,10 +1,13 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 온보딩 중 다른 계정 로그인
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 불러오기 오류 문구 구분
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 
 import { Redirect, router } from 'expo-router';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../../../components/AppButton';
 import { useAuth } from '../../../providers/AuthProvider';
@@ -19,6 +22,24 @@ export function EntryScreen() {
   const profile = useProfile();
   const auth = useAuth();
   const s = copyFor(profile.language);
+  const [switchError, setSwitchError] = useState(false);
+  const [switching, setSwitching] = useState(false);
+  const switchInFlight = useRef(false);
+  const switchAccount = async () => {
+    if (switchInFlight.current) return;
+    switchInFlight.current = true;
+    setSwitching(true);
+    setSwitchError(false);
+    try {
+      await model.archiveForAccountSwitch();
+      await auth.signOut();
+      router.replace('/login');
+    } catch {
+      try { await model.restoreAfterSignIn(); } catch { /* Keep the saved copy for the next sign-in. */ }
+      setSwitchError(true);
+    }
+    finally { switchInFlight.current = false; setSwitching(false); }
+  };
   if (auth.status === 'loading' || !model.ready) return (
     <SafeAreaView style={styles.root}><ActivityIndicator color={colors.onboardingPrimary} /><Text style={styles.loading}>{s.common.loading}</Text></SafeAreaView>
   );
@@ -42,10 +63,18 @@ export function EntryScreen() {
           <Text style={styles.brand}>{s.common.brand}</Text>
           <Text style={styles.title}>{s.onboarding.titles.account}</Text>
         </View>
-        <AppButton
-          label={model.hasDraft ? s.onboarding.resume : s.onboarding.start}
-          onPress={() => router.push({ pathname: '/onboarding/[step]', params: { step: model.hasDraft ? model.draft.step : 'consent' } })}
-        />
+        <View style={styles.actions}>
+          <AppButton
+            label={model.hasDraft ? s.onboarding.resume : s.onboarding.start}
+            disabled={switching}
+            onPress={() => router.push({ pathname: '/onboarding/[step]', params: { step: model.hasDraft ? model.draft.step : 'consent' } })}
+          />
+          {model.hasDraft && <Pressable accessibilityRole="button" disabled={switching}
+            onPress={() => { void switchAccount(); }} style={styles.linkWrap}>
+            <Text style={styles.link}>{s.onboarding.signInAnother}</Text>
+          </Pressable>}
+          {switchError && <Text accessibilityRole="alert" style={styles.error}>{s.common.saveFailed}</Text>}
+        </View>
       </SafeAreaView>
     );
   }

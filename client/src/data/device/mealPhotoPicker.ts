@@ -1,4 +1,6 @@
 // This Code is generated with AI
+// AI-generated with GPT-6, 2026-11-24, reviewed by Seoyeon Heo
+// Changed: 식사 초안의 로컬 사진 삭제
 
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
@@ -18,6 +20,14 @@ async function canOpenImage(uri: string): Promise<boolean> {
 }
 export function isMealPhotoReadable(photo: MealPhoto): Promise<boolean> {
   return canOpenImage(photo.uri);
+}
+export function deleteMealPhoto(photo: MealPhoto): void {
+  if (Platform.OS === 'web') return;
+  const directory = new Directory(Paths.document, 'meal-photos');
+  const extension = photo.mimeType.split('/')[1];
+  if (!/^[a-zA-Z0-9-]+$/.test(photo.id) || !/^[a-zA-Z0-9]+$/.test(extension)) return;
+  const file = new File(directory, `${photo.id}.${extension}`);
+  if (file.uri === photo.uri && file.exists) file.delete();
 }
 export class PhotoError extends Error {
   constructor(public code: 'permission' | 'image') {

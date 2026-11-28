@@ -1,3 +1,9 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: Safe Food 기능 제거
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 거부 음식 온보딩
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 감각 프로필 저장 및 온보딩
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
@@ -9,15 +15,17 @@
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 // Changed: 익숙한 음식 없음 응답 보존
 
+import type { Difficulty } from './reviewRecord';
+import type { CookingMethod } from './recordValues';
 import type { DietaryPattern } from './dietaryPattern';
 
 export type Language = 'ko' | 'en';
 
-export type SafeFood = {
+export type RefusedFood = {
   id: string;
   name: string;
-  preparation: string;
-  presentationNote: string;
+  cookingMethod: CookingMethod | null;
+  reasons: Difficulty[];
 };
 
 export type ChildProfile = {
@@ -36,7 +44,8 @@ export type ChildProfile = {
   // 채식 제한은 입력 화면이 없다. 서버에 이미 저장된 값이 저장할 때 사라지지 않도록 보존만 한다.
   vegetarianRestrictions: string[];
   dietaryPattern?: DietaryPattern | null;
-  safeFoods: SafeFood[];
-  noSafeFoods?: boolean;
+  sensoryTextures?: string[];
+  sensoryNote?: string;
+  refusedFoods?: RefusedFood[];
   updatedAt: string;
 };

@@ -1,5 +1,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 서버가 받지 않는 난이도 카테고리 제거
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 사용자 지정 어려움 사유
 
 import type { Ingredient } from './ingredientRecord';
 import type { CookingMethod, Id, IngredientId } from './recordValues';
@@ -13,12 +15,14 @@ export type DifficultyCategory =
   | 'temperature'
   | 'notSure'
   | 'pieceSize'
-  | 'arrangement';
+  | 'arrangement'
+  | 'other';
 
 export type Difficulty = {
   category: DifficultyCategory;
   subcategory: string | null;
   value: string;
+  note?: string;
 };
 
 export type FoodSnapshot = {

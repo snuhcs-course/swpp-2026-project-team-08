@@ -4,26 +4,21 @@
 // Changed: 기록을 보존하는 저장 목록 제거와 늦은 조회 응답 취소
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 홈 새로고침을 위한 사용자별 추천 캐시 키 추가
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 홈 추천 카드의 생성·결정 상태 공유와 오프라인 요청 실패 처리
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 재생성 요청 ID 없이 추천 한 장을 생성
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { DismissReason, Suggestion, SuggestionTarget } from '../../types/suggestionRecord';
-import {
-  decideMealSuggestion, generateMealSuggestions, listMealSuggestions, removeSavedSuggestion,
-  undoMealSuggestion,
-} from '../api/mealSuggestionApi';
+import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { DismissReason, Suggestion } from '../../types/suggestionRecord';
+import { decideSuggestion, generateSuggestion, removeSavedSuggestion, undoSuggestion } from '../api/suggestionApi';
 import { checkinReferenceKeys } from './checkinReferenceQueries';
 
-export const mealSuggestionKeys = {
-  byUser: (userId: string) => ['meal-suggestions-v1', userId] as const,
-  all: (userId: string, mealId: string) => ['meal-suggestions-v1', userId, mealId] as const,
-};
+export const suggestionKey = (userId: string, id: string | null) => ['suggestion', userId, id] as const;
 
-export function useMealSuggestions(userId: string, mealId: string) {
-  return useQuery({
-    queryKey: mealSuggestionKeys.all(userId, mealId),
-    queryFn: ({ signal }) => listMealSuggestions(userId, mealId, signal),
-    enabled: !!userId && !!mealId,
-  });
+// 홈 추천 한 장의 최신 상태는 추천 생성·결정 응답과 식사 저장 성공으로 갱신한다.
+export function useCurrentSuggestion(userId: string, id: string | null) {
+  return useQuery<Suggestion>({ queryKey: suggestionKey(userId, id), queryFn: skipToken }).data ?? null;
 }
 
 export function useRemoveSavedSuggestion(userId: string) {
@@ -40,43 +35,32 @@ export function useRemoveSavedSuggestion(userId: string) {
   });
 }
 
-export function useMealSuggestionActions(userId: string, mealId: string) {
+export function useSuggestionActions(userId: string) {
   const client = useQueryClient();
-  const key = mealSuggestionKeys.all(userId, mealId);
+  const updateCard = (item: Suggestion) => client.setQueryData(suggestionKey(userId, item.id), item);
   const refreshSaved = () => {
     void client.invalidateQueries({ queryKey: checkinReferenceKeys.savedSuggestions(userId) });
   };
   const generate = useMutation({
-    mutationFn: (targets: SuggestionTarget[]) => generateMealSuggestions(userId, mealId, targets),
+    mutationFn: () => generateSuggestion(userId),
+    onSuccess: updateCard,
+    networkMode: 'always',
     retry: false,
-    onSuccess: (created) => {
-      client.setQueryData<Suggestion[]>(key, (old) => [...created, ...(old ?? []).filter(item => !created.some(next => next.id === item.id))]);
-    },
-  });
-  const regenerate = useMutation({
-    mutationFn: (item: Suggestion) => generateMealSuggestions(userId, mealId, [{
-      foodId: item.foodId, rejectedSuggestionId: item.id,
-    }]),
-    retry: false,
-    onSuccess: async ([created]) => {
-      await client.cancelQueries({ queryKey: key });
-      client.setQueryData<Suggestion[]>(key, (old) => [created, ...(old ?? [])
-        .filter(item => item.id !== created.id)
-        .map(item => item.id === created.replacementForId ? { ...item, canRegenerate: false } : item)]);
-    },
   });
   const decide = useMutation({
     mutationFn: ({ id, status, reasons }: {
       id: string; status: 'saved' | 'dismissed'; reasons?: DismissReason[];
-    }) => decideMealSuggestion(userId, id, status, reasons),
-    retry: false,
-    onSuccess: (item) => {
-      client.setQueryData<Suggestion[]>(key, (old) => old?.map((entry) => entry.id === item.id ? item : entry));
+    }) => decideSuggestion(userId, id, status, reasons),
+    onSuccess: item => {
+      updateCard(item);
       refreshSaved();
     },
+    networkMode: 'always',
+    retry: false,
   });
   const undo = useMutation({
-    mutationFn: (id: string) => undoMealSuggestion(userId, id),
+    mutationFn: (id: string) => undoSuggestion(userId, id),
+    networkMode: 'always',
     retry: false,
     onMutate: async (id) => {
       const savedKey = checkinReferenceKeys.savedSuggestions(userId);
@@ -91,11 +75,11 @@ export function useMealSuggestionActions(userId: string, mealId: string) {
       }
     },
     onSuccess: (item) => {
-      client.setQueryData<Suggestion[]>(key, (old) => old?.map((entry) => entry.id === item.id ? item : entry));
+      updateCard(item);
       client.setQueryData<Suggestion[]>(checkinReferenceKeys.savedSuggestions(userId),
         (old) => old?.filter((entry) => entry.id !== item.id));
     },
     onSettled: refreshSaved,
   });
-  return { generate, regenerate, decide, undo };
+  return { generate, decide, undo };
 }

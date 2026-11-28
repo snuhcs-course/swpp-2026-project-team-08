@@ -1,3 +1,5 @@
+<!-- AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo -->
+<!-- Changed: Safe Food 제거와 거부 음식 저장 구조 -->
 <!-- AI-generated with GPT-6, 2026-11-02, reviewed by Haechan Jung -->
 <!-- Changed: 커버리지 계층 정리 및 공통 테스트 설정 위치 반영 -->
 <!-- AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung -->
@@ -18,6 +20,9 @@
 <!-- Changed: 모델 값 검증·StrEnum 규칙 추가, 재료 저장 경계 갱신, ingredients 기능 제거 -->
 <!-- AI-generated with GPT-6, 2026-11-20, reviewed by Haechan Jung -->
 <!-- Changed: DB 기반 영어 재료 카탈로그와 통합 CLI의 역할 명시 -->
+<!-- AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim -->
+<!-- Changed: 추천 워크플로에 편식 가설·추천 이력 로더와 연령대·추천 결정 설명 사전 추가, -->
+<!-- 거부 음식 로더 설명 반영 -->
 
 # server — 아키텍처
 
@@ -177,7 +182,9 @@ features/suggestions/
 ├── validation.py         # 결과 검증 — 순수 함수, 문제 목록을 반환
 ├── ingredients.py        # 재료 카탈로그 · 제한 판정 — 순수 함수
 ├── catalog.py            # DB에서 아이가 쓸 수 있는 재료 카탈로그를 읽는 로더
-├── familiar.py           # DB에서 아이가 잘 먹는 음식(safe food, 과거 EATEN 음식)을 읽는 로더
+├── familiar.py           # DB에서 아이가 잘 먹은 음식(과거 EATEN)과 프로필의 거부 음식을 읽는 로더
+├── difficulties.py       # DB에서 아이가 잘 먹지 못한 음식과 보호자가 추정한 이유를 읽는 로더
+├── history.py            # DB에서 지금까지의 추천과 거절 이유를 읽는 로더
 └── workflow/
     ├── state.py          # InputState · OutputState · GraphState, 입출력 dataclass, 컨텍스트
     ├── nodes.py          # 노드 (얇게)
@@ -186,6 +193,8 @@ features/suggestions/
     ├── reasons.py        # 어려워한 이유(DifficultyReason) 코드를 프롬프트용 설명으로 바꾸는 사전
     ├── outcomes.py       # 식후 먹은 정도(EatingOutcome) 코드의 프롬프트용 설명
     ├── cooking_methods.py  # 조리 방법(MealCookingMethod) 코드의 프롬프트용 설명
+    ├── age_groups.py     # 자녀 연령대(AgeGroup) 코드의 프롬프트용 설명
+    ├── decisions.py      # 추천 상태·거절 이유 코드의 프롬프트용 설명
     ├── schemas.py        # LLM 구조화 출력 스키마 (Pydantic)
     ├── llm.py            # 이 기능의 LLM 클라이언트와 가드레일 판정 클라이언트 생성
     ├── guardrail.py      # 가드레일 질문 만들기와 판정 해석 — 순수 함수
@@ -218,8 +227,9 @@ features/suggestions/
   호출이 실패하면 제안을 만들지 않고 끝낸다. 판정 모델은 확률만 돌려주므로 질문을 재료별로 나누어 어디가 위험한지
   알 수 있게 한다. 확률적 판정이라 `validate`의 결정적 검사를 대체하지 않는다. 판정기는 컨텍스트에 넣어 주입하고,
   테스트는 가짜 판정기(`tests/helpers/fake_judge.py`)를 쓴다.
-- **LLM에는 코드 대신 설명을 보낸다.** 이유·먹은 정도·조리 방법·제한 같은 enum 값은 `reasons.py` ·
-  `outcomes.py` · `cooking_methods.py` · `restrictions.py`의 설명으로 바꿔 프롬프트에 싣는다. enum에 값이
+- **LLM에는 코드 대신 설명을 보낸다.** 이유·먹은 정도·조리 방법·연령대·추천 결정·제한 같은 enum 값은
+  `reasons.py` · `outcomes.py` · `cooking_methods.py` · `age_groups.py` · `decisions.py` ·
+  `restrictions.py`의 설명으로 바꿔 프롬프트에 싣는다. enum에 값이
   추가되면 설명이 빠지지 않도록 테스트가 모든 값의 설명을 확인한다.
 - LLM 클라이언트는 그 기능의 `workflow/llm.py`에서 만들고, 프롬프트는 `prompts.py`에 모은다. 둘 이상의 기능이
   LLM을 쓰게 되면 `core/llm.py`로 올린다 (§2.4).
@@ -267,6 +277,11 @@ async def list_meal_logs(
 
 `CurrentUser`는 `features/auth/dependencies.py`에 있다. 토큰을 다루는 도구(`features/auth/security.py`)는 `auth`
 기능 안에만 두고, 다른 기능은 `CurrentUser`만 import해서 쓴다 (§3).
+
+## 자녀 프로필 저장
+
+거부 음식은 `user_profile_refused_foods`에 항목별로 저장한다. 사용자별 입력 ID와 순서를 보존하며,
+조리 방법과 거부 사유를 함께 저장한다. 온보딩 저장은 목록이 전달된 경우 전체를 교체하고 생략된 경우 유지한다.
 
 ## 재료 저장 경계
 

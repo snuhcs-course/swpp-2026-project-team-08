@@ -1,5 +1,8 @@
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 기존 식사 진입·조회 Retry와 완료 리뷰의 서버 저장값 재열기 검증
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식후 검토 진입 시 식사별 추천 조회 제거
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, waitFor, act, deferred } = require('../../helpers/meal-checkin-screen.cjs');
@@ -115,7 +118,6 @@ test('History에서 완료한 식사를 열면 로컬 초안 없이도 서버에
   const app = await mountMeal(t, { initialPath: '/home', meals: [saved], respond: (path, method) => {
     requests.push({ method, path });
     if (method === 'GET' && path === '/api/v1/meals/10') return Response.json(saved);
-    if (method === 'GET' && path === '/api/v1/meals/10/suggestions') return Response.json([]);
   } });
   await openHistoryMeal(app);
   await waitFor(() => app.container.textContent.includes('Reviewed'));

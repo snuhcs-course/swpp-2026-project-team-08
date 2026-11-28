@@ -7,24 +7,22 @@
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 앞쪽 텍스트 카드는 수평으로 두고 배경 카드 기울기 유지
+// AI-generated with GPT-6, Claude Opus 5.5, 2026-11-28, reviewed by Haechan Jung, Jaemin Kim
+// Changed: 홈 추천 카드 앞면(Suggestion: 시도할 것·이유)과 뒷면(준비 팁: 재료·준비 방법) 표시
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 카드 뒷면 준비 방법을 서버의 preparation_method 필드로 표시
 
-import { ProgressBar } from '../../../components/ProgressBar';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Pressable, ScrollView, Text, View } from 'react-native';
 import type { Suggestion } from '../../../types/suggestionRecord';
 import type { Language } from '../../../types/profile';
 import { colors } from '../../../util/colors';
 import { suggestionCopyFor } from '../../../util/strings';
-import { GeneratedSuggestionBody } from './GeneratedSuggestionBody';
 import { suggestionStyles as s } from '../screens/suggestionStyles';
 
 type Props = {
   item: Suggestion;
-  /** 추천의 근거가 된 음식 이름 */
-  foodName: string;
   language: Language;
-  index: number;
-  total: number;
   disabled: boolean;
   onSave: () => void;
   onDismiss: () => void;
@@ -37,6 +35,9 @@ export function RecommendationCard(p: Props) {
   const [flipping, setFlipping] = useState(false);
   const flipInProgress = useRef(false);
   const c = suggestionCopyFor(p.language);
+  const sections = details
+    ? [[c.ingredient, p.item.ingredients.join(', ')], [c.preparationMethod, p.item.preparationMethod]]
+    : [[c.what, p.item.whatToTry], [c.why, p.item.whyThisMayHelp]];
   useEffect(() => {
     if (!flipping) return;
     let active = true;
@@ -98,9 +99,7 @@ export function RecommendationCard(p: Props) {
     setFlipping(true);
   };
   return (
-    <View style={s.cardStack}>
-      <View style={[s.stackLayer, s.stackBack]} />
-      <View style={[s.stackLayer, s.stackMiddle]} />
+    <View style={[s.cardStack, { flexGrow: 1 }]}>
       <Animated.View
         {...pan.panHandlers}
         style={{ flex: 1, transform: [{ translateX: x }] }}
@@ -141,14 +140,7 @@ export function RecommendationCard(p: Props) {
             extrapolate: 'clamp',
           }),
         }}>
-          {!details && <>
-            <ProgressBar variant="continuous" current={p.index} total={p.total}
-              style={s.progress} fillStyle={s.fill} accessible={false} />
-            <View style={s.row}>
-              <Text style={s.cardPosition}>{c.count(p.index, p.total)}</Text>
-              <Text style={s.cardFoodName}>{p.foodName}</Text>
-            </View>
-          </>}
+          <Text style={s.cardPosition}>{c.count}</Text>
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
             <Pressable
               accessibilityRole="button"
@@ -157,11 +149,11 @@ export function RecommendationCard(p: Props) {
               onPress={flip}
               style={{ flexGrow: 1 }}
             >
-              {details && <>
-                <Text style={s.infoLabel}>{c.foodDetails}</Text>
-                <Text style={[s.heading, { marginBottom: 12 }]}>{p.foodName}</Text>
-              </>}
-              <GeneratedSuggestionBody item={p.item} language={p.language} details={details} />
+              <Text style={s.cardTitle}>{details ? c.preparationTip : c.title}</Text>
+              {sections.map(([label, value], index) => <View key={label} style={s.cardSection}>
+                <Text style={s.cardSectionLabel}>{label}</Text>
+                <Text style={!details && index === 0 ? s.cardActionText : s.cardBodyText}>{value}</Text>
+              </View>)}
             </Pressable>
           </ScrollView>
           <Pressable accessibilityRole="button" disabled={p.disabled || flipping} onPress={flip}>

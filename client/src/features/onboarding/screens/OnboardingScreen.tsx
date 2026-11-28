@@ -1,3 +1,11 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: Safe Food 기능 제거
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 자녀 프로필 요약 구성
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 거부 음식 온보딩
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 온보딩 단계 간소화 및 감각 프로필
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 제외된 온보딩 질문 제거; 동작별 버튼 문구 구분
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
@@ -27,15 +35,16 @@ import { colors } from '../../../util/colors';
 import { copyFor, strings } from '../../../util/strings';
 import { useOnboarding } from '../hooks/useOnboarding';
 import { onboardingRouteParams } from '../navigation';
-import { canAddSafeFood, matchingSafeFoods, validEmail, validPassword } from '../rules';
+import { validEmail, validPassword } from '../rules';
 import { isStep, nextStep, previousStep, steps, type OnboardingStep } from '../types';
 import { AccountStepView } from './AccountStepView';
 import { ChoiceStepView, type ChoiceStep } from './ChoiceStepView';
 import { ConsentStepView } from './ConsentStepView';
 import { OnboardingFlowView } from './OnboardingFlowView';
 import { ReviewStepView } from './ReviewStepView';
-import { SafeFoodsStepView } from './SafeFoodsStepView';
 import { reviewRows } from './reviewRows';
+import { RefusedFoodsStepView } from './RefusedFoodsStepView';
+import { SensoryStepView } from './SensoryStepView';
 
 const choiceSteps: ChoiceStep[] = [
   'child', 'allergies', 'restrictions', 'family',
@@ -53,7 +62,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
   const [authError, setAuthError] = useState<string | undefined>();
   const step = typeof routeStep === 'string' && isStep(routeStep) ? routeStep : model.draft.step;
   const s = copyFor(language);
-  const index = steps.indexOf(step);
+  const index = Math.max(0, (steps as readonly string[]).indexOf(step));
 
   const origin = typeof from === 'string' ? from : undefined;
   const navigate = (target: OnboardingStep, returnTo = origin) => {
@@ -113,8 +122,7 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         completionInFlight.current = false;
         setSubmitting(false);
       }
-    } else if (origin === 'review' && step === 'allergies') navigate('restrictions', 'review');
-    else if (origin === 'review') navigate('review');
+    } else if (origin === 'review') navigate('review');
     else navigate(nextStep(step));
   };
   const handleSaveExit = async () => {
@@ -151,26 +159,20 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
         onToggle={(key) => model.setConsent(key, !model.draft.consent[key])}
       />
     );
-    if (step === 'safe-foods') return (
-      <SafeFoodsStepView
-        childName={model.draft.childName}
-        language={language}
-        safeFoods={model.draft.safeFoods}
-        noSafeFoods={model.draft.noSafeFoods}
-        onToggleNone={() => model.setNoSafeFoods(!model.draft.noSafeFoods)}
-        input={model.draft.safeFoodInput}
-        canAdd={canAddSafeFood(model.draft.safeFoodInput, model.draft.safeFoods)}
-        onRemove={model.removeSafeFood}
-        onInputChange={model.setSafeFoodInput}
-        onAdd={() => model.addSafeFood(model.draft.safeFoodInput)}
-      />
+    if (step === 'refused-foods') return (
+      <RefusedFoodsStepView language={language} foods={model.draft.refusedFoods ?? []}
+        input={model.draft.refusedFoodInput} onChange={model.setRefusedFoodInput}
+        onAdd={model.addRefusedFood} onRemove={model.removeRefusedFood} />
+    );
+    if (step === 'sensory') return (
+      <SensoryStepView language={language} childName={model.draft.childName}
+        textures={model.draft.sensoryTextures ?? []} note={model.draft.sensoryNote ?? ''}
+        onChange={model.setSensory} />
     );
     if (step === 'review') return (
       <ReviewStepView
         rows={reviewRows(model.draft, language)}
-        conflicts={matchingSafeFoods(model.draft, language)}
         editLabel={s.common.edit}
-        conflictLabel={s.onboarding.conflict}
         onEditStep={(target) => navigate(target, 'review')}
       />
     );
@@ -201,12 +203,13 @@ export function OnboardingScreen({ routeStep, from }: { routeStep: string; from?
       saveStatus={model.saveStatus}
       submitting={submitting}
       canContinue={model.canContinue(step)}
-      continueLabel={language === 'ko'
+      continueLabel={step === 'refused-foods' && origin === 'child-profile' ? s.myPage.save
+        : step === 'refused-foods' && !origin && !(model.draft.refusedFoods ?? []).length ? s.refusedFoods.skip : language === 'ko'
         ? step === 'review' || (origin === 'child-profile' && step !== 'allergies')
           ? strings.ko.onboarding.looksGood
           : step === 'account' && !model.editing && !auth.session
             ? strings.ko.onboarding.createAccount
-            : origin === 'review' && step !== 'allergies'
+            : origin === 'review'
               ? strings.ko.onboarding.returnToReview : s.common.continue
         : undefined}
       previousLabel={language === 'ko' && origin === 'child-profile'

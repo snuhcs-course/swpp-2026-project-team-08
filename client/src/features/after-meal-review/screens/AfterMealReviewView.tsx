@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 어려움 사유 입력 시 키보드 위로 스크롤
 // AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
 // Changed: 식후 결과 디자인·뒤로가기·재료별 어려움 및 3단계 진행 표시
 // AI-generated with GPT-6, 2026-10-19, reviewed by Haechan Jung
@@ -13,17 +15,21 @@
 // Changed: 선택하지 않은 식사 장소를 미입력으로 표시
 // AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 단일 사진 확인 화면에서 수동 결과 입력·초안 저장으로 이동
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식후 검토 완료 화면에서 저장한 추천 목록으로 이동
 
 import { OutcomesHeader } from '../components/OutcomesHeader';
 import { Ionicons } from '@expo/vector-icons';
 import { topBarStyles } from '../../../components/AppHeader';
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ComponentRef } from "react";
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -46,6 +52,25 @@ import type { ReviewViewProps } from "./reviewViewTypes";
 export function AfterMealReviewView(
   p: ReviewViewProps & { onHome: () => void },
 ) {
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const focusedInput = useRef<ComponentRef<typeof TextInput> | null>(null);
+  const scrollOffset = useRef(0);
+  const revealInput = useCallback(() => {
+    scrollRef.current?.measureInWindow((_x, y, _width, height) => {
+      focusedInput.current?.measureInWindow((_inputX, inputY, _inputWidth, inputHeight) => {
+        const overlap = inputY + inputHeight - (y + height);
+        if (overlap > 0) scrollRef.current?.scrollTo({ y: scrollOffset.current + overlap + 12, animated: true });
+      });
+    });
+  }, []);
+  useEffect(() => {
+    const subscription = Keyboard.addListener('keyboardDidShow', revealInput);
+    return () => subscription.remove();
+  }, [revealInput]);
+  const onNoteFocus = (input: ComponentRef<typeof TextInput> | null) => {
+    focusedInput.current = input;
+    if (input && Keyboard.isVisible()) requestAnimationFrame(revealInput);
+  };
   const s = copyFor(p.language);
   const m = s.afterMealReview;
   const a = abcCopyFor(p.language);
@@ -112,6 +137,9 @@ export function AfterMealReviewView(
           </View>
         )}
         <ScrollView
+          ref={scrollRef}
+          onScroll={event => { scrollOffset.current = event.nativeEvent.contentOffset.y; }}
+          scrollEventThrottle={16}
           pointerEvents={p.saving ? "none" : "auto"}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={[styles.content, p.draft.step === "outcomes" && styles.outcomesContent, p.draft.step === "difficulties" && { paddingHorizontal: 24 }]}
@@ -150,6 +178,7 @@ export function AfterMealReviewView(
           )}
           {p.draft.step === "difficulties" && (
             <AfterMealDifficultiesView
+              onNoteFocus={onNoteFocus}
               p={{
                 meal: p.meal,
                 draft: p.draft,
@@ -168,7 +197,7 @@ export function AfterMealReviewView(
                 meal: p.meal,
                 draft: p.draft,
                 language: p.language,
-                onRecommend: p.onRecommend,
+                onSavedSuggestions: p.onSavedSuggestions,
                 onHome: p.onHome,
               }}
             />

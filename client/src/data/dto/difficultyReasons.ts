@@ -1,5 +1,7 @@
 // AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
 // Changed: 난이도 사유 태그와 서버 경로 문자열(DifficultyReason) 변환 추가
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 사용자 지정 사유 직렬화
 
 import type { Difficulty, DifficultyCategory } from '../../types/reviewRecord';
 import { text } from './values';
@@ -15,6 +17,7 @@ const serverCategory: Record<DifficultyCategory, string> = {
   pieceSize: 'PIECE_SIZE',
   arrangement: 'ARRANGEMENT',
   notSure: 'NOT_SURE',
+  other: 'OTHER',
 };
 const appCategory = Object.fromEntries(
   Object.entries(serverCategory).map(([app, server]) => [server, app]),
@@ -26,6 +29,9 @@ const lowerCamel = (value: string) => value.toLowerCase().replace(/_([a-z])/g, (
 export function toDifficultyReason(difficulty: Difficulty): string {
   const category = serverCategory[difficulty.category];
   if (!category) throw new Error('Unsupported difficulty category');
+  if (difficulty.value === 'other' && difficulty.note?.trim()) {
+    return 'CUSTOM:' + JSON.stringify([category, difficulty.subcategory, difficulty.note.trim()]);
+  }
   if (difficulty.category === 'notSure') return category;
   const value = upperSnake(text(difficulty.value));
   if (difficulty.category === 'texture') {
@@ -37,6 +43,13 @@ export function toDifficultyReason(difficulty: Difficulty): string {
 
 export function fromDifficultyReason(value: unknown): Difficulty {
   const reason = text(value);
+  if (reason.startsWith('CUSTOM:')) {
+    const parsed: unknown = JSON.parse(reason.slice(7));
+    if (!Array.isArray(parsed) || parsed.length !== 3 || typeof parsed[0] !== 'string'
+      || !(parsed[1] === null || typeof parsed[1] === 'string') || typeof parsed[2] !== 'string'
+      || !parsed[2].trim() || !appCategory[parsed[0]]) throw new Error('Invalid difficulty reason');
+    return { category: appCategory[parsed[0]], subcategory: parsed[1], value: 'other', note: parsed[2] };
+  }
   if (!/^[A-Z_]+(\.[A-Z_]+){0,2}$/.test(reason)) throw new Error('Invalid difficulty reason');
   const [head, ...rest] = reason.split('.');
   const category = appCategory[head];

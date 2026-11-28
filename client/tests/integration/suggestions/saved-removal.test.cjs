@@ -2,6 +2,10 @@
 // Changed: 저장 추천 삭제·중복 클릭·실패 재시도·늦은 조회 응답 검증
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 저장 목록 삭제와 추천 시도·피드백 보존 검증 이동
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 저장 목록 제거 후 추천 상태와 식사 기록 보존 검증
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 식사 시도의 추천 제공 팁을 추천 응답의 준비 방법과 맞춤
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -12,7 +16,6 @@ const { values } = require('../../helpers/native-boundaries.cjs').nativeBoundari
     : undefined);
 const { clearSession } = require('../../../src/data/storage/authStorage.ts');
 const { useSavedSuggestionsScreen } = require('../../../src/features/suggestions/hooks/useSavedSuggestionsScreen.ts');
-const { useMealSuggestions } = require('../../../src/data/queries/mealSuggestionQueries.ts');
 const { suggestionResponse } = require('../../fixtures/server-suggestion.cjs');
 const { mealResponse } = require('../../fixtures/server-meal.cjs');
 beforeEach(async () => { values.clear(); await clearSession(); });
@@ -29,8 +32,9 @@ function setup(t, status = 'TRIED') {
   meal.foods[0].recommendation_tries = status === 'TRIED' ? [{
     id: '41', food_recommendation_id: '31', feedback: 'HELPFUL',
     created_at: '2026-11-18T00:00:00Z', updated_at: '2026-11-18T00:00:00Z',
+    // 식사 API 의 serving_tip 은 추천 응답의 preparation_method 와 같은 DB 값이다.
     recommendation: { what_to_try: tried.what_to_try,
-      why_this_may_help: tried.why_this_may_help, serving_tip: tried.serving_tip },
+      why_this_may_help: tried.why_this_may_help, serving_tip: tried.preparation_method },
   }] : [];
   const server = {
     items: [tried, another], visible: new Set(['31', '32']), meals: [meal],
@@ -40,7 +44,6 @@ function setup(t, status = 'TRIED') {
     const path = new URL(url).pathname;
     const method = init.method ?? 'GET';
     if (method === 'GET' && path === '/api/v1/meals') return json(server.meals);
-    if (method === 'GET' && path === '/api/v1/meals/8/suggestions') return json(server.items);
     if (method === 'GET' && path === '/api/v1/suggestions') {
       return server.list ? server.list(init.signal)
         : json(server.items.filter(item => server.visible.has(item.id)));
@@ -76,20 +79,16 @@ async function mount(t) {
   });
   hook = await renderHook(t, () => ({
     screen: useSavedSuggestionsScreen('1', '31'),
-    mealSuggestions: useMealSuggestions('1', '8'),
   }));
-  await waitFor(() => hook.current.screen.saved.isSuccess && hook.current.screen.meals.isSuccess
-    && hook.current.mealSuggestions.isSuccess);
+  await waitFor(() => hook.current.screen.saved.isSuccess && hook.current.screen.meals.isSuccess);
   return hook;
 }
 function preserved(hook) {
   return structuredClone({
-    mealSuggestions: hook.current.mealSuggestions.data,
     meals: hook.current.screen.meals.data,
   });
 }
 function assertPreserved(hook, before) {
-  assert.deepEqual(hook.current.mealSuggestions.data, before.mealSuggestions);
   assert.deepEqual(hook.current.screen.meals.data, before.meals);
   if (before.meals[0].suggestionLinks.length) {
     assert.equal(hook.current.screen.meals.data[0].suggestionLinks[0].feedback, 'helpful');
@@ -111,6 +110,7 @@ for (const status of ['SAVED', 'TRIED']) {
     assert.equal(hook.current.screen.removeFailed, false);
     assert.deepEqual(server.writes, [deleteRequest]);
     assertPreserved(hook, before);
+    assert.equal(server.items[0].status, status);
     let closed;
     await act(async () => { hook.current.screen.setSelectedId('32'); });
     await act(async () => { closed = hook.current.screen.close(); });

@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: 음식 수용도 문구 반영
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 음식 추가·상세 수정·취소·선택 입력 비우기·동명 음식 구분의 사용자 흐름 검증
 const { test } = require('node:test');
@@ -7,7 +9,7 @@ const { mountMeal, control, input, click, enter, waitFor, act, modal, waitForMod
 const { photoDraft } = require('../../fixtures/meal-photo.cjs');
 const { readMealDraft, saveMealDraft } = require('../../../src/data/storage/mealStorage.ts');
 
-const acceptanceLabels = ['Unfamiliar', 'Often Rejected', 'Often Accepted', 'Safe Food'];
+const acceptanceLabels = ['Unfamiliar', 'Often Rejected', 'Often Accepted', 'Always Accepted'];
 const cookingLabels = { steamed: 'Steamed', boiled: 'Boiled' };
 
 async function mountFoods(t, foodCount = 0) {

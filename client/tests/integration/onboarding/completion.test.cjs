@@ -1,3 +1,9 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: 현재 온보딩 완료 계약 검증
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 자녀 프로필 거부 음식 요약 검증
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 감각·거부 음식 및 필수 알레르기 완료 검증
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: Verify reset discards pending autosaves and current onboarding fixtures
@@ -24,21 +30,18 @@ function completeAnswers(overrides = {}) {
     caregiverName: 'Parent', caregiverEmail: 'parent@example.com', childName: 'Child 1', ageRange: 'AGE_4_5',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
     allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'],
-    dietaryPattern: null, noSafeFoods: true,
-    safeFoods: [{ id: 'apple', name: 'Apple', preparation: 'Sliced', presentationNote: 'Blue bowl' }],
-    safeFoodInput: { name: 'Pear', preparation: 'Warmed', presentationNote: 'Small plate' },
+    dietaryPattern: null,
     ...overrides,
   };
 }
 function noneResponse() {
   const response = profileResponse();
-  response.profile.safe_foods = null;
   return Response.json(response);
 }
 const expectedNoneRequest = {
   profile: {
     child_name: 'Child 1', age_group: 'AGE_4_5', restrictions: ['ALLERGY.NONE', 'VEGETARIAN.EGGS'],
-    dietary_pattern: null, safe_foods: null,
+    dietary_pattern: null, sensory_textures: [], sensory_note: '', refused_foods: [],
   },
   consents: [
     { kind: 'ACCOUNT_PRIVACY', granted: true },
@@ -50,7 +53,7 @@ const expectedNoneProfile = {
   id: '1', caregiverName: 'Parent', caregiverEmail: 'parent@example.com', childName: 'Child 1',
   ageRange: 'AGE_4_5', consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
   allergies: ['none'], restrictions: ['none'], vegetarianRestrictions: ['EGGS'],
-  dietaryPattern: null, noSafeFoods: true, safeFoods: [], updatedAt: '2026-10-23T00:00:00Z',
+  dietaryPattern: null, sensoryTextures: [], sensoryNote: '', refusedFoods: [], updatedAt: '2026-10-23T00:00:00Z',
 };
 function control(app, role, label) {
   const matches = [...app.container.querySelectorAll(`[role="${role}"]`)]
@@ -72,8 +75,8 @@ function assertCompleted(app) {
   assert.equal(app.container.textContent.includes('Review Child 1’s profile'), false);
 }
 
-test('필수 식이 제한에 답하지 않으면 완료 버튼이 비활성화되고 요청 없이 Review와 답변을 유지한다', async t => {
-  const app = await mountCompletion(t, completeAnswers({ restrictions: [] }));
+test('필수 알레르기에 답하지 않으면 완료 버튼이 비활성화되고 요청 없이 Review와 답변을 유지한다', async t => {
+  const app = await mountCompletion(t, completeAnswers({ allergies: [] }));
   const before = structuredClone(app.current.draft);
   assert.equal(button(app, 'Looks good').getAttribute('aria-disabled'), 'true');
   await click(button(app, 'Looks good'));
@@ -90,12 +93,9 @@ test('필수 식이 제한에 답하지 않으면 완료 버튼이 비활성화�
 test('완료하면 선택한 답변과 음식 상세를 저장하고 홈에서 식사 기록을 시작할 수 있다', async t => {
   const response = profileResponse('1', { aiTraining: true, dietaryPattern: 'PESCATARIAN' });
   response.profile.restrictions = ['ALLERGY.PEANUTS', 'DIETARY_APPROACH.GLUTEN_FREE', 'VEGETARIAN.EGGS'];
-  response.profile.safe_foods = [
-    { id: '91', name: 'Apple', preparation: 'Sliced', presentation_note: 'Blue bowl' },
-  ];
   const app = await mountCompletion(t, completeAnswers({
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: true },
-    allergies: ['PEANUTS'], restrictions: ['GLUTEN_FREE'], dietaryPattern: 'pescatarian', noSafeFoods: false,
+    allergies: ['PEANUTS'], restrictions: ['GLUTEN_FREE'], dietaryPattern: 'pescatarian',
   }), () => Response.json(response));
   await click(button(app, 'Looks good'));
   await waitFor(() => app.current.hasDraft === false);
@@ -104,8 +104,7 @@ test('완료하면 선택한 답변과 음식 상세를 저장하고 홈에서 �
     profile: {
       child_name: 'Child 1', age_group: 'AGE_4_5',
       restrictions: ['ALLERGY.PEANUTS', 'DIETARY_APPROACH.GLUTEN_FREE', 'VEGETARIAN.EGGS'],
-      dietary_pattern: 'PESCATARIAN',
-      safe_foods: [{ name: 'Apple', preparation: 'Sliced', presentation_note: 'Blue bowl' }],
+      dietary_pattern: 'PESCATARIAN', sensory_textures: [], sensory_note: '', refused_foods: [],
     },
     consents: [
       { kind: 'ACCOUNT_PRIVACY', granted: true },
@@ -115,8 +114,7 @@ test('완료하면 선택한 답변과 음식 상세를 저장하고 홈에서 �
   }]);
   const expectedProfile = {
     ...expectedNoneProfile, consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: true },
-    allergies: ['PEANUTS'], restrictions: ['GLUTEN_FREE'], dietaryPattern: 'pescatarian', noSafeFoods: false,
-    safeFoods: [{ id: '91', name: 'Apple', preparation: 'Sliced', presentationNote: 'Blue bowl' }],
+    allergies: ['PEANUTS'], restrictions: ['GLUTEN_FREE'], dietaryPattern: 'pescatarian',
   };
   assert.deepEqual(app.profile, expectedProfile);
   assert.deepEqual(await readProfile(), expectedProfile);
@@ -143,13 +141,10 @@ test('완료 후 앱을 다시 열어 프로필을 조회하면 저장한 자녀
   response.profile.child_name = '하루';
   response.profile.age_group = 'AGE_6_8';
   response.profile.restrictions = ['ALLERGY.PEANUTS', 'DIETARY_APPROACH.GLUTEN_FREE', 'VEGETARIAN.EGGS'];
-  response.profile.safe_foods = [
-    { id: '91', name: 'Apple', preparation: 'Sliced', presentation_note: 'Blue bowl' },
-  ];
   const app = await mountCompletion(t, completeAnswers({
     childName: '하루', ageRange: 'AGE_6_8',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: true },
-    allergies: ['PEANUTS'], restrictions: ['GLUTEN_FREE'], dietaryPattern: 'pescatarian', noSafeFoods: false,
+    allergies: ['PEANUTS'], restrictions: ['GLUTEN_FREE'], dietaryPattern: 'pescatarian',
   }), () => Response.json(response));
   await click(button(app, 'Looks good'));
   await waitFor(() => app.current.hasDraft === false);
@@ -158,8 +153,7 @@ test('완료 후 앱을 다시 열어 프로필을 조회하면 저장한 자녀
     profile: {
       child_name: '하루', age_group: 'AGE_6_8',
       restrictions: ['ALLERGY.PEANUTS', 'DIETARY_APPROACH.GLUTEN_FREE', 'VEGETARIAN.EGGS'],
-      dietary_pattern: 'PESCATARIAN',
-      safe_foods: [{ name: 'Apple', preparation: 'Sliced', presentation_note: 'Blue bowl' }],
+      dietary_pattern: 'PESCATARIAN', sensory_textures: [], sensory_note: '', refused_foods: [],
     },
     consents: expectedNoneRequest.consents.map(consent => ({ ...consent, granted: true })),
   }]);
@@ -180,12 +174,12 @@ test('완료 후 앱을 다시 열어 프로필을 조회하면 저장한 자녀
   assert.equal(button(reopened, 'Edit').parentElement.textContent, '하루6-8 yearsEdit');
   assert.ok(button(reopened, 'Allergies & RestrictionsPeanuts, Gluten-free'));
   assert.ok(button(reopened, 'Dietary PatternPescatarian'));
-  assert.ok(button(reopened, 'Safe FoodsApple (Sliced, Blue bowl)'));
+  assert.ok(button(reopened, 'Refused foodsNot entered'));
+  assert.equal(reopened.container.textContent.includes('Safe Foods'), false);
   assert.deepEqual(reopened.profile, {
     ...expectedNoneProfile, childName: '하루', ageRange: 'AGE_6_8',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: true },
-    allergies: ['PEANUTS'], restrictions: ['GLUTEN_FREE'], dietaryPattern: 'pescatarian', noSafeFoods: false,
-    safeFoods: [{ id: '91', name: 'Apple', preparation: 'Sliced', presentationNote: 'Blue bowl' }],
+    allergies: ['PEANUTS'], restrictions: ['GLUTEN_FREE'], dietaryPattern: 'pescatarian',
   });
   assert.deepEqual(reopened.submissions, []);
   assert.equal(reopened.current.hasDraft, false);
@@ -295,5 +289,20 @@ test('완료 실패 시 회전을 멈추고 답변을 유지하며 Retry 중 다
   assert.deepEqual(app.profile, expectedNoneProfile);
   assert.deepEqual(await readProfile(), expectedNoneProfile);
   assert.equal(await readDraft(), null);
+  assertCompleted(app);
+});
+
+test('거부 음식과 이유가 제출되고 저장된 프로필에 복원된다', async t => {
+  const food = { id: 'food-1', name: 'Apple', cookingMethod: 'pan_fried',
+    reasons: [{ category: 'texture', subcategory: 'hardness', value: 'hard' }] };
+  const response = profileResponse();
+  response.profile.refused_foods = [{ id: 'food-1', name: 'Apple', cooking_method: 'PAN_FRIED',
+    reasons: ['TEXTURE.HARDNESS.HARD'] }];
+  const app = await mountCompletion(t, completeAnswers({ refusedFoods: [food] }), () => Response.json(response));
+  await click(button(app, 'Looks good'));
+  await waitFor(() => app.current.hasDraft === false);
+  assert.deepEqual(app.submissions[0].profile.refused_foods, response.profile.refused_foods);
+  assert.deepEqual(app.profile.refusedFoods, [food]);
+  assert.deepEqual((await readProfile()).refusedFoods, [food]);
   assertCompleted(app);
 });

@@ -2,6 +2,8 @@
 // Changed: 식후 입력과 식사 기록의 어려움 태그 표시 통일
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
 // Changed: 어려움 태그 글자를 더 작게 하고 굵게 쓰지 않음
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 사용자 지정 사유 태그 표시
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, difficultyColorDots } from '../util/colors';
@@ -23,7 +25,7 @@ export function DifficultyReasonTag({ reason, labels, onRemove }: {
     : category;
   const value = labels.values[reason.value] ?? reason.value;
   const description = reason.category === 'notSure' ? title : `${title}: ${value}`;
-  const label = reason.note ? `${description} · ${reason.note}` : description;
+  const label = reason.value === 'other' && reason.note ? reason.note : reason.note ? `${description} · ${reason.note}` : description;
   const content = <>
     {reason.category === 'color' && reason.value in difficultyColorDots && (
       <View style={[styles.colorDot, {

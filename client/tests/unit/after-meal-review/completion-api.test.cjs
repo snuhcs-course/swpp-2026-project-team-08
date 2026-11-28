@@ -9,6 +9,8 @@
 // Changed: 사유 코드 저장·메모 제외·폐기 분류 거부 검증
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 음식 편집 API와 리뷰 완료 API 검증을 행동별로 분리
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 사용자 지정 사유 저장과 복원 검증
 const { test } = require("node:test");
 
 const assert = require("node:assert/strict");
@@ -118,10 +120,11 @@ test("review meal loads by ID and maps server ingredient IDs into review request
     assert.equal(init.method, "PUT");
     const [food] = JSON.parse(init.body).food_results;
     assert.equal(food.outcome, "EATEN");
-    // 메모는 보내지 않고, 같은 사유는 한 번만 보낸다.
+    // 서로 다른 사용자 지정 사유는 각각 보존한다.
     assert.deepEqual(food.difficulty_reasons, [
       "TEXTURE.HARDNESS.HARD",
-      "COLOR.OTHER",
+      'CUSTOM:["COLOR",null,"speckled"]',
+      'CUSTOM:["COLOR",null,"another note"]',
     ]);
     assert.deepEqual(food.ingredient_outcomes, [
       { ingredient_id: "212", outcome: "TASTED", difficulty_reasons: [] },
@@ -133,7 +136,8 @@ test("review meal loads by ID and maps server ingredient IDs into review request
   assert.equal(saved.review.foodResults[0].outcome, "eaten");
   assert.deepEqual(saved.review.foodResults[0].difficulties, [
     { category: "texture", subcategory: "hardness", value: "hard" },
-    { category: "color", subcategory: null, value: "other" },
+    { category: "color", subcategory: null, value: "other", note: "speckled" },
+    { category: "color", subcategory: null, value: "other", note: "another note" },
   ]);
   assert.deepEqual(saved.review.ingredientResults, [
     {
@@ -198,12 +202,12 @@ test("ingredient difficulties survive API saving and restore to their own review
 
 for (const [category, value, note, subcategory, reason] of [
   ["tasteType", "sweet", "단맛 메모", undefined, "TASTE.SWEET"],
-  ["color", "other", "보라색", undefined, "COLOR.OTHER"],
-  ["arrangement", "other", "소스: 한쪽에 몰림\n음식 위에 있음", undefined, "ARRANGEMENT.OTHER"],
+  ["color", "other", "보라색", undefined, 'CUSTOM:["COLOR",null,"보라색"]'],
+  ["arrangement", "other", "소스: 한쪽에 몰림\n음식 위에 있음", undefined, 'CUSTOM:["ARRANGEMENT",null,"소스: 한쪽에 몰림\\n음식 위에 있음"]'],
   ["texture", "firm", "씹기 어려움", "hardness", "TEXTURE.HARDNESS.FIRM"],
   ["notSure", "notSure", "확인 필요", undefined, "NOT_SURE"],
 ]) {
-  test(`${category}/${value}: food and ingredient reason codes survive repeated API saves without notes`, async () => {
+  test(`${category}/${value}: food and ingredient reason codes and custom text survive repeated API saves`, async () => {
     const {
       newReviewDraft,
       setOutcome,
@@ -250,7 +254,7 @@ for (const [category, value, note, subcategory, reason] of [
         const [tag] = draft.difficulties[targetId];
         assert.equal(tag.category, category);
         assert.equal(tag.value, value);
-        assert.equal(tag.note, undefined);
+        assert.equal(tag.note, value === 'other' ? note : undefined);
         assert.equal(tag.subcategory, subcategory);
       }
       assert.deepEqual(

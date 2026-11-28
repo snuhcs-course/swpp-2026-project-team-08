@@ -1,9 +1,12 @@
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 홈 식사 기록·추천 버튼 아이콘 연결
 
 import { Image } from 'expo-image';
 const assets = {
-  camera: [require('../../assets/ui/home-camera.svg'), 18, 18],
+  logTile: [require('../../assets/ui/home-log-tile.svg'), 36, 36],
+  suggestionTile: [require('../../assets/ui/home-suggestion-tile.svg'), 36, 36],
   review: [require('../../assets/ui/home-review-arrow.svg'), 18, 18],
   suggestion: [require('../../assets/ui/home-suggestion.svg'), 40, 40],
   chevron: [require('../../assets/ui/home-chevron.svg'), 16, 16],

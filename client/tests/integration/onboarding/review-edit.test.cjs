@@ -1,5 +1,5 @@
-// AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
-// Changed: 검토 수정·충돌 안내·Previous 복귀의 요약·답변 보존·진행 표시 검증
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: Cover review edits for the current onboarding profile sections
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { act, waitFor, mountReview } = require('../../helpers/onboarding-screen.cjs');
@@ -11,49 +11,41 @@ function reviewAnswers(overrides = {}) {
     caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
     consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
     childName: '나루', ageRange: 'AGE_4_5', allergies: ['EGGS'], restrictions: ['GLUTEN_FREE'],
-    dietaryPattern: 'flexitarian',
-    safeFoods: [{ id: 'apple', name: 'Apple', preparation: 'Sliced', presentationNote: 'Blue bowl' }],
-    safeFoodInput: { name: 'Next food', preparation: 'Warmed', presentationNote: 'Small plate' },
+    dietaryPattern: 'flexitarian', sensoryTextures: ['hardness.hard'], sensoryNote: 'Likes crisp food',
+    refusedFoods: [{ id: 'peas', name: 'Peas', cookingMethod: null, reasons: [] }],
     ...overrides,
   };
 }
 const initialSummaries = {
   'Child basics': '나루 · 4-5 years',
-  'Safety restrictions': 'Allergies: Eggs · Other dietary restrictions: Gluten-free',
+  'Safety restrictions': 'Allergies: Eggs',
   'Dietary Pattern': 'Flexitarian',
-  'Safe foods': 'Apple · Sliced · Blue bowl',
+  'Sensory Profile': 'How hard it feels: Hard\nLikes crisp food',
+  'Refused foods': 'Peas',
 };
+const click = async element => act(async () => element.click());
 
 function control(app, role, label) {
-  const matches = [...app.container.querySelectorAll(`[role="${role}"]`)]
-    .filter(element => {
-      const text = element.getAttribute('aria-label') ?? element.textContent;
-      // 선택 행은 항목명 뒤에 안내 문구가 붙는다.
-      return role === 'radio' || role === 'checkbox' ? text.startsWith(label) : text === label;
-    });
+  const matches = [...app.container.querySelectorAll(`[role="${role}"]`)].filter(element => {
+    const text = element.getAttribute('aria-label') ?? element.textContent;
+    return ['radio', 'checkbox'].includes(role) ? text.startsWith(label) : text === label;
+  });
   assert.equal(matches.length, 1, `${label} ${role} 요소가 하나 있어야 한다`);
   return matches[0];
 }
-function input(app, label) {
-  const matches = [...app.container.querySelectorAll('input')]
-    .filter(element => element.getAttribute('aria-label') === label);
-  assert.equal(matches.length, 1, `${label} 입력칸이 하나 있어야 한다`);
-  return matches[0];
-}
-const click = async element => act(async () => element.click());
-const next = app => control(app, 'button', s.common.continue);
+
 const edit = (app, title) => control(app, 'button', `${s.common.edit} ${title}`);
-async function enter(app, label, value) {
-  const element = input(app, label);
-  await act(async () => {
-    Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(element, value);
-    element.dispatchEvent(new window.Event('input', { bubbles: true }));
-  });
+const previous = app => control(app, 'button', s.common.previous);
+function assertSummaries(app, expected = initialSummaries) {
+  for (const [title, value] of Object.entries(expected)) {
+    assert.equal(edit(app, title).parentElement.textContent, title + value, `${title} 요약`);
+  }
 }
 async function assertScreen(app, step, title) {
   await waitFor(() => app.pathname === `/onboarding/${step}`);
   assert.ok(control(app, 'heading', title));
-  const position = { child: 3, allergies: 4, restrictions: 5, family: 6, 'safe-foods': 7, review: 8 }[step];
+  const positions = { child: 3, allergies: 4, family: 5, sensory: 6, 'refused-foods': 7, review: 8 };
+  const position = positions[step];
   const labels = [...app.container.querySelectorAll('*')]
     .filter(el => el.childElementCount === 0 && el.textContent === `STEP ${position} OF 8`);
   assert.equal(labels.length, 1, `${step} 화면의 단계 번호`);
@@ -61,178 +53,72 @@ async function assertScreen(app, step, title) {
   assert.ok(fill, `${step} 화면의 진행 막대`);
   assert.equal(fill.style.width, `${position * 12.5}%`, `${step} 화면의 진행률`);
 }
-function assertSummaries(app, expected) {
-  for (const [title, value] of Object.entries(expected)) {
-    // 해당 카드의 수정 버튼을 기준으로 요약을 확인한다. 전체 화면 스냅샷은 고정하지 않는다.
-    assert.equal(edit(app, title).parentElement.textContent, title + value, `${title} 요약`);
-  }
-}
 
-// Wiki I2-AC-04.2: 실제 입력 화면에서 수정하고 돌아오면 해당 요약만 바뀐다.
-test('자녀 이름과 연령을 수정하고 Review로 돌아오면 제목·자녀 요약이 갱신되고 다른 답변은 보존된다', async t => {
+test('Review에서 자녀 정보를 수정하면 해당 요약만 갱신된다', async t => {
   const app = await mountReview(t, reviewAnswers());
   const before = structuredClone(app.current.draft);
-  assertSummaries(app, initialSummaries);
-
+  assertSummaries(app);
   await click(edit(app, 'Child basics'));
   await assertScreen(app, 'child', 'Tell us about your child');
-  assert.equal(input(app, s.onboarding.childName).value, '나루');
-  await enter(app, s.onboarding.childName, '하루');
   await click(control(app, 'button', '4-5 years'));
   await click(control(app, 'button', '6-8 years'));
-  await click(next(app));
-
-  await assertScreen(app, 'review', 'Review 하루’s profile');
-  assertSummaries(app, { ...initialSummaries, 'Child basics': '하루 · 6-8 years' });
-  assert.deepEqual(app.current.draft, { ...before, childName: '하루', ageRange: 'AGE_6_8' });
+  await click(control(app, 'button', s.common.continue));
+  await assertScreen(app, 'review', 'Review 나루’s profile');
+  assertSummaries(app, { ...initialSummaries, 'Child basics': '나루 · 6-8 years' });
+  assert.deepEqual(app.current.draft, { ...before, ageRange: 'AGE_6_8' });
 });
 
-test('알레르기와 식이 제한을 차례로 수정하고 Review로 돌아오면 두 요약이 갱신되고 음식과 다른 답변은 보존된다', async t => {
+test('Review에서 알레르기와 식생활 유형을 각각 수정하고 다시 돌아올 수 있다', async t => {
   const app = await mountReview(t, reviewAnswers());
   const before = structuredClone(app.current.draft);
-
   await click(edit(app, 'Safety restrictions'));
   await assertScreen(app, 'allergies', 'Food allergies');
   await click(control(app, 'checkbox', 'Eggs'));
   await click(control(app, 'checkbox', 'Peanuts'));
-  await click(next(app));
-  await assertScreen(app, 'restrictions', 'Other dietary restrictions');
-  await click(control(app, 'checkbox', s.onboarding.noOtherRestrictions));
-  await click(next(app));
-
+  await click(control(app, 'button', s.common.continue));
   await assertScreen(app, 'review', 'Review 나루’s profile');
-  assertSummaries(app, {
-    ...initialSummaries, 'Safety restrictions': 'Allergies: Peanuts · Other dietary restrictions: None',
-  });
-  assert.deepEqual(app.current.draft, { ...before, allergies: ['PEANUTS'], restrictions: ['none'] });
-});
-
-// 내부 온보딩 명세 R9.5: 충돌 안내의 수정 경로는 음식 기록을 자동으로 삭제하지 않는다.
-test('충돌 안내에서 제한을 수정해 충돌을 해소하면 안내가 사라지고 요약만 바뀌며 음식과 다른 입력은 보존된다', async t => {
-  const app = await mountReview(t, reviewAnswers({
-    safeFoods: [
-      { id: 'eggs', name: 'Eggs soup', preparation: 'Warmed', presentationNote: 'Small bowl' },
-      ...reviewAnswers().safeFoods,
-    ],
-  }));
-  const before = structuredClone(app.current.draft);
-  const summaries = {
-    ...initialSummaries,
-    'Safe foods': 'Eggs soup · Warmed · Small bowl, Apple · Sliced · Blue bowl',
-  };
-  assertSummaries(app, summaries);
-  const warning = control(app, 'button', `${s.onboarding.conflict} Eggs soup · ${s.common.edit}`);
-  await click(warning);
-  await assertScreen(app, 'allergies', 'Food allergies');
-  assert.deepEqual(app.current.draft, { ...before, step: 'allergies' });
-
-  await click(control(app, 'checkbox', 'Eggs'));
-  assert.deepEqual(app.current.draft.allergies, []);
-  await click(control(app, 'checkbox', 'Peanuts'));
-  await click(next(app));
-  await assertScreen(app, 'restrictions', 'Other dietary restrictions');
-  assert.deepEqual(app.current.draft, { ...before, step: 'restrictions', allergies: ['PEANUTS'] });
-  await click(control(app, 'checkbox', s.onboarding.noOtherRestrictions));
-  await click(next(app));
-
-  await assertScreen(app, 'review', 'Review 나루’s profile');
-  assert.equal(app.container.textContent.includes(s.onboarding.conflict), false);
-  assertSummaries(app, {
-    ...summaries, 'Safety restrictions': 'Allergies: Peanuts · Other dietary restrictions: None',
-  });
-  assert.deepEqual(app.current.draft, { ...before, allergies: ['PEANUTS'], restrictions: ['none'] });
-  assert.deepEqual(app.submissions, []);
-});
-
-test('미응답인 식생활 유형을 선택하고 Review로 돌아오면 선택한 유형을 표시하고 다른 답변은 보존된다', async t => {
-  const app = await mountReview(t, reviewAnswers({ dietaryPattern: null }));
-  const before = structuredClone(app.current.draft);
-  assertSummaries(app, { ...initialSummaries, 'Dietary Pattern': 'Not answered' });
+  assertSummaries(app, { ...initialSummaries, 'Safety restrictions': 'Allergies: Peanuts' });
+  assert.deepEqual(app.current.draft, { ...before, allergies: ['PEANUTS'] });
 
   await click(edit(app, 'Dietary Pattern'));
   await assertScreen(app, 'family', 'Dietary Pattern');
   await click(control(app, 'radio', 'Pescatarian'));
-  await click(next(app));
-
+  await click(control(app, 'button', s.common.continue));
   await assertScreen(app, 'review', 'Review 나루’s profile');
-  assertSummaries(app, { ...initialSummaries, 'Dietary Pattern': 'Pescatarian' });
-  assert.deepEqual(app.current.draft, { ...before, dietaryPattern: 'pescatarian' });
-});
-
-test('음식 없음을 해제하고 음식을 추가해 Review로 돌아오면 음식·제공 형태·추가 설명을 표시하고 다른 답변은 보존된다', async t => {
-  const app = await mountReview(t, reviewAnswers({
-    noSafeFoods: true, safeFoods: [],
-    safeFoodInput: { name: '', preparation: '', presentationNote: '' },
-  }));
-  const before = structuredClone(app.current.draft);
-  assertSummaries(app, { ...initialSummaries, 'Safe foods': 'No Safe Foods Yet' });
-
-  await click(edit(app, 'Safe foods'));
-  await assertScreen(app, 'safe-foods', '나루’s Safe foods');
-  await click(control(app, 'checkbox', s.onboarding.noSafeFoods));
-  await enter(app, s.onboarding.foodName, 'Banana');
-  await enter(app, s.onboarding.preparation, 'Mashed');
-  await enter(app, s.onboarding.presentationNote, 'Small bowl');
-  await click(control(app, 'button', s.onboarding.addSafeFoodAction));
-  await click(next(app));
-
-  await assertScreen(app, 'review', 'Review 나루’s profile');
-  assertSummaries(app, { ...initialSummaries, 'Safe foods': 'Banana · Mashed · Small bowl' });
-  const [food] = app.current.draft.safeFoods;
-  assert.ok(food.id);
-  assert.deepEqual(app.current.draft, {
-    ...before, noSafeFoods: false,
-    safeFoods: [{ id: food.id, name: 'Banana', preparation: 'Mashed', presentationNote: 'Small bowl' }],
+  assertSummaries(app, {
+    ...initialSummaries, 'Safety restrictions': 'Allergies: Peanuts', 'Dietary Pattern': 'Pescatarian',
   });
+  assert.deepEqual(app.current.draft, { ...before, allergies: ['PEANUTS'], dietaryPattern: 'pescatarian' });
 });
 
-test('Review의 각 수정 화면에서 변경 없이 계속하면 기존 요약·답변·작성 중 음식 입력을 그대로 유지한다', async t => {
+test('Review의 감각·거부 음식 수정 화면에서 Previous를 누르면 기존 요약을 보존한다', async t => {
   const app = await mountReview(t, reviewAnswers());
   const before = structuredClone(app.current.draft);
-  for (const [card, steps] of [
-    ['Child basics', ['child']], ['Safety restrictions', ['allergies', 'restrictions']],
-    ['Dietary Pattern', ['family']], ['Safe foods', ['safe-foods']],
+  for (const [card, step, title] of [
+    ['Sensory Profile', 'sensory', s.sensory.title],
+    ['Refused foods', 'refused-foods', s.refusedFoods.title('나루')],
   ]) {
     await click(edit(app, card));
-    for (const step of steps) {
-      const title = step === 'safe-foods' ? s.onboarding.safeFoodsTitle('나루') : s.onboarding.titles[step];
-      await assertScreen(app, step, title);
-      assert.deepEqual(app.current.draft, { ...before, step });
-      await click(next(app));
-    }
-    await assertScreen(app, 'review', s.onboarding.reviewTitle('나루'));
-    assertSummaries(app, initialSummaries);
+    await assertScreen(app, step, title);
+    await click(previous(app));
+    await assertScreen(app, 'review', 'Review 나루’s profile');
+    assertSummaries(app);
     assert.deepEqual(app.current.draft, before);
   }
   assert.deepEqual(app.submissions, []);
 });
 
-test('Review에서 연 수정 화면의 Previous는 Review로 바로 돌아오고 기존 요약·답변을 보존한다', async t => {
+test('Review 수정 후 Previous는 Review로 돌아오고, Review의 Previous는 거부 음식 단계로 간다', async t => {
   const app = await mountReview(t, reviewAnswers());
   const before = structuredClone(app.current.draft);
-  for (const [card, target] of [
-    ['Child basics', 'child'], ['Safety restrictions', 'allergies'],
-    ['Safety restrictions', 'restrictions'], ['Dietary Pattern', 'family'], ['Safe foods', 'safe-foods'],
-  ]) {
-    await click(edit(app, card));
-    // 제한 화면에서도 Review에서 시작한 수정이라는 정보가 유지되어야 한다.
-    if (target === 'restrictions') {
-      await assertScreen(app, 'allergies', s.onboarding.titles.allergies);
-      await click(next(app));
-    }
-    const title = target === 'safe-foods' ? s.onboarding.safeFoodsTitle('나루') : s.onboarding.titles[target];
-    await assertScreen(app, target, title);
-    await click(control(app, 'button', s.common.previous));
-    await assertScreen(app, 'review', s.onboarding.reviewTitle('나루'));
-    assertSummaries(app, initialSummaries);
-    assert.deepEqual(app.current.draft, before);
-  }
-  // 검토로 돌아온 뒤에는 수정 출처가 남아 일반 Previous 이동을 가로막으면 안 된다.
-  await click(control(app, 'button', s.common.previous));
-  await assertScreen(app, 'safe-foods', s.onboarding.safeFoodsTitle('나루'));
-  assert.deepEqual(app.current.draft, { ...before, step: 'safe-foods' });
-  await click(control(app, 'button', s.common.previous));
-  await assertScreen(app, 'family', s.onboarding.titles.family);
-  assert.deepEqual(app.current.draft, { ...before, step: 'family' });
+  await click(edit(app, 'Child basics'));
+  await assertScreen(app, 'child', 'Tell us about your child');
+  await click(previous(app));
+  await assertScreen(app, 'review', 'Review 나루’s profile');
+  assertSummaries(app);
+  assert.deepEqual(app.current.draft, before);
+  await click(previous(app));
+  await assertScreen(app, 'refused-foods', s.refusedFoods.title('나루'));
+  assert.deepEqual(app.current.draft, { ...before, step: 'refused-foods' });
   assert.deepEqual(app.submissions, []);
 });

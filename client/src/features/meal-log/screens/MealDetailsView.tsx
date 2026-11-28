@@ -9,6 +9,8 @@
 
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 리뷰 재개와 같은 위치·디자인의 추천 진입 버튼 및 조회 상태 표시
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식사 상세의 추천 생성 버튼과 조회 상태 제거
 
 import { AppHeader } from '../../../components/AppHeader';
 import { Feather } from '@expo/vector-icons';
@@ -32,10 +34,6 @@ type Props = {
   afterUri: string | null;
   awaitingReview: boolean;
   cards: Card[];
-  canViewSuggestions: boolean;
-  suggestionsLoading: boolean;
-  suggestionsError: boolean;
-  onViewSuggestions: () => void;
   loading: boolean;
   error: boolean;
   deleting: boolean;
@@ -90,34 +88,16 @@ export function MealDetailsView(p: Props) {
                 {p.awaitingReview ? m.awaitingReview : m.reviewed}
               </Text>
             </View>
-            {p.awaitingReview ? (
+            {p.awaitingReview && (
               <Pressable accessibilityRole="button" onPress={p.onContinueReview} style={styles.continueReview}>
                 <Text style={styles.continueReviewLabel}>{m.continueReview}</Text>
               </Pressable>
-            ) : p.canViewSuggestions ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={s.home.viewSuggestion}
-                accessibilityState={{ disabled: p.deleting }}
-                disabled={p.deleting}
-                onPress={p.onViewSuggestions}
-                style={styles.continueReview}
-              >
-                <Text style={styles.continueReviewLabel}>{s.home.viewSuggestion}</Text>
-              </Pressable>
-            ) : null}
+            )}
           </View>
           <View style={styles.photos}>
             <PhotoTile uri={p.beforeUri} label={m.beforeImage} />
             <PhotoTile uri={p.afterUri} label={m.afterImage} />
           </View>
-          {p.suggestionsLoading && <View accessibilityRole="progressbar">
-            <ActivityIndicator color={colors.homePrimary} />
-            <Text style={styles.stateText}>{s.common.loading}</Text>
-          </View>}
-          {p.suggestionsError && <View>
-            <Text accessibilityRole="alert" style={styles.stateText}>{s.home.suggestionsLoadFailed}</Text>
-          </View>}
           <Text style={styles.foodsLabel}>{m.foodsAndResponses}</Text>
           {p.cards.map((card, index) => (
             <FoodResponseCard

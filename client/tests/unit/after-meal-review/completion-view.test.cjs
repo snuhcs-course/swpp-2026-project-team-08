@@ -28,6 +28,9 @@
 // Changed: 빈 초안 기본값 검증·사진 중복 제거 및 음식 편집기·추천 연결 테스트 분리
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 종합 UI 검증을 담당 기능·컴포넌트별 파일로 분리
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 검토 완료 후 저장한 추천·홈 이동 버튼 검증
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { React, act, renderHook, findElement } = require('../../helpers/static-view.cjs');
@@ -74,12 +77,12 @@ test("difficulty Continue and Skip save directly without a suggestion confirmati
   assert.deepEqual(transitions, []);
 });
 
-test('all-eaten review completion offers Home without a suggestion action', () => {
+test('review completion offers saved suggestions and home', () => {
   const { AfterMealFollowUpView } = require('../../../src/features/after-meal-review/screens/AfterMealFollowUpView.tsx');
   const { MealFlowButton } = require('../../../src/components/MealFlowButton.tsx');
   const p = { language: 'en', meal: { photo: null, foods: [], mealDate: '2026-11-04', mealType: 'lunch' },
-    draft: { outcomes: [{ decision: { confirmed: 'eaten' } }] }, onRecommend() {}, onHome() {} };
-  assert.equal(!!findElement(AfterMealFollowUpView({ p }).props.actions, n => n.type === MealFlowButton), false);
-  p.draft.outcomes[0].decision.confirmed = 'tasted';
-  assert.ok(findElement(AfterMealFollowUpView({ p }).props.actions, n => n.type === MealFlowButton));
+    draft: { outcomes: [] }, onSavedSuggestions() {}, onHome() {} };
+  const actions = AfterMealFollowUpView({ p }).props.actions;
+  assert.ok(findElement(actions, node => node.type === MealFlowButton && node.props.onPress === p.onSavedSuggestions));
+  assert.ok(findElement(actions, node => node.props?.onPress === p.onHome));
 });

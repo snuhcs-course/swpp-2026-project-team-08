@@ -2,6 +2,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 홈 공통 카드와 MealDetail 기반 식후 리뷰·추천 대기 목록 표시
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식사 기록 옆 홈 추천 버튼 및 안내 표시
 
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
@@ -27,10 +29,9 @@ export type HomeViewProps = {
   data: { loggedDates: Set<string>; suggestions: { id: string; title: string; description: string }[] } | null;
   meals: Meal[];
   pendingMeals: MealDetail[];
-  suggestionMeals: MealDetail[];
-  suggestionMealsLoading: boolean;
-  suggestionMealsError: boolean;
-  onViewSuggestions: (mealId: string) => void;
+  suggestionDisabled: boolean;
+  suggestionRequirement: string | null;
+  onGetSuggestion: () => void;
   loading: boolean;
   error: boolean;
   refreshing: boolean;
@@ -52,8 +53,8 @@ export function HomeView(p: HomeViewProps) {
   const date = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(p.now);
   const greeting = (p.now.getHours() < 12 ? h.greetingMorning : p.now.getHours() < 18 ? h.greetingAfternoon : h.greetingEvening)(caregiverName);
   const fresh = !p.loading && !p.error && !p.meals.length && !p.draft
-    && !p.suggestionMealsLoading && !p.suggestionMealsError
-    && !p.suggestionMeals.length && !p.data?.suggestions.length;
+    && !p.data?.suggestions.length;
+  const logLabel = p.draftLoading ? s.common.loading : p.meals.length ? h.logNewMeal : h.logMeal;
   const idea = p.data?.suggestions[0];
   return <View style={styles.root}>
     <ScrollView contentContainerStyle={styles.scroll} refreshControl={<RefreshControl refreshing={p.refreshing} onRefresh={p.onRefresh} tintColor={colors.homePrimary} />}>
@@ -65,15 +66,23 @@ export function HomeView(p: HomeViewProps) {
         <View style={styles.avatar}><Text style={styles.avatarText}>{name.charAt(0).toLocaleUpperCase(locale)}</Text></View>
       </View>
       <View style={styles.content}>
-        <View style={styles.hero}>
-          <View style={styles.glow} />
-          <Text style={styles.eyebrow}>{h.mealFor(name)}</Text>
-          <View style={styles.invitation}>
-            <Text style={styles.heroTitle}>{h.nextTitle}</Text>
-            <Text style={styles.heroBody}>{h.nextBody}</Text>
-          </View>
-          <AppButton variant="meal" label={p.draftLoading ? s.common.loading : p.meals.length ? h.logNewMeal : h.logMeal} disabled={p.draftLoading || p.draftError} icon={<HomeAssetIcon name="camera" />} style={styles.mealAction} labelStyle={styles.mealActionText} onPress={p.onLogMeal} />
+        <View style={styles.quickActions}>
+          <Pressable accessibilityRole="button" accessibilityLabel={logLabel}
+            disabled={p.draftLoading || p.draftError} onPress={p.onLogMeal}
+            style={[styles.actionCard, styles.logCard]}>
+            <HomeAssetIcon name="logTile" />
+            <Text style={styles.actionTitle}>{logLabel}</Text>
+            <Text style={styles.actionBody}>{h.logDescription}</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel={h.getSuggestion}
+            disabled={p.suggestionDisabled} accessibilityState={{ disabled: p.suggestionDisabled }}
+            onPress={p.onGetSuggestion} style={[styles.actionCard, styles.getSuggestionCard]}>
+            <HomeAssetIcon name="suggestionTile" />
+            <Text style={styles.actionTitle}>{h.getSuggestion}</Text>
+            <Text style={styles.actionBody}>{h.suggestionDescription}</Text>
+          </Pressable>
         </View>
+        {p.suggestionRequirement && <Text accessibilityRole="alert" style={styles.stateText}>{p.suggestionRequirement}</Text>}
         {p.draftError && <View style={styles.state}><Text style={styles.stateText}>{s.mealCheckin.loadFailed}</Text><AppButton secondary label={s.common.retry} onPress={p.onRefresh} /></View>}
         {p.loading && <View style={styles.state}><ActivityIndicator color={colors.homePrimary} /><Text style={styles.stateText}>{s.common.loading}</Text></View>}
         {p.error && <View style={styles.state}><Text accessibilityRole="alert" style={styles.stateText}>{h.refreshFailed}</Text><AppButton secondary label={s.common.retry} onPress={p.onRefresh} /></View>}
@@ -86,24 +95,6 @@ export function HomeView(p: HomeViewProps) {
             actionIcon={<HomeAssetIcon name="review" />}
             accessibilityLabel={`${name} · ${s.mealCheckin.types[meal.mealType]} · ${displayDate(meal.mealDate, p.language, true)} · ${h.awaitingReview}`}
             onPress={() => p.onReviewMeal(meal.id)}
-          />)}
-        </View>}
-        {(p.suggestionMeals.length > 0 || (!p.loading && p.suggestionMealsLoading)
-          || (!p.error && p.suggestionMealsError)) && <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{h.viewSuggestion}</Text>
-          {!p.loading && p.suggestionMealsLoading && <View style={styles.state}>
-            <ActivityIndicator color={colors.homePrimary} /><Text style={styles.stateText}>{s.common.loading}</Text>
-          </View>}
-          {!p.error && p.suggestionMealsError && <View style={styles.state}>
-            <Text accessibilityRole="alert" style={styles.stateText}>{h.suggestionsLoadFailed}</Text>
-            <AppButton secondary label={s.common.retry} onPress={p.onRefresh} />
-          </View>}
-          {p.suggestionMeals.map(meal => <HomeActionCard key={meal.id}
-            title={`${name} · ${s.mealCheckin.types[meal.mealType]}`}
-            description={`${displayDate(meal.mealDate, p.language, true)} · ${s.mealCheckin.draftFoodCount(meal.foods.length)}`}
-            actionLabel={h.viewSuggestion}
-            actionIcon={<HomeAssetIcon name="review" />}
-            onPress={() => p.onViewSuggestions(meal.id)}
           />)}
         </View>}
         {fresh && <>

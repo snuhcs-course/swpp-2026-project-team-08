@@ -2,6 +2,9 @@
 // Changed: 어려움 대상·태그·입력·Skip 검증 및 결과에서 진행 후 왕복
 // AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
 // Changed: 사용자 지정 사유 입력 문구 검증
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식후 검토 완료 화면의 홈 이동 확인
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, waitFor, act } = require('../../helpers/meal-checkin-screen.cjs');
@@ -160,7 +163,7 @@ test('어려움을 입력하지 않고 Skip을 누르면 빈 이유 목록으로
   assert.equal(app.pathname, '/after-meal-review');
   assert.equal(new URL(window.location.href).searchParams.get('mealId'), '10');
   assert.ok(control(app, 'heading', 'Save After-meal Review'));
-  assert.ok(control(app, 'button', 'Return to Home for now'));
+  assert.ok(control(app, 'button', 'Back to Home'));
   assert.deepEqual(writes, [{
     after_photo_uri: null,
     food_results: [

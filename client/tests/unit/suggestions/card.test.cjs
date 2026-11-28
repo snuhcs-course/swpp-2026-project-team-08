@@ -5,6 +5,8 @@
 // Runs the real card and React hooks; native views and animation completion are controlled.
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: Unit 테스트를 담당 기능·공통 컴포넌트 폴더로 이동
+// AI-generated with GPT-6, Claude Opus 5.5, 2026-11-28, reviewed by Haechan Jung, Jaemin Kim
+// Changed: 홈 추천의 양면별 내용(앞면 제목 Suggestion)과 카드 동작 검증
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -54,19 +56,19 @@ mockModules(name => {
 const { RecommendationCard } = require('../../../src/features/suggestions/components/RecommendationCard.tsx');
 const defaults = {
   item: {
-    id: '1', foodSnapshot: { name: 'Bread', ingredients: [] },
+    id: '1', foodName: 'Bread', ingredients: ['Flour', 'Water'],
     whatToTry: 'Offer a small piece.', whyThisMayHelp: 'A familiar texture.',
     servingTip: 'Use a separate spot on the plate.',
   },
-  language: 'en', index: 1, total: 1, disabled: false,
+  language: 'en', disabled: false,
   onSave: () => {}, onDismiss: () => {},
 };
-const face = tree => tree.props.children[2];
+const face = tree => tree.props.children;
 const surface = tree => face(tree).props.children[0];
 const content = tree => face(tree).props.children[1];
 const body = tree => content(tree).props.children[1];
 const flipButton = tree => content(tree).props.children[2];
-const showingDetails = tree => body(tree).props.children.props.children[1].props.details;
+const showingDetails = tree => body(tree).props.children.props.accessibilityLabel === 'Tap to see suggestion';
 const flatten = styles => Object.assign({}, ...[styles].flat(Infinity).filter(Boolean));
 function assertTextOutside3D(tree, inside3D = false) {
   if (Array.isArray(tree)) {
@@ -101,6 +103,12 @@ test('both card sides keep text outside 3D transforms throughout repeated flips'
     const outgoing = animations.at(-1);
     await act(async () => outgoing.complete());
     assert.equal(showingDetails(card.current), details);
+    assert.equal(content(card.current).props.children[0].props.children, '1 of 1');
+    const [heading, sections] = body(card.current).props.children.props.children;
+    assert.equal(heading.props.children, details ? 'Preparation tip' : 'Suggestion');
+    assert.deepEqual(sections.map(section => section.props.children.map(text => text.props.children)), details
+      ? [['Ingredient', 'Flour, Water'], ['Preparation method', defaults.item.servingTip]]
+      : [['What to try', defaults.item.whatToTry], ['Why this may help', defaults.item.whyThisMayHelp]]);
     assertTextOutside3D(card.current);
     assert.equal(contentOpacity(card.current), 0);
     await act(async () => animations.at(-1).complete());

@@ -12,189 +12,90 @@
 
 // AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 // Changed: 거절 직후 추가 생성 선택 단계와 실패 복구
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 홈 추천 생성·재생성과 식사에 연결한 카드의 되돌리기 제한
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useFocusEffect } from 'expo-router';
-import { ApiError } from '../../../data/network/apiClient';
-import { useMealDetail } from '../../../data/queries/mealQueries';
-import { useMealSuggestionActions, useMealSuggestions } from '../../../data/queries/mealSuggestionQueries';
-import type { DismissReason, SuggestionTarget } from '../../../types/suggestionRecord';
-import { reviewedSuggestionTargets, unGeneratedTargets } from '../rules';
+import { uuid } from 'expo';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
+import { isRegenerationLimitError } from '../../../data/api/suggestionApi';
+import { useCurrentSuggestion, useSuggestionActions } from '../../../data/queries/suggestionQueries';
+import type { DismissReason, Suggestion } from '../../../types/suggestionRecord';
 
-export function useRecommendationFlow(userId: string, mealId: string) {
-  const source = useMealDetail(userId, mealId);
-  const suggestions = useMealSuggestions(userId, mealId);
-  const actions = useMealSuggestionActions(userId, mealId);
-  const [selectedTargets, setSelectedTargets] = useState<SuggestionTarget[]>([]);
-  const [history, setHistory] = useState<string[]>([]);
-  const [notice, setNotice] = useState<'saved' | 'dismissed' | null>(null);
-  const [failed, setFailed] = useState(false);
-  const [generationFailed, setGenerationFailed] = useState(false);
-  const busy = useRef(false);
-  const [continuedIds, setContinuedIds] = useState<string[]>([]);
-  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
-  const [regenerationErrorId, setRegenerationErrorId] = useState<string | null>(null);
-  const mounted = useRef(true);
-  useEffect(() => {
-    mounted.current = true;
-    return () => { mounted.current = false; };
-  }, []);
-  const automaticAttempt = useRef<string | null>(null);
-  const refetchSource = source.refetch;
-  const refetchSuggestions = suggestions.refetch;
-  useFocusEffect(useCallback(() => {
-    void refetchSource();
-    void refetchSuggestions();
-  }, [refetchSource, refetchSuggestions]));
+function nextKstMidnight() {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setUTCHours(15, 0, 0, 0); // 한국 시간 자정
+  if (midnight <= now) midnight.setUTCDate(midnight.getUTCDate() + 1);
+  return midnight.getTime();
+}
 
-  const targetOptions = useMemo(() => reviewedSuggestionTargets(source.data ?? null), [source.data]);
-  const allItems = useMemo(() => (suggestions.data ?? []).filter(item =>
-    targetOptions.some(option => option.target.foodId === item.foodId)), [suggestions.data, targetOptions]);
-  const items = useMemo(() => selectedTargets.length
-    ? allItems.filter(item => selectedTargets.some(target => target.foodId === item.foodId))
-    : allItems, [allItems, selectedTargets]);
-  const pending = items.find(item => item.status === 'pending' && item.replacementForId)
-    ?? items.find(item => item.status === 'pending') ?? null;
-  const regenerationPrompt = pending?.replacementForId ? null : items.find(item =>
-    item.canRegenerate && item.status === 'dismissed' && !continuedIds.includes(item.id)) ?? null;
-  const current = regenerationPrompt ? null : pending;
-  const availableTargets = useMemo(() => unGeneratedTargets(targetOptions, allItems), [targetOptions, allItems]);
-  const foodCount = targetOptions.length;
-  const autoSelect = !!source.data?.review && foodCount > 0 && foodCount <= 3;
-  const awaitingAutomaticGeneration = autoSelect && source.isSuccess && suggestions.isSuccess
-    && availableTargets.length > 0 && selectedTargets.length === 0 && !generationFailed;
-  const generate = actions.generate.mutateAsync;
-  const targetItems = selectedTargets.length ? selectedTargets : items.map((item) => ({
-    foodId: item.foodId,
-  }));
-  const visibleTargets = targetItems.filter((target, index) => targetItems.findIndex((item) =>
-    item.foodId === target.foodId) === index);
-
-  const selectTargets = useCallback(async (targets: SuggestionTarget[]) => {
-    if (busy.current || !targets.length || targets.length > 3
-      || new Set(targets.map(target => target.foodId)).size !== targets.length
-      || targets.some(target => !targetOptions.some(option => option.target.foodId === target.foodId))) return false;
-    const missingTargets = targets.filter(target => availableTargets.some(option => option.target.foodId === target.foodId));
-    busy.current = true;
-    setGenerationFailed(false);
-    setFailed(false);
-    setSelectedTargets(targets);
-    setContinuedIds([]);
-    const oldIds = new Set(allItems.map((item) => item.id));
-    try {
-      if (missingTargets.length) await generate(missingTargets);
-      setNotice(null);
-      return true;
-    } catch {
-      const refreshed = await refetchSuggestions().catch(() => null);
-      const created = missingTargets.every(target => refreshed?.data?.some(item => !oldIds.has(item.id)
-        && target.foodId === item.foodId));
-      setGenerationFailed(!created);
-      return !!created;
-    } finally {
-      busy.current = false;
-    }
-  }, [availableTargets, targetOptions, allItems, generate, refetchSuggestions]);
+export function useRecommendationFlow(userId: string) {
+  const { generate, decide, undo } = useSuggestionActions(userId);
+  const [currentId, setCurrentId] = useState<string | null>(null);
+  const current = useCurrentSuggestion(userId, currentId);
+  const [limitResetsAt, setLimitResetsAt] = useState<number | null>(null);
+  const inFlight = useRef(false);
+  const { mutate: generateOne } = generate;
 
   useEffect(() => {
-    const scope = `${userId}:${mealId}`;
-    if (!autoSelect || automaticAttempt.current === scope || busy.current || !availableTargets.length
-      || !source.isSuccess || !suggestions.isSuccess || source.isFetching || suggestions.isFetching
-      || !source.isFetchedAfterMount || !suggestions.isFetchedAfterMount) return;
-    automaticAttempt.current = scope;
-    void selectTargets(targetOptions.map(option => option.target));
-  }, [userId, mealId, autoSelect, availableTargets, targetOptions, selectTargets, source.isSuccess, suggestions.isSuccess,
-    source.isFetching, suggestions.isFetching, source.isFetchedAfterMount, suggestions.isFetchedAfterMount]);
+    if (limitResetsAt === null) return;
+    const timeout = setTimeout(() => setLimitResetsAt(null), limitResetsAt - Date.now());
+    const listener = AppState.addEventListener('change', state => {
+      if (state === 'active' && Date.now() >= limitResetsAt) setLimitResetsAt(null);
+    });
+    return () => { clearTimeout(timeout); listener.remove(); };
+  }, [limitResetsAt]);
 
-  const decide = async (status: 'saved' | 'dismissed', reasons: DismissReason[] = []) => {
-    if (!current || busy.current || (status === 'dismissed' && !reasons.length)) return false;
-    busy.current = true;
-    setFailed(false);
-    try {
-      await actions.decide.mutateAsync({ id: current.id, status, reasons });
-      setHistory((old) => [...old, current.id]);
-      setNotice(status);
-      return true;
-    } catch {
-      const refreshed = await suggestions.refetch().catch(() => null);
-      const saved = refreshed?.data?.find((item) => item.id === current.id);
-      if (saved?.status === status) {
-        setHistory((old) => [...old, current.id]);
-        setNotice(status);
-        return true;
-      }
-      setFailed(true);
-      return false;
-    } finally {
-      busy.current = false;
-    }
+  const request = useCallback((requestId?: string) => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    generateOne(requestId, {
+      onSuccess: ({ suggestion, remainingRegenerations }) => {
+        setCurrentId(suggestion.id);
+        setLimitResetsAt(remainingRegenerations === 0 ? nextKstMidnight() : null);
+      },
+      onError: error => {
+        if (isRegenerationLimitError(error)) setLimitResetsAt(nextKstMidnight());
+      },
+      onSettled: () => { inFlight.current = false; },
+    });
+  }, [generateOne]);
+  useEffect(() => { request(); }, [request]);
+
+  const regenerating = generate.isPending && generate.variables !== undefined;
+  const regenerationFailed = generate.isError && generate.variables !== undefined
+    && !isRegenerationLimitError(generate.error);
+  const regenerate = () => {
+    if (!current || current.status === 'pending' || inFlight.current || limitResetsAt !== null) return;
+    undo.reset();
+    const retryId = regenerationFailed ? generate.variables : undefined;
+    request(retryId ?? uuid.v4());
   };
-  const regenerate = async (id: string) => {
-    const item = regenerationPrompt?.id === id ? regenerationPrompt : null;
-    if (!item || busy.current) return false;
-    busy.current = true;
-    setRegeneratingId(id);
-    setRegenerationErrorId(null);
-    try {
-      await actions.regenerate.mutateAsync(item);
-      if (mounted.current) setNotice(null);
-      return true;
-    } catch {
-      // A timeout may follow a committed result; look it up before offering Retry.
-      const refreshed = await suggestions.refetch().catch(() => null);
-      if (refreshed?.data?.some(entry => entry.replacementForId === id)) {
-        if (mounted.current) setNotice(null);
-        return true;
-      }
-      if (mounted.current) setRegenerationErrorId(id);
-      void source.refetch();
-      return false;
-    } finally {
-      busy.current = false;
-      if (mounted.current) setRegeneratingId(null);
-    }
+
+  const changeDecision = (
+    status: 'saved' | 'dismissed' | 'pending',
+    reasons: DismissReason[] = [],
+    onSuccess?: (item: Suggestion) => void,
+  ) => {
+    if (!current || current.status === 'tried' || current.status === status || inFlight.current) return;
+    inFlight.current = true;
+    const callbacks = {
+      onSuccess: (item: Suggestion) => {
+        generate.reset();
+        onSuccess?.(item);
+      },
+      onSettled: () => { inFlight.current = false; },
+    };
+    if (status === 'pending') undo.mutate(current.id, callbacks);
+    else decide.mutate({ id: current.id, status, reasons }, callbacks);
   };
-  const continueAfterDismissal = () => {
-    if (!regenerationPrompt || busy.current) return false;
-    setContinuedIds(old => [...old, regenerationPrompt.id]);
-    setRegenerationErrorId(null);
-    setNotice(null);
-    return true;
-  };
-  const undo = async () => {
-    const id = history.at(-1);
-    if (!id || busy.current) return false;
-    busy.current = true;
-    setFailed(false);
-    try {
-      await actions.undo.mutateAsync(id);
-      setHistory((old) => old.slice(0, -1));
-      setContinuedIds(old => old.filter(entry => entry !== id));
-      setNotice(null);
-      return true;
-    } catch {
-      const refreshed = await suggestions.refetch().catch(() => null);
-      if (refreshed?.data?.find((item) => item.id === id)?.status === 'pending') {
-        setHistory((old) => old.slice(0, -1));
-        setContinuedIds(old => old.filter(entry => entry !== id));
-        setNotice(null);
-        return true;
-      }
-      setFailed(true);
-      return false;
-    } finally {
-      busy.current = false;
-    }
-  };
+
   return {
-    source, suggestions, items, current, targetOptions, availableTargets, visibleTargets,
-    notice, failed, generationFailed, selectTargets, decide, undo,
-    regenerate, regeneratingId, regenerationErrorId,
-    regenerationPrompt, continueAfterDismissal,
-    refresh: () => Promise.all([source.refetch(), suggestions.refetch()]),
-    sourceUnavailable: source.error instanceof ApiError && source.error.status === 404,
-    canUndo: history.length > 0,
-    busy: awaitingAutomaticGeneration || actions.generate.isPending || actions.regenerate.isPending || regeneratingId !== null || actions.decide.isPending || actions.undo.isPending,
-    generating: awaitingAutomaticGeneration || actions.generate.isPending,
+    current, request: () => request(), regenerate, changeDecision,
+    generationFailed: generate.isError && generate.variables === undefined,
+    regenerating, regenerationFailed, regenerationLimited: limitResetsAt !== null,
+    busy: decide.isPending || undo.isPending || regenerating,
+    decisionFailed: decide.isError || undo.isError,
   };
 }

@@ -15,6 +15,8 @@
 // Changed: 선택하지 않은 식사 장소를 미입력으로 표시
 // AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 단일 사진 확인 화면에서 수동 결과 입력·초안 저장으로 이동
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식후 검토 완료 화면에서 저장한 추천 목록으로 이동
 
 import { OutcomesHeader } from '../components/OutcomesHeader';
 import { Ionicons } from '@expo/vector-icons';
@@ -195,7 +197,7 @@ export function AfterMealReviewView(
                 meal: p.meal,
                 draft: p.draft,
                 language: p.language,
-                onRecommend: p.onRecommend,
+                onSavedSuggestions: p.onSavedSuggestions,
                 onHome: p.onHome,
               }}
             />

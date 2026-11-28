@@ -2,6 +2,8 @@
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-11-19, reviewed by Haechan Jung
 // Changed: 홈 식사 이동 카드를 공통 컴포넌트로 분리
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 홈 식사 기록·추천 버튼의 배치와 색상 적용
 
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../util/colors';
@@ -16,14 +18,12 @@ export const homeStyles = StyleSheet.create({
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.calendarEmpty, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontFamily: fonts.poppinsBold, fontSize: 14, color: colors.homeText },
   content: { paddingHorizontal: 24, gap: 18 },
-  hero: { padding: 20, gap: 14, borderRadius: 22, backgroundColor: colors.navy, overflow: 'hidden', shadowColor: colors.homeShadow, shadowOffset: { width: 0, height: 10 }, shadowRadius: 26, shadowOpacity: 0.09, elevation: 3 },
-  glow: { position: 'absolute', width: 104, height: 104, right: -16, top: -12, borderRadius: 52, backgroundColor: colors.homeSelected, opacity: 0.14 },
-  eyebrow: { color: colors.homeSelected, fontFamily: fonts.poppinsBold, fontSize: 10, lineHeight: 15 },
-  invitation: { gap: 5 },
-  heroTitle: { color: colors.surface, fontFamily: fonts.poppinsSemiBold, fontSize: 17, lineHeight: 25.5 },
-  heroBody: { color: colors.homeSelected, fontFamily: fonts.poppinsRegular, fontSize: 12, lineHeight: 18 },
-  mealAction: { minHeight: 46, height: 46, borderRadius: 14, paddingHorizontal: 0, alignSelf: 'stretch' },
-  mealActionText: { fontSize: 13, lineHeight: 19.5 },
+  quickActions: { flexDirection: 'row', gap: 12 },
+  actionCard: { flex: 1, minWidth: 0, minHeight: 142, borderRadius: 24, paddingHorizontal: 14, paddingVertical: 16 },
+  logCard: { backgroundColor: colors.navy },
+  getSuggestionCard: { backgroundColor: colors.homePrimary },
+  actionTitle: { marginTop: 12, color: colors.surface, fontFamily: fonts.poppinsSemiBold, fontSize: 15, lineHeight: 22 },
+  actionBody: { marginTop: 5, color: colors.homeSelected, fontFamily: fonts.poppinsRegular, fontSize: 11.5, lineHeight: 17 },
   section: { gap: 12 },
   sectionTitle: { color: colors.homeText, fontFamily: fonts.poppinsSemiBold, fontSize: 16, lineHeight: 21.6 },
   mealMeta: { color: colors.homeMuted, fontFamily: fonts.poppinsRegular, fontSize: 11, lineHeight: 16.5 },

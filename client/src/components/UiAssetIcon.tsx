@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 감각 프로필과 거부 음식 아이콘
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
 // Changed: 화면 디자인 및 식사 흐름 개선
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -53,6 +55,8 @@ const iconAssets = {
   'onboarding-cloud-check': require('../../assets/ui/onboarding-cloud-check.svg'),
   'onboarding-shield': require('../../assets/ui/onboarding-shield.svg'),
   'onboarding-calendar': require('../../assets/ui/onboarding-calendar.svg'),
+  'review-sensory': require('../../assets/ui/review-sensory.svg'),
+  'review-refused': require('../../assets/ui/review-refused.svg'),
   'review-shield': require('../../assets/ui/review-shield.svg'),
   'review-users': require('../../assets/ui/review-users.svg'),
   'review-sparkles': require('../../assets/ui/review-sparkles.svg'),
@@ -96,6 +100,7 @@ const size: Record<UiAssetIconName, number> = {
   'meal-manual': 18,
   'meal-selection-check': 12,
   'onboarding-cloud-check': 13, 'onboarding-shield': 13, 'onboarding-calendar': 13,
+  'review-sensory': 14, 'review-refused': 14,
   'review-shield': 14, 'review-users': 14,
   'review-sparkles': 14, 'review-heart': 14, 'review-utensils': 14,
   'review-info': 14, 'review-route': 14, 'review-calendar': 14,

@@ -1,3 +1,7 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 자녀 프로필 요약 구성
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 감각 프로필 요약 및 편집
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
 // Changed: 마이페이지·자녀 프로필 추가
 // AI-generated with GPT-6, 2026-11-03, reviewed by Haechan Jung

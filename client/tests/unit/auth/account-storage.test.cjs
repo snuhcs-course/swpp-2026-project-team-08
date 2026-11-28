@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 삭제 계정의 보관 초안 제거 검증
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: Unit 테스트를 담당 기능·공통 컴포넌트 폴더로 이동
@@ -22,6 +24,8 @@ const { emptyDraft } = require('../../../src/features/onboarding/types.ts');
 
 test('account wipe removes profile, draft, meals, and photos for the child', async () => {
   values.clear();
+  await storage.setItem('nurturebites.onboarding.v1.account.child-1', '{}');
+  await storage.setItem('nurturebites.onboarding.v1.account.child-2', '{}');
   await storage.setItem('nurturebites.profile.v1', '{}');
   await storage.setItem('nurturebites.onboarding.v1', '{}');
   await storage.setItem('nurturebites.meals.child-1.v1', '[]');
@@ -31,6 +35,8 @@ test('account wipe removes profile, draft, meals, and photos for the child', asy
   await storage.setItem('nurturebites.auth.user.v1', '{}');
   await storage.setItem('nurturebites.language.v1', '"en"');
   await wipeAccountLocalData(['child-1']);
+  assert.equal(values.has('nurturebites.onboarding.v1.account.child-1'), false);
+  assert.equal(values.has('nurturebites.onboarding.v1.account.child-2'), true);
   assert.equal(values.has('nurturebites.profile.v1'), false);
   assert.equal(values.has('nurturebites.onboarding.v1'), false);
   assert.equal(values.has('nurturebites.meals.child-1.v1'), false);

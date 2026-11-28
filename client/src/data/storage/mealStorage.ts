@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-24, reviewed by Seoyeon Heo
+// Changed: 식사 초안 삭제 및 실행 취소
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-19, reviewed by Seoyeon Heo
@@ -92,6 +94,13 @@ export const saveMealDraft = (draft: MealDraft) =>
       await AsyncStorage.removeItem(draftKey(draft.childId));
       return;
     }
+    await AsyncStorage.setItem(draftKey(draft.childId), JSON.stringify(draft));
+  });
+export const deleteMealDraft = (childId: string) =>
+  queued(childId, () => AsyncStorage.removeItem(draftKey(childId)));
+export const restoreMealDraft = (draft: MealDraft) =>
+  queued(draft.childId, async () => {
+    if (await AsyncStorage.getItem(draftKey(draft.childId))) throw new Error('Draft already exists');
     await AsyncStorage.setItem(draftKey(draft.childId), JSON.stringify(draft));
   });
 export async function readMeals(childId: string): Promise<Meal[]> {

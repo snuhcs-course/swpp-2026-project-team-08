@@ -1,3 +1,9 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 기능 제거
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 거부 음식 프로필 저장
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 감각 프로필 저장
 # AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 # AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
@@ -6,6 +12,8 @@
 # Changed: 식생활 유형 추가, 익숙한 음식의 조리 방법을 선택 입력으로 변경
 # AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 # Changed: 익숙한 음식 명시적 없음 null 계약
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 거부 음식 사용자 지정 사유 검증
 
 """온보딩 요청과 응답의 모양.
 
@@ -13,10 +21,14 @@
 허용 값 밖의 값과 정의하지 않은 필드는 422 로 거절된다.
 """
 
+import re
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, StrictBool, field_validator, model_validator
 
+from app.models.difficulty_enums import DifficultyReason
+from app.models.difficulty_reason_value import DifficultyReasonValue
+from app.models.meal_enums import MealCookingMethodInput
 from app.models.restriction_enums import RestrictionType
 from app.models.user_consent_enums import UserConsentKind
 from app.models.user_profile_enums import AgeGroup, DietaryPattern
@@ -26,28 +38,25 @@ class StrictDto(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class SafeFoodWriteDto(StrictDto):
-    """안전 음식 입력. id 는 서버가 발급하므로 받지 않는다.
-
-    제공 형태(preparation)와 추가 설명은 선택 자유 입력이다. 공백뿐인 제공 형태는 null 이다.
-    """
-
+class RefusedFoodDto(StrictDto):
+    id: str
     name: str
-    preparation: str | None
-    presentation_note: str | None
+    cooking_method: MealCookingMethodInput | None
+    reasons: list[DifficultyReasonValue]
 
-    @field_validator("name")
+    @field_validator("id", "name")
     @classmethod
-    def not_blank(cls, value: str) -> str:
-        if not value.strip():
-            raise ValueError("value must not be blank")
+    def nonblank(cls, value: str) -> str:
+        value = value.strip()
+        if not value or len(value) > 200:
+            raise ValueError("value must be between 1 and 200 characters")
         return value
 
-    @field_validator("preparation")
+    @field_validator("reasons")
     @classmethod
-    def blank_to_none(cls, value: str | None) -> str | None:
-        if value is None or not value.strip():
-            return None
+    def unique_reasons(cls, value: list[DifficultyReasonValue]) -> list[DifficultyReasonValue]:
+        if len(value) != len(set(value)):
+            raise ValueError("duplicate reasons")
         return value
 
 
@@ -57,8 +66,36 @@ class ProfileWriteDto(StrictDto):
     restrictions: list[RestrictionType]
     # 식생활 유형. null 은 미응답이다. 필드는 생략할 수 없다.
     dietary_pattern: DietaryPattern | None
-    # null: 명시적 없음, []: 미응답, 비어 있지 않은 목록: 답변
-    safe_foods: list[SafeFoodWriteDto] | None
+    sensory_textures: list[str] | None = None
+    sensory_note: str | None = None
+    refused_foods: list[RefusedFoodDto] | None = None
+
+    @field_validator("refused_foods")
+    @classmethod
+    def unique_refused_food_ids(
+        cls, value: list[RefusedFoodDto] | None
+    ) -> list[RefusedFoodDto] | None:
+        if value is not None and len({item.id for item in value}) != len(value):
+            raise ValueError("duplicate refused food ids")
+        return value
+
+    @field_validator("sensory_textures")
+    @classmethod
+    def valid_sensory_textures(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return value
+        if len(value) != len(set(value)):
+            raise ValueError("duplicate sensory textures")
+        for item in value:
+            parts = item.split(".")
+            if len(parts) != 2:
+                raise ValueError("invalid sensory texture")
+            codes = [re.sub(r"(?<!^)(?=[A-Z])", "_", part).upper() for part in parts]
+            try:
+                DifficultyReason("TEXTURE." + ".".join(codes))
+            except ValueError as exc:
+                raise ValueError("invalid sensory texture") from exc
+        return value
 
     @field_validator("child_name")
     @classmethod
@@ -103,17 +140,15 @@ class OnboardingWriteRequest(StrictDto):
         return self
 
 
-class SafeFoodDto(SafeFoodWriteDto):
-    id: str
-
-
 class UserProfileDto(StrictDto):
     user_id: str
     child_name: str
     age_group: AgeGroup
     restrictions: list[RestrictionType]
     dietary_pattern: DietaryPattern | None
-    safe_foods: list[SafeFoodDto] | None
+    sensory_textures: list[str]
+    sensory_note: str
+    refused_foods: list[RefusedFoodDto]
     updated_at: datetime
 
 

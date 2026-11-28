@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: 삭제된 프로필 필드 계약 검증
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: 최신 main 동작에 맞춘 테스트 작성 예시
 
@@ -92,17 +94,17 @@ async def test_저장_중_실패하면_rollback하고_재시도할_수_있다(ap
     assert len({item["kind"] for item in consents}) == len(consents)
 
 
-async def test_다른_사용자의_안전_음식을_참조하면_저장하지_않는다(api_client):
+async def test_삭제된_안전_음식_필드는_거부하고_다른_프로필을_보존한다(api_client):
     # 준비: 실제 인증으로 서로 다른 소유자를 만든다.
     first_headers, first_profile = await prepare_profile(api_client)
     second_headers = await auth_headers(api_client, "second@example.com")
     body = request_body()
-    body["profile"]["safe_foods"][0]["id"] = first_profile["profile"]["safe_foods"][0]["id"]
+    body["profile"]["safe_foods"] = []
 
     # 실행
     rejected = await api_client.put("/api/v1/onboarding", headers=second_headers, json=body)
 
-    # 검증: 권한 오류와 양쪽 사용자의 저장 결과를 함께 확인한다.
+    # 검증: 유효성 오류와 양쪽 사용자의 저장 결과를 함께 확인한다.
     assert rejected.status_code == 422
     assert rejected.json()["error_code"] == "VALIDATION_ERROR"
     second = await api_client.get("/api/v1/onboarding", headers=second_headers)
@@ -131,12 +133,8 @@ async def test_같은_프로필을_다시_저장해도_기존_항목과_동의�
     assert loaded.status_code == 200
     after = loaded.json()
     assert after == repeated.json()
-    # main은 안전 음식 목록을 전체 교체하므로 ID 대신 요청한 내용과 순서를 확인한다.
     assert after["profile"]["updated_at"] >= before["profile"]["updated_at"]
-    assert [
-        {key: value for key, value in food.items() if key != "id"}
-        for food in after["profile"]["safe_foods"]
-    ] == body["profile"]["safe_foods"]
+    assert after["profile"]["child_name"] == body["profile"]["child_name"]
     assert after["consents"] == before["consents"]
 
 

@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: Safe Food 제거 API 계약 검증
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
@@ -146,16 +148,13 @@ function serverResponse() {
   };
 }
 
-test("onboarding write prefixes restriction categories and never sends safe food IDs", () => {
+test("onboarding write prefixes restriction categories and omits removed safe foods", () => {
   const body = toOnboardingWrite(profile);
   assert.equal(body.profile.age_group, "AGE_4_5");
+  assert.equal("safe_foods" in body.profile, false);
   assert.deepEqual(body.profile.restrictions, serverRestrictions);
   // 식생활 유형을 고르지 않으면 null 을 보낸다.
   assert.equal(body.profile.dietary_pattern, null);
-  assert.deepEqual(body.profile.safe_foods, [
-    { name: "Potato", preparation: "Boiled", presentation_note: null },
-    { name: "Egg", preparation: "Steamed", presentation_note: "Small pieces" },
-  ]);
   assert.deepEqual(body.consents, [
     { kind: "ACCOUNT_PRIVACY", granted: true },
     { kind: "PHOTO_ANALYSIS", granted: true },
@@ -185,10 +184,6 @@ test("server profile restores app shape with server IDs", () => {
     photoAnalysis: true,
     aiTraining: false,
   });
-  assert.deepEqual(
-    restored.safeFoods.map((item) => item.id),
-    ["502", "501"],
-  );
   assert.equal(restored.caregiverEmail, account.email);
   assert.throws(() =>
     fromOnboardingResponse(serverResponse(), { ...account, id: "13" }),
@@ -198,28 +193,19 @@ test("server profile restores app shape with server IDs", () => {
 test("missing categories restore as none answers and empty lists", () => {
   const source = serverResponse();
   source.profile.restrictions = ["ALLERGY.NONE"];
-  source.profile.safe_foods = [];
   const restored = fromOnboardingResponse(source, account);
   assert.deepEqual(restored.allergies, ["none"]);
   assert.deepEqual(restored.restrictions, ["none"]);
   assert.deepEqual(restored.vegetarianRestrictions, []);
-  assert.deepEqual(restored.safeFoods, []);
 });
 
 test("onboarding API reads and writes the authenticated account path", async () => {
   response = serverResponse();
   assert.equal((await readOnboarding()).profile.user_id, "12");
   assert.deepEqual(request, { path: "/api/v1/onboarding", init: undefined });
-  assert.equal(
-    (await writeOnboarding(profile)).profile.safe_foods[0].id,
-    "502",
-  );
+  await writeOnboarding(profile);
   assert.equal(request.path, "/api/v1/onboarding");
   assert.equal(request.init.method, "PUT");
-  assert.deepEqual(
-    JSON.parse(request.init.body).profile.safe_foods.map((food) => "id" in food),
-    [false, false],
-  );
   response = { profile: { user_id: "not-an-id" }, consents: [] };
   await assert.rejects(readOnboarding());
 });
@@ -263,30 +249,6 @@ test("save fails when the server loses the selected pattern; unknown patterns ar
   }
 });
 
-test("safe food cooking method is optional and an empty value is sent as null", async () => {
-  const source = {
-    ...profile,
-    safeFoods: [
-      { id: "local-1", name: "Potato", preparation: "", presentationNote: "" },
-      { id: "local-2", name: "Rice", preparation: "  ", presentationNote: "Blue bowl" },
-    ],
-  };
-  assert.deepEqual(toOnboardingWrite(source).profile.safe_foods, [
-    { name: "Potato", preparation: null, presentation_note: null },
-    { name: "Rice", preparation: null, presentation_note: "Blue bowl" },
-  ]);
-  const stored = serverResponse();
-  stored.profile.safe_foods = [
-    { id: "601", name: "Potato", preparation: null, presentation_note: null },
-  ];
-  const restored = fromOnboardingResponse(stored, account);
-  assert.deepEqual(restored.safeFoods, [
-    { id: "601", name: "Potato", preparation: "", presentationNote: "" },
-  ]);
-  response = stored;
-  assert.equal((await readOnboarding()).profile.safe_foods[0].preparation, null);
-});
-
 test("responses with unknown restriction values or the old shape are rejected", async () => {
   for (const restrictions of [["peanut"], ["ALLERGY.lupin"], ["UNKNOWN.EGGS"]]) {
     response = serverResponse();
@@ -313,21 +275,4 @@ test("onboarding option ids equal the server enum values without their category"
     "DAIRY", "EGGS", "SEAFOOD", "POULTRY", "RED_MEAT", "LEGUMES_SOY", "NUTS_SEEDS",
   ]);
   assert.equal(optionsFor("allergies", "ko").find((o) => o.id === "EGGS").label, "달걀");
-});
-
-
-test('보관한 음식이 있어도 명시적 없음은 null로 보내고 미응답과 구분해 읽는다', async () => {
-  const source = { ...profile, noSafeFoods: true };
-  assert.equal(toOnboardingWrite(source).profile.safe_foods, null);
-  assert.ok(source.safeFoods.length > 0);
-  response = serverResponse();
-  response.profile.safe_foods = null;
-  const saved = await writeOnboarding(source);
-  const restored = fromOnboardingResponse(saved, account);
-  assert.equal(restored.noSafeFoods, true);
-  assert.deepEqual(restored.safeFoods, []);
-  response.profile.safe_foods = [];
-  await assert.rejects(writeOnboarding(source), /Safe foods answer was not saved/);
-  assert.equal(fromOnboardingResponse(response, account).noSafeFoods, false);
-  assert.deepEqual(toOnboardingWrite({ ...profile, safeFoods: [] }).profile.safe_foods, []);
 });

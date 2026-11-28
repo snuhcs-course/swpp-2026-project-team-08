@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-24, reviewed by Seoyeon Heo
+// Changed: 식사 초안 삭제 및 실행 취소
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with Grok 4.6, 2026-10-17, reviewed by Doyeon Kim
@@ -24,6 +26,7 @@ export function MealLogScreen() {
   const { active, sheetRef, navigate } = useMealLogNavigation();
   const { date } = useLocalSearchParams<{ date?: string }>();
   const log = useMealLog(profile.profile?.id ?? '', date);
+  const deletion = log.deletion;
   const s = copyFor(profile.language);
   const locale = profile.language === 'ko' ? 'ko-KR' : 'en-US';
   const refresh = log.retry;
@@ -89,6 +92,10 @@ export function MealLogScreen() {
       onSearch={log.setSearch}
       onSubmitSearch={log.submitSearch}
       onToggleUnreviewed={() => log.setUnreviewedOnly((value) => !value)}
+      draftRemoved={!!deletion.removed}
+      draftDeleteError={deletion.error}
+      onDeleteDraft={() => { if (draft) void deletion.remove(draft); }}
+      onUndoDraft={() => { void deletion.undo(); }}
       onContinueDraft={() => navigate(() => {
         if (draft?.savedMealId) {
           router.push({ pathname: '/after-meal-review', params: { mealId: draft.savedMealId } });

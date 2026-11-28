@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: Match current onboarding screen sequence
 // AI-generated with GPT-6, 2026-11-03, reviewed by Seoyeon Heo
 // Changed: Verify meal flow actions and shared three-step after-meal progress
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
@@ -114,8 +116,8 @@ const { onboardingRouteParams } = require("../../../src/features/onboarding/navi
 const noop = () => {};
 
 test('식생활 유형과 음식 단계는 바로 왕복하고 첫 단계 이전·마지막 단계 다음으로 벗어나지 않는다', () => {
-  assert.equal(nextStep("family"), "safe-foods");
-  assert.equal(previousStep("safe-foods"), "family");
+  assert.equal(nextStep("family"), "sensory");
+  assert.equal(previousStep("sensory"), "family");
   assert.equal(previousStep('account'), 'account');
   assert.equal(nextStep('review'), 'review');
   assert.equal(steps.length, 8);

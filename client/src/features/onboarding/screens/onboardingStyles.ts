@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: 삭제된 Safe Food 화면 잔여 정리
 // AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 // Changed: 온보딩 라벨·식생활 설명 간격 및 익숙한 음식 추가 폼
 // This Code is generated with AI
@@ -143,48 +145,21 @@ export const styles = StyleSheet.create({
     fontFamily: fonts.interRegular,
     flex: 1,
   },
-  safeFoodChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  safeFoodChip: {
+  refusedFoodChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  refusedFoodChip: {
     flexDirection: 'row', alignItems: 'center', gap: 8, maxWidth: '100%',
     borderRadius: 16, borderWidth: 1, borderColor: colors.success,
     backgroundColor: colors.successSurface, paddingLeft: 13, paddingRight: 6, paddingVertical: 6,
   },
-  safeFoodChipCopy: { flexShrink: 1, gap: 1 },
-  safeFoodChipName: { color: colors.onboardingText, fontSize: 13, lineHeight: 18, fontFamily: fonts.poppinsMedium },
-  safeFoodChipDetails: { color: colors.success, fontSize: 11, lineHeight: 15, fontFamily: fonts.interMedium },
-  safeFoodRemove: { minWidth: 24, minHeight: 32, alignItems: 'center', justifyContent: 'center' },
-  safeFoodRemoveText: { color: colors.success, fontSize: 18, fontFamily: fonts.interBold },
-  safeFoodNone: { marginTop: 18 },
+  refusedFoodChipCopy: { flexShrink: 1, gap: 1 },
+  refusedFoodChipName: { color: colors.onboardingText, fontSize: 13, lineHeight: 18, fontFamily: fonts.poppinsMedium },
+  refusedFoodChipDetails: { color: colors.success, fontSize: 11, lineHeight: 15, fontFamily: fonts.interMedium },
+  refusedFoodRemove: { minWidth: 24, minHeight: 32, alignItems: 'center', justifyContent: 'center' },
+  refusedFoodRemoveText: { color: colors.success, fontSize: 18, fontFamily: fonts.interBold },
   multipleHint: { color: colors.onboardingMuted, fontSize: 11, fontFamily: fonts.interRegular, textAlign: 'right', marginTop: 3 },
-  safeFoodFormHeading: { gap: 4 },
-  safeFoodFields: { gap: 12 },
-  safeFoodCooking: { gap: 5 },
-  safeFoodFieldHeading: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  safeFoodFieldLabel: { color: colors.onboardingText, fontSize: 13, lineHeight: 18, fontFamily: fonts.poppinsSemiBold },
-  safeFoodOptional: { color: colors.homeSubtitle, fontSize: 12, fontFamily: fonts.interBold },
-  safeFoodSubmit: { alignSelf: 'flex-end', minHeight: 30, borderRadius: 8, paddingHorizontal: 10 },
-  safeFoodSubmitLabel: { fontSize: 13, lineHeight: 18 },
-  safeFoodFormTitle: { color: colors.onboardingText, fontSize: 16, fontFamily: fonts.poppinsSemiBold },
-  safeFoodFormSubtitle: { color: colors.onboardingMuted, fontSize: 13, lineHeight: 17.55, fontFamily: fonts.poppinsRegular },
-  openSafeFood: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.onboardingBorder,
-    borderRadius: 10,
-    marginTop: 12,
-    paddingHorizontal: 12,
-    minHeight: 46,
-  },
-  openSafeFoodText: {
-    color: colors.onboardingText,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  plus: { color: colors.onboardingPrimary, fontSize: 22, fontWeight: '800' },
-  safeFoodForm: {
+  refusedFoodFields: { gap: 12 },
+  refusedFoodFormTitle: { color: colors.onboardingText, fontSize: 16, fontFamily: fonts.poppinsSemiBold },
+  refusedFoodForm: {
     backgroundColor: colors.surface,
     borderRadius: 16,
     borderWidth: 1,

@@ -1,3 +1,5 @@
+<!-- AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo -->
+<!-- Changed: Safe Food 제거 반영 -->
 <!-- AI-generated with GPT-6, 2026-11-12, reviewed by Seoyeon Heo -->
 <!-- Changed: Apply retention, deletion, and caregiver account policies -->
 
@@ -30,7 +32,7 @@ processed when your device communicates with our service providers.
 | Category | Information | Purpose and storage |
 | --- | --- | --- |
 | Account information | Name, email address, internal account ID, password hash, account creation and update times | Account registration, authentication, account management, and support; stored on the server. Passwords are processed for authentication and stored as hashes rather than readable passwords. |
-| Child profile | Child name or nickname, age group, allergies, dietary restrictions, dietary pattern, familiar or safe foods, preparation and presentation notes | Maintain a child profile and personalize meal ideas; stored on the server and cached on the device. Allergies and related information can be sensitive health information. |
+| Child profile | Child name or nickname, age group, allergies, dietary restrictions, dietary pattern, sensory preferences, and refused foods | Maintain a child profile and personalize meal ideas; stored on the server and cached on the device. Allergies and related information can be sensitive health information. |
 | Meal records | Meal date, meal type, selected meal setting, food names, ingredients, cooking methods, food and ingredient outcomes, difficulty reasons, and information you enter in supported notes fields | Record and display meal history and personalize suggestions; stored on the server and in local drafts or caches. A selected meal setting is not GPS location. |
 | Suggestions and feedback | Generated suggestions, saved or dismissed suggestions, dismissal reasons, and records of trying a suggestion | Display suggestions, avoid repeating dismissed ideas, and connect suggestions to meal records; stored on the server. |
 | Optional photos and photo references | Before- and after-meal photos and their URI/path references | Display meal photos. In the native mobile apps, photo files are copied to app storage on the device; photo URI/path strings are also submitted to the API and stored with the meal record. |

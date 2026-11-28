@@ -2,6 +2,8 @@
 // Changed: 난이도 선택지와 서버 DifficultyReason(77개) 변환 검증
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: Unit 테스트를 담당 기능·공통 컴포넌트 폴더로 이동
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 사용자 지정 사유 변환 검증
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -13,10 +15,10 @@ function allTags() {
   const tags = [];
   for (const [category, values] of Object.entries(difficultyOptions)) {
     if (category === 'texture') continue;
-    for (const value of values) tags.push({ category, subcategory: null, value });
+    for (const value of values) if (value !== 'other' || ['color', 'arrangement'].includes(category)) tags.push({ category, subcategory: null, value });
   }
   for (const [subcategory, values] of Object.entries(textureQuestions)) {
-    for (const value of values) tags.push({ category: 'texture', subcategory, value });
+    for (const value of values) if (value !== 'other') tags.push({ category: 'texture', subcategory, value });
   }
   return tags;
 }
@@ -48,4 +50,13 @@ test('unsupported categories and malformed reasons are rejected', () => {
     'texture.hardness.soft', 'TEXTURE.SOFT', 'TEXTURE.HARDNESS.SOFT.EXTRA', 'SHAPE.VARIED',
     'COLOR', 'NOT_SURE.NOT_SURE', 'COLOR.RED.EXTRA', '', 7, null,
   ]) assert.throws(() => fromDifficultyReason(value), undefined, String(value));
+});
+
+
+test('custom reasons preserve text and category through serialization', () => {
+  for (const reason of [
+    { category: 'other', subcategory: null, value: 'other', note: 'Too noisy 😟' },
+    { category: 'tasteType', subcategory: null, value: 'other', note: 'Unfamiliar taste' },
+    { category: 'texture', subcategory: 'hardness', value: 'other', note: 'Too firm' },
+  ]) assert.deepEqual(fromDifficultyReason(toDifficultyReason(reason)), reason);
 });

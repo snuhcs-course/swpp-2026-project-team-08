@@ -1,5 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
 # Changed: 검증과 가드레일 이후의 분기 검증 추가
+# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
+# Changed: 문제의 대상을 음식 id 대신 추천 순서로 변경
 
 """검증·가드레일 노드 다음 분기. 그래프와 LLM은 실행하지 않고 분기 함수만 확인한다."""
 
@@ -12,8 +14,8 @@ from app.features.suggestions.workflow.nodes import (
 )
 from app.features.suggestions.workflow.state import ValidationProblem
 
-RISK = ValidationProblem(kind="restriction_risk", food_id="1", ingredient="땅콩버터", risk=0.9)
-INVALID = ValidationProblem(kind="missing_food", food_id="1")
+RISK = ValidationProblem(kind="restriction_risk", position=1, ingredient="땅콩버터", risk=0.9)
+INVALID = ValidationProblem(kind="wrong_count", count=2)
 
 
 @pytest.mark.parametrize(

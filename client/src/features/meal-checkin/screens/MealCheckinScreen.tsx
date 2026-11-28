@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-24, reviewed by Seoyeon Heo
+// Changed: 식사 초안 삭제 및 실행 취소
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: 네이티브 날짜 선택 및 재료 입력 연동
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
@@ -48,9 +50,11 @@ export function MealCheckinScreen({
 }) {
   const profile = useProfile().profile;
   const saved = useMealSuggestions(childId);
+  const [draftDeleted, setDraftDeleted] = useState(false);
   const [trying, setTrying] = useState(true);
   const model = useMealCheckin(childId, startAfterMealId, !!tryingSuggestionId,
     saved.suggestions, trying ? tryingSuggestionId : '', () => setTrying(false));
+  const deletion = model.deletion;
   const toggleTrying = () => {
     if (model.saving) return;
     if (trying && tryingSuggestionId) model.clearTryingSuggestion(tryingSuggestionId);
@@ -68,7 +72,7 @@ export function MealCheckinScreen({
     if (model.saving || exiting.current) return;
     exiting.current = true;
     try {
-      if (model.draft?.step !== 'complete' && !(await model.flush())) return;
+      if (!draftDeleted && model.draft?.step !== 'complete' && !(await model.flush())) return;
       if (destination === 'previous' && router.canGoBack()) router.back();
       else router.replace('/(main)/home');
     } finally {
@@ -133,7 +137,7 @@ export function MealCheckinScreen({
         )}
       </SafeAreaView>
     );
-  if (model.resumeRequired) return <MealDraftResumeView draft={model.draft} childName={profile?.childName ?? ''} language={language} onContinue={model.continueDraft} onBack={back} />;
+  if (model.resumeRequired) return <MealDraftResumeView draft={model.draft} childName={profile?.childName ?? ''} language={language} onContinue={model.continueDraft} onBack={back} deleted={draftDeleted} removed={!!deletion.removed} error={deletion.error} onDelete={() => { if (model.draft) void deletion.remove(model.draft).then(ok => { if (ok) setDraftDeleted(true); }); }} onUndo={() => { void deletion.undo().then(ok => { if (ok) setDraftDeleted(false); }); }} />;
   return (
     <MealCheckinView
       draft={model.draft}

@@ -1,4 +1,6 @@
 // AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: Load static assets in tests that import onboarding screens
 const fs = require('node:fs');
 const ts = require('typescript');
 
@@ -19,4 +21,10 @@ for (const extension of ['.ts', '.tsx']) {
     }).outputText,
     filename,
   );
+}
+
+for (const extension of ['.svg', '.png']) {
+  require.extensions[extension] = (module, filename) => {
+    module.exports = filename;
+  };
 }

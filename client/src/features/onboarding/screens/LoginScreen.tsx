@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 로그인 후 계정별 온보딩 초안 복원
 // AI-generated with Grok 4.6, 2026-10-15, reviewed by Doyeon Kim
 // Changed: 식사 기록·로그인 기능 추가
 
@@ -31,9 +33,9 @@ export function LoginScreen() {
       </SafeAreaView>
     );
   }
-  if (auth.session && profile.status === 'error') return <Redirect href="/" />;
-  if (auth.session && profile.profile) return <Redirect href="/home" />;
-  if (auth.session && !profile.profile) {
+  if (!submitting && !formError && auth.session && profile.status === 'error') return <Redirect href="/" />;
+  if (!submitting && !formError && auth.session && profile.profile) return <Redirect href="/home" />;
+  if (!submitting && !formError && auth.session && !profile.profile) {
     return <Redirect href={{ pathname: '/onboarding/[step]', params: { step: onboarding.hasDraft ? onboarding.draft.step : 'consent' } }} />;
   }
 
@@ -42,12 +44,20 @@ export function LoginScreen() {
     setSubmitting(true);
     setFormError(undefined);
     const result = await auth.signIn({ email, password });
-    setSubmitting(false);
     if (!result.ok) {
+      setSubmitting(false);
       setFormError(result.error === 'invalid-credentials' ? s.onboarding.loginFailed
         : result.error === 'network' ? s.onboarding.authNetwork
           : s.onboarding.signupFailed);
       return;
+    }
+    try {
+      await onboarding.restoreAfterSignIn();
+    } catch {
+      setFormError(s.common.saveFailed);
+      await auth.signOut().catch(() => undefined);
+    } finally {
+      setSubmitting(false);
     }
   };
 

@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 어려움 사유 입력 포커스 전달
 // AI-generated with GPT-6, 2026-10-27, reviewed by Seoyeon Heo
 // Changed: 네이티브 어려움 선택기·글자 확대 및 추가 버튼 디자인 통일
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung; align picker chevrons with the right inset
@@ -11,11 +13,13 @@
 // Changed: 어려움 태그에 항목명과 식감 세부 항목 표시
 // AI-generated with Grok 4.6, 2026-11-13, reviewed by Doyeon Kim
 // Changed: 어려움 추가 버튼을 오른쪽에 두고 선택 상자 글자 축소
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 기타 사유 입력 표시
 
 import { DifficultyReasonTag } from '../../../components/DifficultyReasonTag';
 import { UiAssetIcon, type UiAssetIconName } from "../../../components/UiAssetIcon";
 import { MealFlowButton } from "../../../components/MealFlowButton";
-import { useState } from "react";
+import { useRef, useState, type ComponentRef } from "react";
 import { NativeDropdown } from "../../../components/NativeDropdown";
 import {
   Platform,
@@ -98,6 +102,7 @@ export function DifficultyEditor({
   onSubcategory,
   onValue,
   onNote,
+  onNoteFocus,
   onAdd,
   onRemove,
 }: {
@@ -115,9 +120,11 @@ export function DifficultyEditor({
   onSubcategory: (value: string) => void;
   onValue: (value: string) => void;
   onNote: (value: string) => void;
+  onNoteFocus: (input: ComponentRef<typeof TextInput> | null) => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
 }) {
+  const noteRef = useRef<ComponentRef<typeof TextInput>>(null);
   const [menu, setMenu] = useState<"category" | "value" | "question" | null>(
     null,
   );
@@ -162,7 +169,7 @@ export function DifficultyEditor({
           onChange={item => onCategory(item as DifficultyCategory)}
           style={styles.categorySelect}
         />
-        {!isTexture && valueSelect}
+        {!isTexture && category !== 'other' && valueSelect}
         <MealFlowButton
           label={labels.add}
           icon={null}
@@ -194,12 +201,16 @@ export function DifficultyEditor({
       )}
       {showNote && (
         <TextInput
+          ref={noteRef}
+          onFocus={() => onNoteFocus(noteRef.current)}
+          onBlur={() => onNoteFocus(null)}
           accessibilityLabel={labels.note}
           placeholder={labels.note}
           placeholderTextColor={colors.mealReviewMuted}
           value={note}
           onChangeText={onNote}
           multiline
+          maxLength={2000}
           style={styles.note}
         />
       )}
@@ -353,7 +364,8 @@ const styles = StyleSheet.create({
     borderColor: colors.mealReviewBorder,
   },
   note: {
-    minHeight: 44,
+    minHeight: 80,
+    textAlignVertical: 'top',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.mealReviewBorder,

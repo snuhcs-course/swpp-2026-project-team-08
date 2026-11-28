@@ -1,7 +1,12 @@
 # AI-generated with GPT-6, 2026-11-09, reviewed by Haechan Jung
 # Changed: 음식별 최초 거절과 추가 추천 관계 저장
+# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
+# Changed: 제거 예정 테이블로 표시
 
-"""음식별 최초 추천 거절과 선택적 추가 추천 결과."""
+"""제거 예정. 음식별 최초 추천 거절과 선택적 추가 추천 결과.
+
+식후 음식별 추천의 추가 생성 이력이다. 기존 이력은 보존하지만 새 추천 생성에는 쓰지 않는다.
+"""
 
 from datetime import datetime
 

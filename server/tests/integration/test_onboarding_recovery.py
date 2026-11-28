@@ -1,3 +1,5 @@
+# AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+# Changed: Safe Food 제거에 따른 검증 갱신
 # AI-generated with GPT-6, 2026-10-23, reviewed by Haechan Jung
 # AI-generated with GPT-6, 2026-11-02, reviewed by Seoyeon Heo
 # AI-generated with Claude Sonnet 5.5, 2026-11-02, reviewed by Jaemin Kim
@@ -25,7 +27,7 @@ from tests.helpers.auth import auth_headers
         "duplicate-restrictions",
         "nonboolean-consent",
         "unknown-restriction",
-        "blank-safe-food",
+        "obsolete-safe-food",
     ],
 )
 async def test_invalid_update_preserves_existing_profile_and_consents(api_client, case):
@@ -50,7 +52,7 @@ async def test_invalid_update_preserves_existing_profile_and_consents(api_client
     elif case == "unknown-restriction":
         invalid["profile"]["restrictions"] = ["ALLERGY.NOT_A_REAL_VALUE"]
     else:
-        invalid["profile"]["safe_foods"][0]["name"] = "  "
+        invalid["profile"]["safe_foods"] = []
     rejected = await api_client.put("/api/v1/onboarding", headers=headers, json=invalid)
     assert rejected.status_code == 422
     assert rejected.json()["error_code"] == "VALIDATION_ERROR"

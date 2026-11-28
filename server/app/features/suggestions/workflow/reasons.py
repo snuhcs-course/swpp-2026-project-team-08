@@ -1,5 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
 # Changed: 어려워한 이유 코드를 프롬프트에 풀어 쓰기 위한 설명 사전 추가
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 추천에 사용자 지정 사유 전달
 
 """어려워한 이유(`DifficultyReason`) 코드의 프롬프트용 설명.
 
@@ -7,6 +9,8 @@ LLM 에는 코드(`TEXTURE.HARDNESS.HARD`) 대신 "~해서" 로 끝나는 이유
 보호자가 고른 값이므로 의학적 판단이 아니라 기록된 사실이다.
 모든 `DifficultyReason` 에 설명이 있어야 하며 테스트가 이를 확인한다.
 """
+
+import json
 
 from app.models.difficulty_enums import DifficultyReason
 
@@ -112,6 +116,12 @@ REASON_DESCRIPTIONS: dict[DifficultyReason, str] = {
 
 def describe_reason(code: str) -> str:
     """이유 코드를 이유 문장으로 바꾼다. 알 수 없는 코드는 그대로 돌려준다."""
+    if code.startswith("CUSTOM:"):
+        try:
+            category, subcategory, note = json.loads(code[7:])
+            return f"{category} {subcategory or ''}: {note}"
+        except (ValueError, TypeError):
+            return code
     try:
         return REASON_DESCRIPTIONS[DifficultyReason(code)]
     except (ValueError, KeyError):

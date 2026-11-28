@@ -1,3 +1,5 @@
+<!-- AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo -->
+<!-- Changed: Safe Food 제거 반영 -->
 <!-- AI-generated with Claude Sonnet 5.5, 2026-10-31, reviewed by Jaemin Kim -->
 <!-- Changed: DB 스키마 개편에 따른 클라이언트 API 연동 변경 정리 -->
 <!-- AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung -->
@@ -5,6 +7,11 @@
 
 <!-- AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung -->
 <!-- Changed: 식사 장소 미응답 null 저장 계약 -->
+<!-- AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo -->
+<!-- Changed: 사용자 지정 어려움 사유 API 계약 -->
+
+<!-- AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim -->
+<!-- Changed: 홈 화면 음식 추천 생성 API와 응답 필드 정리 -->
 
 # API 연동 변경 사항 (클라이언트)
 
@@ -87,7 +94,10 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
 - 난이도 사유는 `{category, subcategory, value}` 객체의 목록에서 **문자열 목록**(`difficulty_reasons`)으로 바뀐다. 중복은 422다.
 
 ### 난이도 사유 값 (`DifficultyReason`)
-값은 category를 점(`.`)으로 구분한 경로 문자열이다. `texture`만 하위 category가 하나 더 있다.
+기본 선택지는 category를 점(`.`)으로 구분한 경로 문자열이다. `texture`만 하위 category가 하나 더 있다.
+직접 입력한 사유는 `CUSTOM:` 뒤에 JSON 배열 `[서버 category, texture 하위 항목 또는 null, 사유]`을 붙인다.
+예를 들어 `CUSTOM:["TASTE",null,"Too earthy"]`다. 사유는 공백을 제외하고 1~2000자이며
+같은 category의 서로 다른 사유를 각각 저장한다. 거부 음식과 식후 리뷰에 같은 형식을 사용한다.
 
 | 이전 (`category` / `subcategory` / `value`) | 이후 |
 |---|---|
@@ -102,9 +112,7 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
   `arrangement` → `ARRANGEMENT`, `color` → `COLOR`, `temperature` → `TEMPERATURE`, `notSure` → `NOT_SURE`.
 - value 이름은 대문자 SNAKE_CASE로 바꾼다 (`nonSticky` → `NON_STICKY`, `nonFatty` → `NON_FATTY`).
 - 전체 값 목록(77개)은 바로 아래 표와 같다. 값의 기준은 PRD의 "Reason Category and Mapped Values"다.
-- **PRD에 없는 항목은 서버가 받지 않는다.** 클라이언트의 `tasteIntensity`(`mild` `strong`), `shape`(`consistent` `varied` `notSure`
-  `note`), `visibility`(`visible` `hidden` `mixed`), `tasteType`의 `other`는 선택지에서 제거해야 한다. 보내면 422다.
-- 메모(`note`)는 지금처럼 서버로 보내지 않는다.
+- 기본 선택지는 아래 목록을 따른다. 사용자 지정 사유에는 `OTHER` category 또는 기존 category와 사유를 사용한다.
 
 #### `DifficultyReason` 전체 값 (77개)
 
@@ -147,7 +155,7 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
 - 앱 안의 값(`lunch`, `home`, `stir_fried`, `eaten` 등)은 소문자로 두고, 서버의 대문자 값과의 변환은 데이터 계층 경계에서만 한다
   (`src/data/dto/values.ts`의 `fromApiEnum`, `toApiEnum`). 서버가 소문자를 보내면 오류로 처리한다.
 - 난이도 사유는 앱의 `{category, subcategory, value}` 태그와 서버의 경로 문자열을 `src/data/dto/difficultyReasons.ts`가 변환한다.
-  선택지에서 `tasteIntensity`, `shape`, `visibility`, `tasteType`의 `other`를 제거했다. 난이도 메모는 서버로 보내지 않고, 같은 사유는 한 번만 보낸다.
+  기타 사유의 직접 입력은 서버에 저장하며, 같은 사유는 한 번만 보낸다.
 - 저장·수정·리뷰 응답은 모두 식사 상세로 받는다. 음식 안의 `outcome`, `difficulty_reasons`에서 앱의 식후 리뷰(`MealDetail.review`)를,
   `recommendation_tries`에서 추천 연결(`suggestionLinks`, 재료 연결 없음)을 만든다.
 - 앱 안의 음식 id는 서버 id를 받기 전까지의 임시 값이다. 저장 응답의 음식 순서로 서버 id를 대응시키고, 수정할 때는 서버 id를 가진
@@ -177,14 +185,6 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
   값은 `VEGAN` `LACTO_VEGETARIAN` `OVO_VEGETARIAN` `LACTO_OVO_VEGETARIAN` `PESCATARIAN` `FLEXITARIAN`
   `NO_SPECIFIC_PATTERN` 중 하나이며 `restrictions`와 별개다. 추천 생성에는 적용하지 않는다.
 - `age_group`은 2절의 `AgeGroup` 값을 쓴다.
-- `safe_foods`는 필수 필드다. `null`은 명시적 없음, `[]`는 미응답, 비어 있지 않은 배열은 음식 목록이다.
-  기존 클라이언트의 빈 배열은 미응답으로 유지한다. `preparation`은 자유 입력 제공 형태이며 `presentation_note`는 추가 설명이다.
-  서버는 `user_profiles.no_safe_foods`로 명시적 없음을 저장한다. 신규 클라이언트보다 서버 마이그레이션·API를 먼저 배포한다.
-  - 항목은 `name`, `preparation`, `presentation_note`만 보낸다. `name`은 필수이고 `preparation`(조리 방법)과
-    `presentation_note`는 선택이라 `null`을 보낼 수 있다. 공백뿐인 `preparation`은 `null`로 저장한다. **`id`는 보내지 않는다.** 서버가 저장할 때마다 목록 전체를
-    요청 순서대로 교체하고, 응답에 새로 발급한 `id`를 돌려준다. `id`가 저장마다 바뀔 수 있으므로 클라이언트는 이 `id`를 서버에
-    다시 보내거나 영구 키로 쓰지 않는다. 서버가 순서를 따로 보장하는 필드는 없지만 저장한 순서(`id` 순)로 돌려준다.
-  - 다른 사용자의 안전 음식을 가리키는 요청이 없어졌으므로 에러 코드 `SAFE_FOOD_NOT_FOUND`는 더 이상 나오지 않는다.
 
 ### 요청과 응답
 
@@ -195,8 +195,7 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
     "child_name": "아이",
     "age_group": "AGE_4_5",
     "restrictions": ["ALLERGY.EGGS", "VEGETARIAN.DAIRY"],
-    "dietary_pattern": null,
-    "safe_foods": [{ "name": "감자", "preparation": "푹 삶기", "presentation_note": null }]
+    "dietary_pattern": null
   },
   "consents": [
     { "kind": "ACCOUNT_PRIVACY", "granted": true },
@@ -206,7 +205,7 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
 }
 ```
 
-- 응답(`GET`, `PUT` 공통)의 `profile`은 같은 필드에 `user_id`, `updated_at`을 더하고, `safe_foods`의 각 항목에 서버가 발급한 `id`가 들어간다.
+- 응답(`GET`, `PUT` 공통)의 `profile`은 같은 필드에 `user_id`, `updated_at`을 더하고.
   프로필이 아직 없으면 `"profile": null`이다.
 - `consents`는 세 종류가 모두 한 번씩 있어야 하고 `ACCOUNT_PRIVACY`, `PHOTO_ANALYSIS`는 `granted`가 `true`여야 한다.
 - 이전 필드(`safety`, `food_preferences`, 안전 음식의 `status`와 `id`)를 보내면 **422 `VALIDATION_ERROR`**로 거절된다.
@@ -236,8 +235,6 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
   소문자 snake_case이고 `onboardingApi.ts`가 `fromApiEnum`/`toApiEnum`으로 서버 값과 바꾼다. 식생활 유형은 추천 제한이 아니다.
 - 채식 제한(`VEGETARIAN.*`, 프로필 필드 `vegetarianRestrictions`)은 입력 화면이 없다. 서버에 이미 저장된 값만 저장할 때 그대로
   다시 보내 보존한다. 채식 제한이 하나라도 있으면 `hasVerifiedNoRestrictions`는 거짓이다.
-- 안심 음식 단계도 선택 사항이다. `noSafeFoods`는 없어졌고 빈 목록이 "없음"이다. 안심 음식 `id`는 보내지 않는다.
-  조리 방법(`preparation`)은 선택 입력이라 비워 두면 `null`로 보내고, 받은 `null`은 빈 문자열로 복원한다.
 - 직접 입력(`other`)과 카탈로그 검색, 카탈로그 전용 선택지는 제거했다.
 - 이전 형식의 로컬 초안과 프로필 캐시는 필드 검증에서 걸러져 버려진다.
 
@@ -245,40 +242,42 @@ DB는 `0029_optional_meal_setting` 마이그레이션으로 미응답을 허용�
 
 ### 응답 (`SuggestionResponse`)
 
-- `ingredient_id`, `food_snapshot`이 사라지고 `food_id`는 `origin_food_id`가 된다(근거가 된 음식).
-  `meal_id`는 남는다. 서버가 근거 음식에서 채우며, 원본 식사를 찾는 데 쓴다.
-- `ingredients`(문자열 목록), `cooking_method`(2절의 값), `causes`(식후 리뷰에서 참고한 특성을 서술한 문장)가 추가된다.
-  `what_to_try`, `why_this_may_help`, `serving_tip`은 그대로다.
+- 추천은 특정 식사나 음식에 묶이지 않는다. 응답 필드는 `id`, `user_id`, `what_to_try`(추천 음식 이름),
+  `why_this_may_help`, `ingredients`(문자열 목록), `preparation_method`(편식을 덜기 위한 제공 시 고려 사항, 없으면 `null`),
+  `status`, `dismiss_reasons`, `saved_at`, `created_at`이다.
 - `status`는 `PENDING` `SAVED` `DISMISSED` `TRIED`, `dismiss_reasons`는 2절의 새 값이다.
 
 ### 요청과 규칙
 
-- 생성(`POST /meals/{id}/suggestions`)의 대상은 음식 단위다: `{"targets": [{"food_id": "…"}]}`. `ingredient_id`를 보내면 422다.
-  - 식후 리뷰가 없는 식사는 `409 REVIEW_REQUIRED`, 리뷰하지 않은 음식이나 이 식사에 없는 음식은 `422 INVALID_SUGGESTION_TARGET`이다.
+- 생성(`POST /suggestions`)은 본문 없이 보낸다. 서버가 프로필과 기록을 읽어 추천 세 개를 만들고 `201`로 돌려준다.
   - 아이의 제한은 프로필의 `restrictions`(`ALLERGY.NONE` 제외)다. 프로필이 없으면 `409 PROFILE_REQUIRED`다.
   - 추천에 쓰는 재료는 아이의 모든 제한에 `NEVER` 판정이 있는 재료뿐이다 ([제한 id 규칙](food-ingredient-restriction-ids.md)).
+  - 생성이나 검증에 실패하면 `502 GENERATION_FAILED`이며 아무것도 저장하지 않는다.
 - 결정(`PUT/DELETE /suggestions/{id}/decision`)의 `status`는 `SAVED` `DISMISSED`만 보낸다. `TRIED`인 추천은 결정을 바꿀 수 없다
   (`409 RECOMMENDATION_ALREADY_TRIED`).
-- 목록(`GET /meals/{id}/suggestions`)의 `status` 쿼리는 `SAVED`(기본) `ALL`이다. `SAVED`는 `SAVED`와 `TRIED`를 함께 보여 주며,
-  저장된 추천 목록(`GET /suggestions`)도 같다. `ALL`은 enum 값이 아니라 조회용 값이다.
+- 저장된 추천 목록(`GET /suggestions`)은 `SAVED`와 `TRIED`를 함께 보여 준다.
 
 ### 시도 상태 (`TRIED`)
 
 - 식사를 저장할 때 음식의 `food_recommendation_ids`로 추천을 연결하면(3절) 그 추천은 `TRIED`가 된다. `SAVED`와 `TRIED`인 추천만 연결할 수 있고,
   이미 `TRIED`인 추천도 다른 식사에 다시 연결할 수 있다.
 - 시도한 식사나 음식을 지워 마지막 시도 기록이 없어지면 추천은 `SAVED`로 돌아간다.
-- 추천의 근거가 된 음식(식사)을 지우면 그 음식에서 나온 추천과 그 추천의 시도 기록도 함께 지워진다.
+- 홈 화면 추천은 식사에 묶이지 않아 식사를 지워도 남는다. 이전 식후 음식별 추천은 근거가 된 음식(식사)을 지우면
+  그 추천과 시도 기록도 함께 지워진다.
 
 ### 클라이언트 반영 상태
 
-**클라이언트 반영 완료.**
+**홈 화면 추천 생성 API는 클라이언트 반영 전이다.** 클라이언트는 아직 식사 기준 생성(`POST /meals/{id}/suggestions`)과
+응답의 `meal_id`·`origin_food_id`·`cooking_method`·`causes`·`serving_tip`을 쓴다. 다음을 반영해야 한다.
+
+- 생성은 홈 화면에서 `POST /suggestions`로 요청한다. 식사 기준 생성·조회, 음식 선택, 추가 생성 흐름을 없앤다.
+- 추천 카드는 `what_to_try`를 음식 이름으로 보여 주고, 상세는 `ingredients`와 `preparation_method`를 보여 준다.
+  원본 식사에서 음식 이름을 찾지 않는다.
+
+다음은 그대로 유지한다.
 
 - 앱 안의 상태·사유 값은 소문자(`tried`, `not_fit` 등)로 두고 서버의 대문자와의 변환은 `src/data/dto/suggestionDto.ts`에서만 한다.
   거절 사유의 앱 값은 서버 값을 소문자로 쓴 것이다 (`restriction` `dislike` `not_fit` `too_much_preparation` `ingredient_hard_to_get` `already_tried`).
-  화면 문구는 키만 바꾸었고 내용은 그대로다.
-- 추천은 음식 단위다. 재료를 골라 추천받는 선택지와 추천 카드의 재료 이름 표시, 식사 기록의 재료 카드에 붙던 추천 연결을 없앴다.
-  추천에 음식 이름이 없으므로 화면은 원본 식사(`meal_id`)의 음식에서 이름을 찾는다.
-- 추천 카드의 상세는 추천이 제안하는 음식의 `ingredients`, `cooking_method`, `serving_tip`을 보여 준다. `causes`는 아직 화면에 보이지 않는다.
 - 저장된 추천 목록은 `SAVED`와 `TRIED`를 함께 받는다.
 - 식사 저장 요청의 추천 연결은 음식별 `food_recommendation_ids`다 (3절).
 

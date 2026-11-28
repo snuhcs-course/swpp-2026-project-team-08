@@ -11,10 +11,12 @@
 // Only HTTP and native storage boundaries are mocked.
 // AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
 // Changed: 온보딩 테스트 분리 및 화면별 자동 저장·재시작·불러오기 실패 복구 검증
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: Resume migrated legacy steps into the current onboarding flow
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { act, waitFor, deferred, values, storage, mountDraft, control, input, click, enter,
-  mountConsent, mountChildBasics, mountAllergies, mountDietaryPattern, mountSafeFoods,
+  mountConsent, mountChildBasics, mountAllergies, mountDietaryPattern,
 } = require('../../helpers/onboarding-screen.cjs');
 const { emptyDraft } = require('../../../src/features/onboarding/types.ts');
 const { saveDraft, readDraft } = require('../../../src/data/storage/onboardingDraftStorage.ts');
@@ -27,7 +29,9 @@ function assertStep(app, step) {
   assert.equal(app.pathname, `/onboarding/${step}`);
   const name = app.current.draft.childName || s.onboarding.childFallback;
   const title = step === 'safe-foods' ? s.onboarding.safeFoodsTitle(name)
-    : step === 'review' ? s.onboarding.reviewTitle(name) : s.onboarding.titles[step];
+    : step === 'sensory' ? s.sensory.title
+      : step === 'refused-foods' ? s.refusedFoods.title(name)
+        : step === 'review' ? s.onboarding.reviewTitle(name) : s.onboarding.titles[step];
   assert.ok(control(app, 'heading', title));
 }
 async function assertSaved(app, expected) {
@@ -38,15 +42,16 @@ async function assertSaved(app, expected) {
 }
 async function reopen(t, app) {
   const expected = structuredClone(app.current.draft);
+  const restoredDraft = require('../../../src/features/onboarding/rules.ts').restoreDraft(expected);
   await assertSaved(app, expected);
   await app.unmount();
   // 저장소만 유지한다. 화면·Provider·Query 캐시는 새로 만들고 실제 진입 화면에서 재개한다.
   const restored = await mountDraft(t);
   assert.equal(restored.pathname, '/');
   await click(control(restored, 'button', s.onboarding.resume));
-  await waitFor(() => restored.pathname === `/onboarding/${expected.step}`);
-  assertStep(restored, expected.step);
-  assert.deepEqual(restored.current.draft, expected);
+  await waitFor(() => restored.pathname === `/onboarding/${restoredDraft.step}`);
+  assertStep(restored, restoredDraft.step);
+  assert.deepEqual(restored.current.draft, restoredDraft);
   assert.deepEqual(restored.submissions, []);
   return restored;
 }
@@ -101,23 +106,21 @@ test('알레르기를 복수 선택하고 다시 시작하면 선택 목록을 �
   assert.ok(control(restored, 'checkbox', 'Milk / Dairy'));
   assert.notEqual(next(restored).getAttribute('aria-disabled'), 'true');
   await click(next(restored));
-  await waitFor(() => restored.pathname === '/onboarding/restrictions');
-  assertStep(restored, 'restrictions');
-  await assertSaved(restored, { ...app.current.draft, step: 'restrictions' });
-});
-
-test('식이 제한 없음을 선택하고 다시 시작하면 미응답과 구분되는 없음 응답과 진행 가능 상태를 복원한다', async t => {
-  const app = await mountDraft(t, { ...emptyDraft(), step: 'restrictions', allergies: ['EGGS'] });
-  await click(control(app, 'checkbox', s.onboarding.noOtherRestrictions));
-  assert.deepEqual(app.current.draft.restrictions, ['none']);
-  const restored = await reopen(t, app);
-  assert.deepEqual(restored.current.draft.allergies, ['EGGS']);
-  assert.ok(control(restored, 'checkbox', s.onboarding.noOtherRestrictions));
-  assert.notEqual(next(restored).getAttribute('aria-disabled'), 'true');
-  await click(next(restored));
   await waitFor(() => restored.pathname === '/onboarding/family');
   assertStep(restored, 'family');
-  await assertSaved(restored, { ...app.current.draft, step: 'family' });
+  assert.deepEqual(restored.current.draft.restrictions, []);
+});
+
+test('식생활 단계 초안은 이전 제한 답변과 함께 복원한다', async t => {
+  const app = await mountDraft(t, { ...emptyDraft(), step: 'family', allergies: ['EGGS'], restrictions: ['none'] });
+  const restored = await reopen(t, app);
+  assert.deepEqual(restored.current.draft.allergies, ['EGGS']);
+  assert.deepEqual(restored.current.draft.restrictions, ['none']);
+  assertStep(restored, 'family');
+  assert.notEqual(next(restored).getAttribute('aria-disabled'), 'true');
+  await click(next(restored));
+  await waitFor(() => restored.pathname === '/onboarding/sensory');
+  assertStep(restored, 'sensory');
 });
 
 test('식생활 유형을 변경하고 다시 시작하면 이전 유형 대신 마지막 선택과 진행 가능 상태를 복원한다', async t => {
@@ -130,48 +133,33 @@ test('식생활 유형을 변경하고 다시 시작하면 이전 유형 대신 
   assert.notEqual(next(restored).getAttribute('aria-disabled'), 'true');
 });
 
-test('음식 없음을 선택한 채 다시 시작해도 목록·설명·작성 중 입력을 보존하고 없음 해제 시 다시 표시한다', async t => {
-  const app = await mountSafeFoods(t);
-  await enter(app, s.onboarding.foodName, 'Apple');
-  await enter(app, s.onboarding.preparation, 'Sliced');
-  await enter(app, s.onboarding.presentationNote, 'Blue bowl');
-  await click(control(app, 'button', s.onboarding.addSafeFoodAction));
-  await enter(app, s.onboarding.foodName, 'Banana');
-  await enter(app, s.onboarding.preparation, 'Mashed');
-  await enter(app, s.onboarding.presentationNote, 'Small plate');
-  await click(control(app, 'checkbox', s.onboarding.noSafeFoods));
-  assert.equal(app.current.draft.noSafeFoods, true);
-  assert.deepEqual(app.current.draft.safeFoods.map(({ id, ...food }) => food), [
-    { name: 'Apple', preparation: 'Sliced', presentationNote: 'Blue bowl' },
-  ]);
-  const restored = await reopen(t, app);
-  assert.equal(input(restored, s.onboarding.foodName).readOnly, true);
-  assert.equal(restored.container.textContent.includes('Apple'), false);
+test('감각 프로필 단계 초안은 입력한 텍스처와 설명을 복원한다', async t => {
+  const legacy = { ...emptyDraft(), step: 'sensory', caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
+    childName: '나루', ageRange: 'AGE_4_5', allergies: ['none'],
+    consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false },
+    sensoryTextures: ['hardness.hard'], sensoryNote: 'Likes crisp food' };
+  const legacyApp = await mountDraft(t, legacy);
+  const restored = await reopen(t, legacyApp);
+  assertStep(restored, 'sensory');
+  assert.deepEqual(restored.current.draft.sensoryTextures, legacy.sensoryTextures);
+  assert.equal(restored.current.draft.sensoryNote, legacy.sensoryNote);
   assert.notEqual(next(restored).getAttribute('aria-disabled'), 'true');
-  await click(control(restored, 'checkbox', s.onboarding.noSafeFoods));
-  assert.ok(control(restored, 'button', `${s.common.remove} Apple`));
-  assert.ok(restored.container.textContent.includes('Sliced, Blue bowl'));
-  for (const [label, value] of [[s.onboarding.foodName, 'Banana'],
-    [s.onboarding.preparation, 'Mashed'], [s.onboarding.presentationNote, 'Small plate']]) {
-    assert.equal(input(restored, label).value, value);
-    assert.equal(input(restored, label).readOnly, false);
-  }
-  await assertSaved(restored, { ...app.current.draft, noSafeFoods: false });
 });
 
-test('검토 단계까지 이동하고 다시 시작하면 저장된 요약을 복원하고 이전 화면으로 이동한 단계도 저장한다', async t => {
-  const app = await mountSafeFoods(t);
-  await click(control(app, 'checkbox', s.onboarding.noSafeFoods));
-  await click(next(app));
+test('검토 단계 재시작 후 이전 화면으로 이동하면 거부 음식 입력을 보존한다', async t => {
+  const app = await mountDraft(t, { ...emptyDraft(), step: 'review', childName: '나루', ageRange: 'AGE_4_5',
+    caregiverName: 'Parent', caregiverEmail: 'parent@example.com',
+    consent: { accountPrivacy: true, photoAnalysis: true, aiTraining: false }, allergies: ['none'],
+    refusedFoods: [{ id: 'peas', name: 'Peas', cookingMethod: null, reasons: [] }] });
   await waitFor(() => app.pathname === '/onboarding/review');
   const restored = await reopen(t, app);
   assert.ok(restored.container.textContent.includes('나루'));
-  assert.ok(restored.container.textContent.includes(s.onboarding.noSafeFoods));
+  assert.ok(restored.container.textContent.includes('Peas'));
   assert.notEqual(control(restored, 'button', s.onboarding.looksGood).getAttribute('aria-disabled'), 'true');
   await click(control(restored, 'button', s.common.previous));
-  await waitFor(() => restored.pathname === '/onboarding/safe-foods');
-  assertStep(restored, 'safe-foods');
-  await assertSaved(restored, { ...app.current.draft, step: 'safe-foods' });
+  await waitFor(() => restored.pathname === '/onboarding/refused-foods');
+  assertStep(restored, 'refused-foods');
+  assert.deepEqual(restored.current.draft.refusedFoods, app.current.draft.refusedFoods);
 });
 
 test('계정 입력을 저장하고 다시 시작하면 이름은 복원하지만 비밀번호는 저장하거나 복원하지 않는다', async t => {

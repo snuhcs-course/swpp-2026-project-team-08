@@ -1,3 +1,5 @@
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: 계정 전환 화면 실행 환경
 // AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
 // Changed: 실제 온보딩·프로필 라우터와 재시작·서버 조회·저장소 실패 실행 환경
 const { beforeEach, after } = require('node:test');
@@ -105,7 +107,7 @@ beforeEach(async () => {
 });
 
 async function mountOnboarding(t, draft, {
-  submit, loadProfile, completion = false, initialPath = draft ? `/onboarding/${draft.step}` : '/',
+  submit, loadProfile, signIn, completion = false, initialPath = draft ? `/onboarding/${draft.step}` : '/',
   waitUntilReady = true,
 } = {}) {
   await saveSession({ accessToken: 'access', refreshToken: 'refresh',
@@ -115,6 +117,7 @@ async function mountOnboarding(t, draft, {
   t.mock.method(global, 'fetch', async (url, init = {}) => {
     const pathname = new URL(url).pathname;
     const method = init.method ?? 'GET';
+    if (signIn && (pathname === '/api/v1/auth/login' || pathname === '/api/v1/auth/me')) return signIn(pathname, init);
     if (pathname === '/api/v1/onboarding') {
       if (method === 'PUT') {
         const body = JSON.parse(init.body);
@@ -139,7 +142,7 @@ async function mountOnboarding(t, draft, {
   }
   // 실제 진입·온보딩·완료 목적 화면을 연결한다. 앱 전체 레이아웃은 별도 검사다.
   const routes = { './_layout.tsx': { default: Layout }, './onboarding/[step].tsx': onboardingRoute,
-    './index.tsx': require('../../src/app/index.tsx') };
+    './index.tsx': require('../../src/app/index.tsx'), './login.tsx': require('../../src/app/login.tsx') };
   if (completion) {
     routes['./home.tsx'] = require('../../src/app/(main)/home.tsx');
     routes['./meal-checkin.tsx'] = require('../../src/app/meal-checkin.tsx');

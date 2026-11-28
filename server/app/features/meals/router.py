@@ -3,6 +3,8 @@
 
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: 최신 식사 동작 유지 및 입력·응답 모듈 경로 정리
+# AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+# Changed: 사용자 지정 사유 저장
 
 """인증된 사용자의 식사 저장·조회·수정·리뷰 API."""
 
@@ -158,14 +160,12 @@ async def write_review(
             FoodReviewData(
                 food_id=int(item.food_id),
                 outcome=item.outcome,
-                difficulty_reasons=[reason.value for reason in item.difficulty_reasons],
+                difficulty_reasons=[reason for reason in item.difficulty_reasons],
                 ingredient_outcomes=[
                     IngredientReviewData(
                         ingredient_id=int(ingredient.ingredient_id),
                         outcome=ingredient.outcome,
-                        difficulty_reasons=[
-                            reason.value for reason in ingredient.difficulty_reasons
-                        ],
+                        difficulty_reasons=[reason for reason in ingredient.difficulty_reasons],
                     )
                     for ingredient in item.ingredient_outcomes
                 ],

@@ -1,9 +1,13 @@
+// AI-generated with GPT-6, 2026-11-26, reviewed by Seoyeon Heo
+// Changed: 제거된 Safe Food 입력 반영
 // AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 // Changed: 편집 후 로그아웃·재가입과 늦은 초안 저장의 계정 간 분리 검증
 // AI-generated with GPT-6, 2026-11-15, reviewed by Haechan Jung
 // Changed: 정상 온보딩 준비 데이터에 음식 없음 응답 반영
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 로그아웃·재가입 흐름을 auth 폴더로 이동
+// AI-generated with GPT-6, 2026-11-25, reviewed by Seoyeon Heo
+// Changed: Include current sensory and refused-food profile fields
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -139,7 +143,6 @@ for (const priorState of ['abandoned edit', 'restored edit', 'no edit', 'save fa
       hook.current.onboarding.toggleList('allergies', 'MILK_DAIRY');
       hook.current.onboarding.toggleList('restrictions', 'GLUTEN_FREE');
       hook.current.onboarding.setField('dietaryPattern', 'flexitarian');
-      hook.current.onboarding.setNoSafeFoods(true);
     });
     await app.route({ routeStep: 'review' });
     assert.equal(app.screen.props.canContinue, true);
@@ -157,7 +160,8 @@ for (const priorState of ['abandoned edit', 'restored edit', 'no edit', 'save fa
     if (retry) assert.deepEqual(app.writes[1], app.writes[0]);
     assert.deepEqual(app.writes[0].profile, { child_name: 'New child', age_group: 'AGE_6_8',
       restrictions: ['ALLERGY.MILK_DAIRY', 'DIETARY_APPROACH.GLUTEN_FREE'],
-      dietary_pattern: 'FLEXITARIAN', safe_foods: null });
+      dietary_pattern: 'FLEXITARIAN',
+      sensory_textures: [], sensory_note: '', refused_foods: [] });
     assert.equal(hook.current.onboarding.saveStatus, 'saved');
     assert.equal(await readDraft(), null);
     assert.equal(app.oldProfile.profile.child_name, 'Child 1');

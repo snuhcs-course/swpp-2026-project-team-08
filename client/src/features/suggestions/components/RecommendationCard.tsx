@@ -7,8 +7,8 @@
 
 // AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 // Changed: 앞쪽 텍스트 카드는 수평으로 두고 배경 카드 기울기 유지
-// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천의 음식명·추천 이유와 재료·준비 방법을 카드 양면에 표시
+// AI-generated with GPT-6, Claude Opus 5.5, 2026-11-28, reviewed by Haechan Jung, Jaemin Kim
+// Changed: 홈 추천 카드 앞면(Suggestion: 시도할 것·이유)과 뒷면(준비 팁: 재료·준비 방법) 표시
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Pressable, ScrollView, Text, View } from 'react-native';
@@ -147,7 +147,7 @@ export function RecommendationCard(p: Props) {
               onPress={flip}
               style={{ flexGrow: 1 }}
             >
-              <Text style={s.cardTitle}>{details ? c.preparationTip : p.item.foodName}</Text>
+              <Text style={s.cardTitle}>{details ? c.preparationTip : c.title}</Text>
               {sections.map(([label, value], index) => <View key={label} style={s.cardSection}>
                 <Text style={s.cardSectionLabel}>{label}</Text>
                 <Text style={!details && index === 0 ? s.cardActionText : s.cardBodyText}>{value}</Text>

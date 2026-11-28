@@ -5,8 +5,8 @@
 // Runs the real card and React hooks; native views and animation completion are controlled.
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: Unit 테스트를 담당 기능·공통 컴포넌트 폴더로 이동
-// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
-// Changed: 홈 추천의 양면별 내용과 카드 동작 검증
+// AI-generated with GPT-6, Claude Opus 5.5, 2026-11-28, reviewed by Haechan Jung, Jaemin Kim
+// Changed: 홈 추천의 양면별 내용(앞면 제목 Suggestion)과 카드 동작 검증
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -105,7 +105,7 @@ test('both card sides keep text outside 3D transforms throughout repeated flips'
     assert.equal(showingDetails(card.current), details);
     assert.equal(content(card.current).props.children[0].props.children, '1 of 1');
     const [heading, sections] = body(card.current).props.children.props.children;
-    assert.equal(heading.props.children, details ? 'Preparation tip' : 'Bread');
+    assert.equal(heading.props.children, details ? 'Preparation tip' : 'Suggestion');
     assert.deepEqual(sections.map(section => section.props.children.map(text => text.props.children)), details
       ? [['Ingredient', 'Flour, Water'], ['Preparation method', defaults.item.servingTip]]
       : [['What to try', defaults.item.whatToTry], ['Why this may help', defaults.item.whyThisMayHelp]]);

@@ -2,6 +2,8 @@
 // Changed: 실제 체크인 화면의 Trying 해제·취소 및 저장 요청 검증
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: Trying 상태와 음식 연결·해제·Undo 흐름 분리
+// AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+// Changed: 저장 추천 응답의 음식 이름을 체크인 선택지 제목으로 지정
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 require('../../helpers/register.cjs');
@@ -25,7 +27,8 @@ const { MealCheckinScreen } = require('../../../src/features/meal-checkin/screen
 const { readMealDraft } = require('../../../src/data/storage/mealStorage.ts');
 beforeEach(() => values.clear());
 async function mountCheckin(t, { delaySuggestions = false } = {}) {
-  const suggestions = [suggestionResponse({ status: 'SAVED', meal_id: '10', origin_food_id: '1' })];
+  // 체크인 선택지의 제목은 저장 추천의 음식 이름(what_to_try)이다.
+  const suggestions = [suggestionResponse({ status: 'SAVED', what_to_try: 'Rice' })];
   const suggestionsGate = deferred();
   const requests = [];
   t.mock.method(global, 'fetch', async (url, init = {}) => {

@@ -28,6 +28,9 @@
 // Changed: 빈 초안 기본값 검증·사진 중복 제거 및 음식 편집기·추천 연결 테스트 분리
 // AI-generated with GPT-6, 2026-11-22, reviewed by Haechan Jung
 // Changed: 종합 UI 검증을 담당 기능·컴포넌트별 파일로 분리
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 홈 식사 기록·추천 버튼 표시 검증
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { React, renderToStaticMarkup } = require('../../helpers/static-view.cjs');
@@ -50,10 +53,9 @@ function homeProps() {
     draftLoading: false,
     draftError: false,
     pendingMeals: [],
-    suggestionMeals: [],
-    suggestionMealsLoading: false,
-    suggestionMealsError: false,
-    onViewSuggestions: noop,
+    suggestionDisabled: false,
+    suggestionRequirement: null,
+    onGetSuggestion: noop,
     meals: [],
     data: { loggedDates: new Set(), suggestions: [] },
     loading: false,
@@ -95,7 +97,7 @@ test("saved-meal home renders real pending-review metadata and current Figma sec
   for (const text of [
     "Good morning, Alex",
     "THURSDAY",
-    "LOG THIS MEAL · FOR LUNA",
+    "Get a suggestion",
     "Log new meal",
     "After-meal Review",
     "Luna · Lunch",

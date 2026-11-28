@@ -5,6 +5,8 @@
 // Changed: Pass food and ingredient difficulty targets from Screen to Views
 // AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 현재 식후 사진의 표시 오류와 교체 선택 오류 구분
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식후 검토 완료 화면에서 저장한 추천 목록으로 이동
 
 import type { AfterMealReviewDraft, DifficultyCategory, Outcome, ReviewStep } from '../../../types/afterMealReview';
 import type { FoodItem, Meal, PhotoSource } from '../../../types/meal';
@@ -49,5 +51,5 @@ export type ReviewViewProps = {
   difficultyForms: Record<string, { options: readonly string[]; canAdd: boolean; showNote: boolean }>;
   onSave: () => void;
   onRetrySave: () => void;
-  onRecommend: () => void;
+  onSavedSuggestions: () => void;
 };

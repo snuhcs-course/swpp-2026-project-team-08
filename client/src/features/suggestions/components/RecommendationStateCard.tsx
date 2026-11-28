@@ -1,6 +1,9 @@
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
 
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 한 장의 추천 생성 상태 표시
+
 import { useEffect, useState } from 'react';
 import { Animated, Easing, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
@@ -23,8 +26,6 @@ export function RecommendationStateCard({ language, failed, onRetry }: {
     return () => animation.stop();
   }, [failed, spin]);
   return <View style={s.cardStack}>
-    <View style={[s.stackLayer, s.stackBack]} />
-    <View style={[s.stackLayer, s.stackMiddle]} />
     <View style={[s.stackFace, s.stateCard]}>
       <View style={[s.stateIcon, !failed && s.loaderIcon]}>
         {failed ? <UiAssetIcon name="suggestion-alert" /> : <Animated.View style={{ transform: [{ rotate: spin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }] }}><UiAssetIcon name="suggestion-loader" /></Animated.View>}

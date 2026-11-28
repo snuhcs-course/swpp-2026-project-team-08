@@ -1,5 +1,8 @@
 // AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 재개·편집 취소·사진별 단계 왕복과 진입 화면 복귀의 사용자 흐름 검증 · 통합 사진 확인 흐름 검증
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식후 검토 진입 시 식사별 추천 조회 제거
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, waitFor, enter, input, modal, waitForModal, photoDevice } = require('../../helpers/meal-checkin-screen.cjs');
@@ -18,7 +21,6 @@ async function start(t, { step = 'outcomes', beforePhoto = true } = {}) {
   await saveAfterMealDraft(draft);
   const app = await mountMeal(t, { initialPath: '/home', meals: [response], respond: (path, method) => {
     if (method === 'GET' && path === '/api/v1/meals/10') return Response.json(response);
-    if (method === 'GET' && path === '/api/v1/meals/10/suggestions') return Response.json([]);
   } });
   await waitFor(() => pendingCard(app));
   return app;

@@ -2,13 +2,14 @@
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-17, reviewed by Haechan Jung
 // Changed: 추천 카드·저장된 추천 기능 추가
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 사용하지 않는 홈 전용 캐시 무효화 제거
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { listMealDetails, getMealDetail } from '../api/mealReadApi';
 import { deleteMealRecord } from '../api/mealHistoryApi';
 import { deleteAfterMealReview } from '../storage/afterMealReviewStorage';
 import { deleteLocalMeal } from '../storage/mealStorage';
-import { homeKeys } from './homeQueries';
 import { mealKeys, mealLogKeys } from './mealQueryKeys';
 
 
@@ -69,7 +70,6 @@ export function useDeleteMeal() {
       client.removeQueries({ queryKey: mealKeys.detail(childId, mealId) });
       void client.invalidateQueries({ queryKey: mealLogKeys.all(childId) });
       void client.invalidateQueries({ queryKey: ['meals', childId] });
-      void client.invalidateQueries({ queryKey: homeKeys.byChild(childId) });
     },
   });
 }

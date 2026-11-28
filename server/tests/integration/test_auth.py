@@ -7,6 +7,8 @@
 # Changed: 계정 삭제·이메일 변경 테스트를 새 ORM 구조에 맞춤
 # AI-generated with GPT-6, 2026-11-04, reviewed by Haechan Jung
 # Changed: main 테스트 유지 및 api_client·공통 fixture 정리
+# AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+# Changed: 계정 삭제 테스트의 추천에 음식명 지정
 
 """회원가입 / 로그인 happy-path + 주요 에러 케이스."""
 
@@ -465,6 +467,7 @@ async def test_delete_me_removes_user_and_all_owned_rows(api_client: AsyncClient
         recommendation = FoodRecommendation(
             user_id=user_id,
             origin_food_id=food.id,
+            food_name=food.name,
             what_to_try="작게 제공",
             why_this_may_help="익숙한 형태",
             ingredients=["감자"],

@@ -2,13 +2,14 @@
 // Changed: 식사 기록·로그인 기능 추가
 // AI-generated with GPT-6, 2026-10-18, reviewed by Haechan Jung
 // Changed: 화면 디자인 및 식사 흐름 개선
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 사용하지 않는 홈 전용 캐시 무효화 제거
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { writeMealReview } from '../api/mealReviewApi';
 import { readAfterMealDraft, saveAfterMealReview } from '../storage/afterMealReviewStorage';
 import type { MealDetail } from '../../types/mealRecord';
 import type { AfterMealReview } from '../../types/afterMealReview';
-import { homeKeys } from './homeQueries';
 import { mealLogKeys } from './mealLogQueries';
 import { mealKeys } from './mealQueryKeys';
 import { checkinReferenceKeys } from './checkinReferenceQueries';
@@ -37,7 +38,6 @@ export function useSaveAfterMealReview() {
     },
     retry: false,
     onSuccess: ({ review, detail }) => {
-      void client.invalidateQueries({ queryKey: homeKeys.byChild(review.childId) });
       client.setQueryData(afterMealKeys.result(review.childId, review.mealId), review);
       client.setQueryData(afterMealKeys.draft(review.childId, review.mealId), { ...review, step: 'complete', difficultyInputs: {} });
       client.setQueryData(mealKeys.detail(review.childId, review.mealId), detail);

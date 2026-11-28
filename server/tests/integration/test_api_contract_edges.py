@@ -11,28 +11,27 @@
 
 # AI-generated with GPT-6, 2026-11-11, reviewed by Haechan Jung
 # Changed: 영어 추천 fixture와 공용 재료 적재 상태 테이블 계약
+# AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+# Changed: 홈 추천 생성·제외와 재생성 요청 중복·일일 한도 검증
 
 """Contract edge cases for authenticated meals, reviews, and suggestions."""
 
-from datetime import timedelta
+from datetime import datetime, timedelta
+from uuid import uuid4
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
 
 from app.core.database import Base
-from app.core.timezone import now_kst
-from app.features.suggestions.workflow.nodes import MAX_ATTEMPTS
+from app.core.timezone import KST, now_kst
+from app.features.suggestions.generator import GenerationRejectedError
+from app.features.suggestions.workflow.jev import JevError
 from app.main import app
-from app.models.ingredient_enums import RestrictionDegree
+from app.models import FoodRecommendation, UserProfile
 from tests.fixtures.reviews import review_payload
 from tests.helpers.auth import auth_headers as login
-from tests.helpers.suggestions import (
-    PROFILE_RESTRICTIONS,
-    batch,
-    install_model,
-    save_profile,
-    seed_ingredient,
-)
+from tests.helpers.suggestions import install_home_generator, save_profile
 
 
 def test_only_current_tables_and_routes_are_registered() -> None:
@@ -82,11 +81,6 @@ async def save_meal(
     return response.json()["id"]
 
 
-async def first_food_id(api_client: AsyncClient, headers: dict[str, str], meal_id: str) -> str:
-    detail = await api_client.get(f"/api/v1/meals/{meal_id}", headers=headers)
-    return detail.json()["foods"][0]["id"]
-
-
 async def review_meal(
     api_client: AsyncClient,
     headers: dict[str, str],
@@ -134,102 +128,165 @@ async def test_meal_history_review_replacement_and_ownership(api_client: AsyncCl
     assert "review" not in detail
 
 
-@pytest.mark.asyncio
-async def test_suggestion_target_validation_and_generation_failure_are_atomic(
-    api_client: AsyncClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
+async def test_home_generation_requires_an_allergy_answer_and_the_users_own_meal(
+    api_client, session_factory, monkeypatch
+):
+    path = "/api/v1/suggestions"
     owner = await login(api_client, "owner@example.com")
     other = await login(api_client, "other@example.com")
+    await save_meal(api_client, other, "2026-10-20")
+    assert (await api_client.post(path)).status_code == 401
+    assert (await api_client.post(path, headers=owner)).json()["error_code"] == "PROFILE_REQUIRED"
     await save_profile(api_client, owner)
-    await seed_ingredient("Rice")
-    meal_id = await save_meal(api_client, owner, "2026-10-20", ingredient=True)
-    food_id = await first_food_id(api_client, owner, meal_id)
-    path = f"/api/v1/meals/{meal_id}/suggestions"
-    target = {"food_id": food_id}
-    unreviewed = await api_client.post(path, headers=owner, json={"targets": [target]})
-    assert unreviewed.status_code == 409
-    assert unreviewed.json()["error_code"] == "REVIEW_REQUIRED"
-    assert (await review_meal(api_client, owner, meal_id)).status_code == 200
-    assert (
-        await api_client.post(path, headers=other, json={"targets": [target]})
-    ).status_code == 404
-    assert (await api_client.post(path, headers=owner, json={"targets": []})).status_code == 422
-    assert (
-        await api_client.post(path, headers=owner, json={"targets": [target, target]})
-    ).status_code == 422
-    # 추천은 음식 단위라 재료 id 를 보낼 수 없고, 이 식사에 없는 음식도 거절한다.
-    with_ingredient = {"targets": [{"food_id": food_id, "ingredient_id": "1"}]}
-    assert (await api_client.post(path, headers=owner, json=with_ingredient)).status_code == 422
-    unknown = await api_client.post(path, headers=owner, json={"targets": [{"food_id": "999"}]})
-    assert unknown.status_code == 422
-    assert unknown.json()["error_code"] == "INVALID_SUGGESTION_TARGET"
+    assert (await api_client.post(path, headers=owner)).json()[
+        "error_code"
+    ] == "MEAL_HISTORY_REQUIRED"
 
-    model = install_model(monkeypatch, [batch()] * MAX_ATTEMPTS)
-    failed = await api_client.post(path, headers=owner, json={"targets": [target]})
-    assert failed.status_code == 502
-    assert len(model.compose_inputs) == MAX_ATTEMPTS
-    assert (await api_client.get(f"{path}?status=ALL", headers=owner)).json() == []
-    install_model(monkeypatch, [batch("0")])
-    retried = await api_client.post(path, headers=owner, json={"targets": [target]})
-    assert retried.status_code == 201, retried.text
-    created = retried.json()[0]
-    assert created["status"] == "PENDING" and created["origin_food_id"] == food_id
-    assert created["meal_id"] == meal_id
-    assert created["ingredients"] == ["Rice"] and created["cooking_method"] == "STEAMED"
-    assert created["causes"]
-    assert len((await api_client.get(f"{path}?status=ALL", headers=owner)).json()) == 1
-
-
-@pytest.mark.asyncio
-async def test_generation_needs_a_profile_and_only_uses_ingredients_judged_safe(
-    api_client: AsyncClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    owner = await login(api_client, "owner@example.com")
     meal_id = await save_meal(api_client, owner, "2026-10-20")
-    assert (await review_meal(api_client, owner, meal_id)).status_code == 200
-    path = f"/api/v1/meals/{meal_id}/suggestions"
-    body = {"targets": [{"food_id": await first_food_id(api_client, owner, meal_id)}]}
+    async with session_factory.begin() as session:
+        profile = await session.scalar(select(UserProfile))
+        profile.restrictions = ["VEGETARIAN.DAIRY"]
+    assert (await api_client.post(path, headers=owner)).json()["error_code"] == "PROFILE_REQUIRED"
+    async with session_factory.begin() as session:
+        profile = await session.scalar(select(UserProfile))
+        profile.restrictions = ["ALLERGY.NONE"]
 
-    # 프로필이 없으면 아이의 제한을 알 수 없어 만들지 않는다.
-    install_model(monkeypatch, [batch("0")])
-    missing = await api_client.post(path, headers=owner, json=body)
-    assert missing.status_code == 409
-    assert missing.json()["error_code"] == "PROFILE_REQUIRED"
+    generator = install_home_generator(monkeypatch)
+    for payload in ({"meal_id": meal_id}, {"targets": [{"food_id": "1"}]}, {"food_name": "client"}):
+        assert (await api_client.post(path, headers=owner, json=payload)).status_code == 422
+    generator.assert_not_awaited()
+    generated = await api_client.post(path, headers=owner)
+    assert generated.status_code == 201, generated.text
+    assert generated.json()["status"] == "PENDING"
+    generator.assert_awaited_once()
+    assert generator.await_args.kwargs["user_id"] == int(generated.json()["user_id"])
+    old_path = f"/api/v1/meals/{meal_id}/suggestions"
+    assert (await api_client.get(old_path, headers=owner)).status_code == 404
+    assert (await api_client.post(old_path, headers=owner)).status_code == 404
 
-    # 제한 하나에 NEVER 가 아닌 판정만 있는 재료는 쓸 수 없으므로 생성이 끝내 실패한다.
+
+async def test_home_returns_the_example_card_without_a_source(api_client, session_factory):
+    owner = await login(api_client, "home@example.com")
     await save_profile(api_client, owner)
-    judgements = dict.fromkeys(PROFILE_RESTRICTIONS, RestrictionDegree.NEVER)
-    judgements[PROFILE_RESTRICTIONS[0]] = RestrictionDegree.DEPENDS_ON_PRODUCT
-    await seed_ingredient("Rice", judgements)
-    model = install_model(monkeypatch, [batch("0")] * MAX_ATTEMPTS)
-    rejected = await api_client.post(path, headers=owner, json=body)
-    assert rejected.status_code == 502
-    assert len(model.compose_inputs) == MAX_ATTEMPTS
-    assert (await api_client.get(f"{path}?status=ALL", headers=owner)).json() == []
-
-
-@pytest.mark.asyncio
-async def test_saved_filter_decision_validation_and_undo(
-    api_client: AsyncClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    owner = await login(api_client, "owner@example.com")
-    other = await login(api_client, "other@example.com")
-    await save_profile(api_client, owner)
-    await seed_ingredient("Rice")
-    meal_id = await save_meal(api_client, owner, "2026-10-20")
-    assert (await review_meal(api_client, owner, meal_id)).status_code == 200
-
-    install_model(monkeypatch, [batch("0")])
-    created = await api_client.post(
-        f"/api/v1/meals/{meal_id}/suggestions",
-        headers=owner,
-        json={"targets": [{"food_id": await first_food_id(api_client, owner, meal_id)}]},
+    await save_meal(api_client, owner, "2026-10-20")
+    response = await api_client.post("/api/v1/suggestions", headers=owner)
+    assert response.status_code == 201, response.text
+    card = response.json()
+    assert card["food_name"] == "Mashed potato with carrot"
+    assert card["what_to_try"] == "Offer mashed potato with carrot"
+    assert card["ingredients"] == ["Potato", "Carrot"]
+    assert card["cooking_method"] == "MASHED"
+    assert card["why_this_may_help"] and card["serving_tip"] and card["causes"]
+    assert (
+        card["status"] == "PENDING" and card["meal_id"] is None and card["origin_food_id"] is None
     )
+    async with session_factory() as session:
+        stored = (await session.scalars(select(FoodRecommendation))).one()
+        assert str(stored.id) == card["id"] and stored.food_name == card["food_name"]
+
+
+async def test_failed_generation_never_stores_a_partial_card(
+    api_client, session_factory, monkeypatch
+):
+    owner = await login(api_client, "failure@example.com")
+    await save_profile(api_client, owner)
+    await save_meal(api_client, owner, "2026-10-20")
+    path = "/api/v1/suggestions"
+    generator = install_home_generator(monkeypatch)
+    complete = generator.return_value
+    failures = [
+        {**complete, "food_name": " "},
+        TimeoutError(),
+        GenerationRejectedError([]),
+        JevError("judge unavailable"),
+    ]
+    generator.side_effect = [*failures, complete]
+    for _ in failures:
+        failed = await api_client.post(path, headers=owner)
+        assert failed.status_code == 502 and failed.json()["error_code"] == "GENERATION_FAILED"
+    async with session_factory() as session:
+        assert (await session.scalars(select(FoodRecommendation))).all() == []
+    created = await api_client.post(path, headers=owner)
     assert created.status_code == 201, created.text
-    suggestion_id = created.json()[0]["id"]
+    assert {key: created.json()[key] for key in complete} == complete
+    async with session_factory() as session:
+        assert (await session.scalars(select(FoodRecommendation.id))).all() == [
+            int(created.json()["id"])
+        ]
+
+
+async def test_regeneration_limit_resets_at_kst_midnight(api_client, monkeypatch):
+    owner = await login(api_client, "owner@example.com")
+    await save_profile(api_client, owner)
+    await save_meal(api_client, owner, "2026-10-20")
+    generator = install_home_generator(monkeypatch)
+    now = datetime(2026, 11, 25, 23, 59, 59, tzinfo=KST)
+    monkeypatch.setattr("app.features.suggestions.service.now_kst", lambda: now)
+    path = "/api/v1/suggestions"
+
+    for remaining in range(9, -1, -1):
+        payload = {"regeneration_request_id": str(uuid4())}
+        created = await api_client.post(path, headers=owner, json=payload)
+        assert created.status_code == 201, created.text
+        assert created.json()["remaining_regenerations"] == remaining
+
+    next_request = {"regeneration_request_id": str(uuid4())}
+    limited = await api_client.post(path, headers=owner, json=next_request)
+    assert limited.status_code == 429
+    assert limited.json()["error_code"] == "REGENERATION_LIMIT_REACHED"
+    replay = await api_client.post(path, headers=owner, json=payload)
+    assert replay.json()["id"] == created.json()["id"]
+    assert replay.json()["remaining_regenerations"] == 0
+    assert generator.await_count == 10
+
+    initial = await api_client.post(path, headers=owner)
+    assert initial.status_code == 201 and initial.json()["remaining_regenerations"] == 0
+    now += timedelta(seconds=1)
+    replay = await api_client.post(path, headers=owner, json=payload)
+    assert replay.json()["id"] == created.json()["id"]
+    assert replay.json()["remaining_regenerations"] == 10
+    fresh = await api_client.post(path, headers=owner, json=next_request)
+    assert fresh.status_code == 201 and fresh.json()["remaining_regenerations"] == 9
+    assert generator.await_count == 12
+
+
+async def test_failed_regeneration_can_retry_and_accounts_can_reuse_request_ids(
+    api_client, monkeypatch
+):
+    owner = await login(api_client, "owner@example.com")
+    other = await login(api_client, "other@example.com")
+    for headers in (owner, other):
+        await save_profile(api_client, headers)
+        await save_meal(api_client, headers, "2026-10-20")
+    generator = install_home_generator(monkeypatch)
+    generator.side_effect = [TimeoutError(), generator.return_value, generator.return_value]
+    path = "/api/v1/suggestions"
+    payload = {"regeneration_request_id": str(uuid4())}
+
+    failed = await api_client.post(path, headers=owner, json=payload)
+    assert failed.status_code == 502
+    retried = await api_client.post(path, headers=owner, json=payload)
+    separate = await api_client.post(path, headers=other, json=payload)
+    for response in (retried, separate):
+        assert response.status_code == 201 and response.json()["remaining_regenerations"] == 9
+    assert retried.json()["id"] != separate.json()["id"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("dismiss_reasons", [[], ["TOO_MUCH_PREPARATION"]])
+async def test_saved_filter_decision_validation_and_undo(
+    api_client: AsyncClient, monkeypatch: pytest.MonkeyPatch, dismiss_reasons: list[str]
+) -> None:
+    owner = await login(api_client, "owner@example.com")
+    other = await login(api_client, "other@example.com")
+    await save_profile(api_client, owner)
+    await save_meal(api_client, owner, "2026-10-20")
+    install_home_generator(monkeypatch)
+    created = await api_client.post("/api/v1/suggestions", headers=owner)
+    assert created.status_code == 201, created.text
+    suggestion_id = created.json()["id"]
     decision = f"/api/v1/suggestions/{suggestion_id}/decision"
     for body in (
-        {"status": "DISMISSED", "dismiss_reasons": []},
         {"status": "SAVED", "dismiss_reasons": ["ALREADY_TRIED"]},
         {"status": "DISMISSED", "dismiss_reasons": ["already_tried"]},
         {"status": "DISMISSED", "dismiss_reasons": ["ALREADY_TRIED", "ALREADY_TRIED"]},
@@ -260,15 +317,12 @@ async def test_saved_filter_decision_validation_and_undo(
     dismissed = await api_client.put(
         decision,
         headers=owner,
-        json={"status": "DISMISSED", "dismiss_reasons": ["TOO_MUCH_PREPARATION"]},
+        json={"status": "DISMISSED", "dismiss_reasons": dismiss_reasons},
     )
-    assert dismissed.json()["dismiss_reasons"] == ["TOO_MUCH_PREPARATION"]
+    assert dismissed.status_code == 200
+    assert dismissed.json()["status"] == "DISMISSED"
+    assert dismissed.json()["dismiss_reasons"] == dismiss_reasons
     assert dismissed.json()["saved_at"] is None
     assert (await api_client.get("/api/v1/suggestions", headers=owner)).json() == []
     assert (await api_client.delete(decision, headers=owner)).json()["status"] == "PENDING"
     assert (await api_client.get("/api/v1/suggestions", headers=owner)).json() == []
-    # 목록 필터는 대문자만 받는다.
-    bad_filter = await api_client.get(
-        f"/api/v1/meals/{meal_id}/suggestions?status=all", headers=owner
-    )
-    assert bad_filter.status_code == 422

@@ -4,6 +4,8 @@
 // Changed: 식후 검토 디자인·제스처 및 재료별 어려움 입력 연결
 // AI-generated with GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 사진 확인 화면에 현재 식후 사진의 표시 오류 전달
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식후 검토 완료 화면에서 저장한 추천 목록으로 이동
 
 import { router, Stack } from 'expo-router';
 import { useEffect } from 'react';
@@ -109,7 +111,7 @@ export function AfterMealReviewScreen({ mealId }: { mealId?: string }) {
         onRemoveDifficulty={review.removeDifficultyTag}
         onSave={() => { void review.finish(); }}
         onRetrySave={() => { void review.retrySave(); }}
-        onRecommend={() => router.push({ pathname: '/recommendation/[mealId]', params: { mealId: review.meal!.id } })}
+        onSavedSuggestions={() => router.replace({ pathname: '/section/[name]', params: { name: 'ideas' } })}
         onHome={() => router.replace('/(main)/home')}
       />
     </>

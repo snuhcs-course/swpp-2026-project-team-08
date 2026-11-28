@@ -7,13 +7,15 @@
 # Changed: 기존 생성 API에서 선택적 추가 추천 처리
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 기록과 독립된 저장 목록 제거 API
+# AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+# Changed: 홈 추천 한 장 생성과 재생성 한도 응답, 원본 음식 없는 추천 지원
 
 """인증된 사용자의 음식 추천 API."""
 
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query, Response, status
+from fastapi import APIRouter, Depends, Path, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.errors import ErrorMappedRoute, ErrorSpec, error_specs
@@ -21,29 +23,24 @@ from app.core.database import get_session
 from app.core.errors import AppError
 from app.features.auth.dependencies import CurrentUser
 from app.features.suggestions.dto import (
-    ListFilter,
     SuggestionDecisionRequest,
     SuggestionGenerateRequest,
+    SuggestionGenerateResponse,
     SuggestionResponse,
 )
 from app.features.suggestions.service import (
+    DailyRegenerationLimitError,
     FoodRecommendationService,
     GenerationFailedError,
-    InvalidSuggestionTargetError,
+    MealHistoryRequiredError,
     ProfileRequiredError,
     RecommendationRecord,
-    RecommendationRetryUnavailableError,
     RecommendationTriedError,
-    ReviewRequiredError,
-    SourceMealNotFoundError,
     SuggestionNotFoundError,
 )
 
 router = APIRouter(tags=["suggestions"], route_class=ErrorMappedRoute)
 Id = Annotated[int, Path(ge=1, le=2**63 - 1)]
-SOURCE_ERRORS: dict[type[AppError], ErrorSpec] = {
-    SourceMealNotFoundError: ErrorSpec(status_code=404, error_code="MEAL_NOT_FOUND"),
-}
 SUGGESTION_ERRORS: dict[type[AppError], ErrorSpec] = {
     SuggestionNotFoundError: ErrorSpec(status_code=404, error_code="SUGGESTION_NOT_FOUND"),
     RecommendationTriedError: ErrorSpec(status_code=409, error_code="RECOMMENDATION_ALREADY_TRIED"),
@@ -63,11 +60,11 @@ def response(record: RecommendationRecord) -> SuggestionResponse:
     item = record.item
     return SuggestionResponse(
         id=str(item.id),
-        can_regenerate=record.can_regenerate,
         replacement_for_id=str(record.replacement_for_id) if record.replacement_for_id else None,
         user_id=str(item.user_id),
-        origin_food_id=str(item.origin_food_id),
-        meal_id=str(record.meal_id),
+        origin_food_id=str(item.origin_food_id) if item.origin_food_id is not None else None,
+        meal_id=str(record.meal_id) if record.meal_id is not None else None,
+        food_name=item.food_name,
         what_to_try=item.what_to_try,
         why_this_may_help=item.why_this_may_help,
         serving_tip=item.serving_tip,
@@ -95,62 +92,27 @@ async def list_saved(
     ]
 
 
-@router.get("/meals/{meal_id}/suggestions", response_model=list[SuggestionResponse])
-@error_specs(SOURCE_ERRORS)
-async def list_for_meal(
-    meal_id: Id,
-    current_user: CurrentUser,
-    service: Service,
-    status_filter: Annotated[ListFilter, Query(alias="status")] = "SAVED",
-) -> list[SuggestionResponse]:
-    return [
-        response(record)
-        for record in await service.list_for_meal(
-            user_id=current_user.id, meal_id=meal_id, include_all=status_filter == "ALL"
-        )
-    ]
-
-
-@router.post(
-    "/meals/{meal_id}/suggestions",
-    status_code=status.HTTP_201_CREATED,
-    response_model=list[SuggestionResponse],
-)
+@router.post("/suggestions", status_code=status.HTTP_201_CREATED)
 @error_specs(
     {
-        **SOURCE_ERRORS,
-        RecommendationRetryUnavailableError: ErrorSpec(
-            status_code=409, error_code="RECOMMENDATION_RETRY_UNAVAILABLE"
-        ),
-        ReviewRequiredError: ErrorSpec(status_code=409, error_code="REVIEW_REQUIRED"),
         ProfileRequiredError: ErrorSpec(status_code=409, error_code="PROFILE_REQUIRED"),
-        InvalidSuggestionTargetError: ErrorSpec(
-            status_code=422, error_code="INVALID_SUGGESTION_TARGET"
-        ),
+        MealHistoryRequiredError: ErrorSpec(status_code=409, error_code="MEAL_HISTORY_REQUIRED"),
         GenerationFailedError: ErrorSpec(status_code=502, error_code="GENERATION_FAILED"),
+        DailyRegenerationLimitError: ErrorSpec(
+            status_code=429, error_code="REGENERATION_LIMIT_REACHED"
+        ),
     }
 )
 async def generate(
-    meal_id: Id,
-    payload: SuggestionGenerateRequest,
-    current_user: CurrentUser,
-    service: Service,
-) -> list[SuggestionResponse]:
-    food_ids = [int(item.food_id) for item in payload.targets]
-    rejected_suggestions = {
-        int(item.food_id): int(item.rejected_suggestion_id)
-        for item in payload.targets
-        if item.rejected_suggestion_id is not None
-    }
-    return [
-        response(record)
-        for record in await service.generate(
-            user_id=current_user.id,
-            meal_id=meal_id,
-            food_ids=food_ids,
-            rejected_suggestions=rejected_suggestions,
-        )
-    ]
+    current_user: CurrentUser, service: Service, payload: SuggestionGenerateRequest | None = None
+) -> SuggestionGenerateResponse:
+    record, remaining = await service.generate(
+        user_id=current_user.id,
+        regeneration_request_id=payload.regeneration_request_id if payload else None,
+    )
+    return SuggestionGenerateResponse(
+        **response(record).model_dump(), remaining_regenerations=remaining
+    )
 
 
 @router.put("/suggestions/{suggestion_id}/decision", response_model=SuggestionResponse)

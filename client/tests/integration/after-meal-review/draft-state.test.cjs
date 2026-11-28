@@ -1,5 +1,8 @@
 // AI-generated with GPT-6, GPT-6.2 Astra, 2026-11-22, reviewed by Haechan Jung
 // Changed: 초안 저장·재개·Retry 및 재개 직후 진입 화면 복귀 검증 · 통합 사진 확인 흐름 검증
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 식후 검토 진입 시 식사별 추천 조회 제거
+
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mountMeal, control, click, waitFor, act, deferred, storage, photoDevice } = require('../../helpers/meal-checkin-screen.cjs');
@@ -17,7 +20,6 @@ async function mount(t) {
   const app = await mountMeal(t, { initialPath: '/home', meals: [meal], respond: (path, method) => {
     requests.push([method, path]);
     if (method === 'GET' && path === '/api/v1/meals/10') return Response.json(meal);
-    if (method === 'GET' && path === '/api/v1/meals/10/suggestions') return Response.json([]);
   } });
   t.after(() => assert.ok(requests.every(([method]) => method === 'GET'), '초안 저장·재개는 서버 리뷰를 제출하지 않는다'));
   await waitFor(() => pendingCard(app));

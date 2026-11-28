@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-16, reviewed by Haechan Jung
 // Changed: 실제 온보딩·프로필 라우터와 재시작·서버 조회·저장소 실패 실행 환경
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 추천 재생성 요청 UUID 생성을 화면 테스트에서 지원
 const { beforeEach, after } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -71,7 +73,8 @@ const safeArea = {
 const { values, storage, failNextWrite } = require('./native-boundaries.cjs').nativeBoundaries(name => {
   if (name === 'react-native') return native;
   if (name === 'react-native-safe-area-context') return safeArea;
-  if (name === 'expo') return { Platform: native.Platform, requireOptionalNativeModule: () => null,
+  if (name === 'expo') return { uuid: { v4: require('node:crypto').randomUUID },
+    Platform: native.Platform, requireOptionalNativeModule: () => null,
     isRunningInExpoGo: () => false };
   if (name === 'expo-modules-core') return { UnavailabilityError: class extends Error {} };
   if (name === 'expo-glass-effect') return { GlassView: native.View, isLiquidGlassAvailable: () => false };

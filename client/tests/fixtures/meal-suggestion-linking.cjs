@@ -1,5 +1,7 @@
 // AI-generated with GPT-6, 2026-11-21, reviewed by Haechan Jung
 // Changed: 음식별 추천 연결과 원본 추천·식사 조회 입력
+// AI-generated with GPT-6, 2026-11-26, reviewed by Haechan Jung
+// Changed: 체크인 선택지에 저장된 추천 음식명 제공
 const { photoDraft } = require('./meal-photo.cjs');
 const { mealResponse } = require('./server-meal.cjs');
 const { suggestionResponse } = require('./server-suggestion.cjs');
@@ -19,7 +21,7 @@ function linkingDraft(links = []) {
 }
 function sourceResponses() {
   return {
-    suggestions: options.map((option, i) => suggestionResponse({ id: option.id,
+    suggestions: options.map((option, i) => suggestionResponse({ id: option.id, food_name: option.title,
       origin_food_id: String(101 + i), meal_id: String(81 + i), what_to_try: option.description,
       serving_tip: option.servingTip, status: 'SAVED', saved_at: '2026-10-21T00:00:00Z' })),
     meals: options.map((option, i) => {

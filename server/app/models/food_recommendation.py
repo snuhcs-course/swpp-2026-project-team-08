@@ -2,11 +2,13 @@
 # Changed: UserSuggestion 을 FoodRecommendation 으로 바꾸고 음식 단위 추천 구조로 재편
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 상태와 별개로 저장 목록 제거 시각 관리
+# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
+# Changed: 홈 화면 추천을 위해 origin_food_id 를 nullable 로 바꾸고 제거 예정 컬럼 표시
 
-"""식후 리뷰를 바탕으로 만든 음식 추천.
+"""보호자가 홈 화면에서 요청해 만든 음식 추천.
 
-추천은 음식 단위이며 `origin_food_id` 로 근거가 된 음식을 가리킨다.
-`origin_food_id` 가 가리키는 음식이 삭제되면 추천과 시도 기록도 함께 삭제된다.
+추천은 특정 식사나 음식에 묶이지 않는다. 식후 음식별로 만들던 이전 추천만 `origin_food_id` 로
+근거가 된 음식을 가리키며, 그 음식이 삭제되면 추천과 시도 기록도 함께 삭제된다.
 """
 
 from datetime import datetime
@@ -32,23 +34,25 @@ class FoodRecommendation(Base):
         nullable=False,
         index=True,
     )
-    # 추천의 근거가 된 음식
-    origin_food_id: Mapped[int] = mapped_column(
+    # 제거 예정. 이전 식후 음식별 추천의 근거 음식이며, 홈 화면 추천은 NULL 이다.
+    origin_food_id: Mapped[int | None] = mapped_column(
         BigInteger().with_variant(Integer, "sqlite"),
         ForeignKey("meal_foods.id", onupdate="CASCADE", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
         index=True,
     )
     what_to_try: Mapped[str] = mapped_column(Text, nullable=False)
     why_this_may_help: Mapped[str] = mapped_column(Text, nullable=False)
+    # 편식을 덜기 위해 이 음식을 제공할 때 고려할 사항. API 에서는 `preparation_method` 이다.
     serving_tip: Mapped[str | None] = mapped_column(Text, nullable=True)
     # LLM 이 반환한 재료 이름 목록을 그대로 저장한다. 재료 카탈로그를 참조하지 않는다.
     ingredients: Mapped[list[str]] = mapped_column(StringList, nullable=False)
+    # 제거 예정. 이전 추천의 조리법이며, 홈 화면 추천은 OTHER 로 채운다.
     cooking_method: Mapped[MealCookingMethod] = mapped_column(
         Enum(MealCookingMethod, native_enum=False, create_constraint=False, length=30),
         nullable=False,
     )
-    # 식후 리뷰에서 참고한 특성(아이가 어려워한 원인)을 LLM 이 서술한 문장
+    # 제거 예정. 이전 추천이 참고한 식후 리뷰 특성이며, 홈 화면 추천은 빈 문자열로 채운다.
     causes: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[FoodRecommendationStatus] = mapped_column(
         Enum(FoodRecommendationStatus, native_enum=False, create_constraint=False, length=20),

@@ -20,6 +20,8 @@
 # Changed: 추천 보관 해제 마이그레이션 이력 연결 확인
 # AI-generated with GPT-6, 2026-11-17, reviewed by Haechan Jung
 # Changed: 선택 장소 마이그레이션 head와 이전 이력 연결 확인
+# AI-generated with Claude Opus 5.5, 2026-11-28, reviewed by Jaemin Kim
+# Changed: 추천 근거 음식 선택값 마이그레이션(0035) head 와 SQL 검증
 
 """Unit: 마이그레이션의 이력·SQL 생성 계약. DB 적용이나 Postgres 동작은 검사하지 않는다."""
 
@@ -36,7 +38,11 @@ MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 
 def test_removal_joins_both_existing_heads():
     scripts = ScriptDirectory(str(MIGRATIONS))
-    assert scripts.get_heads() == ["0034_refused_food_table"]
+    assert scripts.get_heads() == ["0035_optional_recommendation_origin"]
+    assert (
+        scripts.get_revision("0035_optional_recommendation_origin").down_revision
+        == "0034_refused_food_table"
+    )
     assert scripts.get_revision("0032_refused_foods").down_revision == "0031_sensory_profile"
     assert (
         scripts.get_revision("0031_sensory_profile").down_revision
@@ -318,3 +324,29 @@ def test_recommendation_retry_migration_preserves_existing_data_and_limits_each_
     with Operations.context(context):
         migration["downgrade"]()
     assert output.getvalue().strip() == "DROP TABLE food_recommendation_retries;"
+
+
+def test_optional_recommendation_origin_only_relaxes_the_column_and_restores_it():
+    migration = run_path(
+        str(MIGRATIONS / "versions" / "20261127_1000_optional_recommendation_origin.py")
+    )
+    output = StringIO()
+    context = MigrationContext.configure(
+        dialect_name="postgresql", opts={"as_sql": True, "output_buffer": output}
+    )
+    with Operations.context(context):
+        migration["upgrade"]()
+    # 기존 추천은 그대로 두고 컬럼 제약만 푼다.
+    assert (
+        output.getvalue().strip()
+        == "ALTER TABLE food_recommendations ALTER COLUMN origin_food_id DROP NOT NULL;"
+    )
+
+    output.seek(0)
+    output.truncate()
+    with Operations.context(context):
+        migration["downgrade"]()
+    sql = output.getvalue()
+    # NOT NULL 로 되돌리기 전에 근거 음식이 없는 홈 화면 추천을 지워야 한다.
+    deletion = sql.index("DELETE FROM food_recommendations WHERE origin_food_id IS NULL")
+    assert deletion < sql.index("ALTER COLUMN origin_food_id SET NOT NULL")

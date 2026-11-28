@@ -2,6 +2,8 @@
 # Changed: 식사 관련 StrEnum 정의 (MealType, MealSetting, MealCookingMethod, EatingOutcome)
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 조리법 개별 값과 신규 입력 열 가지 정의
+# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
+# Changed: 추천 생성이 조리법을 쓰지 않아 입력 허용 목록 설명 정리
 
 """식사와 음식에 쓰는 고정 값 집합.
 
@@ -50,7 +52,7 @@ class MealCookingMethod(StrEnum):
     MASHED_BLENDED = "MASHED_BLENDED"
 
 
-# 식사 입력과 추천 생성이 함께 사용하는 허용 목록.
+# 식사 입력의 조리법 허용 목록.
 MealCookingMethodInput = Literal[
     MealCookingMethod.RAW,
     MealCookingMethod.BOILED,

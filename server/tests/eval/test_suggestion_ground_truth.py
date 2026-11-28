@@ -2,12 +2,18 @@
 # Changed: 추천 가드레일 ground-truth 평가 세트와 사전 선언 임계값 평가 추가
 # AI-generated with GPT-6, 2026-11-24, reviewed by Haechan Jung
 # Changed: 고정 평가 사례를 원본 한국어 카탈로그 스냅샷으로 검증
+# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
+# Changed: 음식 추천 출력 필드와 추천 하나 단위 검증으로 변경
 
 """추천 결과 가드레일의 ground-truth 평가.
 
-`suggestion_ground_truth.json` 의 후보 제안을 원본 한국어 카탈로그 스냅샷을 적재한
+`suggestion_ground_truth.json` 의 후보 추천을 원본 한국어 카탈로그 스냅샷을 적재한
 격리된 DB 에서 `load_catalog` + `find_problems` 로 판정하고, `thresholds.json` 에 미리 선언한
-기준과 비교한다. LLM 을 호출하지 않는다.
+기준과 비교한다. 사례마다 추천 하나를 지난 추천 없이 판정한다. LLM 을 호출하지 않는다.
+
+평가 세트는 동결되어 추천 출력이 바뀌기 전의 필드 이름을 그대로 쓴다. `serving_tip` 은
+지금의 `preparation_method` 로 읽고, 추천 출력에서 빠진 `food`·`causes`·`cooking_method` 는
+판정에 쓰지 않는다.
 
 기본 테스트(`testpaths`)에는 포함되지 않는다. server/ 에서 직접 실행한다.
 
@@ -21,13 +27,18 @@ from pathlib import Path
 from app.features.suggestions.catalog import load_catalog
 from app.features.suggestions.ingredients import ChildRestrictions
 from app.features.suggestions.validation import find_problems
-from app.features.suggestions.workflow.state import FoodInput, GeneratedSuggestion
-from app.models.meal_enums import MealCookingMethod
+from app.features.suggestions.workflow.state import GeneratedSuggestion
 from app.models.restriction_enums import RestrictionType
 from tests.helpers.legacy_catalog import seed_legacy_catalog
 
 HERE = Path(__file__).resolve().parent
 RESTRICTION_GROUPS = {"allergy", "dietary_approach", "depends_on_product", "multiple_restrictions"}
+# 동결된 평가 세트의 필드 이름 → 지금 추천 출력의 필드 이름.
+FROZEN_FIELD_NAMES = {"serving_tip": "preparation_method"}
+
+
+def current_field(name: str) -> str:
+    return FROZEN_FIELD_NAMES.get(name, name)
 
 
 @dataclass(frozen=True)
@@ -39,7 +50,7 @@ class Outcome:
     @property
     def expected_problems(self) -> frozenset[tuple[str, str, str]]:
         return frozenset(
-            (p["kind"], p.get("ingredient", ""), p.get("field", ""))
+            (p["kind"], p.get("ingredient", ""), current_field(p.get("field", "")))
             for p in self.case["expected_problems"]
         )
 
@@ -59,25 +70,23 @@ def load_json(name: str) -> dict:
 def build_suggestion(spec: dict, case: dict) -> GeneratedSuggestion:
     values = {**spec["suggestion_defaults"], **case}
     return GeneratedSuggestion(
-        food_id=spec["food"]["id"],
         what_to_try=values["what_to_try"],
         why_this_may_help=values["why_this_may_help"],
-        serving_tip=values["serving_tip"],
         ingredients=tuple(values["ingredients"]),
-        cooking_method=MealCookingMethod(values["cooking_method"]),
-        causes=values["causes"],
+        preparation_method=values["serving_tip"],
     )
 
 
 async def evaluate(session, spec: dict) -> list[Outcome]:
-    food = FoodInput(id=spec["food"]["id"], name=spec["food"]["name"])
     outcomes = []
     for case in spec["cases"]:
         restrictions = ChildRestrictions(
             frozenset(RestrictionType(r) for r in case["restrictions"])
         )
         catalog = await load_catalog(session, restrictions)
-        problems = find_problems([food], [build_suggestion(spec, case)], catalog)
+        problems = find_problems(
+            [build_suggestion(spec, case)], count=1, history=(), catalog=catalog
+        )
         outcomes.append(
             Outcome(
                 case=case,

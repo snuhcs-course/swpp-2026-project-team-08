@@ -15,11 +15,12 @@
 # Changed: 아이의 제한 설명을 추천 생성기에 전달
 # AI-generated with GPT-6, 2026-11-18, reviewed by Haechan Jung
 # Changed: 시도 이력을 보존하는 저장 목록 제거와 재저장
+# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
+# Changed: 식후 음식별 생성·추가 생성을 프로필 기반 홈 화면 추천 생성으로 대체
 
 """인증된 사용자의 음식 추천을 만들고 조회하고 결정한다."""
 
 import asyncio
-from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
@@ -28,43 +29,31 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
 from app.core.timezone import now_kst
-from app.features.meals.queries import meal_records, owned_meal
 from app.features.suggestions.catalog import load_catalog
+from app.features.suggestions.difficulties import load_difficult_foods
 from app.features.suggestions.familiar import load_familiar_foods
 from app.features.suggestions.generator import generate_suggestions
+from app.features.suggestions.history import load_history
 from app.features.suggestions.ingredients import ChildRestrictions
 from app.features.suggestions.workflow.restrictions import describe_restrictions
-from app.features.suggestions.workflow.state import (
-    FoodInput,
-    GeneratedSuggestion,
-    IngredientResult,
-    RejectedSuggestion,
-)
-from app.models import FoodRecommendation, FoodRecommendationRetry, MealFood, UserProfile
+from app.features.suggestions.workflow.state import GeneratedSuggestion
+from app.models import FoodRecommendation, MealFood, UserProfile
 from app.models.food_recommendation_enums import (
     FoodRecommendationDismissReason,
     FoodRecommendationStatus,
 )
-from app.models.meal_enums import EatingOutcome
+from app.models.meal_enums import MealCookingMethod
 from app.models.restriction_enums import RestrictionType
 
+# 한 번의 요청으로 만드는 추천 개수.
+SUGGESTION_COUNT = 3
+# 추천 생성(LLM 호출과 가드레일 판정)을 기다리는 최대 시간(초).
+GENERATION_TIMEOUT_SECONDS = 60
 # 보관 해제하지 않은 저장·시도 상태의 추천을 목록에 표시한다.
 LISTED_STATUSES = (FoodRecommendationStatus.SAVED, FoodRecommendationStatus.TRIED)
 
 
 class SuggestionNotFoundError(AppError):
-    pass
-
-
-class SourceMealNotFoundError(AppError):
-    pass
-
-
-class ReviewRequiredError(AppError):
-    pass
-
-
-class InvalidSuggestionTargetError(AppError):
     pass
 
 
@@ -76,22 +65,8 @@ class RecommendationTriedError(AppError):
     pass
 
 
-class RecommendationRetryUnavailableError(AppError):
-    pass
-
-
 class GenerationFailedError(AppError):
     pass
-
-
-@dataclass(frozen=True)
-class RecommendationRecord:
-    """추천과, 그 추천의 근거 음식이 속한 식사의 id."""
-
-    item: FoodRecommendation
-    meal_id: int
-    can_regenerate: bool = False
-    replacement_for_id: int | None = None
 
 
 class FoodRecommendationService:
@@ -100,17 +75,13 @@ class FoodRecommendationService:
 
     async def list_saved(
         self, *, user_id: int, after_meal_date: date | None
-    ) -> list[RecommendationRecord]:
+    ) -> list[FoodRecommendation]:
         if after_meal_date == date.max:
             return []
-        stmt = (
-            select(FoodRecommendation, MealFood.meal_id)
-            .join(MealFood, FoodRecommendation.origin_food_id == MealFood.id)
-            .where(
-                FoodRecommendation.user_id == user_id,
-                FoodRecommendation.status.in_(LISTED_STATUSES),
-                FoodRecommendation.removed_from_saved_at.is_(None),
-            )
+        stmt = select(FoodRecommendation).where(
+            FoodRecommendation.user_id == user_id,
+            FoodRecommendation.status.in_(LISTED_STATUSES),
+            FoodRecommendation.removed_from_saved_at.is_(None),
         )
         if after_meal_date is not None:
             cutoff = datetime.combine(
@@ -118,223 +89,66 @@ class FoodRecommendationService:
             )
             stmt = stmt.where(FoodRecommendation.created_at >= cutoff)
         stmt = stmt.order_by(FoodRecommendation.created_at.desc(), FoodRecommendation.id.desc())
-        return await self._with_retry_state(
-            [
-                RecommendationRecord(item, meal_id)
-                for item, meal_id in (await self._session.execute(stmt)).all()
-            ]
-        )
+        return list((await self._session.scalars(stmt)).all())
 
-    async def list_for_meal(
-        self, *, user_id: int, meal_id: int, include_all: bool
-    ) -> list[RecommendationRecord]:
-        if await owned_meal(self._session, user_id, meal_id) is None:
-            raise SourceMealNotFoundError()
-        stmt = (
-            select(FoodRecommendation)
-            .join(MealFood, FoodRecommendation.origin_food_id == MealFood.id)
-            .where(FoodRecommendation.user_id == user_id, MealFood.meal_id == meal_id)
-        )
-        if not include_all:
-            stmt = stmt.where(
-                FoodRecommendation.status.in_(LISTED_STATUSES),
-                FoodRecommendation.removed_from_saved_at.is_(None),
-            )
-        stmt = stmt.order_by(FoodRecommendation.created_at.desc(), FoodRecommendation.id.desc())
-        return await self._with_retry_state(
-            [
-                RecommendationRecord(item, meal_id)
-                for item in (await self._session.scalars(stmt)).all()
-            ]
-        )
+    async def generate(self, *, user_id: int) -> list[FoodRecommendation]:
+        """프로필과 기록을 읽어 추천 `SUGGESTION_COUNT`개를 만들고 저장한다.
 
-    async def generate(
-        self,
-        *,
-        user_id: int,
-        meal_id: int,
-        food_ids: list[int],
-        rejected_suggestions: dict[int, int] | None = None,
-    ) -> list[RecommendationRecord]:
-        if await owned_meal(self._session, user_id, meal_id) is None:
-            raise SourceMealNotFoundError()
-        rejected_suggestions = rejected_suggestions or {}
-        # Initial and additional generation share the same per-food lock order.
-        foods = list(
-            (
-                await self._session.scalars(
-                    select(MealFood)
-                    .where(MealFood.meal_id == meal_id, MealFood.id.in_(food_ids))
-                    .order_by(MealFood.id)
-                    .with_for_update()
-                    .execution_options(populate_existing=True)
-                )
-            ).all()
+        생성·검증에 실패하면 아무것도 저장하지 않고 `GenerationFailedError` 를 던진다.
+        """
+        profile = await self._session.scalar(
+            select(UserProfile).where(UserProfile.user_id == user_id)
         )
-        if (
-            len(foods) != len(food_ids)
-            or len(set(food_ids)) != len(food_ids)
-            or not rejected_suggestions.keys() <= set(food_ids)
-        ):
-            raise InvalidSuggestionTargetError()
-        if all(food.outcome is None for food in foods):
-            raise ReviewRequiredError()
-        if any(food.outcome in (None, EatingOutcome.EATEN) for food in foods):
-            raise InvalidSuggestionTargetError()
-        existing = list(
-            (
-                await self._session.scalars(
-                    select(FoodRecommendation)
-                    .where(FoodRecommendation.origin_food_id.in_(food_ids))
-                    .order_by(FoodRecommendation.id.desc())
-                )
-            ).all()
-        )
-        by_food: dict[int, RecommendationRecord] = {}
-        by_id = {item.id: item for item in existing}
-        for item in existing:
-            by_food.setdefault(item.origin_food_id, RecommendationRecord(item, meal_id))
-        retries = {
-            retry.food_id: retry
-            for retry in (
-                await self._session.scalars(
-                    select(FoodRecommendationRetry).where(
-                        FoodRecommendationRetry.food_id.in_(food_ids)
-                    )
-                )
-            ).all()
-        }
-        previous: dict[int, FoodRecommendation] = {}
-        # Validate the entire batch before invoking the model or writing new cards.
-        for food_id, suggestion_id in rejected_suggestions.items():
-            item = by_id.get(suggestion_id)
-            if item is None or item.origin_food_id != food_id or item.user_id != user_id:
-                raise InvalidSuggestionTargetError()
-            retry = retries.get(food_id)
-            if retry is None or retry.dismissed_id != item.id:
-                raise RecommendationRetryUnavailableError()
-            if retry.replacement_id is not None:
-                by_food[food_id] = RecommendationRecord(by_id[retry.replacement_id], meal_id)
-            elif item.status == FoodRecommendationStatus.DISMISSED:
-                previous[food_id] = item
-            else:
-                raise RecommendationRetryUnavailableError()
-        missing = [food_id for food_id in food_ids if food_id not in by_food or food_id in previous]
-        if missing:
-            created = await self._create(
-                user_id=user_id,
-                meal_id=meal_id,
-                food_ids=missing,
-                previous=previous,
-            )
-            for record in created:
-                food_id = record.item.origin_food_id
-                by_food[food_id] = record
-                if food_id in previous:
-                    retries[food_id].replacement_id = record.item.id
-            await self._session.flush()
-        return await self._with_retry_state([by_food[food_id] for food_id in food_ids])
-
-    async def _create(
-        self,
-        *,
-        user_id: int,
-        meal_id: int,
-        food_ids: list[int],
-        previous: dict[int, FoodRecommendation],
-    ) -> list[RecommendationRecord]:
-        meal = await owned_meal(self._session, user_id, meal_id)
-        if meal is None:
-            raise SourceMealNotFoundError()
-        records = await meal_records(self._session, meal)
-        if all(item.food.outcome is None for item in records.foods):
-            raise ReviewRequiredError()
-        by_id = {item.food.id: item for item in records.foods}
-        if len(food_ids) != len(set(food_ids)) or any(
-            food_id not in by_id or by_id[food_id].food.outcome is None for food_id in food_ids
-        ):
-            raise InvalidSuggestionTargetError()
-
-        restrictions = await self._child_restrictions(user_id)
+        if profile is None:
+            raise ProfileRequiredError()
+        restrictions = _child_restrictions(profile)
         catalog = await load_catalog(self._session, restrictions)
-        inputs = [
-            FoodInput(
-                id=str(index),
-                rejected_suggestion=(
-                    RejectedSuggestion(
-                        what_to_try=previous[food_id].what_to_try,
-                        why_this_may_help=previous[food_id].why_this_may_help,
-                        serving_tip=previous[food_id].serving_tip,
-                        dismiss_reasons=tuple(previous[food_id].dismiss_reasons),
-                    )
-                    if food_id in previous
-                    else None
-                ),
-                name=by_id[food_id].food.name,
-                ingredients=tuple(item.name for item in by_id[food_id].ingredients),
-                cooking_method=(
-                    by_id[food_id].food.cooking_method.value
-                    if by_id[food_id].food.cooking_method
-                    else None
-                ),
-                outcome=by_id[food_id].food.outcome.value,
-                difficulty_reasons=tuple(by_id[food_id].food.difficulty_reasons),
-                # 보호자가 따로 리뷰한 재료만 담는다. outcome 이 NULL 이면 리뷰하지 않은 재료다.
-                ingredient_results=tuple(
-                    IngredientResult(
-                        name=item.name,
-                        outcome=item.outcome.value,
-                        difficulty_reasons=tuple(item.difficulty_reasons),
-                    )
-                    for item in by_id[food_id].ingredients
-                    if item.outcome is not None
-                ),
-            )
-            for index, food_id in enumerate(food_ids)
-        ]
-        familiar = await load_familiar_foods(self._session, user_id, exclude_food_ids=food_ids)
+        difficult_foods = await load_difficult_foods(self._session, user_id)
+        familiar = await load_familiar_foods(self._session, user_id)
+        history = await load_history(self._session, user_id)
         try:
-            async with asyncio.timeout(60):
+            async with asyncio.timeout(GENERATION_TIMEOUT_SECONDS):
                 generated = await generate_suggestions(
-                    inputs,
-                    catalog,
-                    restrictions=describe_restrictions(restrictions.types),
+                    count=SUGGESTION_COUNT,
+                    age_group=profile.age_group.value,
+                    catalog=catalog,
+                    difficult_foods=difficult_foods,
                     familiar=familiar,
+                    history=history,
+                    restrictions=describe_restrictions(restrictions.types),
                 )
         except Exception as error:
             raise GenerationFailedError() from error
         if (
             not isinstance(generated, list)
-            or len(generated) != len(food_ids)
+            or len(generated) != SUGGESTION_COUNT
             or any(not isinstance(item, GeneratedSuggestion) for item in generated)
-            or {item.food_id for item in generated} != {item.id for item in inputs}
             or any(
                 not isinstance(getattr(item, key), str) or not getattr(item, key).strip()
                 for item in generated
-                for key in ("what_to_try", "why_this_may_help", "causes")
+                for key in ("what_to_try", "why_this_may_help", "preparation_method")
             )
         ):
             raise GenerationFailedError()
-        by_index = {item.food_id: item for item in generated}
-        created = []
-        for index, food_id in enumerate(food_ids):
-            content = by_index[str(index)]
-            recommendation = FoodRecommendation(
+        created = [
+            FoodRecommendation(
                 user_id=user_id,
-                origin_food_id=food_id,
-                what_to_try=content.what_to_try,
-                why_this_may_help=content.why_this_may_help,
-                serving_tip=content.serving_tip,
-                ingredients=list(content.ingredients),
-                cooking_method=content.cooking_method,
-                causes=content.causes,
+                origin_food_id=None,
+                what_to_try=item.what_to_try,
+                why_this_may_help=item.why_this_may_help,
+                serving_tip=item.preparation_method,
+                ingredients=list(item.ingredients),
+                # 제거 예정 컬럼이라 NOT NULL 을 채우는 고정 값만 넣는다.
+                cooking_method=MealCookingMethod.OTHER,
+                causes="",
                 status=FoodRecommendationStatus.PENDING,
                 dismiss_reasons=[],
             )
-            self._session.add(recommendation)
-            created.append(recommendation)
+            for item in generated
+        ]
+        self._session.add_all(created)
         await self._session.flush()
-        return [RecommendationRecord(item, meal_id) for item in created]
+        return created
 
     async def decide(
         self,
@@ -343,40 +157,23 @@ class FoodRecommendationService:
         suggestion_id: int,
         status: FoodRecommendationStatus,
         dismiss_reasons: list[FoodRecommendationDismissReason],
-    ) -> RecommendationRecord:
+    ) -> FoodRecommendation:
         item = await self._owned_for_decision(user_id, suggestion_id)
-        if (
-            status == FoodRecommendationStatus.DISMISSED
-            and item.status != FoodRecommendationStatus.DISMISSED
-        ):
-            first_id = await self._session.scalar(
-                select(FoodRecommendation.id)
-                .where(FoodRecommendation.origin_food_id == item.origin_food_id)
-                .order_by(FoodRecommendation.id)
-                .limit(1)
-            )
-            if (
-                item.id == first_id
-                and await self._session.get(FoodRecommendationRetry, item.origin_food_id) is None
-            ):
-                self._session.add(
-                    FoodRecommendationRetry(food_id=item.origin_food_id, dismissed_id=item.id)
-                )
         item.status = status
         item.dismiss_reasons = [reason.value for reason in dismiss_reasons]
         item.saved_at = now_kst() if status == FoodRecommendationStatus.SAVED else None
         if status == FoodRecommendationStatus.SAVED:
             item.removed_from_saved_at = None
         await self._session.flush()
-        return await self._record(item)
+        return item
 
-    async def undo(self, *, user_id: int, suggestion_id: int) -> RecommendationRecord:
+    async def undo(self, *, user_id: int, suggestion_id: int) -> FoodRecommendation:
         item = await self._owned_for_decision(user_id, suggestion_id)
         item.status = FoodRecommendationStatus.PENDING
         item.dismiss_reasons = []
         item.saved_at = None
         await self._session.flush()
-        return await self._record(item)
+        return item
 
     async def remove_saved(self, *, user_id: int, suggestion_id: int) -> None:
         item = await self._owned(user_id, suggestion_id)
@@ -384,30 +181,20 @@ class FoodRecommendationService:
             item.removed_from_saved_at = now_kst()
             await self._session.flush()
 
-    async def _child_restrictions(self, user_id: int) -> ChildRestrictions:
-        """프로필의 restrictions 에서 ALLERGY.NONE 을 뺀 값이 아이의 제한이다."""
-        profile = await self._session.scalar(
-            select(UserProfile).where(UserProfile.user_id == user_id)
-        )
-        if profile is None:
-            raise ProfileRequiredError()
-        types = {RestrictionType(value) for value in profile.restrictions}
-        return ChildRestrictions(types=frozenset(types - {RestrictionType.ALLERGY_NONE}))
-
     async def _owned(self, user_id: int, suggestion_id: int) -> FoodRecommendation:
-        food_id = await self._session.scalar(
+        origin_food_id = await self._session.scalar(
             select(FoodRecommendation.origin_food_id).where(
                 FoodRecommendation.id == suggestion_id, FoodRecommendation.user_id == user_id
             )
         )
-        if food_id is None:
-            raise SuggestionNotFoundError()
-        await self._session.scalar(
-            select(MealFood)
-            .where(MealFood.id == food_id)
-            .with_for_update()
-            .execution_options(populate_existing=True)
-        )
+        if origin_food_id is not None:
+            # 이전 식후 음식별 추천은 식사 수정·삭제와 같은 순서(음식 → 추천)로 잠근다.
+            await self._session.scalar(
+                select(MealFood)
+                .where(MealFood.id == origin_food_id)
+                .with_for_update()
+                .execution_options(populate_existing=True)
+            )
         item = await self._session.scalar(
             select(FoodRecommendation)
             .where(FoodRecommendation.id == suggestion_id, FoodRecommendation.user_id == user_id)
@@ -425,37 +212,8 @@ class FoodRecommendationService:
             raise RecommendationTriedError()
         return item
 
-    async def _record(self, item: FoodRecommendation) -> RecommendationRecord:
-        meal_id = await self._session.scalar(
-            select(MealFood.meal_id).where(MealFood.id == item.origin_food_id)
-        )
-        return (await self._with_retry_state([RecommendationRecord(item, int(meal_id))]))[0]
 
-    async def _with_retry_state(
-        self, records: list[RecommendationRecord]
-    ) -> list[RecommendationRecord]:
-        if not records:
-            return []
-        food_ids = {record.item.origin_food_id for record in records}
-        rows = (
-            await self._session.execute(
-                select(FoodRecommendationRetry, MealFood.outcome)
-                .join(MealFood, MealFood.id == FoodRecommendationRetry.food_id)
-                .where(FoodRecommendationRetry.food_id.in_(food_ids))
-            )
-        ).all()
-        retries = {retry.food_id: (retry, outcome) for retry, outcome in rows}
-        result = []
-        for record in records:
-            item = record.item
-            retry, outcome = retries.get(item.origin_food_id, (None, None))
-            eligible = bool(
-                retry
-                and retry.dismissed_id == item.id
-                and retry.replacement_id is None
-                and item.status == FoodRecommendationStatus.DISMISSED
-                and outcome not in (None, EatingOutcome.EATEN)
-            )
-            parent_id = retry.dismissed_id if retry and retry.replacement_id == item.id else None
-            result.append(RecommendationRecord(item, record.meal_id, eligible, parent_id))
-        return result
+def _child_restrictions(profile: UserProfile) -> ChildRestrictions:
+    """프로필의 restrictions 에서 ALLERGY.NONE 을 뺀 값이 아이의 제한이다."""
+    types = {RestrictionType(value) for value in profile.restrictions}
+    return ChildRestrictions(types=frozenset(types - {RestrictionType.ALLERGY_NONE}))

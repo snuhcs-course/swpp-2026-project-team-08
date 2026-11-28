@@ -1,5 +1,7 @@
 # AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
 # Changed: 가드레일 판정 모델(Jev)을 정답 세트로 평가하는 스크립트 추가
+# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
+# Changed: 음식 추천 출력 필드로 사례를 만들도록 변경
 
 """가드레일 판정 모델(Jev)을 정답 세트로 평가한다. 실제 API 를 호출하므로 pytest 가 아닌 스크립트다.
 
@@ -27,11 +29,9 @@ from app.features.suggestions.workflow.guardrail import build_request  # noqa: E
 from app.features.suggestions.workflow.jev import JevClient  # noqa: E402
 from app.features.suggestions.workflow.restrictions import describe_restrictions  # noqa: E402
 from app.features.suggestions.workflow.state import GeneratedSuggestion, RiskJudge  # noqa: E402
-from app.models.meal_enums import MealCookingMethod  # noqa: E402
 from app.models.restriction_enums import RestrictionType  # noqa: E402
 
 EVAL_DIR = ROOT / "tests" / "eval"
-FOOD_ID = "f1"
 CONCURRENCY = 4
 INGREDIENT_GROUPS = {
     "core_recall": {"core_ingredient", "multiple_restrictions"},
@@ -65,15 +65,13 @@ def load_json(name: str) -> dict:
 
 
 def build_suggestion(spec: dict, case: dict) -> GeneratedSuggestion:
+    """동결된 평가 세트의 사례를 추천 하나로 만든다. 세트의 `serving_tip` 이 제공 방법이다."""
     values = {**spec["suggestion_defaults"], **case}
     return GeneratedSuggestion(
-        food_id=FOOD_ID,
         what_to_try=values["what_to_try"],
         why_this_may_help=values["why_this_may_help"],
-        serving_tip=values["serving_tip"],
         ingredients=tuple(values["ingredients"]),
-        cooking_method=MealCookingMethod.STEAMED,
-        causes="The texture was hard for the child.",
+        preparation_method=values["serving_tip"],
     )
 
 

@@ -6,6 +6,8 @@
 # Changed: prepare 가 아이가 잘 먹는 음식을 첫 프롬프트에 함께 담도록 변경
 # AI-generated with Claude Sonnet 5.5, 2026-11-18, reviewed by Jaemin Kim
 # Changed: guardrail 노드 추가, compose 가 초안과 피드백을 대화 이력에 남기도록 변경
+# AI-generated with Claude Opus 5.5, 2026-11-25, reviewed by Jaemin Kim
+# Changed: 연령대·편식 가설·추천 이력을 첫 대화에 담고 추천 개수·이력으로 검증
 
 """그래프의 노드.
 
@@ -30,12 +32,19 @@ Update = dict[str, object]
 
 
 def prepare(state: InputState) -> Update:
-    """입력 음식과 쓸 수 있는 재료 목록으로 첫 대화를 만들고 내부 값을 초기화한다."""
+    """아이의 기록과 쓸 수 있는 재료 목록으로 첫 대화를 만들고 내부 값을 초기화한다."""
     return {
         "messages": [
             SystemMessage(prompts.SYSTEM_PROMPT),
             HumanMessage(
-                prompts.build_user_prompt(state["foods"], state["catalog"], state["familiar"])
+                prompts.build_user_prompt(
+                    count=state["count"],
+                    age_group=state["age_group"],
+                    difficult_foods=state["difficult_foods"],
+                    familiar=state["familiar"],
+                    history=state["history"],
+                    catalog=state["catalog"],
+                )
             ),
             HumanMessage(prompts.COMPOSE_INSTRUCTION),
         ],
@@ -64,8 +73,15 @@ async def compose(state: GraphState, runtime: Runtime[SuggestionContext]) -> Upd
 
 
 def validate(state: GraphState) -> Update:
-    """결과를 요청과 쓸 수 있는 재료에 비춰 검증하는 노드 (순수 함수 호출)."""
-    return {"problems": find_problems(state["foods"], state["results"], state["catalog"])}
+    """결과를 요청 개수·추천 이력·쓸 수 있는 재료에 비춰 검증하는 노드 (순수 함수 호출)."""
+    return {
+        "problems": find_problems(
+            state["results"],
+            count=state["count"],
+            history=state["history"],
+            catalog=state["catalog"],
+        )
+    }
 
 
 async def guardrail(state: GraphState, runtime: Runtime[SuggestionContext]) -> Update:
